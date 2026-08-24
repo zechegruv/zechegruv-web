@@ -179,76 +179,164 @@
       line-height: 1.7;
     }
 
+    /* ---------- Logo animado: sol giratorio + texto con distorsión líquida ---------- */
+
+    @font-face {
+      font-family: 'TAN Nimbus';
+      src: url('assets/fonts/TANNIMBUS.otf') format('opentype');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
     .hero-logo-wrap {
       position: relative;
       width: min(760px, 90vw);
       aspect-ratio: 1 / 1;
       margin: auto;
+      /* permite que el tamaño del logo escale con este contenedor via cqw */
+      container-type: inline-size;
     }
 
-    .hero-logo-wrap::after {
-      content: "";
-      position: absolute;
-      width: 45%;
-      aspect-ratio: 1;
-      left: 27%;
-      top: 26%;
-      border-radius: 50%;
-      background: var(--orange);
-      filter: blur(90px);
-      opacity: 0;
-      z-index: -1;
-      animation:
-        heroGlowIn 1s cubic-bezier(.16,1,.3,1) .05s forwards,
-        pulse 5s ease-in-out 1.1s infinite;
-    }
+    /* Contenedor raíz del logo animado. Escala en su totalidad vía
+       font-size en cqw (relativo al ancho de .hero-logo-wrap), así que
+       no hace falta tocar nada para que sea responsive. */
+    .zeche-gruv-logo-wrapper {
+      /* ---- controles públicos, se pueden sobreescribir por instancia ---- */
+      --zg-sun-duration: 26s;      /* período de una vuelta completa */
+      --zg-glow-blur: 2.1em;
+      --zg-glow-opacity-min: .45;
+      --zg-glow-opacity-max: .8;
+      --zg-glow-scale-max: 1.12;
 
-    /* Animación de entrada: el sol sale primero, después aparecen las letras */
-    .hero-logo-sun,
-    .hero-logo-text {
-      position: absolute;
-      inset: 0;
+      font-size: 6.41cqw;   /* 100cqw / 15.6em = ancho completo del contenedor */
+      position: relative;
       width: 100%;
       height: 100%;
-      object-fit: contain;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      isolation: isolate;
+      animation: zg-enter .9s cubic-bezier(.16,1,.3,1) both;
+    }
+
+    /* ---------- sol (capa de fondo / isotipo) ---------- */
+    .zg-sun {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: 12.4em;
+      height: 12.4em;
+      transform: translate(-50%, 0);
+    }
+
+    .zg-sun-glow {
+      position: absolute;
+      inset: -1.4em;
+      border-radius: 50%;
+      background: radial-gradient(circle,
+        rgba(255, 244, 220, .9) 0%,
+        rgba(245, 166, 35, .55) 34%,
+        rgba(240, 120, 0, .28) 58%,
+        rgba(240, 120, 0, 0) 72%);
+      filter: blur(var(--zg-glow-blur));
+      opacity: var(--zg-glow-opacity-min);
+      animation: zg-glow-pulse 4.2s ease-in-out infinite;
+      /* Importante: no declarar un transform estático acá — este elemento
+         ya se anima con transform (scale) via zg-glow-pulse. Mezclar un
+         transform estático con uno animado en el mismo elemento puede
+         congelar la animación (ver nota en .zg-sun-rotor). will-change
+         alcanza como pista de composición GPU. */
+      will-change: opacity, transform;
+      pointer-events: none;
+    }
+
+    .zg-sun-rotor {
+      position: absolute;
+      inset: 0;
+      animation: zg-spin var(--zg-sun-duration) linear infinite;
+      /* NOTA: a propósito no hay `transform` estático (ej. translateZ(0))
+         en este selector. Si se combina un transform estático con una
+         animación de @keyframes que solo define el estado final (to{...},
+         sin from/0%), el navegador usa esa declaración estática como
+         fotograma inicial implícito — y si la función es distinta a la
+         animada (translateZ vs rotate), interpola por matriz en vez de
+         por función, lo cual puede colapsar a una matriz constante y
+         "congelar" la rotación visualmente aunque siga "corriendo". */
+      will-change: transform;
+    }
+
+    .zg-sun-rotor img {
+      width: 100%;
+      height: 100%;
       display: block;
+      object-fit: contain;
+      filter: drop-shadow(0 .25em .4em rgba(0,0,0,.35));
     }
 
-    .hero-logo-sun {
-      opacity: 0;
-      filter: drop-shadow(0 0 26px rgba(240, 120, 0, .3));
-      animation: heroSunRise .95s cubic-bezier(.16,1,.3,1) .1s forwards;
-    }
-
-    .hero-logo-text-wrap {
+    /* ---------- wordmark ---------- */
+    .zg-text {
       position: absolute;
-      inset: 0;
-      opacity: 0;
-      animation: heroTextRise .65s cubic-bezier(.16,1,.3,1) .55s forwards;
+      top: 8.7em;
+      left: 0;
+      right: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      line-height: .82;
+      text-align: center;
+      filter: url(#zg-liquid);
+      will-change: filter;
     }
 
-    .hero-logo-shine {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(112deg,
-        rgba(255, 244, 220, 0) 42%,
-        rgba(255, 244, 220, .85) 50%,
-        rgba(255, 244, 220, 0) 58%);
-      background-size: 260% 100%;
-      background-position: -130% 0;
-      -webkit-mask-image: url("assets/logo-text.png");
-              mask-image: url("assets/logo-text.png");
-      -webkit-mask-size: contain;
-              mask-size: contain;
-      -webkit-mask-repeat: no-repeat;
-              mask-repeat: no-repeat;
-      -webkit-mask-position: center;
-              mask-position: center;
-      opacity: 0;
-      animation:
-        heroShineIn .5s ease-out 1.5s forwards,
-        heroShineSweep 3.6s ease-in-out 1.9s infinite;
+    .zg-text span {
+      font-family: 'TAN Nimbus', 'Manrope', ui-serif, Georgia, serif;
+      font-size: 4.35em;
+      color: var(--orange-soft);
+      letter-spacing: .01em;
+      animation: zg-warm-pulse 12s ease-in-out infinite;
     }
+    .zg-text span + span { margin-top: .04em; }
+
+    @keyframes zg-enter {
+      from { opacity: 0; transform: scale(.9); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes zg-spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes zg-glow-pulse {
+      0%, 100% { opacity: var(--zg-glow-opacity-min); transform: scale(1); }
+      50%      { opacity: var(--zg-glow-opacity-max); transform: scale(var(--zg-glow-scale-max)); }
+    }
+
+    @keyframes zg-warm-pulse {
+      0%, 100% {
+        text-shadow: 0 0 .18em rgba(255, 200, 110, .35), 0 0 .5em rgba(240, 120, 0, 0);
+        color: var(--orange-soft);
+      }
+      50% {
+        text-shadow: 0 0 .32em rgba(255, 210, 130, .85), 0 0 1.1em rgba(240, 120, 0, .55);
+        color: var(--cream);
+      }
+    }
+
+    /* pausa todo junto — ver script al final del body */
+    .zeche-gruv-logo-wrapper.is-paused .zg-sun-rotor,
+    .zeche-gruv-logo-wrapper.is-paused .zg-sun-glow,
+    .zeche-gruv-logo-wrapper.is-paused .zg-text span {
+      animation-play-state: paused;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .zeche-gruv-logo-wrapper { animation: none; opacity: 1; transform: none; }
+      .zg-sun-rotor { animation-duration: 120s; }
+      .zg-sun-glow, .zg-text span { animation: none; }
+    }
+
+    .zg-filter-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 
     .hero-bottom {
       display: flex;
@@ -271,39 +359,6 @@
       letter-spacing: .15em;
       text-transform: uppercase;
       color: var(--orange-soft);
-    }
-
-    @keyframes heroGlowIn {
-      from { opacity: 0; transform: scale(.55); }
-      to { opacity: .13; transform: scale(1); }
-    }
-
-    @keyframes heroSunRise {
-      0%   { opacity: 0; transform: translateY(14%) scale(.82); }
-      60%  { opacity: 1; transform: translateY(-2%) scale(1.03); }
-      80%  { opacity: 1; transform: translateY(1%) scale(.99); }
-      100% { opacity: 1; transform: translateY(0) scale(1); }
-    }
-
-    @keyframes heroTextRise {
-      from { opacity: 0; transform: translateY(8%); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    @keyframes heroShineIn {
-      from { opacity: 0; }
-      to   { opacity: 1; }
-    }
-
-    @keyframes heroShineSweep {
-      0%   { background-position: -130% 0; }
-      55%  { background-position: 130% 0; }
-      100% { background-position: 130% 0; }
-    }
-
-    @keyframes pulse {
-      0%, 100% { transform: scale(.8); opacity: .08; }
-      50% { transform: scale(1.15); opacity: .18; }
     }
 
     /* ---------- Marquee ---------- */
@@ -1038,11 +1093,34 @@
     </div>
 
     <div class="hero-logo-wrap">
-      <!-- Animación de entrada: el sol sale y después aparecen las letras -->
-      <img class="hero-logo-sun" src="assets/logo-sun.png" alt="">
-      <div class="hero-logo-text-wrap">
-        <img class="hero-logo-text" src="assets/logo-text.png" alt="ZECHE GRUV — Record Label">
-        <div class="hero-logo-shine" aria-hidden="true"></div>
+      <!-- Logo animado: sol con rotación infinita + resplandor cálido pulsante,
+           tipografía "ZECHE GRUV" con distorsión líquida psicodélica sincronizada
+           a un pulso de luz. Ver estilos ".zeche-gruv-logo-wrapper" y el script
+           al final del body. -->
+      <div class="zeche-gruv-logo-wrapper" id="zgLogo">
+
+        <!-- SVG oculto: solo define el filtro de distorsión líquida -->
+        <svg class="zg-filter-defs" aria-hidden="true" focusable="false">
+          <filter id="zg-liquid" x="-30%" y="-30%" width="160%" height="160%">
+            <feTurbulence id="zgTurbulence" type="fractalNoise"
+              baseFrequency="0.010 0.018" numOctaves="2" seed="7" result="zg-noise" />
+            <feDisplacementMap id="zgDisplace" in="SourceGraphic" in2="zg-noise"
+              scale="7" xChannelSelector="R" yChannelSelector="G" />
+          </filter>
+        </svg>
+
+        <div class="zg-sun">
+          <div class="zg-sun-glow"></div>
+          <div class="zg-sun-rotor">
+            <img src="assets/zeche-gruv-sol.webp" alt="ZECHE GRUV">
+          </div>
+        </div>
+
+        <div class="zg-text">
+          <span>ZECHE</span>
+          <span>GRUV</span>
+        </div>
+
       </div>
     </div>
 
@@ -1504,6 +1582,47 @@
 
       logo.style.transform = `translate(${x}px, ${y}px)`;
     });
+
+    // ---------- Logo: distorsión líquida del texto (filtro SVG) ----------
+    // Mueve baseFrequency/scale del filtro #zg-liquid cuadro a cuadro con
+    // funciones seno/coseno para lograr un warp orgánico y continuo.
+    // Se usa requestAnimationFrame en vez de <animate> (SMIL) porque es
+    // más confiable entre navegadores y permite pausar con una sola bandera.
+    (function () {
+      const zgWrapper = document.getElementById("zgLogo");
+      const zgTurbulence = document.getElementById("zgTurbulence");
+      const zgDisplace = document.getElementById("zgDisplace");
+      if (!zgWrapper || !zgTurbulence || !zgDisplace) return;
+
+      const zgReduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      let zgPaused = false;
+
+      function zgTick(ts) {
+        if (!zgPaused && !zgReduceMotion) {
+          const t = ts * 0.001;
+          const fx = (0.010 + Math.sin(t * 0.5) * 0.004).toFixed(4);
+          const fy = (0.018 + Math.cos(t * 0.37) * 0.006).toFixed(4);
+          zgTurbulence.setAttribute("baseFrequency", fx + " " + fy);
+          const scale = (6.5 + Math.sin(t * 0.5) * 3.5).toFixed(2);
+          zgDisplace.setAttribute("scale", scale);
+        }
+        requestAnimationFrame(zgTick);
+      }
+      requestAnimationFrame(zgTick);
+
+      // Ejemplo: llamar window.zgSetPaused(true) desde cualquier lado del
+      // sitio (ej. un botón de "reducir movimiento") para pausar el logo.
+      window.zgSetPaused = function (next) {
+        zgPaused = !!next;
+        zgWrapper.classList.toggle("is-paused", zgPaused);
+      };
+
+      // Ejemplo: window.zgSetSpeed(1.5) acelera la rotación del sol 1.5x
+      // (la duración por defecto es 26s a velocidad 1x).
+      window.zgSetSpeed = function (multiplier) {
+        zgWrapper.style.setProperty("--zg-sun-duration", (26 / multiplier) + "s");
+      };
+    })();
   </script>
 </body>
 </html>
