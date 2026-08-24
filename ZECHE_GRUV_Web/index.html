@@ -1,0 +1,1181 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="ZECHE GRUV — Independent Record Label" />
+  <title>ZECHE GRUV — Record Label</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    /* =========================================================
+       ZECHE GRUV — PALETA
+       Marrón logo:       #4B2509
+       Marrón oscuro:     #241105
+       Naranja:            #F07800
+       Naranja suave:      #F5A623
+       Beige:              #F0E0C0
+       Crema:              #FFF4DC
+       ========================================================= */
+
+    :root {
+      --brown: #4B2509;
+      --brown-dark: #241105;
+      --brown-mid: #69350B;
+      --orange: #F07800;
+      --orange-soft: #F5A623;
+      --beige: #F0E0C0;
+      --cream: #FFF4DC;
+      --muted: #C9A980;
+
+      --border: rgba(240, 224, 192, 0.18);
+      --max: 1400px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background: var(--brown);
+      color: var(--cream);
+      font-family: "Manrope", sans-serif;
+      overflow-x: hidden;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    /* ---------- Grain ---------- */
+
+    .grain {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      pointer-events: none;
+      opacity: 0.035;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    /* ---------- Cursor ---------- */
+
+    .cursor {
+      position: fixed;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--orange-soft);
+      pointer-events: none;
+      z-index: 200;
+      transform: translate(-50%, -50%);
+      mix-blend-mode: screen;
+      transition: width .2s ease, height .2s ease;
+    }
+
+    @media (max-width: 800px) {
+      .cursor {
+        display: none;
+      }
+    }
+
+    /* ---------- Navigation ---------- */
+
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 50;
+      padding: 24px 4vw;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid transparent;
+      transition: .4s ease;
+    }
+
+    nav.scrolled {
+      background: rgba(36, 17, 5, .88);
+      backdrop-filter: blur(16px);
+      border-color: var(--border);
+    }
+
+    .nav-mark {
+      font-family: "DM Mono", monospace;
+      font-size: 12px;
+      letter-spacing: .16em;
+      font-weight: 500;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 30px;
+      font-family: "DM Mono", monospace;
+      font-size: 10px;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+    }
+
+    .nav-links a {
+      color: var(--beige);
+      opacity: .75;
+      transition: .25s ease;
+    }
+
+    .nav-links a:hover {
+      color: var(--orange-soft);
+      opacity: 1;
+    }
+
+    /* ---------- Hero ---------- */
+
+    .hero {
+      min-height: 100svh;
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 130px 5vw 60px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .eyebrow {
+      font-family: "DM Mono", monospace;
+      font-size: 10px;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--beige);
+      opacity: .65;
+    }
+
+    .hero-location {
+      text-align: right;
+      color: var(--beige);
+      opacity: .55;
+      font-size: 11px;
+      line-height: 1.7;
+    }
+
+    .hero-logo-wrap {
+      position: relative;
+      width: min(760px, 90vw);
+      margin: auto;
+      animation: logoIn 1.2s cubic-bezier(.16,1,.3,1) both;
+    }
+
+    .hero-logo {
+      width: 100%;
+      display: block;
+      /* The uploaded logo uses this same brown as its background. */
+      mix-blend-mode: normal;
+    }
+
+    .hero-logo-wrap::after {
+      content: "";
+      position: absolute;
+      width: 45%;
+      aspect-ratio: 1;
+      left: 27%;
+      top: 26%;
+      border-radius: 50%;
+      background: var(--orange);
+      filter: blur(90px);
+      opacity: .13;
+      z-index: -1;
+      animation: pulse 5s ease-in-out infinite;
+    }
+
+    .hero-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 30px;
+    }
+
+    .hero-description {
+      max-width: 390px;
+      color: var(--beige);
+      opacity: .78;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .scroll {
+      font-family: "DM Mono", monospace;
+      font-size: 9px;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      color: var(--orange-soft);
+    }
+
+    @keyframes logoIn {
+      from { opacity: 0; transform: scale(.92) translateY(35px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(.8); opacity: .08; }
+      50% { transform: scale(1.15); opacity: .18; }
+    }
+
+    /* ---------- Marquee ---------- */
+
+    .marquee {
+      overflow: hidden;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      background: var(--brown-dark);
+      white-space: nowrap;
+    }
+
+    .marquee-track {
+      display: inline-flex;
+      gap: 45px;
+      padding: 17px 0;
+      animation: marquee 22s linear infinite;
+    }
+
+    .marquee span {
+      font-family: "DM Mono", monospace;
+      font-size: 11px;
+      letter-spacing: .16em;
+      color: var(--orange-soft);
+    }
+
+    @keyframes marquee {
+      to { transform: translateX(-50%); }
+    }
+
+    /* ---------- Sections ---------- */
+
+    section {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 140px 5vw;
+    }
+
+    .section-label {
+      font-family: "DM Mono", monospace;
+      font-size: 10px;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--orange-soft);
+      margin-bottom: 18px;
+    }
+
+    .section-title {
+      font-size: clamp(48px, 7vw, 100px);
+      line-height: .9;
+      letter-spacing: -.065em;
+      font-weight: 700;
+      margin-bottom: 65px;
+    }
+
+    /* ---------- Latest Release ---------- */
+
+    .release {
+      display: grid;
+      grid-template-columns: minmax(300px, .9fr) minmax(300px, 1fr);
+      gap: clamp(40px, 8vw, 120px);
+      align-items: center;
+    }
+
+    .cover {
+      display: block;
+      position: relative;
+      aspect-ratio: 1;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 65% 30%, rgba(245,166,35,.95), transparent 16%),
+        radial-gradient(circle at 45% 55%, rgba(240,120,0,.65), transparent 35%),
+        linear-gradient(135deg, var(--brown-mid), var(--brown-dark));
+      border: 1px solid var(--border);
+      transform: rotate(-2deg);
+      transition: transform .6s cubic-bezier(.16,1,.3,1);
+    }
+
+    .cover:hover {
+      transform: rotate(0deg) scale(.98);
+    }
+
+    .cover::before,
+    .cover::after {
+      content: "";
+      position: absolute;
+      border: 1px solid rgba(255,244,220,.5);
+      border-radius: 50%;
+    }
+
+    .cover::before {
+      width: 68%;
+      aspect-ratio: 1;
+      left: 16%;
+      top: 16%;
+    }
+
+    .cover::after {
+      width: 30%;
+      aspect-ratio: 1;
+      left: 35%;
+      top: 35%;
+      box-shadow: 0 0 60px rgba(245,166,35,.35);
+    }
+
+    .cover.has-image {
+      background: var(--brown-dark);
+    }
+
+    .cover.has-image::before,
+    .cover.has-image::after {
+      display: none;
+    }
+
+    .release-art img,
+    .cover.has-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .cover-code {
+      position: absolute;
+      left: 24px;
+      bottom: 22px;
+      font-family: "DM Mono", monospace;
+      font-size: 10px;
+      letter-spacing: .15em;
+    }
+
+    .release-meta {
+      font-family: "DM Mono", monospace;
+      font-size: 10px;
+      letter-spacing: .14em;
+      color: var(--orange-soft);
+    }
+
+    .release-title {
+      font-size: clamp(45px, 7vw, 100px);
+      line-height: .88;
+      letter-spacing: -.07em;
+      margin: 16px 0 22px;
+    }
+
+    .release-copy {
+      max-width: 500px;
+      color: var(--beige);
+      opacity: .75;
+      line-height: 1.8;
+      font-size: 14px;
+    }
+
+    .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 32px;
+    }
+
+    .btn {
+      border: 1px solid rgba(240,224,192,.3);
+      padding: 13px 17px;
+      font-family: "DM Mono", monospace;
+      font-size: 9px;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+      color: var(--cream);
+      transition: .3s ease;
+    }
+
+    .btn:hover {
+      background: var(--orange);
+      border-color: var(--orange);
+      color: var(--brown-dark);
+      transform: translateY(-3px);
+    }
+
+    /* ---------- Catalogue ---------- */
+
+    .catalogue {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+    }
+
+    .release-card {
+      position: relative;
+      aspect-ratio: 1;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: var(--brown-dark);
+      transition: .5s cubic-bezier(.16,1,.3,1);
+    }
+
+    .release-card:hover {
+      transform: translateY(-8px);
+      border-color: rgba(245,166,35,.55);
+    }
+
+    .release-art {
+      position: absolute;
+      inset: 0;
+      transition: transform .7s cubic-bezier(.16,1,.3,1);
+    }
+
+    .release-card:hover .release-art {
+      transform: scale(1.08) rotate(2deg);
+    }
+
+    .art-1 {
+      background:
+        radial-gradient(circle at 50% 45%, var(--orange-soft) 0 7%, transparent 8%),
+        repeating-radial-gradient(circle at 50% 45%, transparent 0 12%, rgba(240,120,0,.7) 12.3% 13%, transparent 13.3% 18%),
+        var(--brown-dark);
+    }
+
+    .art-2 {
+      background:
+        linear-gradient(130deg, transparent 0 45%, rgba(245,166,35,.9) 46% 50%, transparent 51%),
+        linear-gradient(45deg, var(--brown-mid), var(--brown-dark));
+    }
+
+    .art-3 {
+      background:
+        radial-gradient(ellipse at 30% 70%, var(--orange) 0 8%, transparent 9%),
+        radial-gradient(ellipse at 70% 30%, var(--orange-soft) 0 12%, transparent 13%),
+        var(--brown-dark);
+    }
+
+    .card-info {
+      position: absolute;
+      inset: auto 0 0;
+      padding: 20px;
+      background: linear-gradient(transparent, rgba(36,17,5,.96));
+      padding-top: 70px;
+    }
+
+    .card-name {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -.03em;
+    }
+
+    .card-meta {
+      margin-top: 6px;
+      font-family: "DM Mono", monospace;
+      color: var(--orange-soft);
+      font-size: 8px;
+      letter-spacing: .13em;
+    }
+
+    /* ---------- Label ---------- */
+
+    .label-section {
+      background: var(--brown-dark);
+      max-width: none;
+      padding-left: max(5vw, calc((100vw - var(--max)) / 2 + 5vw));
+      padding-right: max(5vw, calc((100vw - var(--max)) / 2 + 5vw));
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .label-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10vw;
+      align-items: end;
+    }
+
+    .label-text {
+      color: var(--beige);
+      font-size: clamp(22px, 3vw, 38px);
+      line-height: 1.35;
+      letter-spacing: -.035em;
+    }
+
+    .label-side {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.8;
+      max-width: 430px;
+    }
+
+    /* ---------- Contact ---------- */
+
+    .contact {
+      min-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .contact-title {
+      font-size: clamp(65px, 12vw, 170px);
+      line-height: .78;
+      letter-spacing: -.085em;
+      margin-bottom: 50px;
+    }
+
+    .contact-title span {
+      display: block;
+      margin-left: 13vw;
+      color: var(--orange);
+    }
+
+    /* ---------- Footer ---------- */
+
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 25px 5vw;
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      color: var(--muted);
+      font-family: "DM Mono", monospace;
+      font-size: 8px;
+      letter-spacing: .12em;
+    }
+
+    /* ---------- Release credits ---------- */
+
+    .credits {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 14px 0 26px;
+    }
+
+    .credit {
+      font-family: "DM Mono", monospace;
+      font-size: 10px;
+      letter-spacing: .08em;
+      color: var(--beige);
+      opacity: .8;
+      border: 1px solid var(--border);
+      padding: 6px 10px;
+      transition: .25s ease;
+      cursor: pointer;
+    }
+
+    a.credit:hover {
+      color: var(--orange-soft);
+      border-color: rgba(245,166,35,.55);
+      opacity: 1;
+    }
+
+    span.credit {
+      cursor: default;
+    }
+
+    /* ---------- Artists ---------- */
+
+    .artists-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 22px 16px;
+    }
+
+    .artist-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 12px;
+    }
+
+    .artist-photo-wrap {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: var(--brown-dark);
+      transition: .35s cubic-bezier(.16,1,.3,1);
+    }
+
+    .artist-card:hover .artist-photo-wrap {
+      border-color: rgba(245,166,35,.65);
+      transform: translateY(-4px);
+      box-shadow: 0 14px 34px rgba(0,0,0,.35);
+    }
+
+    .artist-photo {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: grayscale(.55) saturate(1.1) contrast(1.05);
+      transition: filter .4s ease, transform .5s cubic-bezier(.16,1,.3,1);
+      transform: scale(1.01);
+    }
+
+    .artist-card:hover .artist-photo {
+      filter: grayscale(0) saturate(1.15);
+      transform: scale(1.08);
+    }
+
+    .artist-photo-wrap::after {
+      content: "▶";
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      color: var(--cream);
+      background: rgba(36,17,5,.45);
+      opacity: 0;
+      transition: opacity .3s ease;
+    }
+
+    .artist-card:hover .artist-photo-wrap::after {
+      opacity: 1;
+    }
+
+    .artist-name {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: -.01em;
+    }
+
+    .artists-more {
+      grid-column: 1 / -1;
+      text-align: center;
+      font-family: "DM Mono", monospace;
+      font-size: 10px;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 10px;
+    }
+
+    /* ---------- Spotify preview bar ---------- */
+
+    .spotify-bar {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 150;
+      transform: translateY(100%);
+      transition: transform .45s cubic-bezier(.16,1,.3,1);
+      background: rgba(36,17,5,.97);
+      backdrop-filter: blur(16px);
+      border-top: 1px solid var(--border);
+    }
+
+    .spotify-bar.active {
+      transform: translateY(0);
+    }
+
+    .spotify-bar-inner {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 10px 5vw;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .spotify-bar-label {
+      font-family: "DM Mono", monospace;
+      font-size: 9px;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+      color: var(--orange-soft);
+      white-space: nowrap;
+      display: none;
+    }
+
+    @media (min-width: 700px) {
+      .spotify-bar-label {
+        display: block;
+      }
+    }
+
+    .spotify-bar-mount {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .spotify-bar-close {
+      border: 1px solid rgba(240,224,192,.3);
+      background: none;
+      color: var(--cream);
+      width: 26px;
+      height: 26px;
+      font-size: 13px;
+      line-height: 1;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: .25s ease;
+    }
+
+    .spotify-bar-close:hover {
+      background: var(--orange);
+      border-color: var(--orange);
+      color: var(--brown-dark);
+    }
+
+    /* ---------- Mobile ---------- */
+
+    @media (max-width: 800px) {
+      nav {
+        padding: 18px 5vw;
+      }
+
+      .nav-links {
+        gap: 13px;
+        font-size: 8px;
+      }
+
+      .hero {
+        padding-top: 105px;
+      }
+
+      .hero-top {
+        gap: 30px;
+      }
+
+      .hero-location {
+        display: none;
+      }
+
+      .hero-logo-wrap {
+        width: 112vw;
+        margin-left: -11vw;
+        margin-top: 30px;
+        margin-bottom: 20px;
+      }
+
+      .hero-bottom {
+        align-items: start;
+        flex-direction: column;
+      }
+
+      .scroll {
+        display: none;
+      }
+
+      section {
+        padding-top: 90px;
+        padding-bottom: 90px;
+      }
+
+      .release {
+        grid-template-columns: 1fr;
+      }
+
+      .catalogue {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .artists-grid {
+        grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+        gap: 18px 12px;
+      }
+
+      .label-grid {
+        grid-template-columns: 1fr;
+        gap: 40px;
+      }
+
+      footer {
+        flex-direction: column;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .nav-links a:nth-child(3) {
+        display: none;
+      }
+
+      .catalogue {
+        grid-template-columns: 1fr;
+      }
+
+      .release-card:last-child {
+        display: block;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="grain"></div>
+  <div class="cursor"></div>
+
+  <!-- ================= NAV ================= -->
+  <nav id="nav">
+    <a class="nav-mark" href="#">ZECHE GRUV®</a>
+
+    <div class="nav-links">
+      <a href="#releases">Releases</a>
+      <a href="#artists">Artists</a>
+      <a href="#label">The Label</a>
+      <a href="#contact">Contact</a>
+    </div>
+  </nav>
+
+  <!-- ================= HERO ================= -->
+  <header class="hero">
+    <div class="hero-top">
+      <div class="eyebrow">Independent Record Label</div>
+
+      <div class="hero-location">
+        BUENOS AIRES<br>
+        ARGENTINA
+      </div>
+    </div>
+
+    <div class="hero-logo-wrap">
+      <!-- TU LOGO -->
+      <img class="hero-logo" src="assets/logo.png" alt="ZECHE GRUV Record Label">
+    </div>
+
+    <div class="hero-bottom">
+      <p class="hero-description">
+        Independent record label &amp; production house — composition,
+        recording, mixing, mastering, distribution and cover art,
+        led by <a href="https://open.spotify.com/intl-es/artist/0yIGrWjWqKnM7qJ0uyImij" target="_blank" rel="noopener">Yaco Santana</a>.
+      </p>
+
+      <div class="scroll">↓ Scroll to explore</div>
+    </div>
+  </header>
+
+  <!-- ================= MARQUEE ================= -->
+  <div class="marquee">
+    <div class="marquee-track">
+      <span>ZECHE GRUV</span><span>✦</span>
+      <span>INDEPENDENT RECORD LABEL</span><span>✦</span>
+      <span>BUENOS AIRES</span><span>✦</span>
+      <span>ZECHE GRUV</span><span>✦</span>
+      <span>INDEPENDENT RECORD LABEL</span><span>✦</span>
+      <span>BUENOS AIRES</span><span>✦</span>
+    </div>
+  </div>
+
+  <!-- ================= LATEST RELEASE ================= -->
+  <section id="releases">
+    <div class="section-label">01 / Latest Release</div>
+    <h2 class="section-title">The newest<br>sound.</h2>
+
+    <div class="release">
+      <a class="cover has-image" href="https://open.spotify.com/album/7bc1Ig8bncv4p3vZjjZqjE" target="_blank" rel="noopener"
+         data-spotify-uri="spotify:album:7bc1Ig8bncv4p3vZjjZqjE" data-spotify-name="OKEY">
+        <img src="assets/covers/okey.jpg" alt="OKEY — cover art">
+        <div class="cover-code">ZG — OKEY</div>
+      </a>
+
+      <div>
+        <div class="release-meta">OUT NOW</div>
+        <h3 class="release-title">OKEY</h3>
+
+        <p class="release-copy">
+          Con Rouse bby y YEIKO. Producido por ZECHE GRUV.
+        </p>
+
+        <div class="credits">
+          <a class="credit" href="https://open.spotify.com/artist/5CNzLOwiQx5VhTv44SuCm9" target="_blank" rel="noopener" data-spotify-uri="spotify:artist:5CNzLOwiQx5VhTv44SuCm9" data-spotify-name="Rouse bby">Rouse bby</a>
+          <span class="credit">YEIKO</span>
+          <a class="credit" href="https://open.spotify.com/artist/0yIGrWjWqKnM7qJ0uyImij" target="_blank" rel="noopener" data-spotify-uri="spotify:artist:0yIGrWjWqKnM7qJ0uyImij" data-spotify-name="ZECHE GRUV">ZECHE GRUV</a>
+        </div>
+
+        <div class="buttons">
+          <a class="btn" href="https://open.spotify.com/album/7bc1Ig8bncv4p3vZjjZqjE" target="_blank" rel="noopener">Spotify ↗</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= CATALOGUE ================= -->
+  <section>
+    <div class="section-label">02 / Catalogue</div>
+    <h2 class="section-title">Selected<br>releases.</h2>
+
+    <div class="catalogue">
+      <a href="https://open.spotify.com/album/6eU3XioAFeGQsepCbhuDwN" target="_blank" rel="noopener" class="release-card"
+         data-spotify-uri="spotify:album:6eU3XioAFeGQsepCbhuDwN" data-spotify-name="TODO TERRENO">
+        <div class="release-art"><img src="assets/covers/todo-terreno.png" alt="TODO TERRENO — cover art"></div>
+        <div class="card-info">
+          <div class="card-name">TODO TERRENO</div>
+          <div class="card-meta">Rouse bby · Maida · YEIKO · ZECHE GRUV</div>
+        </div>
+      </a>
+
+      <a href="https://open.spotify.com/album/6YmySpzsNXMuxekqcmdlGJ" target="_blank" rel="noopener" class="release-card"
+         data-spotify-uri="spotify:album:6YmySpzsNXMuxekqcmdlGJ" data-spotify-name="TACÚ">
+        <div class="release-art"><img src="assets/covers/tacu.png" alt="TACÚ — cover art"></div>
+        <div class="card-info">
+          <div class="card-name">TACÚ</div>
+          <div class="card-meta">ZG COMP · 15 Artists</div>
+        </div>
+      </a>
+
+      <a href="https://open.spotify.com/track/2xAFzhjYAyvYHiBfkz80HY" target="_blank" rel="noopener" class="release-card"
+         data-spotify-uri="spotify:track:2xAFzhjYAyvYHiBfkz80HY" data-spotify-name="YANINA">
+        <div class="release-art"><img src="assets/covers/yanina.jpg" alt="YANINA — cover art"></div>
+        <div class="card-info">
+          <div class="card-name">YANINA</div>
+          <div class="card-meta">Axia Bebe · ZECHE GRUV</div>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <!-- ================= ARTISTS ================= -->
+  <section id="artists">
+    <div class="section-label">03 / Artists</div>
+    <h2 class="section-title">The<br>roster.</h2>
+
+    <div class="artists-grid" id="artists-grid"></div>
+  </section>
+
+  <!-- ================= THE LABEL ================= -->
+  <section id="label" class="label-section">
+    <div class="section-label">04 / The Label</div>
+
+    <div class="label-grid">
+      <p class="label-text">
+        ZECHE GRUV is an independent record label directed by
+        <span style="color: var(--orange-soft);">Yaco Santana</span> —
+        over 10 years producing music, with more than 200 artists worldwide
+        choosing us to accompany their careers.
+      </p>
+
+      <p class="label-side">
+        Our goal is to keep organic sound at the core of every project,
+        developing each production until it matches the artist's vision —
+        professional sound and songwriting at the highest creative level.
+        We run a full team: producers, session musicians on multiple
+        instruments, mixing &amp; mastering engineers, distribution across
+        every digital platform, cover art &amp; design, and audiovisual
+        recording and production.
+      </p>
+    </div>
+  </section>
+
+  <!-- ================= CONTACT ================= -->
+  <section id="contact" class="contact">
+    <div class="section-label">05 / Demos & Collaborations</div>
+
+    <h2 class="contact-title">
+      MAKE
+      <span>NOISE.</span>
+    </h2>
+
+    <div class="buttons">
+      <a class="btn" href="mailto:hello@zechegruv.com">
+        Send a demo ↗
+      </a>
+
+      <a class="btn" href="https://www.instagram.com/zechegruv/" target="_blank" rel="noopener">
+        Instagram ↗
+      </a>
+
+      <a class="btn" href="https://open.spotify.com/intl-es/artist/0yIGrWjWqKnM7qJ0uyImij" target="_blank" rel="noopener">
+        Spotify ↗
+      </a>
+
+      <a class="btn" href="https://open.spotify.com/playlist/1FbK9IaTCJMCtTLQSg7ayI" target="_blank" rel="noopener">
+        Playlist ↗
+      </a>
+    </div>
+  </section>
+
+  <!-- ================= FOOTER ================= -->
+  <footer>
+    <span>ZECHE GRUV® — BUENOS AIRES</span>
+    <span><a href="https://www.instagram.com/zechegruv/" target="_blank" rel="noopener">INSTAGRAM</a> · <a href="https://open.spotify.com/intl-es/artist/0yIGrWjWqKnM7qJ0uyImij" target="_blank" rel="noopener">SPOTIFY</a></span>
+    <span>© 2026 ALL RIGHTS RESERVED</span>
+  </footer>
+
+  <!-- ================= SPOTIFY PREVIEW BAR ================= -->
+  <div class="spotify-bar" id="spotify-bar">
+    <div class="spotify-bar-inner">
+      <span class="spotify-bar-label" id="spotify-bar-label">Preview</span>
+      <div class="spotify-bar-mount" id="spotify-bar-mount"></div>
+      <button class="spotify-bar-close" id="spotify-bar-close" type="button" aria-label="Close preview">✕</button>
+    </div>
+  </div>
+
+  <script src="https://open.spotify.com/embed/iframe-api/v1" async></script>
+
+  <script>
+    // ---------- Artist roster ----------
+    // Editá este array para agregar, sacar o reordenar artistas.
+    const ARTISTS = [
+      { name: "Kires", id: "1Cm1WPdQpZWR1FGoaCQ9Hu", img: "ab67616100005174eb78ac9059f304cd9a71f78d" },
+      { name: "Rouse bby", id: "5CNzLOwiQx5VhTv44SuCm9", img: "ab67616100005174b011ca6ee23cca7df223bea7" },
+      { name: "Pazz", id: "38QjfFQ2Qj5pYKEfP1UZXz", img: "ab67616100005174eda1fcc84a4898da3737c123" },
+      { name: "Midel", id: "4EcIU574ksr6mC1GMEOe0p", img: "ab67616100005174f8dc60cf6517ac24c1b2134f" },
+      { name: "Mc Nito", id: "0EOOwVUWdPElrXOJyKOiBw", img: "ab676161000051743450ced305b10b708633b2a8" },
+      { name: "Kamacho", id: "4w0n2oYb0ZEuvlHa1Mnxci", img: "ab676161000051740e18544b9ed4c07c536e5cea" },
+      { name: "Kizuato", id: "1CDBZ6ZYceJMFEj5lMn1yi", img: "ab67616100005174a81ff0f069a0bdb8c73e1138" },
+      { name: "BR1", id: "3sqbHtwHxDZQfqFkr03zwX", img: "ab67616100005174ecf99b8b37813daeba89fc7d" },
+      { name: "Casteyano", id: "2sAeYCtKB9km4OnxZ79F2W", img: "ab6761610000517448dc2e35568059fd450e05f8" },
+      { name: "Majo Chicar", id: "2t1ZWcvmcsJnj9yCRuzvOG", img: "ab67616100005174b43f4244290797303000e856" },
+      { name: "Pastelita", id: "5sSiBj6y3adorU3bNcO0qi", img: "ab676161000051742108e15dfdfec3a28581c9af" },
+      { name: "Sorriso", id: "4EIzdaX8jUM4b2zKCYh1yj", img: "ab67616100005174d7dff70bb01d856e75ac1177" },
+      { name: "Tobi Matarasso", id: "758gJCoI4xZWRgjdlww3iM", img: "ab676161000051746febd6cd6725b013ad63d440" },
+      { name: "Mc Anrry", id: "4ExMusmx318A1cgA2L2UAP", img: "ab6761610000517456d65d3fdf9e10f05e8db909" },
+      { name: "Axia Bebe", id: "0ku2WIox3Gy8ZeRTra7khQ", img: "ab67616100005174cbfde070c1a24407419e14df" },
+      { name: "Lusan", id: "6cdFVBWLuWaXod5b0IqQvx", img: "ab676161000051745f55d7e03eb9c9995a20d988" },
+      { name: "Borja Trece", id: "6IsD7NahqpNXMZokr2sScx", img: "ab67616100005174e65017044d47c1044f1fbbb9" },
+      { name: "Bhae", id: "3rpv3PztUChhUTcNhHHRku", img: "ab67616100005174eb042c34dfcb55cba82fb4ea" },
+      { name: "Anita Pau", id: "1KMisYLHu9wM1dsT4gTwZz", img: "ab67616100005174b7f942eba8a4c91ca8300378" },
+      { name: "Layla Mar", id: "0FFp6MN2W3zcJdWAkCxcg6", img: "ab67616100005174dc1219d7f375fd39ce3bcdc9" },
+      { name: "Maki", id: "4q0qAJSJMhF3n8nq9n2gJX", img: "ab67616d00001e02c8c1cd702aae848113ab6d14" },
+      { name: "Yaco Santana", id: "0qyQT0AI2Qz2PnOP49ZBtA", img: "ab676161000051746665734a01adfe495ea805cb" },
+      { name: "Bianca Biondi", id: "4AhBUp7hKgyNz915uFsmCc", img: "ab67616100005174f738fb7c0cd6b181f348bae0" },
+      { name: "Jugo Solar", id: "5x69KadluL7PwtwALZrTgm", img: "ab67616100005174ddf9601225b8b08e7fd411d9" },
+      { name: "BallerFk", id: "2kENb15y49pTplwxt9ivd5", img: "ab67616100005174981ebb77880358490b75057f" },
+      { name: "Ekiss", id: "20mwpOinpbsbDIgnqUpFBe", img: "ab676161000051743b923eed0abd5ccb9e01ef0c" },
+      { name: "Lowkey Santo", id: "31xbC0RlsTJT1NOLviy6lD", img: "ab676161000051744014c930fa3816a9ec333669" },
+    ];
+
+    const grid = document.getElementById("artists-grid");
+    grid.innerHTML = ARTISTS.map(a => `
+      <a class="artist-card" href="https://open.spotify.com/artist/${a.id}" target="_blank" rel="noopener"
+         data-spotify-uri="spotify:artist:${a.id}" data-spotify-name="${a.name}">
+        <div class="artist-photo-wrap">
+          <img class="artist-photo" src="https://i.scdn.co/image/${a.img}" alt="${a.name}" loading="lazy">
+        </div>
+        <div class="artist-name">${a.name}</div>
+      </a>
+    `).join("");
+
+    // ---------- Spotify hover preview ----------
+    (function () {
+      const bar = document.getElementById("spotify-bar");
+      const mount = document.getElementById("spotify-bar-mount");
+      const label = document.getElementById("spotify-bar-label");
+      const closeBtn = document.getElementById("spotify-bar-close");
+
+      let apiReady = null;
+      let controller = null;
+      let creating = false;
+      let pendingUri = null;
+      let hideTimer = null;
+      let dismissed = false;
+
+      function createNow() {
+        apiReady.createController(mount, { uri: pendingUri, width: "100%", height: "80" }, (EmbedController) => {
+          controller = EmbedController;
+          controller.play();
+        });
+      }
+
+      window.onSpotifyIframeApiReady = (IFrameAPI) => {
+        apiReady = IFrameAPI;
+        if (creating) createNow();
+      };
+
+      function playPreview(uri, name) {
+        if (dismissed) return;
+        clearTimeout(hideTimer);
+        bar.classList.add("active");
+        label.textContent = name || "Preview";
+        pendingUri = uri;
+
+        if (controller) {
+          controller.loadUri(uri);
+          controller.play();
+          return;
+        }
+        if (!creating) {
+          creating = true;
+          if (apiReady) createNow();
+        }
+      }
+
+      function schedulePause() {
+        hideTimer = setTimeout(() => {
+          if (controller) controller.pause();
+        }, 150);
+      }
+
+      document.querySelectorAll("[data-spotify-uri]").forEach((el) => {
+        el.addEventListener("mouseenter", () => {
+          playPreview(el.dataset.spotifyUri, el.dataset.spotifyName);
+        });
+        el.addEventListener("mouseleave", schedulePause);
+      });
+
+      closeBtn.addEventListener("click", () => {
+        dismissed = true;
+        bar.classList.remove("active");
+        if (controller) controller.pause();
+      });
+
+      bar.addEventListener("mouseenter", () => clearTimeout(hideTimer));
+      bar.addEventListener("mouseleave", schedulePause);
+    })();
+  </script>
+
+  <script>
+    // ---------- Navbar ----------
+    const nav = document.getElementById("nav");
+
+    window.addEventListener("scroll", () => {
+      nav.classList.toggle("scrolled", window.scrollY > 40);
+    });
+
+    // ---------- Custom cursor ----------
+    const cursor = document.querySelector(".cursor");
+
+    window.addEventListener("mousemove", (event) => {
+      cursor.style.left = event.clientX + "px";
+      cursor.style.top = event.clientY + "px";
+    });
+
+    document.querySelectorAll("a").forEach(link => {
+      link.addEventListener("mouseenter", () => {
+        cursor.style.width = "32px";
+        cursor.style.height = "32px";
+      });
+
+      link.addEventListener("mouseleave", () => {
+        cursor.style.width = "14px";
+        cursor.style.height = "14px";
+      });
+    });
+
+    // ---------- Small parallax effect on the logo ----------
+    const logo = document.querySelector(".hero-logo-wrap");
+
+    window.addEventListener("mousemove", (event) => {
+      if (window.innerWidth < 800) return;
+
+      const x = (event.clientX / window.innerWidth - .5) * 8;
+      const y = (event.clientY / window.innerHeight - .5) * 8;
+
+      logo.style.transform = `translate(${x}px, ${y}px)`;
+    });
+  </script>
+</body>
+</html>
