@@ -92,7 +92,18 @@ IDs de Spotify, fotos de perfil y links completos están en el array `ARTISTS` d
 
 El sitio usa la Spotify IFrame API oficial (`open.spotify.com/embed/iframe-api/v1`) para reproducir un preview real de Spotify cuando el mouse pasa sobre: el nombre de un artista (roster o créditos de un release) o la tapa/título de un release. Aparece una barra angosta abajo de la pantalla con el reproductor de Spotify (se puede cerrar con la X). No requiere API key ni backend — es 100% client-side.
 
-## 10. Pendiente / a definir con el usuario
+## 10. Musical Services (sección nueva, antes de Releases)
+
+- **WhatsApp del sello:** +54 9 11 3328-7422 (usado para todas las cotizaciones/reservas del sitio).
+- **Servicios de precio fijo** (botón directo "Reservar por WhatsApp" con mensaje prellenado): hora de sesión de grabación ($50.000/hora), mastering ($60.000), mixtering hasta 8 stems ($50.000), instrumental de catálogo ($60.000), instrumental personalizada con 4 revisiones ($90.000), portada/coverart ($25.000), videoclip ($125.000), videolyrics ($50.000), grabación de guitarras/bajo/batería/coros ($25.000/hora). Precios en ARS.
+- **Servicios a cotizar** (formulario en la misma tarjeta → arma el mensaje de WhatsApp):
+  - *Mezcla:* pide cantidad de canales y duración de la canción. Todavía no calcula precio automático (no hay fórmula fija) — el usuario cotiza a mano al recibir el mensaje. Fórmula pendiente de definir.
+  - *Distribución + pitcheo:* pide cantidad de canciones, si ya se habían estrenado, si están migrando de otra distribuidora (y si es sí, el motivo).
+  - *Playback y Tune:* consulta directa sin formulario.
+- Datos de fondos por canción (para el futuro portal de artistas) salen de Mafuldistribution (`mafuldistribution.zil.gl`) — ver sección 6 y el archivo `ARTIST_PORTAL_ROADMAP.md`.
+- **Pendiente:** packs y membresías mensuales (el usuario los va a pasar más adelante) — van en esta misma sección, debajo de los servicios sueltos.
+
+## 11. Pendiente / a definir con el usuario
 
 - Fotos/links de Maida y YEIKO (créditos en TODO TERRENO/OKEY) para sumarlos al roster con preview.
 - Aplicación de esta identidad a merch y señalética de estudio (fase futura).

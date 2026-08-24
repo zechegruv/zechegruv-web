@@ -672,6 +672,122 @@
       margin-top: 10px;
     }
 
+    /* ---------- Musical Services ---------- */
+
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px;
+    }
+
+    .service-card {
+      border: 1px solid var(--border);
+      background: var(--brown-dark);
+      padding: 26px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      transition: .35s cubic-bezier(.16,1,.3,1);
+    }
+
+    .service-card:hover {
+      border-color: rgba(245,166,35,.55);
+      transform: translateY(-4px);
+    }
+
+    .service-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .service-name {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -.02em;
+      line-height: 1.25;
+    }
+
+    .service-price {
+      font-family: "DM Mono", monospace;
+      font-size: 12px;
+      letter-spacing: .04em;
+      color: var(--orange-soft);
+      white-space: nowrap;
+    }
+
+    .service-note {
+      color: var(--beige);
+      opacity: .65;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .service-form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 4px;
+    }
+
+    .service-field label {
+      display: block;
+      font-family: "DM Mono", monospace;
+      font-size: 9px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--beige);
+      opacity: .6;
+      margin-bottom: 6px;
+    }
+
+    .service-field input,
+    .service-field select,
+    .service-field textarea {
+      width: 100%;
+      background: var(--brown);
+      border: 1px solid var(--border);
+      color: var(--cream);
+      font-family: "Manrope", sans-serif;
+      font-size: 13px;
+      padding: 9px 10px;
+    }
+
+    .service-field textarea {
+      resize: vertical;
+      min-height: 54px;
+    }
+
+    .service-field input:focus,
+    .service-field select:focus,
+    .service-field textarea:focus {
+      outline: none;
+      border-color: var(--orange-soft);
+    }
+
+    .service-btn {
+      align-self: flex-start;
+      margin-top: auto;
+      border: 1px solid rgba(240,224,192,.3);
+      background: none;
+      padding: 12px 16px;
+      font-family: "DM Mono", monospace;
+      font-size: 9px;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+      color: var(--cream);
+      cursor: pointer;
+      transition: .3s ease;
+    }
+
+    .service-btn:hover {
+      background: var(--orange);
+      border-color: var(--orange);
+      color: var(--brown-dark);
+      transform: translateY(-3px);
+    }
+
     /* ---------- Spotify preview bar ---------- */
 
     .spotify-bar {
@@ -798,6 +914,10 @@
         gap: 18px 12px;
       }
 
+      .services-grid {
+        grid-template-columns: 1fr;
+      }
+
       .label-grid {
         grid-template-columns: 1fr;
         gap: 40px;
@@ -809,7 +929,7 @@
     }
 
     @media (max-width: 480px) {
-      .nav-links a:nth-child(3) {
+      .nav-links a:nth-child(4) {
         display: none;
       }
 
@@ -833,6 +953,7 @@
     <a class="nav-mark" href="#">ZECHE GRUV®</a>
 
     <div class="nav-links">
+      <a href="#services">Services</a>
       <a href="#releases">Releases</a>
       <a href="#artists">Artists</a>
       <a href="#label">The Label</a>
@@ -879,9 +1000,17 @@
     </div>
   </div>
 
+  <!-- ================= MUSICAL SERVICES ================= -->
+  <section id="services">
+    <div class="section-label">01 / Musical Services</div>
+    <h2 class="section-title">Studio<br>services.</h2>
+
+    <div class="services-grid" id="services-grid"></div>
+  </section>
+
   <!-- ================= LATEST RELEASE ================= -->
   <section id="releases">
-    <div class="section-label">01 / Latest Release</div>
+    <div class="section-label">02 / Latest Release</div>
     <h2 class="section-title">The newest<br>sound.</h2>
 
     <div class="release">
@@ -914,7 +1043,7 @@
 
   <!-- ================= CATALOGUE ================= -->
   <section>
-    <div class="section-label">02 / Catalogue</div>
+    <div class="section-label">03 / Catalogue</div>
     <h2 class="section-title">Selected<br>releases.</h2>
 
     <div class="catalogue">
@@ -949,7 +1078,7 @@
 
   <!-- ================= ARTISTS ================= -->
   <section id="artists">
-    <div class="section-label">03 / Artists</div>
+    <div class="section-label">04 / Artists</div>
     <h2 class="section-title">The<br>roster.</h2>
 
     <div class="artists-grid" id="artists-grid"></div>
@@ -957,7 +1086,7 @@
 
   <!-- ================= THE LABEL ================= -->
   <section id="label" class="label-section">
-    <div class="section-label">04 / The Label</div>
+    <div class="section-label">05 / The Label</div>
 
     <div class="label-grid">
       <p class="label-text">
@@ -981,7 +1110,7 @@
 
   <!-- ================= CONTACT ================= -->
   <section id="contact" class="contact">
-    <div class="section-label">05 / Demos & Collaborations</div>
+    <div class="section-label">06 / Demos & Collaborations</div>
 
     <h2 class="contact-title">
       MAKE
@@ -1068,6 +1197,136 @@
         <div class="artist-name">${a.name}</div>
       </a>
     `).join("");
+
+    // ---------- Musical Services ----------
+    const WHATSAPP_NUMBER = "5491133287422"; // ZECHE GRUV — +54 9 11 3328-7422
+
+    function waLink(message) {
+      return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+    }
+
+    // Servicios de precio fijo. Editá este array para agregar/sacar/ajustar precios.
+    const SERVICES = [
+      { name: "Hora de sesión de grabación", price: "$50.000 ARS / hora" },
+      { name: "Mastering", price: "$60.000 ARS" },
+      { name: "Mixtering (mezcla por stems, hasta 8 stems)", price: "$50.000 ARS" },
+      { name: "Instrumental de catálogo", price: "$60.000 ARS" },
+      { name: "Instrumental personalizada (4 revisiones)", price: "$90.000 ARS" },
+      { name: "Portada / Coverart", price: "$25.000 ARS" },
+      { name: "Videoclip (grabación y edición)", price: "$125.000 ARS" },
+      { name: "VideoLyrics", price: "$50.000 ARS" },
+      { name: "Grabación de guitarras / bajo / batería / coros", price: "$25.000 ARS / hora" },
+    ];
+
+    const servicesGrid = document.getElementById("services-grid");
+
+    const fixedCards = SERVICES.map(s => `
+      <div class="service-card">
+        <div class="service-top">
+          <div class="service-name">${s.name}</div>
+        </div>
+        <div class="service-price">${s.price}</div>
+        <a class="service-btn" href="${waLink(`Hola! Quiero reservar: ${s.name} (${s.price}).`)}" target="_blank" rel="noopener">Reservar por WhatsApp ↗</a>
+      </div>
+    `).join("");
+
+    const mezclaCard = `
+      <div class="service-card">
+        <div class="service-top">
+          <div class="service-name">Mezcla</div>
+        </div>
+        <div class="service-price">Consultar presupuesto</div>
+        <div class="service-note">El precio depende de la cantidad de canales y la duración de la canción.</div>
+        <div class="service-form">
+          <div class="service-field">
+            <label for="mezcla-canales">Cantidad de canales</label>
+            <input type="number" id="mezcla-canales" min="1" placeholder="Ej: 24">
+          </div>
+          <div class="service-field">
+            <label for="mezcla-duracion">Duración de la canción (min:seg)</label>
+            <input type="text" id="mezcla-duracion" placeholder="Ej: 3:30">
+          </div>
+        </div>
+        <button class="service-btn" type="button" id="mezcla-btn">Cotizar por WhatsApp ↗</button>
+      </div>
+    `;
+
+    const distribucionCard = `
+      <div class="service-card">
+        <div class="service-top">
+          <div class="service-name">Distribución a todas las plataformas + pitcheo</div>
+        </div>
+        <div class="service-price">Consultar presupuesto</div>
+        <div class="service-form">
+          <div class="service-field">
+            <label for="distro-canciones">Cantidad de canciones a distribuir</label>
+            <input type="number" id="distro-canciones" min="1" placeholder="Ej: 5">
+          </div>
+          <div class="service-field">
+            <label for="distro-estrenadas">¿Ya se habían estrenado antes?</label>
+            <select id="distro-estrenadas">
+              <option value="">Elegir...</option>
+              <option value="Sí">Sí</option>
+              <option value="No">No</option>
+            </select>
+          </div>
+          <div class="service-field">
+            <label for="distro-migrando">¿Estás migrando de otra distribuidora?</label>
+            <select id="distro-migrando">
+              <option value="">Elegir...</option>
+              <option value="Sí">Sí</option>
+              <option value="No">No</option>
+            </select>
+          </div>
+          <div class="service-field" id="distro-motivo-wrap" style="display:none;">
+            <label for="distro-motivo">¿Por qué buscás cambiar de distribuidora?</label>
+            <textarea id="distro-motivo" placeholder="Contanos brevemente..."></textarea>
+          </div>
+        </div>
+        <button class="service-btn" type="button" id="distro-btn">Cotizar por WhatsApp ↗</button>
+      </div>
+    `;
+
+    const playbackCard = `
+      <div class="service-card">
+        <div class="service-top">
+          <div class="service-name">Playback y Tune</div>
+        </div>
+        <div class="service-price">Consultar presupuesto</div>
+        <a class="service-btn" href="${waLink('Hola! Quiero consultar sobre Playback y Tune.')}" target="_blank" rel="noopener">Consultar por WhatsApp ↗</a>
+      </div>
+    `;
+
+    servicesGrid.innerHTML = fixedCards + mezclaCard + distribucionCard + playbackCard;
+
+    // Mezcla — arma el mensaje con los datos cargados
+    document.getElementById("mezcla-btn").addEventListener("click", () => {
+      const canales = document.getElementById("mezcla-canales").value || "sin especificar";
+      const duracion = document.getElementById("mezcla-duracion").value || "sin especificar";
+      const msg = `Hola! Quiero cotizar una Mezcla.\nCantidad de canales: ${canales}\nDuración de la canción: ${duracion}`;
+      window.open(waLink(msg), "_blank", "noopener");
+    });
+
+    // Distribución — muestra el motivo solo si está migrando, y arma el mensaje
+    const distroMigrando = document.getElementById("distro-migrando");
+    const distroMotivoWrap = document.getElementById("distro-motivo-wrap");
+
+    distroMigrando.addEventListener("change", () => {
+      distroMotivoWrap.style.display = distroMigrando.value === "Sí" ? "block" : "none";
+    });
+
+    document.getElementById("distro-btn").addEventListener("click", () => {
+      const canciones = document.getElementById("distro-canciones").value || "sin especificar";
+      const estrenadas = document.getElementById("distro-estrenadas").value || "sin especificar";
+      const migrando = distroMigrando.value || "sin especificar";
+      const motivo = document.getElementById("distro-motivo").value;
+
+      let msg = `Hola! Quiero cotizar Distribución + pitcheo.\nCantidad de canciones: ${canciones}\n¿Ya se habían estrenado?: ${estrenadas}\n¿Migrando de otra distribuidora?: ${migrando}`;
+      if (migrando === "Sí" && motivo) {
+        msg += `\nMotivo del cambio: ${motivo}`;
+      }
+      window.open(waLink(msg), "_blank", "noopener");
+    });
 
     // ---------- Spotify hover preview ----------
     (function () {
