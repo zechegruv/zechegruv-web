@@ -314,12 +314,12 @@
 
     @keyframes zg-warm-pulse {
       0%, 100% {
-        text-shadow: 0 0 .18em rgba(255, 200, 110, .35), 0 0 .5em rgba(240, 120, 0, 0);
+        text-shadow: 0 0 .12em rgba(255, 200, 110, .22), 0 0 .3em rgba(240, 120, 0, 0);
         color: var(--orange-soft);
       }
       50% {
-        text-shadow: 0 0 .32em rgba(255, 210, 130, .85), 0 0 1.1em rgba(240, 120, 0, .55);
-        color: var(--cream);
+        text-shadow: 0 0 .18em rgba(255, 200, 110, .4), 0 0 .55em rgba(240, 120, 0, .22);
+        color: var(--orange-soft);
       }
     }
 
@@ -1001,8 +1001,9 @@
       }
 
       .hero-logo-wrap {
-        width: 112vw;
-        margin-left: -11vw;
+        width: min(420px, 78vw);
+        margin-left: auto;
+        margin-right: auto;
         margin-top: 30px;
         margin-bottom: 20px;
       }
