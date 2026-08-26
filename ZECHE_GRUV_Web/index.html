@@ -10,6 +10,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
+  <!-- Precarga de la tipografía del logo: evita el salto/demora visible
+       al pasar de la fuente de reserva a "TAN Nimbus" (FOUT). -->
+  <link rel="preload" href="assets/fonts/TANNIMBUS.otf" as="font" type="font/otf" crossorigin>
+
   <style>
     /* =========================================================
        ZECHE GRUV — PALETA
@@ -76,15 +80,18 @@
 
     .cursor {
       position: fixed;
+      top: 0;
+      left: 0;
       width: 14px;
       height: 14px;
       border-radius: 50%;
       background: var(--orange-soft);
       pointer-events: none;
       z-index: 200;
-      transform: translate(-50%, -50%);
+      transform: translate3d(-50%, -50%, 0);
       mix-blend-mode: screen;
       transition: width .2s ease, height .2s ease;
+      will-change: transform;
     }
 
     @media (max-width: 800px) {
@@ -277,7 +284,7 @@
     /* ---------- wordmark ---------- */
     .zg-text {
       position: absolute;
-      top: 8.7em;
+      top: 9.9em;
       left: 0;
       right: 0;
       display: flex;
@@ -285,8 +292,21 @@
       align-items: center;
       line-height: .82;
       text-align: center;
-      filter: url(#zg-liquid);
-      will-change: filter;
+    }
+
+    /* Sombreado difuminado suave detrás del texto: lo separa del sol y
+       le da contraste para que resalte, sin ningún tipo de movimiento. */
+    .zg-text::before {
+      content: "";
+      position: absolute;
+      inset: -.5em -1.3em;
+      background: radial-gradient(ellipse 60% 55% at 50% 40%,
+        rgba(18, 9, 4, .62) 0%,
+        rgba(18, 9, 4, .38) 45%,
+        rgba(18, 9, 4, 0) 78%);
+      filter: blur(.55em);
+      z-index: -1;
+      pointer-events: none;
     }
 
     .zg-text span {
@@ -294,7 +314,9 @@
       font-size: 4.35em;
       color: var(--orange-soft);
       letter-spacing: .01em;
+      display: block;
       animation: zg-warm-pulse 12s ease-in-out infinite;
+      filter: drop-shadow(0 .06em .16em rgba(0, 0, 0, .55));
     }
     .zg-text span + span { margin-top: .04em; }
 
@@ -314,11 +336,11 @@
 
     @keyframes zg-warm-pulse {
       0%, 100% {
-        text-shadow: 0 0 .12em rgba(255, 200, 110, .22), 0 0 .3em rgba(240, 120, 0, 0);
+        text-shadow: 0 0 .12em rgba(255, 200, 110, .3), 0 0 .3em rgba(240, 120, 0, 0);
         color: var(--orange-soft);
       }
       50% {
-        text-shadow: 0 0 .18em rgba(255, 200, 110, .4), 0 0 .55em rgba(240, 120, 0, .22);
+        text-shadow: 0 0 .2em rgba(255, 200, 110, .5), 0 0 .6em rgba(240, 120, 0, .28);
         color: var(--orange-soft);
       }
     }
@@ -335,8 +357,6 @@
       .zg-sun-rotor { animation-duration: 120s; }
       .zg-sun-glow, .zg-text span { animation: none; }
     }
-
-    .zg-filter-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 
     .hero-bottom {
       display: flex;
@@ -1100,16 +1120,6 @@
            al final del body. -->
       <div class="zeche-gruv-logo-wrapper" id="zgLogo">
 
-        <!-- SVG oculto: solo define el filtro de distorsión líquida -->
-        <svg class="zg-filter-defs" aria-hidden="true" focusable="false">
-          <filter id="zg-liquid" x="-30%" y="-30%" width="160%" height="160%">
-            <feTurbulence id="zgTurbulence" type="fractalNoise"
-              baseFrequency="0.010 0.018" numOctaves="2" seed="7" result="zg-noise" />
-            <feDisplacementMap id="zgDisplace" in="SourceGraphic" in2="zg-noise"
-              scale="7" xChannelSelector="R" yChannelSelector="G" />
-          </filter>
-        </svg>
-
         <div class="zg-sun">
           <div class="zg-sun-glow"></div>
           <div class="zg-sun-rotor">
@@ -1164,7 +1174,7 @@
     <div class="release">
       <a class="cover has-image" href="https://open.spotify.com/album/7bc1Ig8bncv4p3vZjjZqjE" target="_blank" rel="noopener"
          data-spotify-uri="spotify:album:7bc1Ig8bncv4p3vZjjZqjE" data-spotify-name="OKEY">
-        <img src="assets/covers/okey.jpg" alt="OKEY — cover art">
+        <img src="assets/covers/okey.webp" alt="OKEY — cover art" width="1400" height="1400" loading="lazy" decoding="async">
         <div class="cover-code">ZG — OKEY</div>
       </a>
 
@@ -1197,7 +1207,7 @@
     <div class="catalogue">
       <a href="https://open.spotify.com/album/6eU3XioAFeGQsepCbhuDwN" target="_blank" rel="noopener" class="release-card"
          data-spotify-uri="spotify:album:6eU3XioAFeGQsepCbhuDwN" data-spotify-name="TODO TERRENO">
-        <div class="release-art"><img src="assets/covers/todo-terreno.png" alt="TODO TERRENO — cover art"></div>
+        <div class="release-art"><img src="assets/covers/todo-terreno.webp" alt="TODO TERRENO — cover art" width="1400" height="1400" loading="lazy" decoding="async"></div>
         <div class="card-info">
           <div class="card-name">TODO TERRENO</div>
           <div class="card-meta">Rouse bby · Maida · YEIKO · ZECHE GRUV</div>
@@ -1206,7 +1216,7 @@
 
       <a href="https://open.spotify.com/album/6YmySpzsNXMuxekqcmdlGJ" target="_blank" rel="noopener" class="release-card"
          data-spotify-uri="spotify:album:6YmySpzsNXMuxekqcmdlGJ" data-spotify-name="TACÚ">
-        <div class="release-art"><img src="assets/covers/tacu.png" alt="TACÚ — cover art"></div>
+        <div class="release-art"><img src="assets/covers/tacu.webp" alt="TACÚ — cover art" width="1246" height="1232" loading="lazy" decoding="async"></div>
         <div class="card-info">
           <div class="card-name">TACÚ</div>
           <div class="card-meta">ZG COMP · 15 Artists</div>
@@ -1215,7 +1225,7 @@
 
       <a href="https://open.spotify.com/track/2xAFzhjYAyvYHiBfkz80HY" target="_blank" rel="noopener" class="release-card"
          data-spotify-uri="spotify:track:2xAFzhjYAyvYHiBfkz80HY" data-spotify-name="YANINA">
-        <div class="release-art"><img src="assets/covers/yanina.jpg" alt="YANINA — cover art"></div>
+        <div class="release-art"><img src="assets/covers/yanina.jpg" alt="YANINA — cover art" width="300" height="300" loading="lazy" decoding="async"></div>
         <div class="card-info">
           <div class="card-name">YANINA</div>
           <div class="card-meta">Axia Bebe · ZECHE GRUV</div>
@@ -1550,15 +1560,41 @@
 
     window.addEventListener("scroll", () => {
       nav.classList.toggle("scrolled", window.scrollY > 40);
-    });
+    }, { passive: true });
 
-    // ---------- Custom cursor ----------
+    // ---------- Custom cursor + logo parallax ----------
+    // Un solo listener de mousemove que guarda la posición y actualiza todo
+    // (cursor + parallax del logo) una sola vez por frame con rAF, en vez de
+    // escribir estilos en cada evento crudo del mouse (que puede dispararse
+    // muchas más veces por segundo de las que la pantalla puede pintar).
+    // Además solo se toca `transform`, que el navegador puede animar en el
+    // compositor sin recalcular layout — esto es lo que sacaba el lag del
+    // scroll y las animaciones al mover el mouse.
     const cursor = document.querySelector(".cursor");
+    const logo = document.querySelector(".hero-logo-wrap");
+
+    let zgMouseX = window.innerWidth / 2;
+    let zgMouseY = window.innerHeight / 2;
+    let zgPointerRaf = null;
+
+    function zgApplyPointerEffects() {
+      zgPointerRaf = null;
+      cursor.style.transform = `translate3d(${zgMouseX}px, ${zgMouseY}px, 0) translate(-50%, -50%)`;
+
+      if (window.innerWidth >= 800) {
+        const x = (zgMouseX / window.innerWidth - .5) * 8;
+        const y = (zgMouseY / window.innerHeight - .5) * 8;
+        logo.style.transform = `translate(${x}px, ${y}px)`;
+      }
+    }
 
     window.addEventListener("mousemove", (event) => {
-      cursor.style.left = event.clientX + "px";
-      cursor.style.top = event.clientY + "px";
-    });
+      zgMouseX = event.clientX;
+      zgMouseY = event.clientY;
+      if (zgPointerRaf === null) {
+        zgPointerRaf = requestAnimationFrame(zgApplyPointerEffects);
+      }
+    }, { passive: true });
 
     document.querySelectorAll("a").forEach(link => {
       link.addEventListener("mouseenter", () => {
@@ -1572,44 +1608,15 @@
       });
     });
 
-    // ---------- Small parallax effect on the logo ----------
-    const logo = document.querySelector(".hero-logo-wrap");
-
-    window.addEventListener("mousemove", (event) => {
-      if (window.innerWidth < 800) return;
-
-      const x = (event.clientX / window.innerWidth - .5) * 8;
-      const y = (event.clientY / window.innerHeight - .5) * 8;
-
-      logo.style.transform = `translate(${x}px, ${y}px)`;
-    });
-
-    // ---------- Logo: distorsión líquida del texto (filtro SVG) ----------
-    // Mueve baseFrequency/scale del filtro #zg-liquid cuadro a cuadro con
-    // funciones seno/coseno para lograr un warp orgánico y continuo.
-    // Se usa requestAnimationFrame en vez de <animate> (SMIL) porque es
-    // más confiable entre navegadores y permite pausar con una sola bandera.
+    // ---------- Logo: controles de pausa / velocidad ----------
+    // El texto ya no lleva distorsión animada (se sacó porque generaba un
+    // "salto" de píxeles poco prolijo). Se deja solo la pausa global y el
+    // control de velocidad del sol, por si se quieren usar en otro lado.
     (function () {
       const zgWrapper = document.getElementById("zgLogo");
-      const zgTurbulence = document.getElementById("zgTurbulence");
-      const zgDisplace = document.getElementById("zgDisplace");
-      if (!zgWrapper || !zgTurbulence || !zgDisplace) return;
+      if (!zgWrapper) return;
 
-      const zgReduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       let zgPaused = false;
-
-      function zgTick(ts) {
-        if (!zgPaused && !zgReduceMotion) {
-          const t = ts * 0.001;
-          const fx = (0.010 + Math.sin(t * 0.5) * 0.004).toFixed(4);
-          const fy = (0.018 + Math.cos(t * 0.37) * 0.006).toFixed(4);
-          zgTurbulence.setAttribute("baseFrequency", fx + " " + fy);
-          const scale = (6.5 + Math.sin(t * 0.5) * 3.5).toFixed(2);
-          zgDisplace.setAttribute("scale", scale);
-        }
-        requestAnimationFrame(zgTick);
-      }
-      requestAnimationFrame(zgTick);
 
       // Ejemplo: llamar window.zgSetPaused(true) desde cualquier lado del
       // sitio (ej. un botón de "reducir movimiento") para pausar el logo.
