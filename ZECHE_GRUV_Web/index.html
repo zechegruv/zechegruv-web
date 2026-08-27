@@ -1507,6 +1507,8 @@
       background:
         radial-gradient(circle at 65% 30%, rgba(245,166,35,.45), transparent 55%),
         var(--brown);
+      object-fit: cover;
+      display: block;
     }
 
     .label-director-name {
@@ -1775,9 +1777,9 @@
       </p>
     </div>
 
-    <!-- Foto del director: placeholder hasta tener la foto real. -->
+    <!-- Foto del director -->
     <div class="label-director">
-      <div class="label-director-photo" aria-hidden="true"></div>
+      <img class="label-director-photo" src="assets/team/yaco-santana.webp" alt="Yaco Santana" width="140" height="140" loading="lazy" decoding="async">
       <div>
         <div class="label-director-name">Yaco Santana</div>
         <div class="label-director-role" data-i18n="label_director_role">Founder &amp; Director</div>
