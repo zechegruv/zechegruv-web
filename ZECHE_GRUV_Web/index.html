@@ -198,7 +198,15 @@
 
     .hero-logo-wrap {
       position: relative;
-      width: min(760px, 90vw);
+      /* El tercer término evita que el logo (que es 1:1, así que su alto
+         siempre es igual a su ancho) empuje al .hero más allá de la altura
+         de pantalla disponible. Sin esto, en laptops con poca altura de
+         viewport (ej. MacBook con la barra del navegador ocupando espacio)
+         el logo terminaba más alto que el espacio libre y el texto "GRUV"
+         quedaba fuera de la vista sin scrollear. 320px ≈ padding vertical
+         del .hero + alto de .hero-top + alto de .hero-bottom. max(280px, …)
+         evita que se achique de más en viewports muy bajos. */
+      width: min(760px, 90vw, max(280px, calc(100svh - 320px)));
       aspect-ratio: 1 / 1;
       margin: auto;
       /* permite que el tamaño del logo escale con este contenedor via cqw */
@@ -1070,7 +1078,8 @@
     }
 
     @media (max-width: 480px) {
-      .nav-links a:nth-child(4) {
+      .nav-links a:nth-child(4),
+      .nav-links a:nth-child(5) {
         display: none;
       }
 
@@ -1080,6 +1089,478 @@
 
       .release-card:last-child {
         display: block;
+      }
+    }
+  </style>
+
+  <style>
+    /* =========================================================
+       Ampliación: selector de idioma, packages, testimonios,
+       reestructuración de "The Label". Ver comentarios inline.
+       ========================================================= */
+
+    /* ---------- Language selector ---------- */
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+    }
+
+    .lang-select {
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      background-color: transparent;
+      border: 1px solid var(--border);
+      color: var(--beige);
+      font-family: "DM Mono", monospace;
+      font-size: 9px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      padding: 6px 22px 6px 10px;
+      cursor: pointer;
+      transition: .25s ease;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23F0E0C0' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 8px center;
+      background-size: 9px 6px;
+    }
+
+    .lang-select:hover,
+    .lang-select:focus {
+      border-color: rgba(245,166,35,.55);
+      outline: none;
+    }
+
+    .lang-select option {
+      background: var(--brown-dark);
+      color: var(--cream);
+    }
+
+    @media (max-width: 480px) {
+      .lang-select {
+        font-size: 8px;
+        padding: 5px 18px 5px 8px;
+      }
+    }
+
+    /* ---------- Packages (arriba de Servicios) ---------- */
+
+    .services-alacarte-title {
+      font-family: "DM Mono", monospace;
+      font-size: 11px;
+      letter-spacing: .1em;
+      color: var(--muted);
+      margin-bottom: 18px;
+    }
+
+    .service-desc {
+      color: var(--beige);
+      opacity: .65;
+      font-size: 12.5px;
+      line-height: 1.6;
+    }
+
+    .packages-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 18px;
+      margin-bottom: 22px;
+    }
+
+    .package-card {
+      border: 1px solid var(--border);
+      background: var(--brown-dark);
+      padding: 30px 26px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .package-custom {
+      border-color: rgba(245,166,35,.35);
+    }
+
+    .package-name {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -.02em;
+    }
+
+    .package-price {
+      font-family: "DM Mono", monospace;
+      font-size: 26px;
+      letter-spacing: -.01em;
+      color: var(--orange-soft);
+      min-height: 1.3em;
+      display: flex;
+      align-items: center;
+    }
+
+    .package-price span {
+      font-size: 12px;
+      opacity: .6;
+      letter-spacing: .08em;
+    }
+
+    .package-price-placeholder {
+      font-family: "Manrope", sans-serif;
+      font-size: 13px;
+      letter-spacing: 0;
+      color: var(--beige);
+      opacity: .55;
+    }
+
+    .package-save {
+      font-family: "DM Mono", monospace;
+      font-size: 10px;
+      letter-spacing: .06em;
+      color: var(--orange-soft);
+      opacity: .85;
+      min-height: 1em;
+    }
+
+    .package-desc {
+      color: var(--beige);
+      opacity: .72;
+      font-size: 13px;
+      line-height: 1.65;
+    }
+
+    .package-cta {
+      margin-top: auto;
+      text-align: center;
+    }
+
+    .package-toggle {
+      display: flex;
+      border: 1px solid var(--border);
+      width: fit-content;
+    }
+
+    .package-toggle-btn {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      border: none;
+      background: none;
+      color: var(--beige);
+      opacity: .65;
+      font-family: "DM Mono", monospace;
+      font-size: 10px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      padding: 8px 16px;
+      cursor: pointer;
+      transition: .25s ease;
+    }
+
+    .package-toggle-btn + .package-toggle-btn {
+      border-left: 1px solid var(--border);
+    }
+
+    .package-toggle-save {
+      font-family: "DM Mono", monospace;
+      font-size: 8.5px;
+      font-weight: 600;
+      letter-spacing: .04em;
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: var(--orange);
+      color: var(--brown-dark);
+      opacity: 1;
+      white-space: nowrap;
+    }
+
+    .package-toggle-btn.is-active {
+      background: var(--orange-soft);
+      color: var(--brown-dark);
+      opacity: 1;
+    }
+
+    .package-toggle-btn.is-active .package-toggle-save {
+      background: var(--brown-dark);
+      color: var(--orange-soft);
+    }
+
+    .package-custom-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 2px;
+      margin: 2px 0;
+      max-height: 260px;
+      overflow-y: auto;
+    }
+
+    .package-custom-list[hidden] {
+      display: none;
+    }
+
+    .package-check-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 12.5px;
+      color: var(--beige);
+      cursor: pointer;
+    }
+
+    .package-check-row input {
+      accent-color: var(--orange-soft);
+      width: 15px;
+      height: 15px;
+      flex-shrink: 0;
+    }
+
+    .package-check-row .pc-price {
+      margin-left: auto;
+      font-family: "DM Mono", monospace;
+      font-size: 10px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .package-check-row:has(input:disabled) {
+      opacity: .4;
+      cursor: not-allowed;
+    }
+
+    .package-check-row input:disabled {
+      cursor: not-allowed;
+    }
+
+    /* Sobreescribe ".service-field label" (uppercase, DM Mono 9px) cuando el
+       checkbox de pitching vive dentro de un .service-field — necesita
+       mayor especificidad para que gane sobre esa regla más genérica. */
+    .service-field .package-check-row {
+      display: flex;
+      font-family: inherit;
+      font-size: 12.5px;
+      letter-spacing: normal;
+      text-transform: none;
+      color: var(--beige);
+      margin-bottom: 0;
+    }
+
+    .package-hint {
+      font-size: 11px;
+      color: var(--orange-soft);
+      opacity: 0;
+      height: 0;
+      overflow: hidden;
+      transition: opacity .2s ease;
+    }
+
+    .package-hint.is-visible {
+      opacity: 1;
+      height: auto;
+    }
+
+    /* ---------- Includes block ---------- */
+
+    .includes-block {
+      border: 1px solid var(--border);
+      padding: 26px 28px;
+      margin-bottom: 60px;
+    }
+
+    .includes-title {
+      font-family: "DM Mono", monospace;
+      font-size: 10px;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--orange-soft);
+      margin-bottom: 14px;
+    }
+
+    .includes-list {
+      list-style: none;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 10px 24px;
+    }
+
+    .includes-list li {
+      position: relative;
+      padding-left: 18px;
+      color: var(--beige);
+      opacity: .8;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .includes-list li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: .55em;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--orange-soft);
+    }
+
+    /* ---------- Testimonials ---------- */
+
+    .section-intro {
+      color: var(--beige);
+      opacity: .7;
+      font-size: 14px;
+      line-height: 1.7;
+      max-width: 620px;
+      margin-bottom: 50px;
+    }
+
+    .testimonials-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 18px;
+    }
+
+    .testimonial-card {
+      border: 1px solid var(--border);
+      background: var(--brown-dark);
+      padding: 30px 26px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .testimonial-quote-mark {
+      font-family: 'TAN Nimbus', Georgia, serif;
+      font-size: 40px;
+      color: rgba(245,166,35,.4);
+      line-height: 1;
+    }
+
+    .testimonial-skeleton-line {
+      height: 10px;
+      border-radius: 2px;
+      background: linear-gradient(90deg, rgba(240,224,192,.16), rgba(240,224,192,.05));
+      width: 100%;
+      animation: zg-skeleton-pulse 1.8s ease-in-out infinite;
+    }
+
+    .testimonial-skeleton-line.short {
+      width: 62%;
+    }
+
+    .testimonial-skeleton-footer {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 6px;
+    }
+
+    .testimonial-skeleton-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: rgba(240,224,192,.12);
+      flex-shrink: 0;
+      animation: zg-skeleton-pulse 1.8s ease-in-out infinite;
+    }
+
+    .testimonial-skeleton-name {
+      height: 9px;
+      width: 90px;
+      border-radius: 2px;
+      background: rgba(240,224,192,.14);
+      animation: zg-skeleton-pulse 1.8s ease-in-out infinite;
+    }
+
+    @keyframes zg-skeleton-pulse {
+      0%, 100% { opacity: .55; }
+      50%      { opacity: 1; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .testimonial-skeleton-line,
+      .testimonial-skeleton-avatar,
+      .testimonial-skeleton-name {
+        animation: none;
+        opacity: .75;
+      }
+    }
+
+    /* ---------- Label: director + studio ---------- */
+
+    .label-director {
+      display: flex;
+      gap: 30px;
+      align-items: center;
+      margin-top: 70px;
+      padding-top: 50px;
+      border-top: 1px solid var(--border);
+    }
+
+    .label-director-photo {
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      border: 1px solid var(--border);
+      background:
+        radial-gradient(circle at 65% 30%, rgba(245,166,35,.45), transparent 55%),
+        var(--brown);
+    }
+
+    .label-director-name {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .label-director-role {
+      font-family: "DM Mono", monospace;
+      font-size: 10px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--orange-soft);
+      margin: 6px 0 12px;
+    }
+
+    .label-director-bio {
+      color: var(--beige);
+      opacity: .75;
+      font-size: 13px;
+      line-height: 1.75;
+      max-width: 520px;
+    }
+
+    .label-studio {
+      margin-top: 60px;
+    }
+
+    .label-studio-title {
+      font-family: "DM Mono", monospace;
+      font-size: 10px;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+
+    .studio-gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+    }
+
+    .studio-photo-placeholder {
+      aspect-ratio: 4 / 3;
+      border: 1px dashed var(--border);
+      background: var(--brown);
+    }
+
+    @media (max-width: 800px) {
+      .label-director {
+        flex-direction: column;
+        align-items: flex-start;
+        text-align: left;
       }
     }
   </style>
@@ -1093,19 +1574,32 @@
   <nav id="nav">
     <a class="nav-mark" href="#">ZECHE GRUV®</a>
 
-    <div class="nav-links">
-      <a href="#services">Services</a>
-      <a href="#releases">Releases</a>
-      <a href="#artists">Artists</a>
-      <a href="#label">The Label</a>
-      <a href="#contact">Contact</a>
+    <div class="nav-right">
+      <div class="nav-links">
+        <a href="#services" data-i18n="nav_services">Services</a>
+        <a href="#testimonials" data-i18n="nav_testimonials">Testimonials</a>
+        <a href="#label" data-i18n="nav_label">The Label</a>
+        <a href="#artists" data-i18n="nav_artists">Artists</a>
+        <a href="#releases" data-i18n="nav_releases">Releases</a>
+        <a href="#contact" data-i18n="nav_contact">Contact</a>
+      </div>
+
+      <select class="lang-select" id="langSelect" aria-label="Language / Idioma">
+        <option value="es">ES</option>
+        <option value="en">EN</option>
+        <option value="pt">PT</option>
+        <option value="fr">FR</option>
+        <option value="it">IT</option>
+        <option value="de">DE</option>
+        <option value="ru">RU</option>
+      </select>
     </div>
   </nav>
 
   <!-- ================= HERO ================= -->
   <header class="hero">
     <div class="hero-top">
-      <div class="eyebrow">Independent Record Label</div>
+      <div class="eyebrow" data-i18n="hero_eyebrow">Independent Record Label</div>
 
       <div class="hero-location">
         BUENOS AIRES<br>
@@ -1136,13 +1630,13 @@
     </div>
 
     <div class="hero-bottom">
-      <p class="hero-description">
+      <p class="hero-description" data-i18n-html="hero_desc_html">
         Independent record label &amp; production house — composition,
         recording, mixing, mastering, distribution and cover art,
         led by <a href="https://open.spotify.com/intl-es/artist/0yIGrWjWqKnM7qJ0uyImij" target="_blank" rel="noopener">Yaco Santana</a>.
       </p>
 
-      <div class="scroll">↓ Scroll to explore</div>
+      <div class="scroll">↓ <span data-i18n="hero_scroll">Scroll to explore</span></div>
     </div>
   </header>
 
@@ -1150,26 +1644,176 @@
   <div class="marquee">
     <div class="marquee-track">
       <span>ZECHE GRUV</span><span>✦</span>
-      <span>INDEPENDENT RECORD LABEL</span><span>✦</span>
+      <span data-i18n="marquee_tagline">INDEPENDENT RECORD LABEL</span><span>✦</span>
       <span>BUENOS AIRES</span><span>✦</span>
       <span>ZECHE GRUV</span><span>✦</span>
-      <span>INDEPENDENT RECORD LABEL</span><span>✦</span>
+      <span data-i18n="marquee_tagline">INDEPENDENT RECORD LABEL</span><span>✦</span>
       <span>BUENOS AIRES</span><span>✦</span>
     </div>
   </div>
 
   <!-- ================= MUSICAL SERVICES ================= -->
   <section id="services">
-    <div class="section-label">01 / Musical Services</div>
-    <h2 class="section-title">Studio<br>services.</h2>
+    <div class="section-label">01 / <span data-i18n="sl_services">Musical Services</span></div>
+    <h2 class="section-title" data-i18n-html="st_services_html">Studio<br>services.</h2>
 
+    <!-- ---- Packages ---- -->
+    <div class="packages-grid">
+      <div class="package-card package-custom">
+        <div class="package-name" data-i18n="pkg_custom_name">Armá tu propio paquete</div>
+        <p class="package-desc" data-i18n="pkg_custom_desc">¿Ya sabés qué necesitás? Elegí los servicios que quieras combinar de la lista y te armamos una cotización a medida, directo por WhatsApp.</p>
+        <button class="service-btn" type="button" id="custom-toggle-btn" data-i18n="pkg_custom_toggle_btn">Elegir servicios</button>
+        <div class="package-custom-list" id="custom-service-list" hidden></div>
+        <div class="package-hint" id="custom-hint" data-i18n="pkg_custom_empty_hint">Elegí al menos un servicio para cotizar.</div>
+        <button class="service-btn package-cta" type="button" id="custom-quote-btn" data-i18n="pkg_custom_cta">Cotizar por WhatsApp ↗</button>
+      </div>
+
+      <div class="package-card">
+        <div class="package-name" data-i18n="pkg_single_name">Single</div>
+        <div class="package-price">$400.000 <span data-i18n="pkg_currency">ARS</span></div>
+        <p class="package-desc" data-i18n="pkg_single_desc">Tu canción de punta a punta: grabación, mezcla, mastering y distribución en un solo paquete, con todo lo que necesitás para lanzarla de forma profesional.</p>
+        <button class="service-btn package-cta" type="button" id="single-quote-btn" data-i18n="pkg_cta_reserve">Reservar por WhatsApp ↗</button>
+      </div>
+
+      <div class="package-card">
+        <div class="package-name" data-i18n="pkg_epalbum_name">EP / Álbum</div>
+        <div class="package-toggle" role="group">
+          <button type="button" class="package-toggle-btn" id="ep-btn" data-format="ep">
+            <span data-i18n="pkg_ep_label">EP</span><span class="package-toggle-save">35% OFF</span>
+          </button>
+          <button type="button" class="package-toggle-btn" id="album-btn" data-format="album">
+            <span data-i18n="pkg_album_label">Álbum</span><span class="package-toggle-save">40% OFF</span>
+          </button>
+        </div>
+        <div class="package-price" id="epalbum-price"></div>
+        <div class="package-save" id="epalbum-save"></div>
+        <div class="service-field">
+          <label for="epalbum-songs" data-i18n="pkg_songs_label">Cantidad de canciones</label>
+          <input type="number" id="epalbum-songs" min="1" placeholder="Ej: 5">
+        </div>
+        <p class="package-desc" data-i18n="pkg_epalbum_desc">Para proyectos de varias canciones. Elegí si es EP o Álbum y contanos cuántos temas son — el precio es fijo, sea cual sea la cantidad de canciones dentro del formato.</p>
+        <div class="package-hint" id="epalbum-hint" data-i18n="pkg_epalbum_choose_hint">Elegí un formato para ver el precio</div>
+        <button class="service-btn package-cta" type="button" id="epalbum-quote-btn" data-i18n="pkg_cta_quote">Cotizar por WhatsApp ↗</button>
+      </div>
+    </div>
+
+    <div class="includes-block">
+      <div class="includes-title" data-i18n="includes_title">Los 3 packs incluyen</div>
+      <ul class="includes-list">
+        <li data-i18n="includes_1">4 sesiones de grabación de 2 hs (1 por semana)</li>
+        <li data-i18n="includes_2">Mezcla y mastering</li>
+        <li data-i18n="includes_3">Distribución a todas las plataformas (pitch a playlists editoriales por +$30.000, exclusivo de los packs)</li>
+        <li data-i18n="includes_4">Desayuno o merienda</li>
+        <li data-i18n="includes_5">Asistencia y seguimiento por WhatsApp</li>
+        <li data-i18n="includes_6">Backup en la nube de tus proyectos</li>
+        <li data-i18n="includes_7">Pistas para shows en vivo, entregadas entre 7 y 15 días después de grabar las voces finales, junto con el master</li>
+      </ul>
+    </div>
+
+    <div class="services-alacarte-title" data-i18n="alacarte_title">¿Preferís armar todo por tu cuenta? Elegí servicios sueltos:</div>
     <div class="services-grid" id="services-grid"></div>
+  </section>
+
+  <!-- ================= TESTIMONIALS ================= -->
+  <section id="testimonials">
+    <div class="section-label">02 / <span data-i18n="sl_testimonials">Clients &amp; Testimonials</span></div>
+    <h2 class="section-title" data-i18n-html="st_testimonials_html">What they<br>say.</h2>
+    <p class="section-intro" data-i18n="testimonials_intro">Estamos sumando los testimonios reales de nuestros artistas — muy pronto vas a poder leer sus historias acá.</p>
+
+    <div class="testimonials-grid">
+      <div class="testimonial-card">
+        <div class="testimonial-quote-mark">"</div>
+        <div class="testimonial-skeleton-line"></div>
+        <div class="testimonial-skeleton-line short"></div>
+        <div class="testimonial-skeleton-footer">
+          <div class="testimonial-skeleton-avatar"></div>
+          <div class="testimonial-skeleton-name"></div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="testimonial-quote-mark">"</div>
+        <div class="testimonial-skeleton-line"></div>
+        <div class="testimonial-skeleton-line short"></div>
+        <div class="testimonial-skeleton-footer">
+          <div class="testimonial-skeleton-avatar"></div>
+          <div class="testimonial-skeleton-name"></div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="testimonial-quote-mark">"</div>
+        <div class="testimonial-skeleton-line"></div>
+        <div class="testimonial-skeleton-line short"></div>
+        <div class="testimonial-skeleton-footer">
+          <div class="testimonial-skeleton-avatar"></div>
+          <div class="testimonial-skeleton-name"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= THE LABEL ================= -->
+  <section id="label" class="label-section">
+    <div class="section-label">03 / <span data-i18n="sl_label">The Label</span></div>
+    <h2 class="section-title" data-i18n-html="st_label_html">Who we<br>are.</h2>
+
+    <div class="label-grid">
+      <p class="label-text" data-i18n-html="label_intro_html">
+        ZECHE GRUV is an independent record label directed by
+        <span style="color: var(--orange-soft);">Yaco Santana</span> —
+        over 10 years producing music, with more than 200 artists worldwide
+        choosing us to accompany their careers.
+      </p>
+
+      <p class="label-side" data-i18n="label_side">
+        Our goal is to keep organic sound at the core of every project,
+        developing each production until it matches the artist's vision —
+        professional sound and songwriting at the highest creative level.
+        We run a full team: producers, session musicians on multiple
+        instruments, mixing &amp; mastering engineers, distribution across
+        every digital platform, cover art &amp; design, and audiovisual
+        recording and production.
+      </p>
+    </div>
+
+    <!-- Foto del director: placeholder hasta tener la foto real. -->
+    <div class="label-director">
+      <div class="label-director-photo" aria-hidden="true"></div>
+      <div>
+        <div class="label-director-name">Yaco Santana</div>
+        <div class="label-director-role" data-i18n="label_director_role">Founder &amp; Director</div>
+        <p class="label-director-bio" data-i18n="label_director_bio">
+          Producer and director of ZECHE GRUV since its founding, he's with every
+          artist on the roster from start to finish — from the first session to
+          the release — making sure the final sound stays true to what the
+          artist wants to say.
+        </p>
+      </div>
+    </div>
+
+    <!-- Fotos del estudio: placeholders hasta tener las fotos reales. -->
+    <div class="label-studio">
+      <div class="label-studio-title" data-i18n="label_studio_title">A look inside the studio</div>
+      <div class="studio-gallery">
+        <div class="studio-photo-placeholder"></div>
+        <div class="studio-photo-placeholder"></div>
+        <div class="studio-photo-placeholder"></div>
+        <div class="studio-photo-placeholder"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= ARTISTS ================= -->
+  <section id="artists">
+    <div class="section-label">04 / <span data-i18n="sl_artists">Artists</span></div>
+    <h2 class="section-title" data-i18n-html="st_artists_html">The<br>roster.</h2>
+
+    <div class="artists-grid" id="artists-grid"></div>
   </section>
 
   <!-- ================= LATEST RELEASE ================= -->
   <section id="releases">
-    <div class="section-label">02 / Latest Release</div>
-    <h2 class="section-title">The newest<br>sound.</h2>
+    <div class="section-label">05 / <span data-i18n="sl_releases">Latest Release</span></div>
+    <h2 class="section-title" data-i18n-html="st_releases_html">The newest<br>sound.</h2>
 
     <div class="release">
       <a class="cover has-image" href="https://open.spotify.com/album/7bc1Ig8bncv4p3vZjjZqjE" target="_blank" rel="noopener"
@@ -1179,10 +1823,10 @@
       </a>
 
       <div>
-        <div class="release-meta">OUT NOW</div>
+        <div class="release-meta" data-i18n="release_out_now">OUT NOW</div>
         <h3 class="release-title">OKEY</h3>
 
-        <p class="release-copy">
+        <p class="release-copy" data-i18n-html="release_copy_html">
           Con Rouse bby y YEIKO. Producido por ZECHE GRUV.
         </p>
 
@@ -1193,7 +1837,7 @@
         </div>
 
         <div class="buttons">
-          <a class="btn" href="https://open.spotify.com/album/7bc1Ig8bncv4p3vZjjZqjE" target="_blank" rel="noopener">Spotify ↗</a>
+          <a class="btn" href="https://open.spotify.com/album/7bc1Ig8bncv4p3vZjjZqjE" target="_blank" rel="noopener" data-i18n="btn_spotify">Spotify ↗</a>
         </div>
       </div>
     </div>
@@ -1201,8 +1845,8 @@
 
   <!-- ================= CATALOGUE ================= -->
   <section>
-    <div class="section-label">03 / Catalogue</div>
-    <h2 class="section-title">Selected<br>releases.</h2>
+    <div class="section-label">06 / <span data-i18n="sl_catalogue">Catalogue</span></div>
+    <h2 class="section-title" data-i18n-html="st_catalogue_html">Selected<br>releases.</h2>
 
     <div class="catalogue">
       <a href="https://open.spotify.com/album/6eU3XioAFeGQsepCbhuDwN" target="_blank" rel="noopener" class="release-card"
@@ -1234,61 +1878,29 @@
     </div>
   </section>
 
-  <!-- ================= ARTISTS ================= -->
-  <section id="artists">
-    <div class="section-label">04 / Artists</div>
-    <h2 class="section-title">The<br>roster.</h2>
-
-    <div class="artists-grid" id="artists-grid"></div>
-  </section>
-
-  <!-- ================= THE LABEL ================= -->
-  <section id="label" class="label-section">
-    <div class="section-label">05 / The Label</div>
-
-    <div class="label-grid">
-      <p class="label-text">
-        ZECHE GRUV is an independent record label directed by
-        <span style="color: var(--orange-soft);">Yaco Santana</span> —
-        over 10 years producing music, with more than 200 artists worldwide
-        choosing us to accompany their careers.
-      </p>
-
-      <p class="label-side">
-        Our goal is to keep organic sound at the core of every project,
-        developing each production until it matches the artist's vision —
-        professional sound and songwriting at the highest creative level.
-        We run a full team: producers, session musicians on multiple
-        instruments, mixing &amp; mastering engineers, distribution across
-        every digital platform, cover art &amp; design, and audiovisual
-        recording and production.
-      </p>
-    </div>
-  </section>
-
   <!-- ================= CONTACT ================= -->
   <section id="contact" class="contact">
-    <div class="section-label">06 / Demos & Collaborations</div>
+    <div class="section-label">07 / <span data-i18n="sl_contact">Demos &amp; Collaborations</span></div>
 
-    <h2 class="contact-title">
+    <h2 class="contact-title" data-i18n-html="contact_title_html">
       MAKE
       <span>NOISE.</span>
     </h2>
 
     <div class="buttons">
-      <a class="btn" href="mailto:hello@zechegruv.com">
+      <a class="btn" href="mailto:hello@zechegruv.com" data-i18n="btn_demo">
         Send a demo ↗
       </a>
 
-      <a class="btn" href="https://www.instagram.com/zechegruv/" target="_blank" rel="noopener">
+      <a class="btn" href="https://www.instagram.com/zechegruv/" target="_blank" rel="noopener" data-i18n="btn_instagram">
         Instagram ↗
       </a>
 
-      <a class="btn" href="https://open.spotify.com/intl-es/artist/0yIGrWjWqKnM7qJ0uyImij" target="_blank" rel="noopener">
+      <a class="btn" href="https://open.spotify.com/intl-es/artist/0yIGrWjWqKnM7qJ0uyImij" target="_blank" rel="noopener" data-i18n="btn_spotify">
         Spotify ↗
       </a>
 
-      <a class="btn" href="https://open.spotify.com/playlist/1FbK9IaTCJMCtTLQSg7ayI" target="_blank" rel="noopener">
+      <a class="btn" href="https://open.spotify.com/playlist/1FbK9IaTCJMCtTLQSg7ayI" target="_blank" rel="noopener" data-i18n="btn_playlist">
         Playlist ↗
       </a>
     </div>
@@ -1298,13 +1910,13 @@
   <footer>
     <span>ZECHE GRUV® — BUENOS AIRES</span>
     <span><a href="https://www.instagram.com/zechegruv/" target="_blank" rel="noopener">INSTAGRAM</a> · <a href="https://open.spotify.com/intl-es/artist/0yIGrWjWqKnM7qJ0uyImij" target="_blank" rel="noopener">SPOTIFY</a></span>
-    <span>© 2026 ALL RIGHTS RESERVED</span>
+    <span>© 2026 <span data-i18n="footer_rights">ALL RIGHTS RESERVED</span></span>
   </footer>
 
   <!-- ================= SPOTIFY PREVIEW BAR ================= -->
   <div class="spotify-bar" id="spotify-bar">
     <div class="spotify-bar-inner">
-      <span class="spotify-bar-label" id="spotify-bar-label">Preview</span>
+      <span class="spotify-bar-label" id="spotify-bar-label" data-i18n="spotify_bar_label">Preview</span>
       <div class="spotify-bar-mount" id="spotify-bar-mount"></div>
       <button class="spotify-bar-close" id="spotify-bar-close" type="button" aria-label="Close preview">✕</button>
     </div>
@@ -1363,128 +1975,822 @@
       return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
     }
 
-    // Servicios de precio fijo. Editá este array para agregar/sacar/ajustar precios.
+    // Servicios de precio fijo (y los 3 de presupuesto variable al final).
+    // El precio y el mensaje de WhatsApp quedan siempre en español (así el
+    // dueño del sello puede leer cualquier consulta sin importar en qué
+    // idioma haya estado viendo la página quien escribe). Nombre y
+    // descripción visibles en pantalla salen del diccionario I18N por key.
+    // Editá este array para agregar/sacar/reordenar servicios y precios.
     const SERVICES = [
-      { name: "Hora de sesión de grabación", price: "$50.000 ARS / hora" },
-      { name: "Mastering", price: "$60.000 ARS" },
-      { name: "Mixtering (mezcla por stems, hasta 8 stems)", price: "$50.000 ARS" },
-      { name: "Instrumental de catálogo", price: "$60.000 ARS" },
-      { name: "Instrumental personalizada (4 revisiones)", price: "$90.000 ARS" },
-      { name: "Portada / Coverart", price: "$25.000 ARS" },
-      { name: "Videoclip (grabación y edición)", price: "$125.000 ARS" },
-      { name: "VideoLyrics", price: "$50.000 ARS" },
-      { name: "Grabación de guitarras / bajo / batería / coros", price: "$25.000 ARS / hora" },
+      { key: "session", name: "Hora de sesión de grabación", price: "$50.000 ARS / hora" },
+      { key: "mastering", name: "Mastering", price: "$60.000 ARS" },
+      { key: "mixtering", name: "Mixtering (mezcla por stems, hasta 8 stems)", price: "$50.000 ARS" },
+      { key: "instrumental_catalogo", name: "Instrumental de catálogo", price: "$60.000 ARS" },
+      { key: "instrumental_personalizada", name: "Instrumental personalizada (4 revisiones)", price: "$90.000 ARS" },
+      { key: "coverart", name: "Portada / Coverart", price: "$25.000 ARS" },
+      { key: "videoclip", name: "Videoclip (grabación y edición)", price: "$125.000 ARS" },
+      { key: "videolyrics", name: "VideoLyrics", price: "$50.000 ARS" },
+      { key: "session_musicians", name: "Grabación de guitarras / bajo / batería / coros", price: "$25.000 ARS / hora" },
     ];
 
     const servicesGrid = document.getElementById("services-grid");
 
-    const fixedCards = SERVICES.map(s => `
-      <div class="service-card">
-        <div class="service-top">
-          <div class="service-name">${s.name}</div>
-        </div>
-        <div class="service-price">${s.price}</div>
-        <a class="service-btn" href="${waLink(`Hola! Quiero reservar: ${s.name} (${s.price}).`)}" target="_blank" rel="noopener">Reservar por WhatsApp ↗</a>
-      </div>
-    `).join("");
+    function renderServiceCards() {
+      const t = I18N[currentLang];
 
-    const mezclaCard = `
-      <div class="service-card">
-        <div class="service-top">
-          <div class="service-name">Mezcla</div>
-        </div>
-        <div class="service-price">Consultar presupuesto</div>
-        <div class="service-note">El precio depende de la cantidad de canales y la duración de la canción.</div>
-        <div class="service-form">
-          <div class="service-field">
-            <label for="mezcla-canales">Cantidad de canales</label>
-            <input type="number" id="mezcla-canales" min="1" placeholder="Ej: 24">
+      const fixedCards = SERVICES.map((s, i) => `
+        <div class="service-card">
+          <div class="service-top">
+            <div class="service-name">${t.svc[s.key].name}</div>
           </div>
-          <div class="service-field">
-            <label for="mezcla-duracion">Duración de la canción (min:seg)</label>
-            <input type="text" id="mezcla-duracion" placeholder="Ej: 3:30">
-          </div>
+          <div class="service-desc">${t.svc[s.key].desc}</div>
+          <div class="service-price">${s.price}</div>
+          <button class="service-btn" type="button" data-action="reserve-fixed" data-index="${i}">${t.svc_cta_reserve}</button>
         </div>
-        <button class="service-btn" type="button" id="mezcla-btn">Cotizar por WhatsApp ↗</button>
-      </div>
-    `;
+      `).join("");
 
-    const distribucionCard = `
-      <div class="service-card">
-        <div class="service-top">
-          <div class="service-name">Distribución a todas las plataformas + pitcheo</div>
+      const mezclaCard = `
+        <div class="service-card">
+          <div class="service-top">
+            <div class="service-name">${t.svc.mezcla.name}</div>
+          </div>
+          <div class="service-desc">${t.svc.mezcla.desc}</div>
+          <div class="service-price">${t.svc_price_quote}</div>
+          <div class="service-form">
+            <div class="service-field">
+              <label for="mezcla-canales">${t.mezcla_canales_label}</label>
+              <input type="number" id="mezcla-canales" min="1" placeholder="Ej: 24">
+            </div>
+            <div class="service-field">
+              <label for="mezcla-duracion">${t.mezcla_duracion_label}</label>
+              <input type="text" id="mezcla-duracion" placeholder="Ej: 3:30">
+            </div>
+          </div>
+          <button class="service-btn" type="button" data-action="quote-mezcla">${t.svc_cta_quote}</button>
         </div>
-        <div class="service-price">Consultar presupuesto</div>
-        <div class="service-form">
-          <div class="service-field">
-            <label for="distro-canciones">Cantidad de canciones a distribuir</label>
-            <input type="number" id="distro-canciones" min="1" placeholder="Ej: 5">
+      `;
+
+      const distribucionCard = `
+        <div class="service-card">
+          <div class="service-top">
+            <div class="service-name">${t.svc.distro.name}</div>
           </div>
-          <div class="service-field">
-            <label for="distro-estrenadas">¿Ya se habían estrenado antes?</label>
-            <select id="distro-estrenadas">
-              <option value="">Elegir...</option>
-              <option value="Sí">Sí</option>
-              <option value="No">No</option>
-            </select>
+          <div class="service-desc">${t.svc.distro.desc}</div>
+          <div class="service-price">${t.svc_price_quote}</div>
+          <div class="service-form">
+            <div class="service-field">
+              <label for="distro-canciones">${t.distro_canciones_label}</label>
+              <input type="number" id="distro-canciones" min="1" placeholder="Ej: 5">
+            </div>
+            <div class="service-field">
+              <label for="distro-estrenadas">${t.distro_estrenadas_label}</label>
+              <select id="distro-estrenadas">
+                <option value="">${t.select_choose}</option>
+                <option value="Sí">${t.yes}</option>
+                <option value="No">${t.no}</option>
+              </select>
+            </div>
+            <div class="service-field">
+              <label for="distro-migrando">${t.distro_migrando_label}</label>
+              <select id="distro-migrando">
+                <option value="">${t.select_choose}</option>
+                <option value="Sí">${t.yes}</option>
+                <option value="No">${t.no}</option>
+              </select>
+            </div>
+            <div class="service-field" id="distro-motivo-wrap" style="display:none;">
+              <label for="distro-motivo">${t.distro_motivo_label}</label>
+              <textarea id="distro-motivo" placeholder="${t.distro_motivo_placeholder}"></textarea>
+            </div>
+            <div class="service-field">
+              <label class="package-check-row" id="distro-pitch-row" for="distro-pitch">
+                <input type="checkbox" id="distro-pitch">
+                <span>${t.distro_pitch_label}</span>
+                <span class="pc-price">+$30.000</span>
+              </label>
+              <p class="package-hint" id="distro-pitch-hint">${t.distro_pitch_disabled_hint}</p>
+            </div>
           </div>
-          <div class="service-field">
-            <label for="distro-migrando">¿Estás migrando de otra distribuidora?</label>
-            <select id="distro-migrando">
-              <option value="">Elegir...</option>
-              <option value="Sí">Sí</option>
-              <option value="No">No</option>
-            </select>
-          </div>
-          <div class="service-field" id="distro-motivo-wrap" style="display:none;">
-            <label for="distro-motivo">¿Por qué buscás cambiar de distribuidora?</label>
-            <textarea id="distro-motivo" placeholder="Contanos brevemente..."></textarea>
-          </div>
+          <button class="service-btn" type="button" data-action="quote-distro">${t.svc_cta_quote}</button>
         </div>
-        <button class="service-btn" type="button" id="distro-btn">Cotizar por WhatsApp ↗</button>
-      </div>
-    `;
+      `;
 
-    const playbackCard = `
-      <div class="service-card">
-        <div class="service-top">
-          <div class="service-name">Playback y Tune</div>
+      const playbackCard = `
+        <div class="service-card">
+          <div class="service-top">
+            <div class="service-name">${t.svc.playback.name}</div>
+          </div>
+          <div class="service-desc">${t.svc.playback.desc}</div>
+          <div class="service-price">${t.svc_price_quote}</div>
+          <button class="service-btn" type="button" data-action="quote-playback">${t.svc_cta_consult}</button>
         </div>
-        <div class="service-price">Consultar presupuesto</div>
-        <a class="service-btn" href="${waLink('Hola! Quiero consultar sobre Playback y Tune.')}" target="_blank" rel="noopener">Consultar por WhatsApp ↗</a>
-      </div>
-    `;
+      `;
 
-    servicesGrid.innerHTML = fixedCards + mezclaCard + distribucionCard + playbackCard;
+      servicesGrid.innerHTML = fixedCards + mezclaCard + distribucionCard + playbackCard;
+      updateDistroPitchAvailability();
+    }
 
-    // Mezcla — arma el mensaje con los datos cargados
-    document.getElementById("mezcla-btn").addEventListener("click", () => {
-      const canales = document.getElementById("mezcla-canales").value || "sin especificar";
-      const duracion = document.getElementById("mezcla-duracion").value || "sin especificar";
-      const msg = `Hola! Quiero cotizar una Mezcla.\nCantidad de canales: ${canales}\nDuración de la canción: ${duracion}`;
-      window.open(waLink(msg), "_blank", "noopener");
-    });
+    // Pitching solo aplica a lanzamientos nuevos: si el usuario indica que
+    // las canciones ya se habían estrenado antes, o que está migrando desde
+    // otro agregador/distribuidora, el pitch queda deshabilitado y se
+    // desmarca automáticamente.
+    function updateDistroPitchAvailability() {
+      const estrenadas = document.getElementById("distro-estrenadas")?.value;
+      const migrando = document.getElementById("distro-migrando")?.value;
+      const pitchCheckbox = document.getElementById("distro-pitch");
+      const pitchHint = document.getElementById("distro-pitch-hint");
+      if (!pitchCheckbox) return;
 
-    // Distribución — muestra el motivo solo si está migrando, y arma el mensaje
-    const distroMigrando = document.getElementById("distro-migrando");
-    const distroMotivoWrap = document.getElementById("distro-motivo-wrap");
+      const isNewRelease = estrenadas === "No" && migrando === "No";
+      const disqualified = estrenadas === "Sí" || migrando === "Sí";
 
-    distroMigrando.addEventListener("change", () => {
-      distroMotivoWrap.style.display = distroMigrando.value === "Sí" ? "block" : "none";
-    });
+      pitchCheckbox.disabled = !isNewRelease;
+      if (!isNewRelease) pitchCheckbox.checked = false;
+      if (pitchHint) pitchHint.classList.toggle("is-visible", disqualified);
+    }
 
-    document.getElementById("distro-btn").addEventListener("click", () => {
-      const canciones = document.getElementById("distro-canciones").value || "sin especificar";
-      const estrenadas = document.getElementById("distro-estrenadas").value || "sin especificar";
-      const migrando = distroMigrando.value || "sin especificar";
-      const motivo = document.getElementById("distro-motivo").value;
+    // Un solo listener delegado en el contenedor: como el HTML de adentro se
+    // vuelve a generar cada vez que cambia el idioma, delegar evita tener
+    // que reenganchar listeners sueltos (y evita que queden duplicados).
+    servicesGrid.addEventListener("click", (event) => {
+      const btn = event.target.closest("[data-action]");
+      if (!btn) return;
+      const action = btn.dataset.action;
 
-      let msg = `Hola! Quiero cotizar Distribución + pitcheo.\nCantidad de canciones: ${canciones}\n¿Ya se habían estrenado?: ${estrenadas}\n¿Migrando de otra distribuidora?: ${migrando}`;
-      if (migrando === "Sí" && motivo) {
-        msg += `\nMotivo del cambio: ${motivo}`;
+      if (action === "reserve-fixed") {
+        const s = SERVICES[+btn.dataset.index];
+        window.open(waLink(`Hola! Quiero reservar: ${s.name} (${s.price}).`), "_blank", "noopener");
+      } else if (action === "quote-mezcla") {
+        const canales = document.getElementById("mezcla-canales")?.value || "sin especificar";
+        const duracion = document.getElementById("mezcla-duracion")?.value || "sin especificar";
+        const msg = `Hola! Quiero cotizar una Mezcla.\nCantidad de canales: ${canales}\nDuración de la canción: ${duracion}`;
+        window.open(waLink(msg), "_blank", "noopener");
+      } else if (action === "quote-distro") {
+        const canciones = document.getElementById("distro-canciones")?.value || "sin especificar";
+        const estrenadas = document.getElementById("distro-estrenadas")?.value || "sin especificar";
+        const migrando = document.getElementById("distro-migrando")?.value || "sin especificar";
+        const motivo = document.getElementById("distro-motivo")?.value;
+        const pitch = document.getElementById("distro-pitch")?.checked;
+        let msg = `Hola! Quiero cotizar Distribución.\nCantidad de canciones: ${canciones}\n¿Ya se habían estrenado?: ${estrenadas}\n¿Migrando de otra distribuidora?: ${migrando}`;
+        if (migrando === "Sí" && motivo) msg += `\nMotivo del cambio: ${motivo}`;
+        msg += `\nPitching a playlists editoriales (+$30.000): ${pitch ? "Sí" : "No"}`;
+        window.open(waLink(msg), "_blank", "noopener");
+      } else if (action === "quote-playback") {
+        window.open(waLink("Hola! Quiero consultar sobre Playback y Tune."), "_blank", "noopener");
       }
+    });
+
+    // Distribución — muestra el campo "motivo" solo si está migrando
+    // (delegado también, por la misma razón que arriba).
+    servicesGrid.addEventListener("change", (event) => {
+      if (event.target.id === "distro-migrando") {
+        const wrap = document.getElementById("distro-motivo-wrap");
+        if (wrap) wrap.style.display = event.target.value === "Sí" ? "block" : "none";
+      }
+      if (event.target.id === "distro-migrando" || event.target.id === "distro-estrenadas") {
+        updateDistroPitchAvailability();
+      }
+    });
+
+    // ---------- Packages: Armá tu paquete / Single / EP-Álbum ----------
+    const customListEl = document.getElementById("custom-service-list");
+    const customToggleBtn = document.getElementById("custom-toggle-btn");
+    const customHintEl = document.getElementById("custom-hint");
+
+    customToggleBtn.addEventListener("click", () => {
+      const willShow = customListEl.hasAttribute("hidden");
+      if (willShow) customListEl.removeAttribute("hidden");
+      else customListEl.setAttribute("hidden", "");
+    });
+
+    function renderCustomChecklist() {
+      const t = I18N[currentLang];
+      customListEl.innerHTML = SERVICES.map((s, i) => `
+        <label class="package-check-row">
+          <input type="checkbox" value="${i}">
+          <span>${t.svc[s.key].name}</span>
+          <span class="pc-price">${s.price}</span>
+        </label>
+      `).join("");
+    }
+
+    document.getElementById("custom-quote-btn").addEventListener("click", () => {
+      const checked = Array.from(customListEl.querySelectorAll("input:checked"));
+      if (!checked.length) {
+        customHintEl.classList.add("is-visible");
+        return;
+      }
+      customHintEl.classList.remove("is-visible");
+      const names = checked.map(c => SERVICES[+c.value.trim() || +c.value].name);
+      const msg = `Hola! Quiero armar un paquete con estos servicios:\n- ${names.join("\n- ")}\n\n¿Me pasás una cotización?`;
       window.open(waLink(msg), "_blank", "noopener");
     });
+
+    // Single — reserva directa, precio fijo
+    document.getElementById("single-quote-btn").addEventListener("click", () => {
+      window.open(waLink("Hola! Quiero reservar el pack Single ($400.000 ARS)."), "_blank", "noopener");
+    });
+
+    // EP / Álbum — el precio es fijo por formato (no depende de la cantidad
+    // de canciones, esa cantidad solo viaja como dato en el mensaje), pero
+    // es una MENSUALIDAD: se cobra ese monto cada mes (con sus 4 sesiones)
+    // hasta terminar el proyecto — no se muestra ningún formato por
+    // defecto, el precio solo aparece una vez que el cliente elige EP o
+    // Álbum, para no dar la impresión de un precio único ya elegido.
+    const EPALBUM = {
+      ep: { price: "$370.000", saveKey: "pkg_ep_save", placeholder: "Ej: 5", label: "EP" },
+      album: { price: "$350.000", saveKey: "pkg_album_save", placeholder: "Ej: 10", label: "Álbum" },
+    };
+    let epalbumFormat = null; // null hasta que el cliente elige EP o Álbum
+
+    const epBtn = document.getElementById("ep-btn");
+    const albumBtn = document.getElementById("album-btn");
+    const epalbumPriceEl = document.getElementById("epalbum-price");
+    const epalbumSaveEl = document.getElementById("epalbum-save");
+    const epalbumSongsInput = document.getElementById("epalbum-songs");
+    const epalbumHintEl = document.getElementById("epalbum-hint");
+
+    function renderEpAlbum() {
+      const t = I18N[currentLang];
+      epBtn.classList.toggle("is-active", epalbumFormat === "ep");
+      albumBtn.classList.toggle("is-active", epalbumFormat === "album");
+
+      if (!epalbumFormat) {
+        epalbumPriceEl.innerHTML = `<span class="package-price-placeholder">${t.pkg_epalbum_choose_hint}</span>`;
+        epalbumSaveEl.textContent = "";
+        epalbumSongsInput.placeholder = "Ej: 5";
+        return;
+      }
+
+      const cfg = EPALBUM[epalbumFormat];
+      epalbumPriceEl.innerHTML = `<span>${cfg.price}</span> <span>${t.pkg_currency_monthly}</span>`;
+      epalbumSaveEl.textContent = t[cfg.saveKey];
+      epalbumSongsInput.placeholder = cfg.placeholder;
+    }
+
+    epBtn.addEventListener("click", () => {
+      epalbumFormat = "ep";
+      epalbumHintEl.classList.remove("is-visible");
+      renderEpAlbum();
+    });
+    albumBtn.addEventListener("click", () => {
+      epalbumFormat = "album";
+      epalbumHintEl.classList.remove("is-visible");
+      renderEpAlbum();
+    });
+
+    document.getElementById("epalbum-quote-btn").addEventListener("click", () => {
+      if (!epalbumFormat) {
+        epalbumHintEl.classList.add("is-visible");
+        return;
+      }
+      const cfg = EPALBUM[epalbumFormat];
+      const songs = epalbumSongsInput.value || "sin especificar";
+      const msg = `Hola! Quiero cotizar un ${cfg.label} (${cfg.price} ARS por mes, hasta terminar el proyecto).\nCantidad de canciones: ${songs}`;
+      window.open(waLink(msg), "_blank", "noopener");
+    });
+
+    // ---------- Traducción de la página ----------
+    // No se traducen nombres de artistas, canciones ni productores (viven
+    // en ARTISTS / .card-name / .card-meta / .credits, fuera de este
+    // diccionario). Los mensajes de WhatsApp quedan siempre en español,
+    // para que el sello pueda leer cualquier consulta sin importar en qué
+    // idioma haya estado viendo la página quien escribe.
+    const SUPPORTED_LANGS = ["es", "en", "pt", "fr", "it", "de", "ru"];
+    let currentLang = "es";
+
+    const I18N = {
+      es: {
+        nav_services: "Servicios", nav_testimonials: "Testimonios", nav_label: "El Sello",
+        nav_artists: "Artistas", nav_releases: "Lanzamientos", nav_contact: "Contacto",
+        hero_eyebrow: "Sello Discográfico Independiente",
+        hero_desc_html: 'Sello discográfico y casa de producción independiente — composición, grabación, mezcla, mastering, distribución y arte de tapa, liderado por <a href="https://open.spotify.com/intl-es/artist/0yIGrWjWqKnM7qJ0uyImij" target="_blank" rel="noopener">Yaco Santana</a>.',
+        hero_scroll: "Scroll para explorar",
+        marquee_tagline: "SELLO DISCOGRÁFICO INDEPENDIENTE",
+        sl_services: "Servicios Musicales", st_services_html: "Servicios<br>de estudio.",
+        sl_testimonials: "Clientes y Testimonios", st_testimonials_html: "Lo que<br>dicen.",
+        testimonials_intro: "Estamos sumando los testimonios reales de nuestros artistas — muy pronto vas a poder leer sus historias acá.",
+        sl_label: "El Sello", st_label_html: "Quiénes<br>somos.",
+        label_intro_html: 'ZECHE GRUV es un sello discográfico independiente dirigido por <span style="color: var(--orange-soft);">Yaco Santana</span> — más de 10 años produciendo música, con más de 200 artistas en el mundo eligiéndonos para acompañar sus carreras.',
+        label_side: "Nuestro objetivo es mantener el sonido orgánico en el centro de cada proyecto, desarrollando cada producción hasta que refleje la visión del artista — sonido y composición a nivel profesional. Contamos con un equipo completo: productores, músicos de sesión en múltiples instrumentos, ingenieros de mezcla y mastering, distribución en todas las plataformas digitales, arte de tapa y diseño, y grabación y producción audiovisual.",
+        label_director_role: "Fundador y Director",
+        label_director_bio: "Productor y director de ZECHE GRUV desde su fundación, acompaña a cada artista del sello de principio a fin — desde la primera sesión hasta el lanzamiento — cuidando que el sonido final sea fiel a lo que el artista quiere decir.",
+        label_studio_title: "Un vistazo al estudio",
+        sl_artists: "Artistas", st_artists_html: "El<br>roster.",
+        sl_releases: "Último Lanzamiento", st_releases_html: "El sonido<br>más nuevo.",
+        release_out_now: "YA DISPONIBLE", release_copy_html: "Con Rouse bby y YEIKO. Producido por ZECHE GRUV.",
+        sl_catalogue: "Catálogo", st_catalogue_html: "Lanzamientos<br>seleccionados.",
+        sl_contact: "Demos y Colaboraciones", contact_title_html: "HACÉ<br><span>RUIDO.</span>",
+        btn_spotify: "Spotify ↗", btn_demo: "Enviar demo ↗", btn_instagram: "Instagram ↗", btn_playlist: "Playlist ↗",
+        spotify_bar_label: "Preview", footer_rights: "TODOS LOS DERECHOS RESERVADOS",
+        pkg_custom_name: "Armá tu propio paquete de producción personalizado",
+        pkg_custom_desc: "¿Ya sabés qué necesitás? Elegí los servicios que quieras combinar de la lista y te armamos una cotización a medida, directo por WhatsApp.",
+        pkg_custom_toggle_btn: "Elegir servicios", pkg_custom_cta: "Cotizar por WhatsApp ↗",
+        pkg_custom_empty_hint: "Elegí al menos un servicio para cotizar.",
+        pkg_single_name: "Single",
+        pkg_single_desc: "Tu canción de punta a punta: grabación, mezcla, mastering y distribución en un solo paquete, con todo lo que necesitás para lanzarla de forma profesional.",
+        pkg_cta_reserve: "Reservar por WhatsApp ↗",
+        pkg_epalbum_name: "EP / Álbum", pkg_ep_label: "EP", pkg_album_label: "Álbum",
+        pkg_ep_save: "Ahorrás +35% vs. contratar todo por separado.",
+        pkg_album_save: "Ahorrás +40% vs. contratar todo por separado.",
+        pkg_songs_label: "Cantidad de canciones",
+        pkg_epalbum_desc: "Para proyectos de varias canciones. Elegí si es EP o Álbum y contanos cuántos temas son — el precio es fijo, sea cual sea la cantidad de canciones dentro del formato.",
+        pkg_epalbum_choose_hint: "Elegí un formato para ver el precio",
+        pkg_cta_quote: "Cotizar por WhatsApp ↗", pkg_currency: "ARS", pkg_currency_monthly: "ARS / mes",
+        includes_title: "Los 3 packs incluyen",
+        includes_1: "4 sesiones de grabación de 2 hs por semana (en EP y Álbum es mensual: se renueva cada mes hasta terminar el proyecto)", includes_2: "Mezcla y mastering",
+        includes_3: "Distribución a todas las plataformas (pitch a playlists editoriales por +$30.000, exclusivo de los packs)",
+        includes_4: "Desayuno o merienda", includes_5: "Asistencia y seguimiento por WhatsApp",
+        includes_6: "Backup en la nube de tus proyectos",
+        includes_7: "Pistas para shows en vivo, entregadas entre 7 y 15 días después de grabar las voces finales, junto con el master",
+        alacarte_title: "¿Preferís armar todo por tu cuenta? Elegí servicios sueltos:",
+        svc_cta_reserve: "Reservar por WhatsApp ↗", svc_cta_quote: "Cotizar por WhatsApp ↗",
+        svc_cta_consult: "Consultar por WhatsApp ↗", svc_price_quote: "Consultar presupuesto",
+        mezcla_canales_label: "Cantidad de canales", mezcla_duracion_label: "Duración de la canción (min:seg)",
+        distro_canciones_label: "Cantidad de canciones a distribuir",
+        distro_estrenadas_label: "¿Ya se habían estrenado antes?",
+        distro_migrando_label: "¿Estás migrando de otra distribuidora?",
+        distro_motivo_label: "¿Por qué buscás cambiar de distribuidora?",
+        distro_motivo_placeholder: "Contanos brevemente...", select_choose: "Elegir...", yes: "Sí", no: "No",
+        distro_pitch_label: "Sumar pitching a playlists editoriales",
+        distro_pitch_disabled_hint: "El pitching solo está disponible para canciones que se distribuyen por primera vez — no aplica si ya se habían estrenado antes o si estás migrando desde otra distribuidora.",
+        lang_aria: "Idioma",
+        svc: {
+          session: { name: "Hora de sesión de grabación", desc: "Una hora de estudio con ingeniero en sala, espacio acustizado para grabar voces y/o instrumentos. Ideal si ya tenés el tema armado y necesitás capturarlo con calidad y asistencia profesional." },
+          mastering: { name: "Mastering", desc: "El último paso antes de publicar: balanceamos niveles, dinámica y sonoridad para que tu canción suene pareja y competitiva en cualquier plataforma." },
+          mixtering: { name: "Mixtering (mezcla por stems, hasta 8 stems)", desc: "Mezclamos tu canción de hasta 8 stems, ideal si ya tenés una buena producción avanzada y buscás una mezcla y master rápidos y prolijos sin pasar por el proceso completo y ahorrando +40%." },
+          instrumental_catalogo: { name: "Instrumental de catálogo", desc: "Elegís una base ya compuesta de nuestro catálogo y la hacemos tuya, lista para grabar tus voces encima." },
+          instrumental_personalizada: { name: "Instrumental personalizada (4 revisiones)", desc: "Componemos una base desde cero según tu estilo y referencias, con hasta 4 rondas de ajustes hasta que quede como la imaginás." },
+          coverart: { name: "Portada / Coverart", desc: "Diseño de arte de tapa para tu single, EP o álbum, pensado para que se destaque tanto en Spotify como en redes." },
+          videoclip: { name: "Videoclip (grabación y edición)", desc: "Grabación y edición de un videoclip para tu canción, de punta a punta — desde el rodaje hasta el corte final listo para publicar." },
+          videolyrics: { name: "VideoLyrics", desc: "Video con letras animadas sincronizadas a tu canción, una opción más accesible para tener contenido audiovisual en redes y YouTube." },
+          session_musicians: { name: "Grabación de guitarras / bajo / batería / coros", desc: "Sumamos músicos de sesión para grabar sobre tu tema, con el instrumento y la sala ya preparados." },
+          mezcla: { name: "Mezcla", desc: "Mezcla profesional de tu canción; el precio varía según la cantidad de canales y la duración del tema — lo cotizás completando esos datos." },
+          distro: { name: "Distribución a todas las plataformas", desc: "Subimos tu música a Spotify, Apple Music, YouTube Music y el resto de las plataformas. Si es un lanzamiento nuevo, podés sumar el pitch a playlists editoriales como opción adicional (+$30.000)." },
+          playback: { name: "Playback y Tune", desc: "No es solo armar la pista de playback: el día de tu show, estamos ahí con vos. Te entregamos las pistas listas y hacemos el tune en tiempo real, en vivo, acompañando cada matiz de tu interpretación arriba del escenario. Es el estándar ZECHE GRUV para shows en directo: cero baches, cero sustos, sonido con nivel de gira profesional de punta a punta." },
+        },
+      },
+      en: {
+        nav_services: "Services", nav_testimonials: "Testimonials", nav_label: "The Label",
+        nav_artists: "Artists", nav_releases: "Releases", nav_contact: "Contact",
+        hero_eyebrow: "Independent Record Label",
+        hero_desc_html: 'Independent record label &amp; production house — composition, recording, mixing, mastering, distribution and cover art, led by <a href="https://open.spotify.com/intl-es/artist/0yIGrWjWqKnM7qJ0uyImij" target="_blank" rel="noopener">Yaco Santana</a>.',
+        hero_scroll: "Scroll to explore",
+        marquee_tagline: "INDEPENDENT RECORD LABEL",
+        sl_services: "Musical Services", st_services_html: "Studio<br>services.",
+        sl_testimonials: "Clients &amp; Testimonials", st_testimonials_html: "What they<br>say.",
+        testimonials_intro: "We're gathering real testimonials from our artists — this space will soon hold their stories.",
+        sl_label: "The Label", st_label_html: "Who we<br>are.",
+        label_intro_html: 'ZECHE GRUV is an independent record label directed by <span style="color: var(--orange-soft);">Yaco Santana</span> — over 10 years producing music, with more than 200 artists worldwide choosing us to accompany their careers.',
+        label_side: "Our goal is to keep organic sound at the core of every project, developing each production until it matches the artist's vision — professional sound and songwriting at the highest creative level. We run a full team: producers, session musicians on multiple instruments, mixing &amp; mastering engineers, distribution across every digital platform, cover art &amp; design, and audiovisual recording and production.",
+        label_director_role: "Founder &amp; Director",
+        label_director_bio: "Producer and director of ZECHE GRUV since its founding, he's with every artist on the roster from start to finish — from the first session to the release — making sure the final sound stays true to what the artist wants to say.",
+        label_studio_title: "A look inside the studio",
+        sl_artists: "Artists", st_artists_html: "The<br>roster.",
+        sl_releases: "Latest Release", st_releases_html: "The newest<br>sound.",
+        release_out_now: "OUT NOW", release_copy_html: "With Rouse bby and YEIKO. Produced by ZECHE GRUV.",
+        sl_catalogue: "Catalogue", st_catalogue_html: "Selected<br>releases.",
+        sl_contact: "Demos &amp; Collaborations", contact_title_html: "MAKE<br><span>NOISE.</span>",
+        btn_spotify: "Spotify ↗", btn_demo: "Send a demo ↗", btn_instagram: "Instagram ↗", btn_playlist: "Playlist ↗",
+        spotify_bar_label: "Preview", footer_rights: "ALL RIGHTS RESERVED",
+        pkg_custom_name: "Build your own custom production package",
+        pkg_custom_desc: "Already know what you need? Pick the services you want to combine from the list and we'll put together a custom quote, straight over WhatsApp.",
+        pkg_custom_toggle_btn: "Choose services", pkg_custom_cta: "Quote via WhatsApp ↗",
+        pkg_custom_empty_hint: "Pick at least one service to get a quote.",
+        pkg_single_name: "Single",
+        pkg_single_desc: "Your song from start to finish: recording, mixing, mastering and distribution in one package — everything you need to release it professionally.",
+        pkg_cta_reserve: "Book via WhatsApp ↗",
+        pkg_epalbum_name: "EP / Album", pkg_ep_label: "EP", pkg_album_label: "Album",
+        pkg_ep_save: "Save +35% vs. booking everything separately.",
+        pkg_album_save: "Save +40% vs. booking everything separately.",
+        pkg_songs_label: "Number of songs",
+        pkg_epalbum_desc: "For multi-song projects. Choose EP or Album and tell us how many tracks it has — the price is fixed, no matter how many songs are in the format.",
+        pkg_epalbum_choose_hint: "Choose a format to see the price",
+        pkg_cta_quote: "Quote via WhatsApp ↗", pkg_currency: "ARS", pkg_currency_monthly: "ARS / mo",
+        includes_title: "All 3 packs include",
+        includes_1: "4 recording sessions of 2 hours per week (for EP and Album, it's monthly — renews every month until the project is finished)", includes_2: "Mixing and mastering",
+        includes_3: "Distribution to every platform (editorial playlist pitching for +$30,000, packs only)",
+        includes_4: "Breakfast or snack", includes_5: "WhatsApp support and follow-up",
+        includes_6: "Cloud backup of your projects",
+        includes_7: "Live-show tracks, delivered 7 to 15 days after recording final vocals, along with the final master",
+        alacarte_title: "Prefer to build it yourself? Pick individual services:",
+        svc_cta_reserve: "Book via WhatsApp ↗", svc_cta_quote: "Quote via WhatsApp ↗",
+        svc_cta_consult: "Ask via WhatsApp ↗", svc_price_quote: "Get a quote",
+        mezcla_canales_label: "Number of channels", mezcla_duracion_label: "Song duration (min:sec)",
+        distro_canciones_label: "Number of songs to distribute",
+        distro_estrenadas_label: "Were they already released before?",
+        distro_migrando_label: "Are you switching from another distributor?",
+        distro_motivo_label: "Why are you looking to switch distributors?",
+        distro_motivo_placeholder: "Tell us briefly...", select_choose: "Choose...", yes: "Yes", no: "No",
+        distro_pitch_label: "Add editorial playlist pitching",
+        distro_pitch_disabled_hint: "Pitching is only available for songs being distributed for the first time — it doesn't apply if they were already released before or if you're migrating from another distributor.",
+        lang_aria: "Language",
+        svc: {
+          session: { name: "Recording session hour", desc: "One hour of studio time with an engineer in the room, an acoustically treated space to record vocals and/or instruments. Great if your song is already arranged and you just need to capture it with professional quality and support." },
+          mastering: { name: "Mastering", desc: "The last step before release: we balance levels, dynamics and loudness so your song sounds even and competitive on any platform." },
+          mixtering: { name: "Mixtering (stem mix, up to 8 stems)", desc: "We mix your song from up to 8 stems — ideal if you already have a solid, advanced production and want a fast, clean mix and master without the full process, saving +40%." },
+          instrumental_catalogo: { name: "Catalogue instrumental", desc: "Pick an already-composed beat from our catalogue and make it yours, ready for you to record vocals over." },
+          instrumental_personalizada: { name: "Custom instrumental (4 revisions)", desc: "We build a beat from scratch to your style and references, with up to 4 rounds of adjustments until it's exactly how you pictured it." },
+          coverart: { name: "Cover art", desc: "Cover art design for your single, EP or album, made to stand out on Spotify and on social media alike." },
+          videoclip: { name: "Music video (filming &amp; editing)", desc: "Filming and editing of a music video for your song, start to finish — from the shoot to the final cut, ready to publish." },
+          videolyrics: { name: "Lyric video", desc: "A lyric video synced to your song — a more accessible way to have video content for socials and YouTube." },
+          session_musicians: { name: "Guitar / bass / drums / backing vocals recording", desc: "We bring in session musicians to record over your track, with the instrument and the room already set up." },
+          mezcla: { name: "Mixing", desc: "Professional mix of your song; the price depends on the number of channels and the song's length — get a quote by filling in those details." },
+          distro: { name: "Distribution to every platform", desc: "We upload your music to Spotify, Apple Music, YouTube Music and every other platform. If it's a brand-new release, you can add editorial playlist pitching as an extra (+$30,000)." },
+          playback: { name: "Playback &amp; tuning", desc: "This isn't just about building the playback track. On show day, we're there with you: we hand you the finished tracks and run the tune live, in real time, following every nuance of your performance on stage. This is the ZECHE GRUV standard for live shows — zero glitches, zero surprises, professional touring-grade sound from start to finish." },
+        },
+      },
+      pt: {
+        nav_services: "Serviços", nav_testimonials: "Depoimentos", nav_label: "O Selo",
+        nav_artists: "Artistas", nav_releases: "Lançamentos", nav_contact: "Contato",
+        hero_eyebrow: "Selo Discográfico Independente",
+        hero_desc_html: 'Selo discográfico e casa de produção independente — composição, gravação, mixagem, masterização, distribuição e capa, liderado por <a href="https://open.spotify.com/intl-es/artist/0yIGrWjWqKnM7qJ0uyImij" target="_blank" rel="noopener">Yaco Santana</a>.',
+        hero_scroll: "Role para explorar",
+        marquee_tagline: "SELO DISCOGRÁFICO INDEPENDENTE",
+        sl_services: "Serviços Musicais", st_services_html: "Serviços<br>de estúdio.",
+        sl_testimonials: "Clientes e Depoimentos", st_testimonials_html: "O que<br>dizem.",
+        testimonials_intro: "Estamos reunindo depoimentos reais dos nossos artistas — em breve você vai poder ler as histórias deles aqui.",
+        sl_label: "O Selo", st_label_html: "Quem<br>somos.",
+        label_intro_html: 'A ZECHE GRUV é um selo discográfico independente dirigido por <span style="color: var(--orange-soft);">Yaco Santana</span> — mais de 10 anos produzindo música, com mais de 200 artistas no mundo todo escolhendo a gente para acompanhar suas carreiras.',
+        label_side: "Nosso objetivo é manter o som orgânico no centro de cada projeto, desenvolvendo cada produção até que reflita a visão do artista — som e composição em nível profissional. Temos uma equipe completa: produtores, músicos de sessão em múltiplos instrumentos, engenheiros de mixagem e masterização, distribuição em todas as plataformas digitais, capa e design, e gravação e produção audiovisual.",
+        label_director_role: "Fundador e Diretor",
+        label_director_bio: "Produtor e diretor da ZECHE GRUV desde sua fundação, acompanha cada artista do selo do início ao fim — da primeira sessão até o lançamento — cuidando para que o som final seja fiel ao que o artista quer dizer.",
+        label_studio_title: "Um olhar dentro do estúdio",
+        sl_artists: "Artistas", st_artists_html: "O<br>elenco.",
+        sl_releases: "Último Lançamento", st_releases_html: "O som<br>mais novo.",
+        release_out_now: "JÁ DISPONÍVEL", release_copy_html: "Com Rouse bby e YEIKO. Produzido pela ZECHE GRUV.",
+        sl_catalogue: "Catálogo", st_catalogue_html: "Lançamentos<br>selecionados.",
+        sl_contact: "Demos e Colaborações", contact_title_html: "FAÇA<br><span>BARULHO.</span>",
+        btn_spotify: "Spotify ↗", btn_demo: "Enviar demo ↗", btn_instagram: "Instagram ↗", btn_playlist: "Playlist ↗",
+        spotify_bar_label: "Preview", footer_rights: "TODOS OS DIREITOS RESERVADOS",
+        pkg_custom_name: "Monte seu próprio pacote de produção personalizado",
+        pkg_custom_desc: "Já sabe o que precisa? Escolha os serviços que quer combinar na lista e a gente monta um orçamento sob medida, direto pelo WhatsApp.",
+        pkg_custom_toggle_btn: "Escolher serviços", pkg_custom_cta: "Orçar pelo WhatsApp ↗",
+        pkg_custom_empty_hint: "Escolha pelo menos um serviço para orçar.",
+        pkg_single_name: "Single",
+        pkg_single_desc: "Sua música do início ao fim: gravação, mixagem, masterização e distribuição em um só pacote, com tudo o que você precisa para lançar de forma profissional.",
+        pkg_cta_reserve: "Reservar pelo WhatsApp ↗",
+        pkg_epalbum_name: "EP / Álbum", pkg_ep_label: "EP", pkg_album_label: "Álbum",
+        pkg_ep_save: "Você economiza +35% em relação a contratar tudo separado.",
+        pkg_album_save: "Você economiza +40% em relação a contratar tudo separado.",
+        pkg_songs_label: "Quantidade de músicas",
+        pkg_epalbum_desc: "Para projetos com várias músicas. Escolha se é EP ou Álbum e diga quantas faixas tem — o preço é fixo, seja qual for a quantidade de músicas dentro do formato.",
+        pkg_epalbum_choose_hint: "Escolha um formato para ver o preço",
+        pkg_cta_quote: "Orçar pelo WhatsApp ↗", pkg_currency: "ARS", pkg_currency_monthly: "ARS / mês",
+        includes_title: "Os 3 pacotes incluem",
+        includes_1: "4 sessões de gravação de 2h por semana (no EP e no Álbum é mensal: renova a cada mês até terminar o projeto)", includes_2: "Mixagem e masterização",
+        includes_3: "Distribuição para todas as plataformas (pitch para playlists editoriais por +$30.000, exclusivo dos pacotes)",
+        includes_4: "Café da manhã ou lanche", includes_5: "Suporte e acompanhamento pelo WhatsApp",
+        includes_6: "Backup na nuvem dos seus projetos",
+        includes_7: "Faixas para shows ao vivo, entregues entre 7 e 15 dias após a gravação dos vocais finais, junto com o master",
+        alacarte_title: "Prefere montar tudo por conta própria? Escolha serviços avulsos:",
+        svc_cta_reserve: "Reservar pelo WhatsApp ↗", svc_cta_quote: "Orçar pelo WhatsApp ↗",
+        svc_cta_consult: "Consultar pelo WhatsApp ↗", svc_price_quote: "Consultar orçamento",
+        mezcla_canales_label: "Quantidade de canais", mezcla_duracion_label: "Duração da música (min:seg)",
+        distro_canciones_label: "Quantidade de músicas para distribuir",
+        distro_estrenadas_label: "Elas já tinham sido lançadas antes?",
+        distro_migrando_label: "Você está migrando de outra distribuidora?",
+        distro_motivo_label: "Por que você quer trocar de distribuidora?",
+        distro_motivo_placeholder: "Conte brevemente...", select_choose: "Escolher...", yes: "Sim", no: "Não",
+        distro_pitch_label: "Adicionar pitch para playlists editoriais",
+        distro_pitch_disabled_hint: "O pitch só está disponível para músicas distribuídas pela primeira vez — não se aplica se elas já tinham sido lançadas antes ou se você está migrando de outra distribuidora.",
+        lang_aria: "Idioma",
+        svc: {
+          session: { name: "Hora de sessão de gravação", desc: "Uma hora de estúdio com engenheiro na sala, espaço acusticamente tratado para gravar vocais e/ou instrumentos. Ideal se a música já está pronta e você só precisa capturá-la com qualidade e suporte profissional." },
+          mastering: { name: "Masterização", desc: "O último passo antes de lançar: equilibramos níveis, dinâmica e volume para sua música soar uniforme e competitiva em qualquer plataforma." },
+          mixtering: { name: "Mixtering (mixagem por stems, até 8 stems)", desc: "Mixamos sua música a partir de até 8 stems, ideal se você já tem uma boa pré-produção avançada e quer uma mixagem e masterização rápidas e caprichadas sem passar pelo processo completo, economizando +40%." },
+          instrumental_catalogo: { name: "Instrumental de catálogo", desc: "Você escolhe uma base já composta do nosso catálogo e a torna sua, pronta para gravar seus vocais em cima." },
+          instrumental_personalizada: { name: "Instrumental personalizado (4 revisões)", desc: "Compomos uma base do zero de acordo com seu estilo e referências, com até 4 rodadas de ajustes até ficar exatamente como você imaginou." },
+          coverart: { name: "Capa / Coverart", desc: "Design de capa para seu single, EP ou álbum, pensado para se destacar tanto no Spotify quanto nas redes." },
+          videoclip: { name: "Videoclipe (gravação e edição)", desc: "Gravação e edição de um videoclipe para sua música, do início ao fim — da filmagem até o corte final pronto para publicar." },
+          videolyrics: { name: "VideoLyrics", desc: "Vídeo com letra animada sincronizada com sua música, uma opção mais acessível para ter conteúdo audiovisual nas redes e no YouTube." },
+          session_musicians: { name: "Gravação de guitarra / baixo / bateria / vocais de apoio", desc: "Trazemos músicos de sessão para gravar em cima da sua música, com o instrumento e a sala já prontos." },
+          mezcla: { name: "Mixagem", desc: "Mixagem profissional da sua música; o preço varia de acordo com a quantidade de canais e a duração da faixa — você orça preenchendo esses dados." },
+          distro: { name: "Distribuição para todas as plataformas", desc: "Subimos sua música no Spotify, Apple Music, YouTube Music e nas demais plataformas. Se for um lançamento novo, você pode adicionar o pitch para playlists editoriais como opção extra (+$30.000)." },
+          playback: { name: "Playback e afinação", desc: "Não é só montar a faixa de playback: no dia do show, a gente está lá com você. Entregamos as faixas prontas e fazemos o tune ao vivo, em tempo real, acompanhando cada detalhe da sua performance no palco. É o padrão ZECHE GRUV para shows ao vivo: zero falhas, zero sustos, som com nível de turnê profissional do início ao fim." },
+        },
+      },
+      fr: {
+        nav_services: "Services", nav_testimonials: "Témoignages", nav_label: "Le Label",
+        nav_artists: "Artistes", nav_releases: "Sorties", nav_contact: "Contact",
+        hero_eyebrow: "Label Indépendant",
+        hero_desc_html: 'Label discographique et maison de production indépendante — composition, enregistrement, mixage, mastering, distribution et pochette, dirigé par <a href="https://open.spotify.com/intl-es/artist/0yIGrWjWqKnM7qJ0uyImij" target="_blank" rel="noopener">Yaco Santana</a>.',
+        hero_scroll: "Défiler pour explorer",
+        marquee_tagline: "LABEL DISCOGRAPHIQUE INDÉPENDANT",
+        sl_services: "Services Musicaux", st_services_html: "Services<br>de studio.",
+        sl_testimonials: "Clients et Témoignages", st_testimonials_html: "Ce qu'ils<br>en disent.",
+        testimonials_intro: "Nous rassemblons les témoignages réels de nos artistes — cet espace accueillera bientôt leurs histoires.",
+        sl_label: "Le Label", st_label_html: "Qui nous<br>sommes.",
+        label_intro_html: 'ZECHE GRUV est un label discographique indépendant dirigé par <span style="color: var(--orange-soft);">Yaco Santana</span> — plus de 10 ans à produire de la musique, avec plus de 200 artistes dans le monde qui nous font confiance pour accompagner leur carrière.',
+        label_side: "Notre objectif est de garder le son organique au cœur de chaque projet, en développant chaque production jusqu'à ce qu'elle corresponde à la vision de l'artiste — un son et une composition au plus haut niveau professionnel. Nous avons une équipe complète : producteurs, musiciens de session sur plusieurs instruments, ingénieurs de mixage et de mastering, distribution sur toutes les plateformes numériques, pochette et design, ainsi qu'enregistrement et production audiovisuelle.",
+        label_director_role: "Fondateur et Directeur",
+        label_director_bio: "Producteur et directeur de ZECHE GRUV depuis sa création, il accompagne chaque artiste du label du début à la fin — de la première session jusqu'à la sortie — en veillant à ce que le son final reste fidèle à ce que l'artiste veut exprimer.",
+        label_studio_title: "Un aperçu du studio",
+        sl_artists: "Artistes", st_artists_html: "Le<br>roster.",
+        sl_releases: "Dernière Sortie", st_releases_html: "Le son<br>le plus récent.",
+        release_out_now: "DISPONIBLE", release_copy_html: "Avec Rouse bby et YEIKO. Produit par ZECHE GRUV.",
+        sl_catalogue: "Catalogue", st_catalogue_html: "Sorties<br>sélectionnées.",
+        sl_contact: "Démos et Collaborations", contact_title_html: "FAITES<br><span>DU BRUIT.</span>",
+        btn_spotify: "Spotify ↗", btn_demo: "Envoyer une démo ↗", btn_instagram: "Instagram ↗", btn_playlist: "Playlist ↗",
+        spotify_bar_label: "Aperçu", footer_rights: "TOUS DROITS RÉSERVÉS",
+        pkg_custom_name: "Compose ton propre pack de production personnalisé",
+        pkg_custom_desc: "Tu sais déjà ce dont tu as besoin ? Choisis les services que tu veux combiner dans la liste et on te prépare un devis sur mesure, directement par WhatsApp.",
+        pkg_custom_toggle_btn: "Choisir les services", pkg_custom_cta: "Devis par WhatsApp ↗",
+        pkg_custom_empty_hint: "Choisis au moins un service pour obtenir un devis.",
+        pkg_single_name: "Single",
+        pkg_single_desc: "Ton titre de A à Z : enregistrement, mixage, mastering et distribution en un seul pack, avec tout ce qu'il faut pour le sortir de façon professionnelle.",
+        pkg_cta_reserve: "Réserver par WhatsApp ↗",
+        pkg_epalbum_name: "EP / Album", pkg_ep_label: "EP", pkg_album_label: "Album",
+        pkg_ep_save: "Tu économises +35% par rapport aux services pris séparément.",
+        pkg_album_save: "Tu économises +40% par rapport aux services pris séparément.",
+        pkg_songs_label: "Nombre de titres",
+        pkg_epalbum_desc: "Pour les projets à plusieurs titres. Choisis EP ou Album et dis-nous combien de titres il comporte — le prix est fixe, quel que soit le nombre de titres dans le format.",
+        pkg_epalbum_choose_hint: "Choisis un format pour voir le prix",
+        pkg_cta_quote: "Devis par WhatsApp ↗", pkg_currency: "ARS", pkg_currency_monthly: "ARS / mois",
+        includes_title: "Les 3 packs incluent",
+        includes_1: "4 sessions d'enregistrement de 2h par semaine (pour l'EP et l'Album, c'est mensuel : ça se renouvelle chaque mois jusqu'à la fin du projet)", includes_2: "Mixage et mastering",
+        includes_3: "Distribution sur toutes les plateformes (pitch aux playlists éditoriales pour +30 000 $, réservé aux packs)",
+        includes_4: "Petit-déjeuner ou collation", includes_5: "Assistance et suivi par WhatsApp",
+        includes_6: "Sauvegarde cloud de tes projets",
+        includes_7: "Pistes pour concerts live, livrées entre 7 et 15 jours après l'enregistrement des voix finales, avec le master final",
+        alacarte_title: "Tu préfères tout composer toi-même ? Choisis des services à l'unité :",
+        svc_cta_reserve: "Réserver par WhatsApp ↗", svc_cta_quote: "Devis par WhatsApp ↗",
+        svc_cta_consult: "Demander par WhatsApp ↗", svc_price_quote: "Devis sur demande",
+        mezcla_canales_label: "Nombre de canaux", mezcla_duracion_label: "Durée du titre (min:sec)",
+        distro_canciones_label: "Nombre de titres à distribuer",
+        distro_estrenadas_label: "Étaient-ils déjà sortis avant ?",
+        distro_migrando_label: "Tu changes de distributeur ?",
+        distro_motivo_label: "Pourquoi veux-tu changer de distributeur ?",
+        distro_motivo_placeholder: "Explique brièvement...", select_choose: "Choisir...", yes: "Oui", no: "Non",
+        distro_pitch_label: "Ajouter le pitch aux playlists éditoriales",
+        distro_pitch_disabled_hint: "Le pitch est disponible uniquement pour les titres distribués pour la première fois — il ne s'applique pas s'ils étaient déjà sortis avant ou si tu changes de distributeur.",
+        lang_aria: "Langue",
+        svc: {
+          session: { name: "Heure de session d'enregistrement", desc: "Une heure de studio avec un ingénieur du son, un espace traité acoustiquement pour enregistrer des voix et/ou des instruments. Idéal si ton titre est déjà arrangé et que tu dois juste le capturer avec une qualité et un accompagnement professionnels." },
+          mastering: { name: "Mastering", desc: "La dernière étape avant la sortie : on équilibre niveaux, dynamique et volume pour que ton titre sonne homogène et compétitif sur n'importe quelle plateforme." },
+          mixtering: { name: "Mixtering (mixage par stems, jusqu'à 8 stems)", desc: "On mixe ton titre à partir de 8 stems maximum — idéal si tu as déjà une bonne préproduction avancée et que tu veux un mixage et un mastering rapides et soignés sans passer par le processus complet, avec +40% d'économie." },
+          instrumental_catalogo: { name: "Instrumental de catalogue", desc: "Tu choisis une prod déjà composée dans notre catalogue et on te la personnalise, prête pour enregistrer tes voix par-dessus." },
+          instrumental_personalizada: { name: "Instrumental sur mesure (4 révisions)", desc: "On compose une prod de zéro selon ton style et tes références, avec jusqu'à 4 séries d'ajustements jusqu'à ce qu'elle corresponde exactement à ce que tu imagines." },
+          coverart: { name: "Pochette / Cover art", desc: "Design de pochette pour ton single, EP ou album, pensé pour se démarquer aussi bien sur Spotify que sur les réseaux." },
+          videoclip: { name: "Clip vidéo (tournage et montage)", desc: "Tournage et montage d'un clip pour ton titre, de A à Z — du tournage au montage final prêt à publier." },
+          videolyrics: { name: "Lyric vidéo", desc: "Vidéo avec paroles animées synchronisées à ton titre, une option plus accessible pour avoir du contenu vidéo sur les réseaux et YouTube." },
+          session_musicians: { name: "Enregistrement guitare / basse / batterie / chœurs", desc: "On fait appel à des musiciens de session pour enregistrer sur ton titre, avec l'instrument et la salle déjà prêts." },
+          mezcla: { name: "Mixage", desc: "Mixage professionnel de ton titre ; le prix dépend du nombre de canaux et de la durée du titre — obtiens un devis en remplissant ces informations." },
+          distro: { name: "Distribution sur toutes les plateformes", desc: "On met ta musique sur Spotify, Apple Music, YouTube Music et toutes les autres plateformes. S'il s'agit d'une toute nouvelle sortie, tu peux ajouter le pitch aux playlists éditoriales en option (+30 000 $)." },
+          playback: { name: "Playback et accordage", desc: "Ce n'est pas juste préparer la piste de playback : le jour du concert, on est là avec toi. On te remet les pistes prêtes et on fait le tune en direct, en temps réel, en suivant chaque nuance de ta prestation sur scène. C'est le standard ZECHE GRUV pour les concerts live : zéro raté, zéro surprise, un son digne d'une tournée professionnelle du début à la fin." },
+        },
+      },
+      it: {
+        nav_services: "Servizi", nav_testimonials: "Testimonianze", nav_label: "L'Etichetta",
+        nav_artists: "Artisti", nav_releases: "Uscite", nav_contact: "Contatto",
+        hero_eyebrow: "Etichetta Discografica Indipendente",
+        hero_desc_html: 'Etichetta discografica e casa di produzione indipendente — composizione, registrazione, missaggio, mastering, distribuzione e copertina, guidata da <a href="https://open.spotify.com/intl-es/artist/0yIGrWjWqKnM7qJ0uyImij" target="_blank" rel="noopener">Yaco Santana</a>.',
+        hero_scroll: "Scorri per esplorare",
+        marquee_tagline: "ETICHETTA DISCOGRAFICA INDIPENDENTE",
+        sl_services: "Servizi Musicali", st_services_html: "Servizi<br>di studio.",
+        sl_testimonials: "Clienti e Testimonianze", st_testimonials_html: "Cosa<br>dicono.",
+        testimonials_intro: "Stiamo raccogliendo le testimonianze reali dei nostri artisti — presto qui potrai leggere le loro storie.",
+        sl_label: "L'Etichetta", st_label_html: "Chi<br>siamo.",
+        label_intro_html: "ZECHE GRUV è un'etichetta discografica indipendente diretta da <span style=\"color: var(--orange-soft);\">Yaco Santana</span> — oltre 10 anni a produrre musica, con più di 200 artisti nel mondo che ci scelgono per accompagnare la loro carriera.",
+        label_side: "Il nostro obiettivo è mantenere il suono organico al centro di ogni progetto, sviluppando ogni produzione finché non rispecchia la visione dell'artista — suono e scrittura al massimo livello professionale. Abbiamo un team completo: produttori, session musician su più strumenti, ingegneri di missaggio e mastering, distribuzione su tutte le piattaforme digitali, copertine e design, e registrazione e produzione audiovisiva.",
+        label_director_role: "Fondatore e Direttore",
+        label_director_bio: "Produttore e direttore di ZECHE GRUV dalla sua fondazione, segue ogni artista dell'etichetta dall'inizio alla fine — dalla prima sessione fino all'uscita — assicurandosi che il suono finale sia fedele a ciò che l'artista vuole dire.",
+        label_studio_title: "Uno sguardo dentro lo studio",
+        sl_artists: "Artisti", st_artists_html: "Il<br>roster.",
+        sl_releases: "Ultima Uscita", st_releases_html: "Il suono<br>più nuovo.",
+        release_out_now: "GIÀ DISPONIBILE", release_copy_html: "Con Rouse bby e YEIKO. Prodotto da ZECHE GRUV.",
+        sl_catalogue: "Catalogo", st_catalogue_html: "Uscite<br>selezionate.",
+        sl_contact: "Demo e Collaborazioni", contact_title_html: "FAI<br><span>RUMORE.</span>",
+        btn_spotify: "Spotify ↗", btn_demo: "Invia una demo ↗", btn_instagram: "Instagram ↗", btn_playlist: "Playlist ↗",
+        spotify_bar_label: "Anteprima", footer_rights: "TUTTI I DIRITTI RISERVATI",
+        pkg_custom_name: "Crea il tuo pacchetto di produzione personalizzato",
+        pkg_custom_desc: "Sai già cosa ti serve? Scegli i servizi che vuoi combinare dalla lista e ti prepariamo un preventivo su misura, direttamente via WhatsApp.",
+        pkg_custom_toggle_btn: "Scegli i servizi", pkg_custom_cta: "Preventivo via WhatsApp ↗",
+        pkg_custom_empty_hint: "Scegli almeno un servizio per richiedere un preventivo.",
+        pkg_single_name: "Singolo",
+        pkg_single_desc: "Il tuo brano dall'inizio alla fine: registrazione, missaggio, mastering e distribuzione in un unico pacchetto, con tutto ciò che serve per pubblicarlo in modo professionale.",
+        pkg_cta_reserve: "Prenota via WhatsApp ↗",
+        pkg_epalbum_name: "EP / Album", pkg_ep_label: "EP", pkg_album_label: "Album",
+        pkg_ep_save: "Risparmi +35% rispetto a prendere i servizi separatamente.",
+        pkg_album_save: "Risparmi +40% rispetto a prendere i servizi separatamente.",
+        pkg_songs_label: "Numero di brani",
+        pkg_epalbum_desc: "Per progetti con più brani. Scegli tra EP o Album e dicci quante tracce contiene — il prezzo è fisso, indipendentemente dal numero di brani nel formato.",
+        pkg_epalbum_choose_hint: "Scegli un formato per vedere il prezzo",
+        pkg_cta_quote: "Preventivo via WhatsApp ↗", pkg_currency: "ARS", pkg_currency_monthly: "ARS / mese",
+        includes_title: "Tutti e 3 i pacchetti includono",
+        includes_1: "4 sessioni di registrazione da 2h a settimana (per EP e Album è mensile: si rinnova ogni mese fino al termine del progetto)", includes_2: "Missaggio e mastering",
+        includes_3: "Distribuzione su tutte le piattaforme (pitch alle playlist editoriali per +$30.000, solo nei pacchetti)",
+        includes_4: "Colazione o merenda", includes_5: "Assistenza e follow-up via WhatsApp",
+        includes_6: "Backup su cloud dei tuoi progetti",
+        includes_7: "Tracce per i live, consegnate tra 7 e 15 giorni dopo la registrazione delle voci finali, insieme al master finale",
+        alacarte_title: "Preferisci creare tutto per conto tuo? Scegli i servizi singoli:",
+        svc_cta_reserve: "Prenota via WhatsApp ↗", svc_cta_quote: "Preventivo via WhatsApp ↗",
+        svc_cta_consult: "Chiedi via WhatsApp ↗", svc_price_quote: "Richiedi un preventivo",
+        mezcla_canales_label: "Numero di canali", mezcla_duracion_label: "Durata del brano (min:sec)",
+        distro_canciones_label: "Numero di brani da distribuire",
+        distro_estrenadas_label: "Erano già stati pubblicati prima?",
+        distro_migrando_label: "Stai passando da un'altra distribuzione?",
+        distro_motivo_label: "Perché vuoi cambiare distribuzione?",
+        distro_motivo_placeholder: "Raccontaci brevemente...", select_choose: "Scegli...", yes: "Sì", no: "No",
+        distro_pitch_label: "Aggiungi il pitching alle playlist editoriali",
+        distro_pitch_disabled_hint: "Il pitching è disponibile solo per brani distribuiti per la prima volta — non è applicabile se erano già stati pubblicati prima o se stai passando da un'altra distribuzione.",
+        lang_aria: "Lingua",
+        svc: {
+          session: { name: "Ora di sessione di registrazione", desc: "Un'ora di studio con un fonico in sala, uno spazio trattato acusticamente per registrare voci e/o strumenti. Ideale se il brano è già arrangiato e devi solo catturarlo con qualità e assistenza professionale." },
+          mastering: { name: "Mastering", desc: "L'ultimo passo prima della pubblicazione: bilanciamo livelli, dinamica e volume per un suono uniforme e competitivo su qualsiasi piattaforma." },
+          mixtering: { name: "Mixtering (missaggio per stems, fino a 8 stems)", desc: "Missiamo il tuo brano a partire da un massimo di 8 stems — ideale se hai già una buona pre-produzione avanzata e vuoi un mix e un master veloci e curati senza passare per il processo completo, risparmiando +40%." },
+          instrumental_catalogo: { name: "Base dal catalogo", desc: "Scegli una base già composta dal nostro catalogo e la rendiamo tua, pronta per registrarci sopra le tue voci." },
+          instrumental_personalizada: { name: "Base personalizzata (4 revisioni)", desc: "Componiamo una base da zero secondo il tuo stile e i tuoi riferimenti, con fino a 4 round di modifiche finché non è esattamente come la immagini." },
+          coverart: { name: "Copertina / Coverart", desc: "Design della copertina per il tuo singolo, EP o album, pensato per risaltare sia su Spotify che sui social." },
+          videoclip: { name: "Videoclip (ripresa e montaggio)", desc: "Ripresa e montaggio di un videoclip per il tuo brano, dall'inizio alla fine — dalle riprese al montaggio finale pronto per la pubblicazione." },
+          videolyrics: { name: "VideoLyrics", desc: "Video con testo animato sincronizzato al tuo brano, un'opzione più accessibile per avere contenuti video sui social e su YouTube." },
+          session_musicians: { name: "Registrazione chitarra / basso / batteria / cori", desc: "Coinvolgiamo session musician per registrare sul tuo brano, con strumento e sala già pronti." },
+          mezcla: { name: "Missaggio", desc: "Missaggio professionale del tuo brano; il prezzo varia in base al numero di canali e alla durata del brano — richiedi il preventivo compilando questi dati." },
+          distro: { name: "Distribuzione su tutte le piattaforme", desc: "Carichiamo la tua musica su Spotify, Apple Music, YouTube Music e tutte le altre piattaforme. Se è una nuova uscita, puoi aggiungere il pitching alle playlist editoriali come opzione extra (+$30.000)." },
+          playback: { name: "Playback e accordatura", desc: "Non si tratta solo di preparare la traccia di playback: il giorno del live siamo lì con te. Ti consegniamo le tracce pronte e facciamo il tune dal vivo, in tempo reale, seguendo ogni sfumatura della tua performance sul palco. È lo standard ZECHE GRUV per i concerti dal vivo: zero intoppi, zero sorprese, un suono da tour professionale dall'inizio alla fine." },
+        },
+      },
+      de: {
+        nav_services: "Services", nav_testimonials: "Referenzen", nav_label: "Das Label",
+        nav_artists: "Künstler", nav_releases: "Releases", nav_contact: "Kontakt",
+        hero_eyebrow: "Unabhängiges Musiklabel",
+        hero_desc_html: 'Unabhängiges Musiklabel und Produktionshaus — Komposition, Aufnahme, Mixing, Mastering, Vertrieb und Cover-Artwork, geleitet von <a href="https://open.spotify.com/intl-es/artist/0yIGrWjWqKnM7qJ0uyImij" target="_blank" rel="noopener">Yaco Santana</a>.',
+        hero_scroll: "Scrollen zum Entdecken",
+        marquee_tagline: "UNABHÄNGIGES MUSIKLABEL",
+        sl_services: "Musikdienstleistungen", st_services_html: "Studio-<br>services.",
+        sl_testimonials: "Kunden &amp; Referenzen", st_testimonials_html: "Was sie<br>sagen.",
+        testimonials_intro: "Wir sammeln gerade echte Stimmen unserer Künstler — hier werden bald ihre Geschichten stehen.",
+        sl_label: "Das Label", st_label_html: "Wer wir<br>sind.",
+        label_intro_html: 'ZECHE GRUV ist ein unabhängiges Musiklabel unter der Leitung von <span style="color: var(--orange-soft);">Yaco Santana</span> — seit über 10 Jahren produzieren wir Musik, mit mehr als 200 Künstlern weltweit, die uns für ihre Karriere vertrauen.',
+        label_side: "Unser Ziel ist es, den organischen Sound in den Mittelpunkt jedes Projekts zu stellen und jede Produktion so lange zu entwickeln, bis sie der Vision des Künstlers entspricht — Sound und Songwriting auf höchstem professionellem Niveau. Wir haben ein komplettes Team: Produzenten, Sessionmusiker an mehreren Instrumenten, Mixing- und Mastering-Ingenieure, Vertrieb auf allen digitalen Plattformen, Cover-Design sowie audiovisuelle Aufnahme und Produktion.",
+        label_director_role: "Gründer &amp; Direktor",
+        label_director_bio: "Produzent und Direktor von ZECHE GRUV seit der Gründung — er begleitet jeden Künstler des Labels von Anfang bis Ende, von der ersten Session bis zur Veröffentlichung, und sorgt dafür, dass der finale Sound das widerspiegelt, was der Künstler sagen möchte.",
+        label_studio_title: "Ein Blick ins Studio",
+        sl_artists: "Künstler", st_artists_html: "Das<br>Roster.",
+        sl_releases: "Neuester Release", st_releases_html: "Der neueste<br>Sound.",
+        release_out_now: "JETZT VERFÜGBAR", release_copy_html: "Mit Rouse bby und YEIKO. Produziert von ZECHE GRUV.",
+        sl_catalogue: "Katalog", st_catalogue_html: "Ausgewählte<br>Releases.",
+        sl_contact: "Demos &amp; Kollaborationen", contact_title_html: "MACH<br><span>LÄRM.</span>",
+        btn_spotify: "Spotify ↗", btn_demo: "Demo senden ↗", btn_instagram: "Instagram ↗", btn_playlist: "Playlist ↗",
+        spotify_bar_label: "Vorschau", footer_rights: "ALLE RECHTE VORBEHALTEN",
+        pkg_custom_name: "Stell dir dein eigenes individuelles Produktionspaket zusammen",
+        pkg_custom_desc: "Du weißt schon, was du brauchst? Wähl aus der Liste die Services aus, die du kombinieren möchtest, und wir erstellen dir direkt per WhatsApp ein individuelles Angebot.",
+        pkg_custom_toggle_btn: "Services auswählen", pkg_custom_cta: "Angebot per WhatsApp ↗",
+        pkg_custom_empty_hint: "Wähl mindestens einen Service für ein Angebot aus.",
+        pkg_single_name: "Single",
+        pkg_single_desc: "Dein Song von Anfang bis Ende: Aufnahme, Mixing, Mastering und Vertrieb in einem Paket — alles, was du für eine professionelle Veröffentlichung brauchst.",
+        pkg_cta_reserve: "Buchen per WhatsApp ↗",
+        pkg_epalbum_name: "EP / Album", pkg_ep_label: "EP", pkg_album_label: "Album",
+        pkg_ep_save: "Du sparst +35% gegenüber der Einzelbuchung aller Services.",
+        pkg_album_save: "Du sparst +40% gegenüber der Einzelbuchung aller Services.",
+        pkg_songs_label: "Anzahl der Songs",
+        pkg_epalbum_desc: "Für Projekte mit mehreren Songs. Wähl EP oder Album und sag uns, wie viele Tracks es hat — der Preis ist fix, egal wie viele Songs das Format hat.",
+        pkg_epalbum_choose_hint: "Wähl ein Format, um den Preis zu sehen",
+        pkg_cta_quote: "Angebot per WhatsApp ↗", pkg_currency: "ARS", pkg_currency_monthly: "ARS / Monat",
+        includes_title: "Alle 3 Pakete enthalten",
+        includes_1: "4 Aufnahmesessions à 2 Stunden pro Woche (bei EP und Album monatlich: erneuert sich jeden Monat bis zum Projektabschluss)", includes_2: "Mixing und Mastering",
+        includes_3: "Vertrieb auf allen Plattformen (Pitching an redaktionelle Playlists für +$30.000, nur in den Paketen)",
+        includes_4: "Frühstück oder Snack", includes_5: "Betreuung und Support per WhatsApp",
+        includes_6: "Cloud-Backup deiner Projekte",
+        includes_7: "Live-Tracks, geliefert 7 bis 15 Tage nach Aufnahme der finalen Vocals, zusammen mit dem finalen Master",
+        alacarte_title: "Lieber alles selbst zusammenstellen? Wähl einzelne Services:",
+        svc_cta_reserve: "Buchen per WhatsApp ↗", svc_cta_quote: "Angebot per WhatsApp ↗",
+        svc_cta_consult: "Anfragen per WhatsApp ↗", svc_price_quote: "Angebot anfordern",
+        mezcla_canales_label: "Anzahl der Kanäle", mezcla_duracion_label: "Songdauer (Min:Sek)",
+        distro_canciones_label: "Anzahl der zu vertreibenden Songs",
+        distro_estrenadas_label: "Waren sie vorher schon veröffentlicht?",
+        distro_migrando_label: "Wechselst du von einem anderen Vertrieb?",
+        distro_motivo_label: "Warum möchtest du den Vertrieb wechseln?",
+        distro_motivo_placeholder: "Erzähl uns kurz...", select_choose: "Auswählen...", yes: "Ja", no: "Nein",
+        distro_pitch_label: "Pitching an redaktionelle Playlists dazubuchen",
+        distro_pitch_disabled_hint: "Pitching ist nur für Songs verfügbar, die zum ersten Mal vertrieben werden — es gilt nicht, wenn sie schon einmal veröffentlicht wurden oder du von einem anderen Vertrieb wechselst.",
+        lang_aria: "Sprache",
+        svc: {
+          session: { name: "Aufnahmesession (pro Stunde)", desc: "Eine Stunde Studiozeit mit Toningenieur, ein akustisch behandelter Raum für Gesangs- und/oder Instrumentalaufnahmen. Ideal, wenn dein Song schon fertig arrangiert ist und du ihn nur noch mit professioneller Qualität und Betreuung einfangen musst." },
+          mastering: { name: "Mastering", desc: "Der letzte Schritt vor der Veröffentlichung: Wir balancieren Pegel, Dynamik und Lautheit, damit dein Song auf jeder Plattform gleichmäßig und konkurrenzfähig klingt." },
+          mixtering: { name: "Mixtering (Stem-Mix, bis zu 8 Stems)", desc: "Wir mischen deinen Song aus bis zu 8 Stems — ideal, wenn du bereits eine solide, fortgeschrittene Produktion hast und ein schnelles, sauberes Mixing und Mastering ohne den vollständigen Prozess möchtest, mit einer Ersparnis von +40%." },
+          instrumental_catalogo: { name: "Instrumental aus dem Katalog", desc: "Du wählst ein bereits fertiges Beat aus unserem Katalog und machst es zu deinem eigenen — bereit, deinen Gesang darüber aufzunehmen." },
+          instrumental_personalizada: { name: "Individuelles Instrumental (4 Korrekturen)", desc: "Wir komponieren ein Beat von Grund auf nach deinem Stil und deinen Referenzen, mit bis zu 4 Korrekturrunden, bis es genau so klingt, wie du es dir vorstellst." },
+          coverart: { name: "Cover-Artwork", desc: "Cover-Design für deine Single, EP oder dein Album — gemacht, um sowohl auf Spotify als auch in Social Media aufzufallen." },
+          videoclip: { name: "Musikvideo (Dreh &amp; Schnitt)", desc: "Dreh und Schnitt eines Musikvideos für deinen Song, von Anfang bis Ende — vom Dreh bis zum fertigen, veröffentlichungsbereiten Schnitt." },
+          videolyrics: { name: "Lyric-Video", desc: "Video mit animiertem Songtext, synchron zu deinem Song — eine zugänglichere Option für Videoinhalte auf Social Media und YouTube." },
+          session_musicians: { name: "Aufnahme von Gitarre / Bass / Schlagzeug / Backing Vocals", desc: "Wir holen Sessionmusiker dazu, die auf deinem Track einspielen — Instrument und Raum sind bereits vorbereitet." },
+          mezcla: { name: "Mixing", desc: "Professionelles Mixing deines Songs; der Preis hängt von der Anzahl der Kanäle und der Songlänge ab — hol dir ein Angebot, indem du diese Angaben ausfüllst." },
+          distro: { name: "Vertrieb auf allen Plattformen", desc: "Wir laden deine Musik auf Spotify, Apple Music, YouTube Music und alle anderen Plattformen hoch. Bei einer brandneuen Veröffentlichung kannst du das Pitching an redaktionelle Playlists als Extra dazubuchen (+$30.000)." },
+          playback: { name: "Playback &amp; Tuning", desc: "Es geht nicht nur darum, den Playback-Track vorzubereiten: Am Tag deiner Show sind wir live dabei. Wir liefern dir die fertigen Tracks und übernehmen das Tuning in Echtzeit, direkt live, und folgen jeder Nuance deiner Performance auf der Bühne. Das ist der ZECHE-GRUV-Standard für Live-Shows: keine Aussetzer, keine Überraschungen, professioneller Tour-Sound von Anfang bis Ende." },
+        },
+      },
+      ru: {
+        nav_services: "Услуги", nav_testimonials: "Отзывы", nav_label: "О лейбле",
+        nav_artists: "Артисты", nav_releases: "Релизы", nav_contact: "Контакты",
+        hero_eyebrow: "Независимый Музыкальный Лейбл",
+        hero_desc_html: 'Независимый музыкальный лейбл и продакшн-хаус — сочинение, запись, сведение, мастеринг, дистрибуция и обложка, под руководством <a href="https://open.spotify.com/intl-es/artist/0yIGrWjWqKnM7qJ0uyImij" target="_blank" rel="noopener">Yaco Santana</a>.',
+        hero_scroll: "Листайте вниз",
+        marquee_tagline: "НЕЗАВИСИМЫЙ МУЗЫКАЛЬНЫЙ ЛЕЙБЛ",
+        sl_services: "Музыкальные Услуги", st_services_html: "Студийные<br>услуги.",
+        sl_testimonials: "Клиенты и Отзывы", st_testimonials_html: "Что они<br>говорят.",
+        testimonials_intro: "Мы собираем настоящие отзывы наших артистов — совсем скоро здесь появятся их истории.",
+        sl_label: "О лейбле", st_label_html: "Кто мы<br>такие.",
+        label_intro_html: 'ZECHE GRUV — независимый музыкальный лейбл под руководством <span style="color: var(--orange-soft);">Yaco Santana</span> — уже больше 10 лет мы продюсируем музыку, и более 200 артистов по всему миру доверяют нам сопровождение своей карьеры.',
+        label_side: "Наша цель — сохранять живое, органичное звучание в основе каждого проекта, дорабатывая каждую продакшн-работу до тех пор, пока она не отразит видение артиста — звук и композицию на высочайшем профессиональном уровне. У нас полноценная команда: продюсеры, сессионные музыканты на разных инструментах, звукорежиссёры сведения и мастеринга, дистрибуция на всех цифровых платформах, дизайн обложек, а также аудиовизуальная съёмка и продакшн.",
+        label_director_role: "Основатель и директор",
+        label_director_bio: "Продюсер и директор ZECHE GRUV с момента основания лейбла — сопровождает каждого артиста от начала до конца, от первой сессии до релиза, следя за тем, чтобы итоговое звучание оставалось верным тому, что хочет сказать артист.",
+        label_studio_title: "Взгляд внутрь студии",
+        sl_artists: "Артисты", st_artists_html: "Наш<br>ростер.",
+        sl_releases: "Последний Релиз", st_releases_html: "Самое новое<br>звучание.",
+        release_out_now: "УЖЕ ДОСТУПНО", release_copy_html: "При участии Rouse bby и YEIKO. Продюсер — ZECHE GRUV.",
+        sl_catalogue: "Каталог", st_catalogue_html: "Избранные<br>релизы.",
+        sl_contact: "Демо и Коллаборации", contact_title_html: "ЗАЯВИ<br><span>О СЕБЕ.</span>",
+        btn_spotify: "Spotify ↗", btn_demo: "Отправить демо ↗", btn_instagram: "Instagram ↗", btn_playlist: "Плейлист ↗",
+        spotify_bar_label: "Превью", footer_rights: "ВСЕ ПРАВА ЗАЩИЩЕНЫ",
+        pkg_custom_name: "Собери свой индивидуальный пакет продакшна",
+        pkg_custom_desc: "Уже знаешь, что тебе нужно? Выбери услуги, которые хочешь объединить, из списка — и мы соберём индивидуальное предложение прямо в WhatsApp.",
+        pkg_custom_toggle_btn: "Выбрать услуги", pkg_custom_cta: "Узнать цену в WhatsApp ↗",
+        pkg_custom_empty_hint: "Выбери хотя бы одну услугу, чтобы получить предложение.",
+        pkg_single_name: "Сингл",
+        pkg_single_desc: "Твоя песня от начала до конца: запись, сведение, мастеринг и дистрибуция в одном пакете — всё, что нужно для профессионального релиза.",
+        pkg_cta_reserve: "Забронировать в WhatsApp ↗",
+        pkg_epalbum_name: "EP / Альбом", pkg_ep_label: "EP", pkg_album_label: "Альбом",
+        pkg_ep_save: "Экономия +35% по сравнению с отдельной оплатой услуг.",
+        pkg_album_save: "Экономия +40% по сравнению с отдельной оплатой услуг.",
+        pkg_songs_label: "Количество песен",
+        pkg_epalbum_desc: "Для проектов из нескольких песен. Выбери EP или Альбом и скажи, сколько треков в нём — цена фиксированная, независимо от количества песен в формате.",
+        pkg_epalbum_choose_hint: "Выбери формат, чтобы увидеть цену",
+        pkg_cta_quote: "Узнать цену в WhatsApp ↗", pkg_currency: "ARS", pkg_currency_monthly: "ARS / мес",
+        includes_title: "Все 3 пакета включают",
+        includes_1: "4 сессии записи по 2 часа в неделю (для EP и Альбома — помесячно: продлевается каждый месяц до завершения проекта)", includes_2: "Сведение и мастеринг",
+        includes_3: "Дистрибуция на все платформы (питчинг в редакционные плейлисты за +$30 000, только в пакетах)",
+        includes_4: "Завтрак или лёгкий перекус", includes_5: "Поддержка и сопровождение в WhatsApp",
+        includes_6: "Облачное резервное копирование твоих проектов",
+        includes_7: "Треки для живых выступлений, которые передаются через 7–15 дней после записи финального вокала, вместе с финальным мастером",
+        alacarte_title: "Хочешь собрать всё сам? Выбери отдельные услуги:",
+        svc_cta_reserve: "Забронировать в WhatsApp ↗", svc_cta_quote: "Узнать цену в WhatsApp ↗",
+        svc_cta_consult: "Спросить в WhatsApp ↗", svc_price_quote: "Узнать стоимость",
+        mezcla_canales_label: "Количество каналов", mezcla_duracion_label: "Длительность песни (мин:сек)",
+        distro_canciones_label: "Количество песен для дистрибуции",
+        distro_estrenadas_label: "Они уже выходили раньше?",
+        distro_migrando_label: "Переходишь от другого дистрибьютора?",
+        distro_motivo_label: "Почему хочешь сменить дистрибьютора?",
+        distro_motivo_placeholder: "Расскажи вкратце...", select_choose: "Выбрать...", yes: "Да", no: "Нет",
+        distro_pitch_label: "Добавить питчинг в редакционные плейлисты",
+        distro_pitch_disabled_hint: "Питчинг доступен только для песен, которые распространяются впервые — не применяется, если они уже выходили раньше или если ты переходишь от другого дистрибьютора.",
+        lang_aria: "Язык",
+        svc: {
+          session: { name: "Час студийной сессии", desc: "Час студийного времени со звукорежиссёром в зале, акустически подготовленное помещение для записи вокала и/или инструментов. Идеально, если песня уже аранжирована и её нужно просто профессионально записать с профессиональным сопровождением." },
+          mastering: { name: "Мастеринг", desc: "Последний шаг перед релизом: мы выравниваем уровни, динамику и громкость, чтобы песня звучала ровно и конкурентоспособно на любой платформе." },
+          mixtering: { name: "Микстеринг (сведение по стемам, до 8 стемов)", desc: "Сводим твою песню из до 8 стемов — отлично подходит, если у тебя уже есть хорошая продвинутая продакшн-версия и нужны быстрые, чистые сведение и мастеринг без полного процесса, с экономией +40%." },
+          instrumental_catalogo: { name: "Инструментал из каталога", desc: "Выбираешь уже готовый бит из нашего каталога — и он становится твоим, готовым для записи вокала." },
+          instrumental_personalizada: { name: "Инструментал на заказ (4 правки)", desc: "Создаём бит с нуля по твоему стилю и референсам, с до 4 раундами правок, пока он не станет именно таким, каким ты его представляешь." },
+          coverart: { name: "Обложка / Coverart", desc: "Дизайн обложки для сингла, EP или альбома — сделан так, чтобы выделяться и в Spotify, и в соцсетях." },
+          videoclip: { name: "Клип (съёмка и монтаж)", desc: "Съёмка и монтаж клипа для твоей песни от начала до конца — от съёмочного дня до готового к публикации финального монтажа." },
+          videolyrics: { name: "Лирик-видео", desc: "Видео с анимированным текстом, синхронизированным с песней — более доступный вариант видеоконтента для соцсетей и YouTube." },
+          session_musicians: { name: "Запись гитары / баса / барабанов / бэк-вокала", desc: "Приглашаем сессионных музыкантов для записи поверх твоего трека — инструмент и зал уже готовы." },
+          mezcla: { name: "Сведение", desc: "Профессиональное сведение твоей песни; цена зависит от количества каналов и длительности трека — узнай стоимость, заполнив эти данные." },
+          distro: { name: "Дистрибуция на все платформы", desc: "Выгружаем твою музыку на Spotify, Apple Music, YouTube Music и другие платформы. Если это совершенно новый релиз, можно дополнительно добавить питчинг в редакционные плейлисты (+$30 000)." },
+          playback: { name: "Плейбэк и подстройка", desc: "Дело не только в подготовке плейбэк-трека: в день шоу мы рядом с тобой. Мы передаём готовые треки и в реальном времени, вживую, делаем тюнинг звука, следуя за каждым нюансом твоего выступления на сцене. Это стандарт ZECHE GRUV для живых выступлений: ноль сбоев, ноль сюрпризов, профессиональный гастрольный звук от начала до конца." },
+        },
+      },
+    };
+
+    function detectInitialLang() {
+      try {
+        const saved = localStorage.getItem("zg_lang");
+        if (saved && SUPPORTED_LANGS.includes(saved)) return saved;
+      } catch (e) {}
+      const nav = ((navigator.language || "es").slice(0, 2) || "es").toLowerCase();
+      return SUPPORTED_LANGS.includes(nav) ? nav : "es";
+    }
+
+    function applyLanguage(lang) {
+      if (!I18N[lang]) lang = "es";
+      currentLang = lang;
+      document.documentElement.lang = lang;
+
+      document.querySelectorAll("[data-i18n]").forEach((el) => {
+        const val = I18N[lang][el.getAttribute("data-i18n")];
+        if (val !== undefined) el.textContent = val;
+      });
+
+      document.querySelectorAll("[data-i18n-html]").forEach((el) => {
+        const val = I18N[lang][el.getAttribute("data-i18n-html")];
+        if (val !== undefined) el.innerHTML = val;
+      });
+
+      // Contenido armado por JS: hay que volver a generarlo para que
+      // tome el texto del nuevo idioma.
+      renderServiceCards();
+      renderCustomChecklist();
+      renderEpAlbum();
+
+      langSelect.value = lang;
+      try { localStorage.setItem("zg_lang", lang); } catch (e) {}
+    }
+
+    const langSelect = document.getElementById("langSelect");
+    langSelect.setAttribute("aria-label", "Language / Idioma");
+    langSelect.addEventListener("change", () => applyLanguage(langSelect.value));
+
+    applyLanguage(detectInitialLang());
 
     // ---------- Spotify hover preview ----------
     (function () {
@@ -1516,7 +2822,7 @@
         if (dismissed) return;
         clearTimeout(hideTimer);
         bar.classList.add("active");
-        label.textContent = name || "Preview";
+        label.textContent = name || I18N[currentLang].spotify_bar_label;
         pendingUri = uri;
 
         if (controller) {
