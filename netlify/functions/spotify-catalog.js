@@ -12,46 +12,122 @@ const ZECHE_GRUV_ARTIST_ID = "0yIGrWjWqKnM7qJ0uyImij";
 // diferencia de otros que permiten hasta 50) — con más, devuelve 400.
 const PAGE_LIMIT = 10;
 
+// A pedido: álbumes/singles que no tienen que aparecer en el catálogo
+// (aunque la API de Spotify los devuelva como crédito de ZECHE GRUV).
+const EXCLUDED_ALBUM_IDS = new Set([
+  "20dAwPjVuSMbigrTjSdSKJ", // Dispárame
+  "27SG9pqFdvHL6IDBef5fBy", // Lágrimas
+  "5GKtNfwn9iDvFd7aYHwoNJ", // Duelo
+  "0gdYHXKIPspbs1KfMA9nho", // Hilo Rojo
+  "4FOsGOqDjKkF5plimz3GGN", // RANGOS
+]);
+
+// A pedido: álbumes que sí tienen que estar pero la API no los devuelve
+// solos (ej. ZECHE GRUV acredita solo como producción, no como artista).
+const EXTRA_ALBUM_IDS = [
+  "0tclMzv83XAOpRtTZduBKy", // A.M.03 (Rouse bby)
+  "6YmySpzsNXMuxekqcmdlGJ", // TACÚ
+  "2G5d3XEXsb0Nnk7N9LRa77", // Plutão
+];
+
+// Mismo criterio que EXTRA_ALBUM_IDS pero para canciones sueltas que no
+// tienen álbum propio de ZECHE GRUV (sessions en vivo, versiones, etc.).
+const EXTRA_TRACK_IDS = [
+  "63mKI1UeGMKru5x0i5haz5", // Midel // ALL STZ Live Session #6
+  "0zmLTTEbr4gtDFxJkgcuYc", // ALL IN - Versión Acústica
+  "4cWNQP2GEDsivcFyqsqtCf", // Vum Bora
+  "0iB6esiqMK4QmDRhheQPQK", // A veces
+  "2PC3Oz8EyFLAlCl3FGWJfw", // El Mundo Está Jodido
+];
+
 // Cache en memoria del proceso (ver nota en _lib/spotify-token.js sobre
 // por qué no usamos un store externo): evita re-consultar Spotify en cada
 // visita mientras la instancia de la function siga tibia.
 let cache = { items: null, fetchedAt: 0 };
 const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hora
 
-async function fetchAllAlbums() {
+function normalizeAlbum(album, appearsOn) {
+  return {
+    id: album.id,
+    name: album.name,
+    type: album.album_type,
+    appearsOn,
+    releaseDate: album.release_date,
+    cover: album.images?.[0]?.url || null,
+    artists: album.artists.map((a) => a.name).join(", "),
+    url: album.external_urls?.spotify || `https://open.spotify.com/album/${album.id}`,
+  };
+}
+
+function normalizeTrack(track) {
+  return {
+    id: track.id,
+    name: track.name,
+    type: "track",
+    appearsOn: false,
+    releaseDate: track.album?.release_date || null,
+    cover: track.album?.images?.[0]?.url || null,
+    artists: track.artists.map((a) => a.name).join(", "),
+    url: track.external_urls?.spotify || `https://open.spotify.com/track/${track.id}`,
+  };
+}
+
+async function fetchArtistAlbums() {
   const items = [];
   let url =
     `https://api.spotify.com/v1/artists/${ZECHE_GRUV_ARTIST_ID}/albums` +
-    `?include_groups=album,single,appears_on&market=AR&limit=${PAGE_LIMIT}`;
+    `?include_groups=album,single,appears_on,compilation&market=AR&limit=${PAGE_LIMIT}`;
 
   while (url) {
     const page = await spotifyFetch(url);
     items.push(...page.items);
     url = page.next;
   }
+  return items;
+}
 
-  // Spotify puede repetir el mismo álbum (distintas ediciones/mercados) —
+async function fetchExtraAlbums(ids) {
+  if (!ids.length) return [];
+  const data = await spotifyFetch(`https://api.spotify.com/v1/albums?ids=${ids.join(",")}&market=AR`);
+  return data.albums.filter(Boolean);
+}
+
+async function fetchExtraTracks(ids) {
+  if (!ids.length) return [];
+  const data = await spotifyFetch(`https://api.spotify.com/v1/tracks?ids=${ids.join(",")}&market=AR`);
+  return data.tracks.filter(Boolean);
+}
+
+async function fetchAllAlbums() {
+  const [artistAlbums, extraAlbums, extraTracks] = await Promise.all([
+    fetchArtistAlbums(),
+    fetchExtraAlbums(EXTRA_ALBUM_IDS),
+    fetchExtraTracks(EXTRA_TRACK_IDS),
+  ]);
+
+  // Spotify puede repetir el mismo álbum (distintas ediciones/mercados, o
+  // estar tanto en la discografía propia como en los extras manuales) —
   // nos quedamos con una entrada por id, la que tenga fecha más reciente.
   const byId = new Map();
-  for (const album of items) {
+  for (const album of artistAlbums) {
+    if (EXCLUDED_ALBUM_IDS.has(album.id)) continue;
     const existing = byId.get(album.id);
     if (!existing || album.release_date > existing.release_date) {
-      byId.set(album.id, album);
+      byId.set(album.id, normalizeAlbum(album, album.album_group === "appears_on"));
+    }
+  }
+  for (const album of extraAlbums) {
+    if (!byId.has(album.id)) {
+      byId.set(album.id, normalizeAlbum(album, false));
+    }
+  }
+  for (const track of extraTracks) {
+    if (!byId.has(track.id)) {
+      byId.set(track.id, normalizeTrack(track));
     }
   }
 
-  return Array.from(byId.values())
-    .sort((a, b) => (a.release_date < b.release_date ? 1 : -1))
-    .map((album) => ({
-      id: album.id,
-      name: album.name,
-      type: album.album_type,
-      appearsOn: album.album_group === "appears_on",
-      releaseDate: album.release_date,
-      cover: album.images?.[0]?.url || null,
-      artists: album.artists.map((a) => a.name).join(", "),
-      url: album.external_urls?.spotify || `https://open.spotify.com/album/${album.id}`,
-    }));
+  return Array.from(byId.values()).sort((a, b) => (a.releaseDate < b.releaseDate ? 1 : -1));
 }
 
 exports.handler = async () => {

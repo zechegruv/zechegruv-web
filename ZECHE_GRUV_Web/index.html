@@ -3193,7 +3193,7 @@
 
           grid.innerHTML = items.map((item) => `
             <a href="${item.url}" target="_blank" rel="noopener" class="release-card"
-               data-spotify-uri="spotify:album:${item.id}" data-spotify-name="${item.name}">
+               data-spotify-uri="spotify:${item.type === "track" ? "track" : "album"}:${item.id}" data-spotify-name="${item.name}">
               <div class="release-art"><img src="${item.cover || ""}" alt="${item.name} — cover art" loading="lazy" decoding="async"></div>
               <div class="card-info">
                 <div class="card-name">${item.name}</div>
