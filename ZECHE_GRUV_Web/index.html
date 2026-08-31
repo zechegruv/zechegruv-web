@@ -1568,54 +1568,47 @@
       line-height: 1;
     }
 
-    .testimonial-skeleton-line {
-      height: 10px;
-      border-radius: 2px;
-      background: linear-gradient(90deg, rgba(240,224,192,.16), rgba(240,224,192,.05));
-      width: 100%;
-      animation: zg-skeleton-pulse 1.8s ease-in-out infinite;
+    .testimonial-text {
+      color: var(--beige);
+      opacity: .85;
+      font-size: 14.5px;
+      line-height: 1.7;
+      flex: 1;
     }
 
-    .testimonial-skeleton-line.short {
-      width: 62%;
-    }
-
-    .testimonial-skeleton-footer {
+    .testimonial-footer {
       display: flex;
       align-items: center;
       gap: 12px;
       margin-top: 6px;
     }
 
-    .testimonial-skeleton-avatar {
+    .testimonial-avatar {
       width: 34px;
       height: 34px;
       border-radius: 50%;
-      background: rgba(240,224,192,.12);
+      background: rgba(245,166,35,.18);
+      color: var(--orange-soft);
+      font-family: "DM Mono", monospace;
+      font-weight: 700;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       flex-shrink: 0;
-      animation: zg-skeleton-pulse 1.8s ease-in-out infinite;
     }
 
-    .testimonial-skeleton-name {
-      height: 9px;
-      width: 90px;
-      border-radius: 2px;
-      background: rgba(240,224,192,.14);
-      animation: zg-skeleton-pulse 1.8s ease-in-out infinite;
+    .testimonial-name {
+      font-size: 13px;
+      font-weight: 700;
     }
 
-    @keyframes zg-skeleton-pulse {
-      0%, 100% { opacity: .55; }
-      50%      { opacity: 1; }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      .testimonial-skeleton-line,
-      .testimonial-skeleton-avatar,
-      .testimonial-skeleton-name {
-        animation: none;
-        opacity: .75;
-      }
+    .testimonial-source {
+      font-family: "DM Mono", monospace;
+      font-size: 9px;
+      letter-spacing: .06em;
+      color: var(--orange-soft);
+      margin-top: 2px;
     }
 
     /* ---------- Label: director + studio ---------- */
@@ -1984,34 +1977,54 @@
   <section id="testimonials">
     <div class="section-label">02 / <span data-i18n="sl_testimonials">Clients &amp; Testimonials</span></div>
     <h2 class="section-title" data-i18n-html="st_testimonials_html">What they<br>say.</h2>
-    <p class="section-intro" data-i18n="testimonials_intro">Estamos sumando los testimonios reales de nuestros artistas — muy pronto vas a poder leer sus historias acá.</p>
+    <p class="section-intro" data-i18n="testimonials_intro">Reseñas reales de Google — pronto vamos a sumar las historias completas de nuestros artistas.</p>
 
     <div class="testimonials-grid">
       <div class="testimonial-card">
         <div class="testimonial-quote-mark">"</div>
-        <div class="testimonial-skeleton-line"></div>
-        <div class="testimonial-skeleton-line short"></div>
-        <div class="testimonial-skeleton-footer">
-          <div class="testimonial-skeleton-avatar"></div>
-          <div class="testimonial-skeleton-name"></div>
+        <p class="testimonial-text">Muy profesionales, excelentes equipos!! Recomiendo mucho para grabar tus primeras canciones!</p>
+        <div class="testimonial-footer">
+          <div class="testimonial-avatar">C</div>
+          <div>
+            <div class="testimonial-name">Charo Cassaro</div>
+            <div class="testimonial-source">★★★★★ &nbsp;Google</div>
+          </div>
         </div>
       </div>
       <div class="testimonial-card">
         <div class="testimonial-quote-mark">"</div>
-        <div class="testimonial-skeleton-line"></div>
-        <div class="testimonial-skeleton-line short"></div>
-        <div class="testimonial-skeleton-footer">
-          <div class="testimonial-skeleton-avatar"></div>
-          <div class="testimonial-skeleton-name"></div>
+        <p class="testimonial-text">Altísimo estudio, la rompen toda literal.</p>
+        <div class="testimonial-footer">
+          <div class="testimonial-avatar">N</div>
+          <div>
+            <div class="testimonial-name">Nahe</div>
+            <div class="testimonial-source">★★★★★ &nbsp;Google</div>
+          </div>
         </div>
       </div>
       <div class="testimonial-card">
         <div class="testimonial-quote-mark">"</div>
-        <div class="testimonial-skeleton-line"></div>
-        <div class="testimonial-skeleton-line short"></div>
-        <div class="testimonial-skeleton-footer">
-          <div class="testimonial-skeleton-avatar"></div>
-          <div class="testimonial-skeleton-name"></div>
+        <p class="testimonial-text">De 10, muy buena onda y alto laburo. Son artistas súper versátiles.</p>
+        <div class="testimonial-footer">
+          <div class="testimonial-avatar">R</div>
+          <div>
+            <div class="testimonial-name">Rama Pizarro</div>
+            <div class="testimonial-source">★★★★★ &nbsp;Google</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="testimonial-quote-mark">"</div>
+        <p class="testimonial-text">Increíble el espacio!</p>
+        <div class="testimonial-footer">
+          <div class="testimonial-source">★★★★★ &nbsp;Google</div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="testimonial-quote-mark">"</div>
+        <p class="testimonial-text">Una experiencia única, muy buena energía y profesionalismo.</p>
+        <div class="testimonial-footer">
+          <div class="testimonial-source">★★★★★ &nbsp;Google</div>
         </div>
       </div>
     </div>
@@ -2593,7 +2606,7 @@
         nov_news_eyebrow: "Novedades", nov_news_title: "Seguinos en Instagram", nov_news_desc: "Mientras armamos esta sección, las últimas novedades están en Instagram.",
         sl_services: "Servicios Musicales", st_services_html: "Servicios<br>de estudio.",
         sl_testimonials: "Clientes y Testimonios", st_testimonials_html: "Lo que<br>dicen.",
-        testimonials_intro: "Estamos sumando los testimonios reales de nuestros artistas — muy pronto vas a poder leer sus historias acá.",
+        testimonials_intro: "Reseñas reales de Google — pronto vamos a sumar las historias completas de nuestros artistas.",
         sl_label: "El Sello", st_label_html: "Quiénes<br>somos.",
         label_intro_html: 'ZECHE GRUV es un sello discográfico independiente dirigido por <span style="color: var(--orange-soft);">Yaco Santana</span> — más de 10 años produciendo música, con más de 200 artistas en el mundo eligiéndonos para acompañar sus carreras.',
         label_side: "Nuestro objetivo es mantener el sonido orgánico en el centro de cada proyecto, desarrollando cada producción hasta que refleje la visión del artista — sonido y composición a nivel profesional. Contamos con un equipo completo: productores, músicos de sesión en múltiples instrumentos, ingenieros de mezcla y mastering, distribución en todas las plataformas digitales, arte de tapa y diseño, y grabación y producción audiovisual.",
@@ -2673,7 +2686,7 @@
         nov_news_eyebrow: "News", nov_news_title: "Follow us on Instagram", nov_news_desc: "While we build this section, the latest news lives on Instagram.",
         sl_services: "Musical Services", st_services_html: "Studio<br>services.",
         sl_testimonials: "Clients &amp; Testimonials", st_testimonials_html: "What they<br>say.",
-        testimonials_intro: "We're gathering real testimonials from our artists — this space will soon hold their stories.",
+        testimonials_intro: "Real reviews from Google — we'll soon add the full stories from our artists too.",
         sl_label: "The Label", st_label_html: "Who we<br>are.",
         label_intro_html: 'ZECHE GRUV is an independent record label directed by <span style="color: var(--orange-soft);">Yaco Santana</span> — over 10 years producing music, with more than 200 artists worldwide choosing us to accompany their careers.',
         label_side: "Our goal is to keep organic sound at the core of every project, developing each production until it matches the artist's vision — professional sound and songwriting at the highest creative level. We run a full team: producers, session musicians on multiple instruments, mixing &amp; mastering engineers, distribution across every digital platform, cover art &amp; design, and audiovisual recording and production.",
@@ -2753,7 +2766,7 @@
         nov_news_eyebrow: "Novidades", nov_news_title: "Siga a gente no Instagram", nov_news_desc: "Enquanto montamos esta seção, as últimas novidades estão no Instagram.",
         sl_services: "Serviços Musicais", st_services_html: "Serviços<br>de estúdio.",
         sl_testimonials: "Clientes e Depoimentos", st_testimonials_html: "O que<br>dizem.",
-        testimonials_intro: "Estamos reunindo depoimentos reais dos nossos artistas — em breve você vai poder ler as histórias deles aqui.",
+        testimonials_intro: "Avaliações reais do Google — em breve vamos somar as histórias completas dos nossos artistas.",
         sl_label: "O Selo", st_label_html: "Quem<br>somos.",
         label_intro_html: 'A ZECHE GRUV é um selo discográfico independente dirigido por <span style="color: var(--orange-soft);">Yaco Santana</span> — mais de 10 anos produzindo música, com mais de 200 artistas no mundo todo escolhendo a gente para acompanhar suas carreiras.',
         label_side: "Nosso objetivo é manter o som orgânico no centro de cada projeto, desenvolvendo cada produção até que reflita a visão do artista — som e composição em nível profissional. Temos uma equipe completa: produtores, músicos de sessão em múltiplos instrumentos, engenheiros de mixagem e masterização, distribuição em todas as plataformas digitais, capa e design, e gravação e produção audiovisual.",
@@ -2833,7 +2846,7 @@
         nov_news_eyebrow: "Actualités", nov_news_title: "Suivez-nous sur Instagram", nov_news_desc: "En attendant cette section, les dernières actualités sont sur Instagram.",
         sl_services: "Services Musicaux", st_services_html: "Services<br>de studio.",
         sl_testimonials: "Clients et Témoignages", st_testimonials_html: "Ce qu'ils<br>en disent.",
-        testimonials_intro: "Nous rassemblons les témoignages réels de nos artistes — cet espace accueillera bientôt leurs histoires.",
+        testimonials_intro: "Vrais avis Google — on ajoutera bientôt les témoignages complets de nos artistes.",
         sl_label: "Le Label", st_label_html: "Qui nous<br>sommes.",
         label_intro_html: 'ZECHE GRUV est un label discographique indépendant dirigé par <span style="color: var(--orange-soft);">Yaco Santana</span> — plus de 10 ans à produire de la musique, avec plus de 200 artistes dans le monde qui nous font confiance pour accompagner leur carrière.',
         label_side: "Notre objectif est de garder le son organique au cœur de chaque projet, en développant chaque production jusqu'à ce qu'elle corresponde à la vision de l'artiste — un son et une composition au plus haut niveau professionnel. Nous avons une équipe complète : producteurs, musiciens de session sur plusieurs instruments, ingénieurs de mixage et de mastering, distribution sur toutes les plateformes numériques, pochette et design, ainsi qu'enregistrement et production audiovisuelle.",
@@ -2913,7 +2926,7 @@
         nov_news_eyebrow: "Novità", nov_news_title: "Seguici su Instagram", nov_news_desc: "Nel frattempo, le ultime novità sono su Instagram.",
         sl_services: "Servizi Musicali", st_services_html: "Servizi<br>di studio.",
         sl_testimonials: "Clienti e Testimonianze", st_testimonials_html: "Cosa<br>dicono.",
-        testimonials_intro: "Stiamo raccogliendo le testimonianze reali dei nostri artisti — presto qui potrai leggere le loro storie.",
+        testimonials_intro: "Recensioni reali da Google — presto aggiungeremo le storie complete dei nostri artisti.",
         sl_label: "L'Etichetta", st_label_html: "Chi<br>siamo.",
         label_intro_html: "ZECHE GRUV è un'etichetta discografica indipendente diretta da <span style=\"color: var(--orange-soft);\">Yaco Santana</span> — oltre 10 anni a produrre musica, con più di 200 artisti nel mondo che ci scelgono per accompagnare la loro carriera.",
         label_side: "Il nostro obiettivo è mantenere il suono organico al centro di ogni progetto, sviluppando ogni produzione finché non rispecchia la visione dell'artista — suono e scrittura al massimo livello professionale. Abbiamo un team completo: produttori, session musician su più strumenti, ingegneri di missaggio e mastering, distribuzione su tutte le piattaforme digitali, copertine e design, e registrazione e produzione audiovisiva.",
@@ -2993,7 +3006,7 @@
         nov_news_eyebrow: "Neuigkeiten", nov_news_title: "Folg uns auf Instagram", nov_news_desc: "Bis dieser Bereich fertig ist, gibt's die neuesten Infos auf Instagram.",
         sl_services: "Musikdienstleistungen", st_services_html: "Studio-<br>services.",
         sl_testimonials: "Kunden &amp; Referenzen", st_testimonials_html: "Was sie<br>sagen.",
-        testimonials_intro: "Wir sammeln gerade echte Stimmen unserer Künstler — hier werden bald ihre Geschichten stehen.",
+        testimonials_intro: "Echte Google-Bewertungen — die vollständigen Geschichten unserer Künstler folgen bald.",
         sl_label: "Das Label", st_label_html: "Wer wir<br>sind.",
         label_intro_html: 'ZECHE GRUV ist ein unabhängiges Musiklabel unter der Leitung von <span style="color: var(--orange-soft);">Yaco Santana</span> — seit über 10 Jahren produzieren wir Musik, mit mehr als 200 Künstlern weltweit, die uns für ihre Karriere vertrauen.',
         label_side: "Unser Ziel ist es, den organischen Sound in den Mittelpunkt jedes Projekts zu stellen und jede Produktion so lange zu entwickeln, bis sie der Vision des Künstlers entspricht — Sound und Songwriting auf höchstem professionellem Niveau. Wir haben ein komplettes Team: Produzenten, Sessionmusiker an mehreren Instrumenten, Mixing- und Mastering-Ingenieure, Vertrieb auf allen digitalen Plattformen, Cover-Design sowie audiovisuelle Aufnahme und Produktion.",
@@ -3073,7 +3086,7 @@
         nov_news_eyebrow: "Новости", nov_news_title: "Подписывайтесь на нас в Instagram", nov_news_desc: "Пока мы готовим этот раздел, последние новости — в Instagram.",
         sl_services: "Музыкальные Услуги", st_services_html: "Студийные<br>услуги.",
         sl_testimonials: "Клиенты и Отзывы", st_testimonials_html: "Что они<br>говорят.",
-        testimonials_intro: "Мы собираем настоящие отзывы наших артистов — совсем скоро здесь появятся их истории.",
+        testimonials_intro: "Настоящие отзывы из Google — скоро добавим полные истории наших артистов.",
         sl_label: "О лейбле", st_label_html: "Кто мы<br>такие.",
         label_intro_html: 'ZECHE GRUV — независимый музыкальный лейбл под руководством <span style="color: var(--orange-soft);">Yaco Santana</span> — уже больше 10 лет мы продюсируем музыку, и более 200 артистов по всему миру доверяют нам сопровождение своей карьеры.',
         label_side: "Наша цель — сохранять живое, органичное звучание в основе каждого проекта, дорабатывая каждую продакшн-работу до тех пор, пока она не отразит видение артиста — звук и композицию на высочайшем профессиональном уровне. У нас полноценная команда: продюсеры, сессионные музыканты на разных инструментах, звукорежиссёры сведения и мастеринга, дистрибуция на всех цифровых платформах, дизайн обложек, а также аудиовизуальная съёмка и продакшн.",
