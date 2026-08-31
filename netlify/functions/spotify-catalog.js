@@ -92,18 +92,27 @@ async function fetchExtraAlbums(ids) {
   return data.albums.filter(Boolean);
 }
 
+// Uno por uno (no en batch): así, si a Spotify no le gusta un id puntual
+// (403/404 por el motivo que sea), los demás igual se cargan en vez de
+// tirar abajo el catálogo entero.
 async function fetchExtraTracks(ids) {
-  if (!ids.length) return [];
-  const data = await spotifyFetch(`https://api.spotify.com/v1/tracks?ids=${ids.join(",")}&market=AR`);
-  return data.tracks.filter(Boolean);
+  const results = await Promise.allSettled(
+    ids.map((id) => spotifyFetch(`https://api.spotify.com/v1/tracks/${id}?market=AR`))
+  );
+  return results.filter((r) => r.status === "fulfilled").map((r) => r.value);
 }
 
 async function fetchAllAlbums() {
-  const [artistAlbums, extraAlbums, extraTracks] = await Promise.all([
-    fetchArtistAlbums(),
+  // La discografía propia es el contenido principal: si falla, sí queremos
+  // que se note (cae al catch de más abajo). Los extras manuales son un
+  // agregado — si alguno falla, seguimos con lo que sí se pudo traer.
+  const artistAlbums = await fetchArtistAlbums();
+  const [extraAlbumsResult, extraTracksResult] = await Promise.allSettled([
     fetchExtraAlbums(EXTRA_ALBUM_IDS),
     fetchExtraTracks(EXTRA_TRACK_IDS),
   ]);
+  const extraAlbums = extraAlbumsResult.status === "fulfilled" ? extraAlbumsResult.value : [];
+  const extraTracks = extraTracksResult.status === "fulfilled" ? extraTracksResult.value : [];
 
   // Spotify puede repetir el mismo álbum (distintas ediciones/mercados, o
   // estar tanto en la discografía propia como en los extras manuales) —
