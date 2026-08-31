@@ -18,7 +18,18 @@
       <img class="nav-sun" src="../assets/zeche-gruv-sol.webp" alt="" aria-hidden="true">
       ZECHE GRUV®
     </a>
-    <a class="nav-back" href="../index.html#artists">← Volver al roster</a>
+    <div class="nav-right">
+      <a class="nav-back" href="../index.html#artists" data-i18n="nav_back">← Volver al roster</a>
+      <select class="lang-select" id="langSelect" aria-label="Language / Idioma">
+        <option value="es">ES</option>
+        <option value="en">EN</option>
+        <option value="pt">PT</option>
+        <option value="fr">FR</option>
+        <option value="it">IT</option>
+        <option value="de">DE</option>
+        <option value="ru">RU</option>
+      </select>
+    </div>
   </nav>
 
   <main>
@@ -26,33 +37,33 @@
       <img class="artist-header-photo" src="https://i.scdn.co/image/{{IMG}}" alt="{{NAME}}">
       <div>
         <h1 class="artist-header-name">{{NAME}}</h1>
-        <div class="artist-header-role">Artista ZECHE GRUV</div>
+        <div class="artist-header-role" data-i18n="artist_role">Artista ZECHE GRUV</div>
       </div>
     </div>
 
     <div class="artist-section">
-      <div class="artist-section-label">Biografía</div>
-      {{BIO_BLOCK}}
+      <div class="artist-section-label" data-i18n="label_bio">Biografía</div>
+      <p class="artist-bio" id="artistBio"></p>
     </div>
 
     <div class="artist-section">
       <div class="artist-listeners" id="artistListeners">
         <span class="artist-listeners-count" id="artistListenersCount"></span>
-        <span class="artist-listeners-label">Oyentes mensuales</span>
+        <span class="artist-listeners-label" data-i18n="label_listeners">Oyentes mensuales</span>
       </div>
     </div>
 
     <div class="artist-section">
-      <div class="artist-section-label">Top canciones</div>
+      <div class="artist-section-label" data-i18n="label_top_tracks">Top canciones</div>
       <div class="top-tracks" id="topTracksList">
-        <div class="top-tracks-empty">Cargando…</div>
+        <div class="top-tracks-empty" data-i18n="loading_tracks">Cargando…</div>
       </div>
     </div>
 
     <div class="artist-section">
       <div class="buttons">
-        <a class="btn" href="https://open.spotify.com/artist/{{ID}}" target="_blank" rel="noopener">Escuchar en Spotify ↗</a>
-        <a class="btn" href="../index.html#artists">← Volver al roster</a>
+        <a class="btn" href="https://open.spotify.com/artist/{{ID}}" target="_blank" rel="noopener" data-i18n="btn_spotify">Escuchar en Spotify ↗</a>
+        <a class="btn" href="../index.html#artists" data-i18n="nav_back">← Volver al roster</a>
       </div>
     </div>
   </main>
@@ -60,7 +71,7 @@
   <footer>
     <span>ZECHE GRUV® — BUENOS AIRES</span>
     <span><a href="https://www.instagram.com/zechegruv/" target="_blank" rel="noopener">INSTAGRAM</a> · <a href="https://open.spotify.com/intl-es/artist/0yIGrWjWqKnM7qJ0uyImij" target="_blank" rel="noopener">SPOTIFY</a></span>
-    <span>© 2026 TODOS LOS DERECHOS RESERVADOS</span>
+    <span>© 2026 <span data-i18n="footer_rights">TODOS LOS DERECHOS RESERVADOS</span></span>
   </footer>
 
   <div class="spotify-bar" id="spotify-bar">
@@ -70,6 +81,7 @@
     </div>
   </div>
 
+  <script type="application/json" id="bioData">{{BIO_JSON}}</script>
   <script src="https://open.spotify.com/embed/iframe-api/v1" async></script>
   <script src="../assets/artist-stats.js"></script>
 </body>

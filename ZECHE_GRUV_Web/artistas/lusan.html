@@ -18,7 +18,18 @@
       <img class="nav-sun" src="../assets/zeche-gruv-sol.webp" alt="" aria-hidden="true">
       ZECHE GRUV®
     </a>
-    <a class="nav-back" href="../index.html#artists">← Volver al roster</a>
+    <div class="nav-right">
+      <a class="nav-back" href="../index.html#artists" data-i18n="nav_back">← Volver al roster</a>
+      <select class="lang-select" id="langSelect" aria-label="Language / Idioma">
+        <option value="es">ES</option>
+        <option value="en">EN</option>
+        <option value="pt">PT</option>
+        <option value="fr">FR</option>
+        <option value="it">IT</option>
+        <option value="de">DE</option>
+        <option value="ru">RU</option>
+      </select>
+    </div>
   </nav>
 
   <main>
@@ -26,33 +37,33 @@
       <img class="artist-header-photo" src="https://i.scdn.co/image/ab676161000051745f55d7e03eb9c9995a20d988" alt="Lusan">
       <div>
         <h1 class="artist-header-name">Lusan</h1>
-        <div class="artist-header-role">Artista ZECHE GRUV</div>
+        <div class="artist-header-role" data-i18n="artist_role">Artista ZECHE GRUV</div>
       </div>
     </div>
 
     <div class="artist-section">
-      <div class="artist-section-label">Biografía</div>
-      <p class="artist-bio is-placeholder">Biografía próximamente.</p>
+      <div class="artist-section-label" data-i18n="label_bio">Biografía</div>
+      <p class="artist-bio" id="artistBio"></p>
     </div>
 
     <div class="artist-section">
       <div class="artist-listeners" id="artistListeners">
         <span class="artist-listeners-count" id="artistListenersCount"></span>
-        <span class="artist-listeners-label">Oyentes mensuales</span>
+        <span class="artist-listeners-label" data-i18n="label_listeners">Oyentes mensuales</span>
       </div>
     </div>
 
     <div class="artist-section">
-      <div class="artist-section-label">Top canciones</div>
+      <div class="artist-section-label" data-i18n="label_top_tracks">Top canciones</div>
       <div class="top-tracks" id="topTracksList">
-        <div class="top-tracks-empty">Cargando…</div>
+        <div class="top-tracks-empty" data-i18n="loading_tracks">Cargando…</div>
       </div>
     </div>
 
     <div class="artist-section">
       <div class="buttons">
-        <a class="btn" href="https://open.spotify.com/artist/6cdFVBWLuWaXod5b0IqQvx" target="_blank" rel="noopener">Escuchar en Spotify ↗</a>
-        <a class="btn" href="../index.html#artists">← Volver al roster</a>
+        <a class="btn" href="https://open.spotify.com/artist/6cdFVBWLuWaXod5b0IqQvx" target="_blank" rel="noopener" data-i18n="btn_spotify">Escuchar en Spotify ↗</a>
+        <a class="btn" href="../index.html#artists" data-i18n="nav_back">← Volver al roster</a>
       </div>
     </div>
   </main>
@@ -60,7 +71,7 @@
   <footer>
     <span>ZECHE GRUV® — BUENOS AIRES</span>
     <span><a href="https://www.instagram.com/zechegruv/" target="_blank" rel="noopener">INSTAGRAM</a> · <a href="https://open.spotify.com/intl-es/artist/0yIGrWjWqKnM7qJ0uyImij" target="_blank" rel="noopener">SPOTIFY</a></span>
-    <span>© 2026 TODOS LOS DERECHOS RESERVADOS</span>
+    <span>© 2026 <span data-i18n="footer_rights">TODOS LOS DERECHOS RESERVADOS</span></span>
   </footer>
 
   <div class="spotify-bar" id="spotify-bar">
@@ -70,6 +81,7 @@
     </div>
   </div>
 
+  <script type="application/json" id="bioData">{"es": "Lusan es un artista de Buenos Aires que se caracteriza por su manera de transmitir a través de sus letras, logrando que su público conecte y las sienta como experiencias propias. Comenzó su carrera en 2021 y desde entonces dio shows en vivo, compartió su música y creció como artista, profesionalizándose cada día un poco más. Bienvenidxs al mundo de Lusan, donde vas a conocer un pedacito de su alma a través de sus canciones."}</script>
   <script src="https://open.spotify.com/embed/iframe-api/v1" async></script>
   <script src="../assets/artist-stats.js"></script>
 </body>

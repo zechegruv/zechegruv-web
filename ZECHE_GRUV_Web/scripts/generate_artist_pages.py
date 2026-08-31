@@ -57,12 +57,6 @@ def load_bios():
     return {}
 
 
-def bio_block(bio: str | None) -> str:
-    if bio:
-        return f'<p class="artist-bio">{bio}</p>'
-    return '<p class="artist-bio is-placeholder">Biografía próximamente.</p>'
-
-
 def main():
     artists = load_artists()
     bios = load_bios()
@@ -70,13 +64,17 @@ def main():
     OUT_DIR.mkdir(exist_ok=True)
 
     for a in artists:
+        # {{BIO_JSON}} lleva el diccionario {idioma: texto} de este artista
+        # (o {} si no hay biografía todavía) — assets/artist-stats.js lo lee
+        # en el navegador y elige el idioma según el selector de la página.
+        bio_json = json.dumps(bios.get(a["slug"], {}), ensure_ascii=False)
         html = (
             template
             .replace("{{NAME}}", a["name"])
             .replace("{{ID}}", a["id"])
             .replace("{{IMG}}", a["img"])
             .replace("{{SLUG}}", a["slug"])
-            .replace("{{BIO_BLOCK}}", bio_block(bios.get(a["slug"])))
+            .replace("{{BIO_JSON}}", bio_json)
         )
         out_path = OUT_DIR / f'{a["slug"]}.html'
         out_path.write_text(html, encoding="utf-8")

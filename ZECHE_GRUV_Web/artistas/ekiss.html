@@ -18,7 +18,18 @@
       <img class="nav-sun" src="../assets/zeche-gruv-sol.webp" alt="" aria-hidden="true">
       ZECHE GRUV®
     </a>
-    <a class="nav-back" href="../index.html#artists">← Volver al roster</a>
+    <div class="nav-right">
+      <a class="nav-back" href="../index.html#artists" data-i18n="nav_back">← Volver al roster</a>
+      <select class="lang-select" id="langSelect" aria-label="Language / Idioma">
+        <option value="es">ES</option>
+        <option value="en">EN</option>
+        <option value="pt">PT</option>
+        <option value="fr">FR</option>
+        <option value="it">IT</option>
+        <option value="de">DE</option>
+        <option value="ru">RU</option>
+      </select>
+    </div>
   </nav>
 
   <main>
@@ -26,33 +37,33 @@
       <img class="artist-header-photo" src="https://i.scdn.co/image/ab676161000051743b923eed0abd5ccb9e01ef0c" alt="Ekiss">
       <div>
         <h1 class="artist-header-name">Ekiss</h1>
-        <div class="artist-header-role">Artista ZECHE GRUV</div>
+        <div class="artist-header-role" data-i18n="artist_role">Artista ZECHE GRUV</div>
       </div>
     </div>
 
     <div class="artist-section">
-      <div class="artist-section-label">Biografía</div>
-      <p class="artist-bio">Ekiss, cuyo nombre real es Ivo De Bernardo, es un artista de trap oriundo de San Juan, Argentina, que se fue consolidando como una de las voces emergentes más fuertes de la escena urbana de su provincia. Con influencias de artistas como Milo J y Duki, lleva alrededor de dos años presentándose en vivo y escribiendo material propio, sumando experiencia en escenarios importantes de San Juan como la Fiesta de Santa Lucía, La Champions Liga y Destino San Javier. Cuenta con quince canciones originales editadas hasta el momento. En enero de 2026 lanzó "G's" junto al artista bonaerense Borja Trece, con videoclip incluido. Ekiss define su propuesta como un espacio de introspección, buscando que sus letras funcionen como refugio emocional para quienes lo escuchan.</p>
+      <div class="artist-section-label" data-i18n="label_bio">Biografía</div>
+      <p class="artist-bio" id="artistBio"></p>
     </div>
 
     <div class="artist-section">
       <div class="artist-listeners" id="artistListeners">
         <span class="artist-listeners-count" id="artistListenersCount"></span>
-        <span class="artist-listeners-label">Oyentes mensuales</span>
+        <span class="artist-listeners-label" data-i18n="label_listeners">Oyentes mensuales</span>
       </div>
     </div>
 
     <div class="artist-section">
-      <div class="artist-section-label">Top canciones</div>
+      <div class="artist-section-label" data-i18n="label_top_tracks">Top canciones</div>
       <div class="top-tracks" id="topTracksList">
-        <div class="top-tracks-empty">Cargando…</div>
+        <div class="top-tracks-empty" data-i18n="loading_tracks">Cargando…</div>
       </div>
     </div>
 
     <div class="artist-section">
       <div class="buttons">
-        <a class="btn" href="https://open.spotify.com/artist/20mwpOinpbsbDIgnqUpFBe" target="_blank" rel="noopener">Escuchar en Spotify ↗</a>
-        <a class="btn" href="../index.html#artists">← Volver al roster</a>
+        <a class="btn" href="https://open.spotify.com/artist/20mwpOinpbsbDIgnqUpFBe" target="_blank" rel="noopener" data-i18n="btn_spotify">Escuchar en Spotify ↗</a>
+        <a class="btn" href="../index.html#artists" data-i18n="nav_back">← Volver al roster</a>
       </div>
     </div>
   </main>
@@ -60,7 +71,7 @@
   <footer>
     <span>ZECHE GRUV® — BUENOS AIRES</span>
     <span><a href="https://www.instagram.com/zechegruv/" target="_blank" rel="noopener">INSTAGRAM</a> · <a href="https://open.spotify.com/intl-es/artist/0yIGrWjWqKnM7qJ0uyImij" target="_blank" rel="noopener">SPOTIFY</a></span>
-    <span>© 2026 TODOS LOS DERECHOS RESERVADOS</span>
+    <span>© 2026 <span data-i18n="footer_rights">TODOS LOS DERECHOS RESERVADOS</span></span>
   </footer>
 
   <div class="spotify-bar" id="spotify-bar">
@@ -70,6 +81,7 @@
     </div>
   </div>
 
+  <script type="application/json" id="bioData">{"es": "Ekiss (@ekiss999) es un artista emergente de género urbano oriundo de la provincia de San Juan, Argentina. Desde pequeño estuvo muy cerca de la música, influenciado por su familia, lo que lo llevó a temprana edad a componer sus propias canciones desde su habitación. A pocos meses de su primer lanzamiento, con tan solo 15 años, dio su show debut teloneando a Lucho SSJ en la reconocida Fiesta Calor. A día de hoy, su show más grande fue la Fiesta Del Sol 2024, donde compartió escenario con Airbag y Trueno frente a 30.000 personas con tan solo 17 años. Cautivó a mucho público de su provincia presentándose en eventos como la Fiesta De Santa Lucía y la Fiesta De La Cerveza, e incluso en Buenos Aires con dos fechas en Local Support. Tiempo después de su primer lanzamiento, presentó \"ÉXTASIS\", una canción con influencias del pop, EDM, D&B y trap, con un videoclip que alcanzó las 50 mil reproducciones en YouTube en poco tiempo — estrenado en su primer show como headliner, donde se convirtió en el primer artista de género urbano de San Juan en tocar acompañado de una banda, mezclando géneros con el rock. Desde entonces sigue lanzando canciones, manteniendo un alto estándar de producción musical y visual, con el objetivo de hacer crecer su comunidad."}</script>
   <script src="https://open.spotify.com/embed/iframe-api/v1" async></script>
   <script src="../assets/artist-stats.js"></script>
 </body>
