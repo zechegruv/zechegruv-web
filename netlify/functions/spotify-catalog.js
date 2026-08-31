@@ -8,7 +8,9 @@
 const { spotifyFetch } = require("./_lib/spotify-token");
 
 const ZECHE_GRUV_ARTIST_ID = "0yIGrWjWqKnM7qJ0uyImij";
-const PAGE_LIMIT = 50;
+// La API de Spotify limita este endpoint puntual a 10 por página (a
+// diferencia de otros que permiten hasta 50) — con más, devuelve 400.
+const PAGE_LIMIT = 10;
 
 // Cache en memoria del proceso (ver nota en _lib/spotify-token.js sobre
 // por qué no usamos un store externo): evita re-consultar Spotify en cada
