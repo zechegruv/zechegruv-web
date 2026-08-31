@@ -428,9 +428,15 @@
     /* Cinta continua en loop, como el marquee original: el track se
        duplica por JS y se anima con translateX(-50%) infinito. */
     .novedades-viewport {
-      overflow: hidden;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scrollbar-width: none;
       mask-image: linear-gradient(90deg, transparent 0, #000 4%, #000 96%, transparent 100%);
       -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 4%, #000 96%, transparent 100%);
+    }
+
+    .novedades-viewport::-webkit-scrollbar {
+      display: none;
     }
 
     .novedades-track {
@@ -1563,7 +1569,7 @@
 
     .testimonial-quote-mark {
       font-family: 'TAN Nimbus', Georgia, serif;
-      font-size: 40px;
+      font-size: 22px;
       color: rgba(245,166,35,.4);
       line-height: 1;
     }
@@ -1604,11 +1610,23 @@
     }
 
     .testimonial-source {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 2px;
+    }
+
+    .testimonial-stars {
+      font-size: 14px;
+      letter-spacing: .04em;
+      color: var(--orange-soft);
+    }
+
+    .testimonial-source-label {
       font-family: "DM Mono", monospace;
       font-size: 9px;
       letter-spacing: .06em;
-      color: var(--orange-soft);
-      margin-top: 2px;
+      color: var(--muted);
     }
 
     /* ---------- Label: director + studio ---------- */
@@ -1987,7 +2005,7 @@
           <div class="testimonial-avatar">C</div>
           <div>
             <div class="testimonial-name">Charo Cassaro</div>
-            <div class="testimonial-source">★★★★★ &nbsp;Google</div>
+            <div class="testimonial-source"><span class="testimonial-stars">★★★★★</span><span class="testimonial-source-label">Google</span></div>
           </div>
         </div>
       </div>
@@ -1998,62 +2016,7 @@
           <div class="testimonial-avatar">N</div>
           <div>
             <div class="testimonial-name">Nahe</div>
-            <div class="testimonial-source">★★★★★ &nbsp;Google</div>
-          </div>
-        </div>
-      </div>
-      <div class="testimonial-card">
-        <div class="testimonial-quote-mark">"</div>
-        <p class="testimonial-text">De 10, muy buena onda y alto laburo. Son artistas súper versátiles.</p>
-        <div class="testimonial-footer">
-          <div class="testimonial-avatar">R</div>
-          <div>
-            <div class="testimonial-name">Rama Pizarro</div>
-            <div class="testimonial-source">★★★★★ &nbsp;Google</div>
-          </div>
-        </div>
-      </div>
-      <div class="testimonial-card">
-        <div class="testimonial-quote-mark">"</div>
-        <p class="testimonial-text">Excelente espacio de trabajo, muy buena onda el equipo. Recomendadísimo!!</p>
-        <div class="testimonial-footer">
-          <div class="testimonial-avatar">V</div>
-          <div>
-            <div class="testimonial-name">Valeria Bianchi</div>
-            <div class="testimonial-source">★★★★★ &nbsp;Google</div>
-          </div>
-        </div>
-      </div>
-      <div class="testimonial-card">
-        <div class="testimonial-quote-mark">"</div>
-        <p class="testimonial-text">Alto espacio, hermoso ambiente de laburo y laboratorio de arte, una masa los pibes 🙌</p>
-        <div class="testimonial-footer">
-          <div class="testimonial-avatar">J</div>
-          <div>
-            <div class="testimonial-name">Juan Gonzalez</div>
-            <div class="testimonial-source">★★★★★ &nbsp;Google</div>
-          </div>
-        </div>
-      </div>
-      <div class="testimonial-card">
-        <div class="testimonial-quote-mark">"</div>
-        <p class="testimonial-text">Increíble el espacio! Mucha buena onda y talento.</p>
-        <div class="testimonial-footer">
-          <div class="testimonial-avatar">A</div>
-          <div>
-            <div class="testimonial-name">Ana Sofía Waldo del Castillo</div>
-            <div class="testimonial-source">★★★★★ &nbsp;Google</div>
-          </div>
-        </div>
-      </div>
-      <div class="testimonial-card">
-        <div class="testimonial-quote-mark">"</div>
-        <p class="testimonial-text">Si querés encontrar tu sonido, es por acá!</p>
-        <div class="testimonial-footer">
-          <div class="testimonial-avatar">A</div>
-          <div>
-            <div class="testimonial-name">Ailo Aicardi</div>
-            <div class="testimonial-source">★★★★★ &nbsp;Google</div>
+            <div class="testimonial-source"><span class="testimonial-stars">★★★★★</span><span class="testimonial-source-label">Google</span></div>
           </div>
         </div>
       </div>
@@ -2064,29 +2027,40 @@
           <div class="testimonial-avatar">M</div>
           <div>
             <div class="testimonial-name">Mora Saleh</div>
-            <div class="testimonial-source">★★★★★ &nbsp;Google</div>
+            <div class="testimonial-source"><span class="testimonial-stars">★★★★★</span><span class="testimonial-source-label">Google</span></div>
           </div>
         </div>
       </div>
       <div class="testimonial-card">
         <div class="testimonial-quote-mark">"</div>
-        <p class="testimonial-text">Muy lindo espacio, así dan ganas de producir 🚀</p>
+        <p class="testimonial-text">Increíble el espacio! Mucha buena onda y talento.</p>
         <div class="testimonial-footer">
-          <div class="testimonial-avatar">V</div>
+          <div class="testimonial-avatar">A</div>
           <div>
-            <div class="testimonial-name">Valentina Giraldi</div>
-            <div class="testimonial-source">★★★★★ &nbsp;Google</div>
+            <div class="testimonial-name">Ana Sofía Waldo del Castillo</div>
+            <div class="testimonial-source"><span class="testimonial-stars">★★★★★</span><span class="testimonial-source-label">Google</span></div>
           </div>
         </div>
       </div>
       <div class="testimonial-card">
         <div class="testimonial-quote-mark">"</div>
-        <p class="testimonial-text">Una experiencia única, muy buena energía y profesionalismo. Yaco es un crack.</p>
+        <p class="testimonial-text">Alto espacio, hermoso ambiente de laburo y laboratorio de arte, una masa los pibes 🙌</p>
         <div class="testimonial-footer">
-          <div class="testimonial-avatar">I</div>
+          <div class="testimonial-avatar">J</div>
           <div>
-            <div class="testimonial-name">Israel Santana</div>
-            <div class="testimonial-source">★★★★★ &nbsp;Google</div>
+            <div class="testimonial-name">Juan Gonzalez</div>
+            <div class="testimonial-source"><span class="testimonial-stars">★★★★★</span><span class="testimonial-source-label">Google</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="testimonial-quote-mark">"</div>
+        <p class="testimonial-text">Si querés encontrar tu sonido, es por acá!</p>
+        <div class="testimonial-footer">
+          <div class="testimonial-avatar">A</div>
+          <div>
+            <div class="testimonial-name">Ailo Aicardi</div>
+            <div class="testimonial-source"><span class="testimonial-stars">★★★★★</span><span class="testimonial-source-label">Google</span></div>
           </div>
         </div>
       </div>
@@ -2359,6 +2333,15 @@
       if (!track) return;
 
       track.innerHTML += track.innerHTML;
+
+      // Al pasar el mouse se pausa la animación (ver CSS) y queda scrolleable
+      // manualmente para buscar una tarjeta puntual. Al salir, volvemos el
+      // scroll a 0 antes de que la animación retome — si no, el offset manual
+      // se suma al de la animación y la tira queda desalineada.
+      const viewport = track.closest(".novedades-viewport");
+      viewport?.addEventListener("mouseleave", () => {
+        viewport.scrollLeft = 0;
+      });
     })();
 
     // ---------- Musical Services ----------

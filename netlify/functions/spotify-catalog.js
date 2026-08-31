@@ -86,15 +86,16 @@ async function fetchArtistAlbums() {
   return items;
 }
 
-async function fetchExtraAlbums(ids) {
-  if (!ids.length) return [];
-  const data = await spotifyFetch(`https://api.spotify.com/v1/albums?ids=${ids.join(",")}&market=AR`);
-  return data.albums.filter(Boolean);
-}
-
 // Uno por uno (no en batch): así, si a Spotify no le gusta un id puntual
 // (403/404 por el motivo que sea), los demás igual se cargan en vez de
 // tirar abajo el catálogo entero.
+async function fetchExtraAlbums(ids) {
+  const results = await Promise.allSettled(
+    ids.map((id) => spotifyFetch(`https://api.spotify.com/v1/albums/${id}?market=AR`))
+  );
+  return results.filter((r) => r.status === "fulfilled").map((r) => r.value);
+}
+
 async function fetchExtraTracks(ids) {
   const results = await Promise.allSettled(
     ids.map((id) => spotifyFetch(`https://api.spotify.com/v1/tracks/${id}?market=AR`))
