@@ -1680,18 +1680,24 @@
     /* Banner de estudio: tira rectangular deslizable (scroll-snap), en vez
        de una grilla fija de fotos. Cada slide usa object-fit: cover, así
        una foto cuadrada llena bien el rectángulo ancho sin deformarse. */
+    /* Banner de estudio: UN solo espacio para la foto — se desliza entre
+       fotos (swipe/drag o flechas), nunca se ven dos a la vez. */
     .studio-banner {
       position: relative;
     }
 
     .studio-gallery {
       display: flex;
-      gap: 12px;
+      width: 100%;
+      aspect-ratio: 16 / 9;
       overflow-x: auto;
+      overflow-y: hidden;
       scroll-snap-type: x mandatory;
       scroll-behavior: smooth;
       -webkit-overflow-scrolling: touch;
       scrollbar-width: none;
+      border: 1px solid var(--border);
+      background: var(--brown);
     }
 
     .studio-gallery::-webkit-scrollbar {
@@ -1699,12 +1705,12 @@
     }
 
     .studio-slide {
-      flex: 0 0 min(640px, 82vw);
-      aspect-ratio: 16 / 9;
+      flex: 0 0 100%;
+      width: 100%;
+      height: 100%;
       scroll-snap-align: start;
+      scroll-snap-stop: always;
       overflow: hidden;
-      border: 1px solid var(--border);
-      background: var(--brown);
     }
 
     .studio-slide img {
@@ -1721,19 +1727,18 @@
       box-sizing: border-box;
     }
 
-    .studio-nav {
-      display: flex;
-      gap: 8px;
-      margin-top: 14px;
-    }
-
     .studio-nav-btn {
-      width: 36px;
-      height: 36px;
-      border: 1px solid var(--border);
-      background: none;
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 1px solid rgba(240,224,192,.35);
+      background: rgba(36,17,5,.55);
+      backdrop-filter: blur(4px);
       color: var(--cream);
-      font-size: 14px;
+      font-size: 15px;
       cursor: pointer;
       transition: .25s ease;
     }
@@ -1744,10 +1749,30 @@
       color: var(--brown-dark);
     }
 
-    @media (max-width: 800px) {
-      .studio-slide {
-        flex-basis: 88vw;
-      }
+    #studioPrev { left: 12px; }
+    #studioNext { right: 12px; }
+
+    .studio-dots {
+      display: flex;
+      justify-content: center;
+      gap: 7px;
+      margin-top: 14px;
+    }
+
+    .studio-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      border: none;
+      padding: 0;
+      background: var(--border);
+      cursor: pointer;
+      transition: background .25s ease, transform .25s ease;
+    }
+
+    .studio-dot.is-active {
+      background: var(--orange-soft);
+      transform: scale(1.25);
     }
 
     @media (max-width: 800px) {
@@ -2038,11 +2063,10 @@
       <div class="label-studio-title" data-i18n="label_studio_title">A look inside the studio</div>
       <div class="studio-banner">
         <div class="studio-gallery" id="studioGallery"></div>
-        <div class="studio-nav">
-          <button class="studio-nav-btn" type="button" id="studioPrev" aria-label="Previous photo">←</button>
-          <button class="studio-nav-btn" type="button" id="studioNext" aria-label="Next photo">→</button>
-        </div>
+        <button class="studio-nav-btn" type="button" id="studioPrev" aria-label="Previous photo">←</button>
+        <button class="studio-nav-btn" type="button" id="studioNext" aria-label="Next photo">→</button>
       </div>
+      <div class="studio-dots" id="studioDots"></div>
     </div>
   </section>
 
@@ -2200,14 +2224,16 @@
     // existe todavía (roster recién armado), el slide muestra un
     // placeholder punteado en su lugar en vez de romper el layout.
     const STUDIO_PHOTOS = [
-      "assets/studio/studio-1.webp",
-      "assets/studio/studio-2.webp",
-      "assets/studio/studio-3.webp",
-      "assets/studio/studio-4.webp",
+      "assets/studio/studio-1.jpg",
+      "assets/studio/studio-2.jpg",
+      "assets/studio/studio-3.jpg",
+      "assets/studio/studio-4.jpg",
+      "assets/studio/studio-5.jpg",
     ];
 
     (function () {
       const gallery = document.getElementById("studioGallery");
+      const dotsWrap = document.getElementById("studioDots");
       if (!gallery) return;
 
       gallery.innerHTML = STUDIO_PHOTOS.map((src) => `
@@ -2217,16 +2243,36 @@
         </div>
       `).join("");
 
-      const prevBtn = document.getElementById("studioPrev");
-      const nextBtn = document.getElementById("studioNext");
-      const scrollByOneSlide = (dir) => {
-        const slide = gallery.querySelector(".studio-slide");
-        const amount = slide ? slide.getBoundingClientRect().width + 12 : gallery.clientWidth;
-        gallery.scrollBy({ left: dir * amount, behavior: "smooth" });
-      };
+      if (dotsWrap) {
+        dotsWrap.innerHTML = STUDIO_PHOTOS.map((_, i) => `
+          <button class="studio-dot${i === 0 ? " is-active" : ""}" type="button" aria-label="Foto ${i + 1}"></button>
+        `).join("");
+      }
+      const dots = dotsWrap ? Array.from(dotsWrap.children) : [];
 
-      prevBtn?.addEventListener("click", () => scrollByOneSlide(-1));
-      nextBtn?.addEventListener("click", () => scrollByOneSlide(1));
+      const slideCount = STUDIO_PHOTOS.length;
+      let current = 0;
+
+      function goTo(index) {
+        current = (index + slideCount) % slideCount;
+        gallery.scrollTo({ left: current * gallery.clientWidth, behavior: "smooth" });
+      }
+
+      document.getElementById("studioPrev")?.addEventListener("click", () => goTo(current - 1));
+      document.getElementById("studioNext")?.addEventListener("click", () => goTo(current + 1));
+      dots.forEach((dot, i) => dot.addEventListener("click", () => goTo(i)));
+
+      // Actualiza el punto activo también cuando el usuario desliza a mano
+      // (touch/drag), no solo cuando usa las flechas.
+      let scrollRaf = null;
+      gallery.addEventListener("scroll", () => {
+        if (scrollRaf) return;
+        scrollRaf = requestAnimationFrame(() => {
+          scrollRaf = null;
+          current = Math.round(gallery.scrollLeft / gallery.clientWidth);
+          dots.forEach((d, i) => d.classList.toggle("is-active", i === current));
+        });
+      }, { passive: true });
     })();
 
     // ---------- Carousel de novedades: cinta en loop continuo ----------
@@ -2535,7 +2581,7 @@
         nav_services: "Servicios", nav_testimonials: "Testimonios", nav_label: "El Sello",
         nav_artists: "Artistas", nav_releases: "Lanzamientos", nav_contact: "Contacto",
         hero_eyebrow: "Sello Discográfico Independiente",
-        hero_desc_html: 'Sello discográfico y casa de producción independiente — composición, grabación, mezcla, mastering, distribución y arte de tapa, liderado por <a href="https://open.spotify.com/intl-es/artist/0yIGrWjWqKnM7qJ0uyImij" target="_blank" rel="noopener">Yaco Santana</a>.',
+        hero_desc_html: 'Sello discográfico independiente liderado por <a href="https://open.spotify.com/intl-es/artist/0yIGrWjWqKnM7qJ0uyImij" target="_blank" rel="noopener">Yaco Santana</a> — Acompañamiento y desarrollo artístico, composición, grabación, mezcla, mastering, distribución, video, arte de tapa, playback y tune.',
         hero_scroll: "Scroll para explorar",
         marquee_tagline: "SELLO DISCOGRÁFICO INDEPENDIENTE",
         nov_release_eyebrow: "Último lanzamiento", nov_release_desc: "Con Rouse bby y YEIKO. Escuchalo ahora.",
