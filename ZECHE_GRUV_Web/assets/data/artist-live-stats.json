@@ -1,0 +1,16 @@
+{
+  "_readme": "Cargá acá a mano los oyentes mensuales y las reproducciones que veas en Spotify (la app o Spotify for Artists) — la API pública de Spotify no los expone, así que no se pueden traer solos. Una entrada por artista, usando el mismo slug que assets/data/artists.js (el nombre del archivo en artistas/<slug>.html). El id de cada canción es el que aparece en su link de Spotify: open.spotify.com/track/ESTE_ID. Borrá esta key _readme si te molesta, no se usa en el sitio.",
+  "kamacho": { "monthlyListeners": 66998, "trackPlays": {} },
+  "borja-trece": { "monthlyListeners": 4828, "trackPlays": {} },
+  "mc-nito": { "monthlyListeners": 8991407, "trackPlays": {} },
+  "kires": { "monthlyListeners": 9174, "trackPlays": {} },
+  "kizuato": { "monthlyListeners": 86593, "trackPlays": {} },
+  "midel": { "monthlyListeners": 612539, "trackPlays": {} },
+  "rouse-bby": { "monthlyListeners": 623, "trackPlays": {} },
+  "casteyano": { "monthlyListeners": 1497, "trackPlays": {} },
+  "br1": { "monthlyListeners": 3214, "trackPlays": {} },
+  "axia-bebe": { "monthlyListeners": 292, "trackPlays": {} },
+  "jugo-solar": { "monthlyListeners": 8614, "trackPlays": {} },
+  "bianca-biondi": { "monthlyListeners": 33, "trackPlays": {} },
+  "yaco-santana": { "monthlyListeners": null, "trackPlays": {} }
+}

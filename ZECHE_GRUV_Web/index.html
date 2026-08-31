@@ -127,6 +127,28 @@
       font-size: 12px;
       letter-spacing: .16em;
       font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    /* Sol chico: aparece en el nav cuando el sol grande del hero sale del
+       viewport (ver IntersectionObserver al final del body), y desaparece
+       cuando el sol grande vuelve a estar visible. */
+    .nav-sun {
+      width: 20px;
+      height: 20px;
+      object-fit: contain;
+      opacity: 0;
+      transform: scale(.4) rotate(-25deg);
+      filter: drop-shadow(0 0 6px rgba(245,166,35,.55));
+      transition: opacity .4s ease, transform .4s cubic-bezier(.16,1,.3,1);
+      pointer-events: none;
+    }
+
+    .nav-sun.is-visible {
+      opacity: 1;
+      transform: scale(1) rotate(0deg);
     }
 
     .nav-links {
@@ -389,33 +411,124 @@
       color: var(--orange-soft);
     }
 
-    /* ---------- Marquee ---------- */
+    /* ---------- Novedades (antes: marquee) ---------- */
 
-    .marquee {
-      overflow: hidden;
+    .novedades-section {
+      background: var(--brown-dark);
       border-top: 1px solid var(--border);
       border-bottom: 1px solid var(--border);
-      background: var(--brown-dark);
-      white-space: nowrap;
+      padding: 12px 5vw;
     }
 
-    .marquee-track {
+    .novedades-carousel {
+      max-width: var(--max);
+      margin: 0 auto;
+    }
+
+    /* Cinta continua en loop, como el marquee original: el track se
+       duplica por JS y se anima con translateX(-50%) infinito. */
+    .novedades-viewport {
+      overflow: hidden;
+      mask-image: linear-gradient(90deg, transparent 0, #000 4%, #000 96%, transparent 100%);
+      -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 4%, #000 96%, transparent 100%);
+    }
+
+    .novedades-track {
       display: inline-flex;
-      gap: 45px;
-      padding: 17px 0;
-      animation: marquee 22s linear infinite;
+      gap: 10px;
+      width: max-content;
+      animation: novedades-scroll 26s linear infinite;
     }
 
-    .marquee span {
+    .novedades-viewport:hover .novedades-track {
+      animation-play-state: paused;
+    }
+
+    @keyframes novedades-scroll {
+      to { transform: translateX(-50%); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .novedades-track {
+        animation: none;
+      }
+    }
+
+    .novedades-card {
+      flex: 0 0 230px;
+      border: 1px solid var(--border);
+      background: var(--brown);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7px;
+      transition: border-color .3s ease, transform .3s ease;
+    }
+
+    a.novedades-card:hover {
+      border-color: rgba(245,166,35,.55);
+      transform: translateY(-2px);
+    }
+
+    .novedades-card-cover {
+      flex: 0 0 46px;
+      width: 46px;
+      height: 46px;
+      overflow: hidden;
+      background: var(--brown-dark);
+    }
+
+    .novedades-card-cover img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .novedades-card-body {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      min-width: 0;
+    }
+
+    .novedades-card-eyebrow {
       font-family: "DM Mono", monospace;
-      font-size: 11px;
-      letter-spacing: .16em;
+      font-size: 7.5px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
       color: var(--orange-soft);
     }
 
-    @keyframes marquee {
-      to { transform: translateX(-50%); }
+    .novedades-card-title {
+      font-size: 12.5px;
+      font-weight: 700;
+      letter-spacing: -.01em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
+
+    .novedades-card-desc {
+      display: none;
+    }
+
+    .novedades-card.is-placeholder {
+      border-style: dashed;
+    }
+
+    .novedades-card.is-placeholder .novedades-card-cover {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      font-family: "DM Mono", monospace;
+      font-size: 6px;
+      letter-spacing: .1em;
+      text-align: center;
+      line-height: 1.2;
+    }
+
 
     /* ---------- Sections ---------- */
 
@@ -786,15 +899,19 @@
     }
 
     .artist-photo-wrap::after {
-      content: "▶";
+      content: "VER PERFIL →";
+      font-family: "DM Mono", monospace;
+      letter-spacing: .08em;
       position: absolute;
       inset: 0;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 20px;
+      text-align: center;
+      padding: 0 10%;
+      font-size: 10px;
       color: var(--cream);
-      background: rgba(36,17,5,.45);
+      background: rgba(36,17,5,.6);
       opacity: 0;
       transition: opacity .3s ease;
     }
@@ -1263,14 +1380,21 @@
     .package-toggle-save {
       font-family: "DM Mono", monospace;
       font-size: 8.5px;
-      font-weight: 600;
+      font-weight: 800;
       letter-spacing: .04em;
       padding: 2px 7px;
       border-radius: 999px;
-      background: var(--orange);
+      background: var(--cream);
       color: var(--brown-dark);
+      box-shadow: 0 0 0 1px rgba(255,244,220,.55), 0 2px 8px rgba(255,244,220,.25);
       opacity: 1;
       white-space: nowrap;
+      animation: save-pop 2.4s ease-in-out infinite;
+    }
+
+    @keyframes save-pop {
+      0%, 100% { transform: scale(1); }
+      50%      { transform: scale(1.07); }
     }
 
     .package-toggle-btn.is-active {
@@ -1281,7 +1405,14 @@
 
     .package-toggle-btn.is-active .package-toggle-save {
       background: var(--brown-dark);
-      color: var(--orange-soft);
+      color: var(--cream);
+      box-shadow: 0 0 0 1px rgba(255,244,220,.3);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .package-toggle-save {
+        animation: none;
+      }
     }
 
     .package-custom-list {
@@ -1546,16 +1677,77 @@
       margin-bottom: 16px;
     }
 
+    /* Banner de estudio: tira rectangular deslizable (scroll-snap), en vez
+       de una grilla fija de fotos. Cada slide usa object-fit: cover, así
+       una foto cuadrada llena bien el rectángulo ancho sin deformarse. */
+    .studio-banner {
+      position: relative;
+    }
+
     .studio-gallery {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      display: flex;
       gap: 12px;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+
+    .studio-gallery::-webkit-scrollbar {
+      display: none;
+    }
+
+    .studio-slide {
+      flex: 0 0 min(640px, 82vw);
+      aspect-ratio: 16 / 9;
+      scroll-snap-align: start;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: var(--brown);
+    }
+
+    .studio-slide img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
     }
 
     .studio-photo-placeholder {
-      aspect-ratio: 4 / 3;
+      width: 100%;
+      height: 100%;
       border: 1px dashed var(--border);
-      background: var(--brown);
+      box-sizing: border-box;
+    }
+
+    .studio-nav {
+      display: flex;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .studio-nav-btn {
+      width: 36px;
+      height: 36px;
+      border: 1px solid var(--border);
+      background: none;
+      color: var(--cream);
+      font-size: 14px;
+      cursor: pointer;
+      transition: .25s ease;
+    }
+
+    .studio-nav-btn:hover {
+      background: var(--orange-soft);
+      border-color: var(--orange-soft);
+      color: var(--brown-dark);
+    }
+
+    @media (max-width: 800px) {
+      .studio-slide {
+        flex-basis: 88vw;
+      }
     }
 
     @media (max-width: 800px) {
@@ -1574,7 +1766,10 @@
 
   <!-- ================= NAV ================= -->
   <nav id="nav">
-    <a class="nav-mark" href="#">ZECHE GRUV®</a>
+    <a class="nav-mark" href="#">
+      <img class="nav-sun" id="navSun" src="assets/zeche-gruv-sol.webp" alt="" aria-hidden="true">
+      ZECHE GRUV®
+    </a>
 
     <div class="nav-right">
       <div class="nav-links">
@@ -1642,17 +1837,61 @@
     </div>
   </header>
 
-  <!-- ================= MARQUEE ================= -->
-  <div class="marquee">
-    <div class="marquee-track">
-      <span>ZECHE GRUV</span><span>✦</span>
-      <span data-i18n="marquee_tagline">INDEPENDENT RECORD LABEL</span><span>✦</span>
-      <span>BUENOS AIRES</span><span>✦</span>
-      <span>ZECHE GRUV</span><span>✦</span>
-      <span data-i18n="marquee_tagline">INDEPENDENT RECORD LABEL</span><span>✦</span>
-      <span>BUENOS AIRES</span><span>✦</span>
+  <!-- ================= NOVEDADES ================= -->
+  <section class="novedades-section">
+    <div class="novedades-carousel">
+      <div class="novedades-viewport">
+      <div class="novedades-track" id="novedadesTrack">
+        <a class="novedades-card" href="https://open.spotify.com/album/7bc1Ig8bncv4p3vZjjZqjE" target="_blank" rel="noopener"
+           data-spotify-uri="spotify:album:7bc1Ig8bncv4p3vZjjZqjE" data-spotify-name="OKEY">
+          <div class="novedades-card-cover"><img src="assets/covers/okey.webp" alt="OKEY — cover art" loading="lazy" decoding="async"></div>
+          <div class="novedades-card-body">
+            <div class="novedades-card-eyebrow" data-i18n="nov_release_eyebrow">Último lanzamiento</div>
+            <div class="novedades-card-title">OKEY</div>
+            <p class="novedades-card-desc" data-i18n="nov_release_desc">Con Rouse bby y YEIKO. Escuchalo ahora.</p>
+          </div>
+        </a>
+
+        <a class="novedades-card" href="https://open.spotify.com/playlist/1FbK9IaTCJMCtTLQSg7ayI" target="_blank" rel="noopener"
+           data-spotify-uri="spotify:playlist:1FbK9IaTCJMCtTLQSg7ayI" data-spotify-name="ZECHE GRUV — Playlist">
+          <div class="novedades-card-cover"><img src="assets/logo-sun.png" alt="Playlist ZECHE GRUV" loading="lazy" decoding="async"></div>
+          <div class="novedades-card-body">
+            <div class="novedades-card-eyebrow" data-i18n="nov_playlist_eyebrow">Playlist</div>
+            <div class="novedades-card-title" data-i18n="nov_playlist_title">ZECHE GRUV</div>
+            <p class="novedades-card-desc" data-i18n="nov_playlist_desc">Todo el sello en una sola lista.</p>
+          </div>
+        </a>
+
+        <div class="novedades-card is-placeholder">
+          <div class="novedades-card-cover" data-i18n="nov_soon_label">PRÓXIMAMENTE</div>
+          <div class="novedades-card-body">
+            <div class="novedades-card-eyebrow" data-i18n="nov_camps_eyebrow">Camps</div>
+            <div class="novedades-card-title" data-i18n="nov_camps_title">Próximo camp</div>
+            <p class="novedades-card-desc" data-i18n="nov_camps_desc">Estamos armando la fecha — muy pronto vas a poder anotarte acá.</p>
+          </div>
+        </div>
+
+        <div class="novedades-card is-placeholder">
+          <div class="novedades-card-cover" data-i18n="nov_soon_label">PRÓXIMAMENTE</div>
+          <div class="novedades-card-body">
+            <div class="novedades-card-eyebrow" data-i18n="nov_events_eyebrow">Eventos</div>
+            <div class="novedades-card-title" data-i18n="nov_events_title">Próximos eventos</div>
+            <p class="novedades-card-desc" data-i18n="nov_events_desc">Fechas y shows del sello, pronto acá.</p>
+          </div>
+        </div>
+
+        <a class="novedades-card is-placeholder" href="https://www.instagram.com/zechegruv/" target="_blank" rel="noopener">
+          <div class="novedades-card-cover" data-i18n="nov_soon_label">PRÓXIMAMENTE</div>
+          <div class="novedades-card-body">
+            <div class="novedades-card-eyebrow" data-i18n="nov_news_eyebrow">Novedades</div>
+            <div class="novedades-card-title" data-i18n="nov_news_title">Seguinos en Instagram</div>
+            <p class="novedades-card-desc" data-i18n="nov_news_desc">Mientras armamos esta sección, las últimas novedades están en Instagram.</p>
+          </div>
+        </a>
+      </div>
+      </div>
     </div>
-  </div>
+  </section>
 
   <!-- ================= MUSICAL SERVICES ================= -->
   <section id="services">
@@ -1792,14 +2031,17 @@
       </div>
     </div>
 
-    <!-- Fotos del estudio: placeholders hasta tener las fotos reales. -->
+    <!-- Banner del estudio: se arma desde STUDIO_PHOTOS (ver script al
+         final del body). Mientras no haya fotos reales en assets/studio/,
+         se ven placeholders punteados con el mismo formato rectangular. -->
     <div class="label-studio">
       <div class="label-studio-title" data-i18n="label_studio_title">A look inside the studio</div>
-      <div class="studio-gallery">
-        <div class="studio-photo-placeholder"></div>
-        <div class="studio-photo-placeholder"></div>
-        <div class="studio-photo-placeholder"></div>
-        <div class="studio-photo-placeholder"></div>
+      <div class="studio-banner">
+        <div class="studio-gallery" id="studioGallery"></div>
+        <div class="studio-nav">
+          <button class="studio-nav-btn" type="button" id="studioPrev" aria-label="Previous photo">←</button>
+          <button class="studio-nav-btn" type="button" id="studioNext" aria-label="Next photo">→</button>
+        </div>
       </div>
     </div>
   </section>
@@ -1880,9 +2122,18 @@
     </div>
   </section>
 
+  <!-- ================= CATÁLOGO COMPLETO ================= -->
+  <section id="full-catalogue">
+    <div class="section-label">07 / <span data-i18n="sl_full_catalogue">Full Catalogue</span></div>
+    <h2 class="section-title" data-i18n-html="st_full_catalogue_html">The whole<br>catalogue.</h2>
+    <p class="section-intro" data-i18n="full_catalogue_intro" id="fullCatalogueStatus">Cargando desde Spotify…</p>
+
+    <div class="catalogue" id="fullCatalogueGrid"></div>
+  </section>
+
   <!-- ================= CONTACT ================= -->
   <section id="contact" class="contact">
-    <div class="section-label">07 / <span data-i18n="sl_contact">Demos &amp; Collaborations</span></div>
+    <div class="section-label">08 / <span data-i18n="sl_contact">Demos &amp; Collaborations</span></div>
 
     <h2 class="contact-title" data-i18n-html="contact_title_html">
       MAKE
@@ -1925,50 +2176,68 @@
   </div>
 
   <script src="https://open.spotify.com/embed/iframe-api/v1" async></script>
+  <script src="assets/data/artists.js"></script>
 
   <script>
     // ---------- Artist roster ----------
-    // Editá este array para agregar, sacar o reordenar artistas.
-    const ARTISTS = [
-      { name: "Kires", id: "1Cm1WPdQpZWR1FGoaCQ9Hu", img: "ab67616100005174eb78ac9059f304cd9a71f78d" },
-      { name: "Rouse bby", id: "5CNzLOwiQx5VhTv44SuCm9", img: "ab67616100005174b011ca6ee23cca7df223bea7" },
-      { name: "Pazz", id: "38QjfFQ2Qj5pYKEfP1UZXz", img: "ab67616100005174eda1fcc84a4898da3737c123" },
-      { name: "Midel", id: "4EcIU574ksr6mC1GMEOe0p", img: "ab67616100005174f8dc60cf6517ac24c1b2134f" },
-      { name: "Mc Nito", id: "0EOOwVUWdPElrXOJyKOiBw", img: "ab676161000051743450ced305b10b708633b2a8" },
-      { name: "Kamacho", id: "4w0n2oYb0ZEuvlHa1Mnxci", img: "ab676161000051740e18544b9ed4c07c536e5cea" },
-      { name: "Kizuato", id: "1CDBZ6ZYceJMFEj5lMn1yi", img: "ab67616100005174a81ff0f069a0bdb8c73e1138" },
-      { name: "BR1", id: "3sqbHtwHxDZQfqFkr03zwX", img: "ab67616100005174ecf99b8b37813daeba89fc7d" },
-      { name: "Casteyano", id: "2sAeYCtKB9km4OnxZ79F2W", img: "ab6761610000517448dc2e35568059fd450e05f8" },
-      { name: "Majo Chicar", id: "2t1ZWcvmcsJnj9yCRuzvOG", img: "ab67616100005174b43f4244290797303000e856" },
-      { name: "Pastelita", id: "5sSiBj6y3adorU3bNcO0qi", img: "ab676161000051742108e15dfdfec3a28581c9af" },
-      { name: "Sorriso", id: "4EIzdaX8jUM4b2zKCYh1yj", img: "ab67616100005174d7dff70bb01d856e75ac1177" },
-      { name: "Tobi Matarasso", id: "758gJCoI4xZWRgjdlww3iM", img: "ab676161000051746febd6cd6725b013ad63d440" },
-      { name: "Mc Anrry", id: "4ExMusmx318A1cgA2L2UAP", img: "ab6761610000517456d65d3fdf9e10f05e8db909" },
-      { name: "Axia Bebe", id: "0ku2WIox3Gy8ZeRTra7khQ", img: "ab67616100005174cbfde070c1a24407419e14df" },
-      { name: "Lusan", id: "6cdFVBWLuWaXod5b0IqQvx", img: "ab676161000051745f55d7e03eb9c9995a20d988" },
-      { name: "Borja Trece", id: "6IsD7NahqpNXMZokr2sScx", img: "ab67616100005174e65017044d47c1044f1fbbb9" },
-      { name: "Bhae", id: "3rpv3PztUChhUTcNhHHRku", img: "ab67616100005174eb042c34dfcb55cba82fb4ea" },
-      { name: "Anita Pau", id: "1KMisYLHu9wM1dsT4gTwZz", img: "ab67616100005174b7f942eba8a4c91ca8300378" },
-      { name: "Layla Mar", id: "0FFp6MN2W3zcJdWAkCxcg6", img: "ab67616100005174dc1219d7f375fd39ce3bcdc9" },
-      { name: "Maki", id: "4q0qAJSJMhF3n8nq9n2gJX", img: "ab67616d00001e02c8c1cd702aae848113ab6d14" },
-      { name: "Yaco Santana", id: "0qyQT0AI2Qz2PnOP49ZBtA", img: "ab676161000051746665734a01adfe495ea805cb" },
-      { name: "Bianca Biondi", id: "4AhBUp7hKgyNz915uFsmCc", img: "ab67616100005174f738fb7c0cd6b181f348bae0" },
-      { name: "Jugo Solar", id: "5x69KadluL7PwtwALZrTgm", img: "ab67616100005174ddf9601225b8b08e7fd411d9" },
-      { name: "BallerFk", id: "2kENb15y49pTplwxt9ivd5", img: "ab67616100005174981ebb77880358490b75057f" },
-      { name: "Ekiss", id: "20mwpOinpbsbDIgnqUpFBe", img: "ab676161000051743b923eed0abd5ccb9e01ef0c" },
-      { name: "Lowkey Santo", id: "31xbC0RlsTJT1NOLviy6lD", img: "ab676161000051744014c930fa3816a9ec333669" },
-    ];
+    // El array vive en assets/data/artists.js (también lo usa el generador
+    // de páginas de artista) — editalo ahí para agregar/sacar artistas.
+    const ARTISTS = window.ZG_ARTISTS || [];
 
     const grid = document.getElementById("artists-grid");
     grid.innerHTML = ARTISTS.map(a => `
-      <a class="artist-card" href="https://open.spotify.com/artist/${a.id}" target="_blank" rel="noopener"
-         data-spotify-uri="spotify:artist:${a.id}" data-spotify-name="${a.name}">
+      <a class="artist-card" href="artistas/${a.slug}.html">
         <div class="artist-photo-wrap">
           <img class="artist-photo" src="https://i.scdn.co/image/${a.img}" alt="${a.name}" loading="lazy">
         </div>
         <div class="artist-name">${a.name}</div>
       </a>
     `).join("");
+
+    // ---------- Banner del estudio ----------
+    // Editá este array para agregar/sacar fotos: alcanza con soltar el
+    // archivo en assets/studio/ y sumar su nombre acá. Si un archivo no
+    // existe todavía (roster recién armado), el slide muestra un
+    // placeholder punteado en su lugar en vez de romper el layout.
+    const STUDIO_PHOTOS = [
+      "assets/studio/studio-1.webp",
+      "assets/studio/studio-2.webp",
+      "assets/studio/studio-3.webp",
+      "assets/studio/studio-4.webp",
+    ];
+
+    (function () {
+      const gallery = document.getElementById("studioGallery");
+      if (!gallery) return;
+
+      gallery.innerHTML = STUDIO_PHOTOS.map((src) => `
+        <div class="studio-slide">
+          <img src="${src}" alt="ZECHE GRUV — estudio" loading="lazy" decoding="async"
+               onerror="this.closest('.studio-slide').innerHTML = '<div class=&quot;studio-photo-placeholder&quot;></div>';">
+        </div>
+      `).join("");
+
+      const prevBtn = document.getElementById("studioPrev");
+      const nextBtn = document.getElementById("studioNext");
+      const scrollByOneSlide = (dir) => {
+        const slide = gallery.querySelector(".studio-slide");
+        const amount = slide ? slide.getBoundingClientRect().width + 12 : gallery.clientWidth;
+        gallery.scrollBy({ left: dir * amount, behavior: "smooth" });
+      };
+
+      prevBtn?.addEventListener("click", () => scrollByOneSlide(-1));
+      nextBtn?.addEventListener("click", () => scrollByOneSlide(1));
+    })();
+
+    // ---------- Carousel de novedades: cinta en loop continuo ----------
+    // Se duplican las tarjetas una vez (igual que el marquee original) para
+    // que la animación translateX(-50%) infinita quede sin cortes.
+    (function () {
+      const track = document.getElementById("novedadesTrack");
+      if (!track) return;
+
+      track.innerHTML += track.innerHTML;
+    })();
 
     // ---------- Musical Services ----------
     const WHATSAPP_NUMBER = "5491133287422"; // ZECHE GRUV — +54 9 11 3328-7422
@@ -2269,6 +2538,12 @@
         hero_desc_html: 'Sello discográfico y casa de producción independiente — composición, grabación, mezcla, mastering, distribución y arte de tapa, liderado por <a href="https://open.spotify.com/intl-es/artist/0yIGrWjWqKnM7qJ0uyImij" target="_blank" rel="noopener">Yaco Santana</a>.',
         hero_scroll: "Scroll para explorar",
         marquee_tagline: "SELLO DISCOGRÁFICO INDEPENDIENTE",
+        nov_release_eyebrow: "Último lanzamiento", nov_release_desc: "Con Rouse bby y YEIKO. Escuchalo ahora.",
+        nov_playlist_eyebrow: "Playlist", nov_playlist_title: "ZECHE GRUV", nov_playlist_desc: "Todo el sello en una sola lista.",
+        nov_soon_label: "PRÓXIMAMENTE",
+        nov_camps_eyebrow: "Camps", nov_camps_title: "Próximo camp", nov_camps_desc: "Estamos armando la fecha — muy pronto vas a poder anotarte acá.",
+        nov_events_eyebrow: "Eventos", nov_events_title: "Próximos eventos", nov_events_desc: "Fechas y shows del sello, pronto acá.",
+        nov_news_eyebrow: "Novedades", nov_news_title: "Seguinos en Instagram", nov_news_desc: "Mientras armamos esta sección, las últimas novedades están en Instagram.",
         sl_services: "Servicios Musicales", st_services_html: "Servicios<br>de estudio.",
         sl_testimonials: "Clientes y Testimonios", st_testimonials_html: "Lo que<br>dicen.",
         testimonials_intro: "Estamos sumando los testimonios reales de nuestros artistas — muy pronto vas a poder leer sus historias acá.",
@@ -2282,6 +2557,9 @@
         sl_releases: "Último Lanzamiento", st_releases_html: "El sonido<br>más nuevo.",
         release_out_now: "YA DISPONIBLE", release_copy_html: "Con Rouse bby y YEIKO. Producido por ZECHE GRUV.",
         sl_catalogue: "Catálogo", st_catalogue_html: "Lanzamientos<br>seleccionados.",
+        sl_full_catalogue: "Catálogo Completo", st_full_catalogue_html: "Todo el<br>catálogo.",
+        full_catalogue_intro: "Cargando desde Spotify…",
+        full_catalogue_error: "No pudimos cargar el catálogo ahora — mirá todo en Spotify ↗",
         sl_contact: "Demos y Colaboraciones", contact_title_html: "HACÉ<br><span>RUIDO.</span>",
         btn_spotify: "Spotify ↗", btn_demo: "Enviar demo ↗", btn_instagram: "Instagram ↗", btn_playlist: "Playlist ↗",
         spotify_bar_label: "Preview", footer_rights: "TODOS LOS DERECHOS RESERVADOS",
@@ -2339,6 +2617,12 @@
         hero_desc_html: 'Independent record label &amp; production house — composition, recording, mixing, mastering, distribution and cover art, led by <a href="https://open.spotify.com/intl-es/artist/0yIGrWjWqKnM7qJ0uyImij" target="_blank" rel="noopener">Yaco Santana</a>.',
         hero_scroll: "Scroll to explore",
         marquee_tagline: "INDEPENDENT RECORD LABEL",
+        nov_release_eyebrow: "Latest release", nov_release_desc: "Featuring Rouse bby and YEIKO. Listen now.",
+        nov_playlist_eyebrow: "Playlist", nov_playlist_title: "ZECHE GRUV", nov_playlist_desc: "The whole label in one playlist.",
+        nov_soon_label: "COMING SOON",
+        nov_camps_eyebrow: "Camps", nov_camps_title: "Next camp", nov_camps_desc: "We're setting the date — sign-ups will open here soon.",
+        nov_events_eyebrow: "Events", nov_events_title: "Upcoming events", nov_events_desc: "Label dates and shows, coming here soon.",
+        nov_news_eyebrow: "News", nov_news_title: "Follow us on Instagram", nov_news_desc: "While we build this section, the latest news lives on Instagram.",
         sl_services: "Musical Services", st_services_html: "Studio<br>services.",
         sl_testimonials: "Clients &amp; Testimonials", st_testimonials_html: "What they<br>say.",
         testimonials_intro: "We're gathering real testimonials from our artists — this space will soon hold their stories.",
@@ -2352,6 +2636,9 @@
         sl_releases: "Latest Release", st_releases_html: "The newest<br>sound.",
         release_out_now: "OUT NOW", release_copy_html: "With Rouse bby and YEIKO. Produced by ZECHE GRUV.",
         sl_catalogue: "Catalogue", st_catalogue_html: "Selected<br>releases.",
+        sl_full_catalogue: "Full Catalogue", st_full_catalogue_html: "The whole<br>catalogue.",
+        full_catalogue_intro: "Loading from Spotify…",
+        full_catalogue_error: "Couldn't load the catalogue right now — see it all on Spotify ↗",
         sl_contact: "Demos &amp; Collaborations", contact_title_html: "MAKE<br><span>NOISE.</span>",
         btn_spotify: "Spotify ↗", btn_demo: "Send a demo ↗", btn_instagram: "Instagram ↗", btn_playlist: "Playlist ↗",
         spotify_bar_label: "Preview", footer_rights: "ALL RIGHTS RESERVED",
@@ -2409,6 +2696,12 @@
         hero_desc_html: 'Selo discográfico e casa de produção independente — composição, gravação, mixagem, masterização, distribuição e capa, liderado por <a href="https://open.spotify.com/intl-es/artist/0yIGrWjWqKnM7qJ0uyImij" target="_blank" rel="noopener">Yaco Santana</a>.',
         hero_scroll: "Role para explorar",
         marquee_tagline: "SELO DISCOGRÁFICO INDEPENDENTE",
+        nov_release_eyebrow: "Último lançamento", nov_release_desc: "Com Rouse bby e YEIKO. Ouça agora.",
+        nov_playlist_eyebrow: "Playlist", nov_playlist_title: "ZECHE GRUV", nov_playlist_desc: "Todo o selo em uma única playlist.",
+        nov_soon_label: "EM BREVE",
+        nov_camps_eyebrow: "Camps", nov_camps_title: "Próximo camp", nov_camps_desc: "Estamos organizando a data — em breve você vai poder se inscrever aqui.",
+        nov_events_eyebrow: "Eventos", nov_events_title: "Próximos eventos", nov_events_desc: "Datas e shows do selo, em breve por aqui.",
+        nov_news_eyebrow: "Novidades", nov_news_title: "Siga a gente no Instagram", nov_news_desc: "Enquanto montamos esta seção, as últimas novidades estão no Instagram.",
         sl_services: "Serviços Musicais", st_services_html: "Serviços<br>de estúdio.",
         sl_testimonials: "Clientes e Depoimentos", st_testimonials_html: "O que<br>dizem.",
         testimonials_intro: "Estamos reunindo depoimentos reais dos nossos artistas — em breve você vai poder ler as histórias deles aqui.",
@@ -2422,6 +2715,9 @@
         sl_releases: "Último Lançamento", st_releases_html: "O som<br>mais novo.",
         release_out_now: "JÁ DISPONÍVEL", release_copy_html: "Com Rouse bby e YEIKO. Produzido pela ZECHE GRUV.",
         sl_catalogue: "Catálogo", st_catalogue_html: "Lançamentos<br>selecionados.",
+        sl_full_catalogue: "Catálogo Completo", st_full_catalogue_html: "Todo o<br>catálogo.",
+        full_catalogue_intro: "Carregando do Spotify…",
+        full_catalogue_error: "Não conseguimos carregar o catálogo agora — veja tudo no Spotify ↗",
         sl_contact: "Demos e Colaborações", contact_title_html: "FAÇA<br><span>BARULHO.</span>",
         btn_spotify: "Spotify ↗", btn_demo: "Enviar demo ↗", btn_instagram: "Instagram ↗", btn_playlist: "Playlist ↗",
         spotify_bar_label: "Preview", footer_rights: "TODOS OS DIREITOS RESERVADOS",
@@ -2479,6 +2775,12 @@
         hero_desc_html: 'Label discographique et maison de production indépendante — composition, enregistrement, mixage, mastering, distribution et pochette, dirigé par <a href="https://open.spotify.com/intl-es/artist/0yIGrWjWqKnM7qJ0uyImij" target="_blank" rel="noopener">Yaco Santana</a>.',
         hero_scroll: "Défiler pour explorer",
         marquee_tagline: "LABEL DISCOGRAPHIQUE INDÉPENDANT",
+        nov_release_eyebrow: "Dernière sortie", nov_release_desc: "Avec Rouse bby et YEIKO. Écoutez maintenant.",
+        nov_playlist_eyebrow: "Playlist", nov_playlist_title: "ZECHE GRUV", nov_playlist_desc: "Tout le label dans une seule playlist.",
+        nov_soon_label: "BIENTÔT",
+        nov_camps_eyebrow: "Camps", nov_camps_title: "Prochain camp", nov_camps_desc: "On prépare la date — les inscriptions ouvriront bientôt ici.",
+        nov_events_eyebrow: "Événements", nov_events_title: "Prochains événements", nov_events_desc: "Dates et concerts du label, bientôt ici.",
+        nov_news_eyebrow: "Actualités", nov_news_title: "Suivez-nous sur Instagram", nov_news_desc: "En attendant cette section, les dernières actualités sont sur Instagram.",
         sl_services: "Services Musicaux", st_services_html: "Services<br>de studio.",
         sl_testimonials: "Clients et Témoignages", st_testimonials_html: "Ce qu'ils<br>en disent.",
         testimonials_intro: "Nous rassemblons les témoignages réels de nos artistes — cet espace accueillera bientôt leurs histoires.",
@@ -2492,6 +2794,9 @@
         sl_releases: "Dernière Sortie", st_releases_html: "Le son<br>le plus récent.",
         release_out_now: "DISPONIBLE", release_copy_html: "Avec Rouse bby et YEIKO. Produit par ZECHE GRUV.",
         sl_catalogue: "Catalogue", st_catalogue_html: "Sorties<br>sélectionnées.",
+        sl_full_catalogue: "Catalogue Complet", st_full_catalogue_html: "Tout le<br>catalogue.",
+        full_catalogue_intro: "Chargement depuis Spotify…",
+        full_catalogue_error: "Impossible de charger le catalogue pour le moment — voyez tout sur Spotify ↗",
         sl_contact: "Démos et Collaborations", contact_title_html: "FAITES<br><span>DU BRUIT.</span>",
         btn_spotify: "Spotify ↗", btn_demo: "Envoyer une démo ↗", btn_instagram: "Instagram ↗", btn_playlist: "Playlist ↗",
         spotify_bar_label: "Aperçu", footer_rights: "TOUS DROITS RÉSERVÉS",
@@ -2549,6 +2854,12 @@
         hero_desc_html: 'Etichetta discografica e casa di produzione indipendente — composizione, registrazione, missaggio, mastering, distribuzione e copertina, guidata da <a href="https://open.spotify.com/intl-es/artist/0yIGrWjWqKnM7qJ0uyImij" target="_blank" rel="noopener">Yaco Santana</a>.',
         hero_scroll: "Scorri per esplorare",
         marquee_tagline: "ETICHETTA DISCOGRAFICA INDIPENDENTE",
+        nov_release_eyebrow: "Ultima uscita", nov_release_desc: "Con Rouse bby e YEIKO. Ascoltala ora.",
+        nov_playlist_eyebrow: "Playlist", nov_playlist_title: "ZECHE GRUV", nov_playlist_desc: "Tutta l'etichetta in un'unica playlist.",
+        nov_soon_label: "PRESTO",
+        nov_camps_eyebrow: "Camp", nov_camps_title: "Prossimo camp", nov_camps_desc: "Stiamo definendo la data — presto potrai iscriverti qui.",
+        nov_events_eyebrow: "Eventi", nov_events_title: "Prossimi eventi", nov_events_desc: "Date e show dell'etichetta, presto qui.",
+        nov_news_eyebrow: "Novità", nov_news_title: "Seguici su Instagram", nov_news_desc: "Nel frattempo, le ultime novità sono su Instagram.",
         sl_services: "Servizi Musicali", st_services_html: "Servizi<br>di studio.",
         sl_testimonials: "Clienti e Testimonianze", st_testimonials_html: "Cosa<br>dicono.",
         testimonials_intro: "Stiamo raccogliendo le testimonianze reali dei nostri artisti — presto qui potrai leggere le loro storie.",
@@ -2562,6 +2873,9 @@
         sl_releases: "Ultima Uscita", st_releases_html: "Il suono<br>più nuovo.",
         release_out_now: "GIÀ DISPONIBILE", release_copy_html: "Con Rouse bby e YEIKO. Prodotto da ZECHE GRUV.",
         sl_catalogue: "Catalogo", st_catalogue_html: "Uscite<br>selezionate.",
+        sl_full_catalogue: "Catalogo Completo", st_full_catalogue_html: "Tutto il<br>catalogo.",
+        full_catalogue_intro: "Caricamento da Spotify…",
+        full_catalogue_error: "Non siamo riusciti a caricare il catalogo ora — guardalo tutto su Spotify ↗",
         sl_contact: "Demo e Collaborazioni", contact_title_html: "FAI<br><span>RUMORE.</span>",
         btn_spotify: "Spotify ↗", btn_demo: "Invia una demo ↗", btn_instagram: "Instagram ↗", btn_playlist: "Playlist ↗",
         spotify_bar_label: "Anteprima", footer_rights: "TUTTI I DIRITTI RISERVATI",
@@ -2619,6 +2933,12 @@
         hero_desc_html: 'Unabhängiges Musiklabel und Produktionshaus — Komposition, Aufnahme, Mixing, Mastering, Vertrieb und Cover-Artwork, geleitet von <a href="https://open.spotify.com/intl-es/artist/0yIGrWjWqKnM7qJ0uyImij" target="_blank" rel="noopener">Yaco Santana</a>.',
         hero_scroll: "Scrollen zum Entdecken",
         marquee_tagline: "UNABHÄNGIGES MUSIKLABEL",
+        nov_release_eyebrow: "Neuestes Release", nov_release_desc: "Mit Rouse bby und YEIKO. Jetzt anhören.",
+        nov_playlist_eyebrow: "Playlist", nov_playlist_title: "ZECHE GRUV", nov_playlist_desc: "Das ganze Label in einer Playlist.",
+        nov_soon_label: "DEMNÄCHST",
+        nov_camps_eyebrow: "Camps", nov_camps_title: "Nächstes Camp", nov_camps_desc: "Wir legen gerade den Termin fest — Anmeldung folgt hier in Kürze.",
+        nov_events_eyebrow: "Events", nov_events_title: "Kommende Events", nov_events_desc: "Termine und Shows des Labels, bald hier.",
+        nov_news_eyebrow: "Neuigkeiten", nov_news_title: "Folg uns auf Instagram", nov_news_desc: "Bis dieser Bereich fertig ist, gibt's die neuesten Infos auf Instagram.",
         sl_services: "Musikdienstleistungen", st_services_html: "Studio-<br>services.",
         sl_testimonials: "Kunden &amp; Referenzen", st_testimonials_html: "Was sie<br>sagen.",
         testimonials_intro: "Wir sammeln gerade echte Stimmen unserer Künstler — hier werden bald ihre Geschichten stehen.",
@@ -2632,6 +2952,9 @@
         sl_releases: "Neuester Release", st_releases_html: "Der neueste<br>Sound.",
         release_out_now: "JETZT VERFÜGBAR", release_copy_html: "Mit Rouse bby und YEIKO. Produziert von ZECHE GRUV.",
         sl_catalogue: "Katalog", st_catalogue_html: "Ausgewählte<br>Releases.",
+        sl_full_catalogue: "Gesamter Katalog", st_full_catalogue_html: "Der ganze<br>Katalog.",
+        full_catalogue_intro: "Wird von Spotify geladen…",
+        full_catalogue_error: "Der Katalog konnte gerade nicht geladen werden — alles auf Spotify ansehen ↗",
         sl_contact: "Demos &amp; Kollaborationen", contact_title_html: "MACH<br><span>LÄRM.</span>",
         btn_spotify: "Spotify ↗", btn_demo: "Demo senden ↗", btn_instagram: "Instagram ↗", btn_playlist: "Playlist ↗",
         spotify_bar_label: "Vorschau", footer_rights: "ALLE RECHTE VORBEHALTEN",
@@ -2689,6 +3012,12 @@
         hero_desc_html: 'Независимый музыкальный лейбл и продакшн-хаус — сочинение, запись, сведение, мастеринг, дистрибуция и обложка, под руководством <a href="https://open.spotify.com/intl-es/artist/0yIGrWjWqKnM7qJ0uyImij" target="_blank" rel="noopener">Yaco Santana</a>.',
         hero_scroll: "Листайте вниз",
         marquee_tagline: "НЕЗАВИСИМЫЙ МУЗЫКАЛЬНЫЙ ЛЕЙБЛ",
+        nov_release_eyebrow: "Последний релиз", nov_release_desc: "При участии Rouse bby и YEIKO. Слушайте прямо сейчас.",
+        nov_playlist_eyebrow: "Плейлист", nov_playlist_title: "ZECHE GRUV", nov_playlist_desc: "Весь лейбл в одном плейлисте.",
+        nov_soon_label: "СКОРО",
+        nov_camps_eyebrow: "Кэмпы", nov_camps_title: "Следующий кэмп", nov_camps_desc: "Мы уточняем дату — регистрация скоро откроется здесь.",
+        nov_events_eyebrow: "События", nov_events_title: "Ближайшие события", nov_events_desc: "Даты и шоу лейбла — скоро здесь.",
+        nov_news_eyebrow: "Новости", nov_news_title: "Подписывайтесь на нас в Instagram", nov_news_desc: "Пока мы готовим этот раздел, последние новости — в Instagram.",
         sl_services: "Музыкальные Услуги", st_services_html: "Студийные<br>услуги.",
         sl_testimonials: "Клиенты и Отзывы", st_testimonials_html: "Что они<br>говорят.",
         testimonials_intro: "Мы собираем настоящие отзывы наших артистов — совсем скоро здесь появятся их истории.",
@@ -2702,6 +3031,9 @@
         sl_releases: "Последний Релиз", st_releases_html: "Самое новое<br>звучание.",
         release_out_now: "УЖЕ ДОСТУПНО", release_copy_html: "При участии Rouse bby и YEIKO. Продюсер — ZECHE GRUV.",
         sl_catalogue: "Каталог", st_catalogue_html: "Избранные<br>релизы.",
+        sl_full_catalogue: "Весь каталог", st_full_catalogue_html: "Весь<br>каталог.",
+        full_catalogue_intro: "Загрузка из Spotify…",
+        full_catalogue_error: "Не удалось загрузить каталог сейчас — смотрите всё на Spotify ↗",
         sl_contact: "Демо и Коллаборации", contact_title_html: "ЗАЯВИ<br><span>О СЕБЕ.</span>",
         btn_spotify: "Spotify ↗", btn_demo: "Отправить демо ↗", btn_instagram: "Instagram ↗", btn_playlist: "Плейлист ↗",
         spotify_bar_label: "Превью", footer_rights: "ВСЕ ПРАВА ЗАЩИЩЕНЫ",
@@ -2794,7 +3126,66 @@
 
     applyLanguage(detectInitialLang());
 
-    // ---------- Spotify hover preview ----------
+    // ---------- Catálogo completo (discografía + "aparece en") ----------
+    // Se pide a /.netlify/functions/spotify-catalog en cada carga de la
+    // página — así se mantiene al día solo mientras el sitio esté online,
+    // sin tocar código para sumar un lanzamiento nuevo. Si la function
+    // todavía no está desplegada (o falla), se muestra un aviso con link
+    // directo a Spotify en vez de dejar la sección vacía o rota.
+    (function () {
+      const grid = document.getElementById("fullCatalogueGrid");
+      const status = document.getElementById("fullCatalogueStatus");
+      if (!grid || !status) return;
+
+      fetch("/.netlify/functions/spotify-catalog")
+        .then((res) => {
+          if (!res.ok) throw new Error("bad response");
+          return res.json();
+        })
+        .then(({ items }) => {
+          if (!items || !items.length) throw new Error("empty");
+
+          grid.innerHTML = items.map((item) => `
+            <a href="${item.url}" target="_blank" rel="noopener" class="release-card"
+               data-spotify-uri="spotify:album:${item.id}" data-spotify-name="${item.name}">
+              <div class="release-art"><img src="${item.cover || ""}" alt="${item.name} — cover art" loading="lazy" decoding="async"></div>
+              <div class="card-info">
+                <div class="card-name">${item.name}</div>
+                <div class="card-meta">${item.artists}${item.appearsOn ? " · Aparece en" : ""}</div>
+              </div>
+            </a>
+          `).join("");
+
+          document.querySelectorAll("#fullCatalogueGrid [data-spotify-uri]").forEach((el) => {
+            el.addEventListener("click", (event) => {
+              if (event.defaultPrevented || event.button !== 0) return;
+              if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+              event.preventDefault();
+              openSpotifyPreview(el.dataset.spotifyUri, el.dataset.spotifyName);
+            });
+          });
+
+          status.remove();
+        })
+        .catch(() => {
+          status.removeAttribute("data-i18n");
+          status.textContent = I18N[currentLang].full_catalogue_error;
+          const link = document.createElement("a");
+          link.href = "https://open.spotify.com/intl-es/artist/0yIGrWjWqKnM7qJ0uyImij";
+          link.target = "_blank";
+          link.rel = "noopener";
+          link.className = "btn";
+          link.style.marginTop = "16px";
+          link.style.display = "inline-block";
+          link.textContent = I18N[currentLang].btn_spotify;
+          status.after(link);
+        });
+    })();
+
+    // ---------- Spotify preview (a pedido del usuario, sin autoplay) ----------
+    // Antes se abría y reproducía solo con el hover. Ahora un click abre la
+    // barra con el track/álbum cargado pero pausado — el usuario le da play
+    // desde los controles del propio reproductor embebido de Spotify.
     (function () {
       const bar = document.getElementById("spotify-bar");
       const mount = document.getElementById("spotify-bar-mount");
@@ -2805,13 +3196,10 @@
       let controller = null;
       let creating = false;
       let pendingUri = null;
-      let hideTimer = null;
-      let dismissed = false;
 
       function createNow() {
         apiReady.createController(mount, { uri: pendingUri, width: "100%", height: "80" }, (EmbedController) => {
           controller = EmbedController;
-          controller.play();
         });
       }
 
@@ -2820,16 +3208,13 @@
         if (creating) createNow();
       };
 
-      function playPreview(uri, name) {
-        if (dismissed) return;
-        clearTimeout(hideTimer);
+      function openPreview(uri, name) {
         bar.classList.add("active");
         label.textContent = name || I18N[currentLang].spotify_bar_label;
         pendingUri = uri;
 
         if (controller) {
           controller.loadUri(uri);
-          controller.play();
           return;
         }
         if (!creating) {
@@ -2838,27 +3223,27 @@
         }
       }
 
-      function schedulePause() {
-        hideTimer = setTimeout(() => {
-          if (controller) controller.pause();
-        }, 150);
-      }
+      // Expuesto para contenido armado dinámicamente después de esta carga
+      // (ej. el catálogo completo, que llega por fetch) — así reusa la
+      // misma barra/controller en vez de duplicar la lógica.
+      window.openSpotifyPreview = openPreview;
 
       document.querySelectorAll("[data-spotify-uri]").forEach((el) => {
-        el.addEventListener("mouseenter", () => {
-          playPreview(el.dataset.spotifyUri, el.dataset.spotifyName);
+        el.addEventListener("click", (event) => {
+          // Click simple sin modificadores: abrimos la vista previa acá
+          // mismo. Con ctrl/cmd/shift o click del medio, dejamos que el
+          // link se comporte normal (abrir Spotify en pestaña nueva).
+          if (event.defaultPrevented || event.button !== 0) return;
+          if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+          event.preventDefault();
+          openPreview(el.dataset.spotifyUri, el.dataset.spotifyName);
         });
-        el.addEventListener("mouseleave", schedulePause);
       });
 
       closeBtn.addEventListener("click", () => {
-        dismissed = true;
         bar.classList.remove("active");
         if (controller) controller.pause();
       });
-
-      bar.addEventListener("mouseenter", () => clearTimeout(hideTimer));
-      bar.addEventListener("mouseleave", schedulePause);
     })();
   </script>
 
@@ -2869,6 +3254,21 @@
     window.addEventListener("scroll", () => {
       nav.classList.toggle("scrolled", window.scrollY > 40);
     }, { passive: true });
+
+    // ---------- Sol chico del nav ----------
+    // Aparece exactamente cuando el sol grande del hero sale del viewport,
+    // y desaparece apenas vuelve a entrar — así nunca se ven los dos a la vez.
+    (function () {
+      const bigSun = document.querySelector(".zg-sun");
+      const navSun = document.getElementById("navSun");
+      if (!bigSun || !navSun) return;
+
+      const observer = new IntersectionObserver(([entry]) => {
+        navSun.classList.toggle("is-visible", !entry.isIntersecting);
+      }, { threshold: 0 });
+
+      observer.observe(bigSun);
+    })();
 
     // ---------- Custom cursor + logo parallax ----------
     // Un solo listener de mousemove que guarda la posición y actualiza todo

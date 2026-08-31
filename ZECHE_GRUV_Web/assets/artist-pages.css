@@ -1,0 +1,360 @@
+/* =========================================================
+   ZECHE GRUV — estilos compartidos de las páginas de artista
+   (assets/data/artists.js + scripts/generate_artist_pages.py
+   generan artistas/<slug>.html usando este stylesheet)
+   ========================================================= */
+
+:root {
+  --brown: #4B2509;
+  --brown-dark: #241105;
+  --brown-mid: #69350B;
+  --orange: #F07800;
+  --orange-soft: #F5A623;
+  --beige: #F0E0C0;
+  --cream: #FFF4DC;
+  --muted: #C9A980;
+
+  --border: rgba(240, 224, 192, 0.18);
+  --max: 1100px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--brown);
+  color: var(--cream);
+  font-family: "Manrope", sans-serif;
+  overflow-x: hidden;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* ---------- Nav ---------- */
+
+nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  padding: 22px 5vw;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(36,17,5,.9);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+}
+
+.nav-mark {
+  font-family: "DM Mono", monospace;
+  font-size: 12px;
+  letter-spacing: .16em;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.nav-sun {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 6px rgba(245,166,35,.55));
+}
+
+.nav-back {
+  font-family: "DM Mono", monospace;
+  font-size: 10px;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: var(--beige);
+  opacity: .75;
+  transition: .25s ease;
+}
+
+.nav-back:hover {
+  color: var(--orange-soft);
+  opacity: 1;
+}
+
+/* ---------- Layout ---------- */
+
+main {
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 60px 5vw 100px;
+}
+
+/* ---------- Artist header ---------- */
+
+.artist-header {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  margin-bottom: 56px;
+}
+
+.artist-header-photo {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.artist-header-name {
+  font-size: clamp(32px, 6vw, 56px);
+  line-height: .95;
+  letter-spacing: -.04em;
+  font-weight: 700;
+}
+
+.artist-header-role {
+  font-family: "DM Mono", monospace;
+  font-size: 10px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--orange-soft);
+  margin-top: 10px;
+}
+
+/* ---------- Section blocks ---------- */
+
+.artist-section {
+  margin-bottom: 48px;
+}
+
+.artist-section-label {
+  font-family: "DM Mono", monospace;
+  font-size: 10px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--orange-soft);
+  margin-bottom: 14px;
+}
+
+.artist-bio {
+  max-width: 640px;
+  color: var(--beige);
+  opacity: .85;
+  font-size: 15px;
+  line-height: 1.8;
+}
+
+.artist-bio.is-placeholder {
+  opacity: .55;
+  font-style: italic;
+}
+
+/* ---------- Oyentes mensuales ---------- */
+
+.artist-listeners {
+  display: none;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.artist-listeners.is-visible {
+  display: flex;
+}
+
+.artist-listeners-count {
+  font-size: 34px;
+  font-weight: 800;
+  letter-spacing: -.02em;
+}
+
+.artist-listeners-label {
+  font-family: "DM Mono", monospace;
+  font-size: 10px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ---------- Top canciones (estética tipo Spotify, paleta Zeche) ---------- */
+
+.top-tracks {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--border);
+}
+
+.top-track {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 4px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background .2s ease;
+}
+
+.top-track:hover {
+  background: rgba(240,224,192,.05);
+}
+
+.top-track-index {
+  width: 20px;
+  flex-shrink: 0;
+  font-family: "DM Mono", monospace;
+  font-size: 13px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.top-track-cover {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  object-fit: cover;
+  background: var(--brown-dark);
+}
+
+.top-track-info {
+  min-width: 0;
+  flex: 1;
+}
+
+.top-track-name {
+  font-size: 14.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.top-track-artists {
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.top-track-plays {
+  flex-shrink: 0;
+  font-family: "DM Mono", monospace;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.top-tracks-empty {
+  font-family: "DM Mono", monospace;
+  font-size: 11px;
+  letter-spacing: .08em;
+  color: var(--muted);
+  padding: 14px 4px;
+}
+
+/* ---------- CTAs ---------- */
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.btn {
+  border: 1px solid rgba(240,224,192,.3);
+  padding: 13px 17px;
+  font-family: "DM Mono", monospace;
+  font-size: 9px;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: var(--cream);
+  transition: .3s ease;
+}
+
+.btn:hover {
+  background: var(--orange);
+  border-color: var(--orange);
+  color: var(--brown-dark);
+  transform: translateY(-3px);
+}
+
+/* ---------- Spotify preview bar (idéntica a la de la home, sin autoplay) ---------- */
+
+.spotify-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 150;
+  transform: translateY(100%);
+  transition: transform .45s cubic-bezier(.16,1,.3,1);
+  background: rgba(36,17,5,.97);
+  backdrop-filter: blur(16px);
+  border-top: 1px solid var(--border);
+}
+
+.spotify-bar.active {
+  transform: translateY(0);
+}
+
+.spotify-bar-inner {
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 10px 5vw;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.spotify-bar-mount {
+  flex: 1;
+  min-width: 0;
+}
+
+.spotify-bar-close {
+  border: 1px solid rgba(240,224,192,.3);
+  background: none;
+  color: var(--cream);
+  width: 26px;
+  height: 26px;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: .25s ease;
+}
+
+.spotify-bar-close:hover {
+  background: var(--orange);
+  border-color: var(--orange);
+  color: var(--brown-dark);
+}
+
+/* ---------- Footer ---------- */
+
+footer {
+  border-top: 1px solid var(--border);
+  padding: 25px 5vw;
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  color: var(--muted);
+  font-family: "DM Mono", monospace;
+  font-size: 8px;
+  letter-spacing: .12em;
+}
+
+@media (max-width: 700px) {
+  .artist-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 18px;
+  }
+
+  .artist-header-photo {
+    width: 110px;
+    height: 110px;
+  }
+}
