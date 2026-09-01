@@ -1129,14 +1129,95 @@
 
     /* ---------- Mobile ---------- */
 
+    /* Menú hamburguesa: solo se muestra (display) en mobile, ver media
+       query más abajo. En desktop queda oculto y .nav-right se ve normal.
+       Tiene que ir ANTES del media query: con la misma especificidad,
+       gana la regla que aparece después en el archivo. */
+    .nav-hamburger {
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 5px;
+      width: 32px;
+      height: 32px;
+      border: 1px solid var(--border);
+      background: none;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .nav-hamburger span {
+      width: 16px;
+      height: 1.5px;
+      background: var(--cream);
+      transition: transform .25s ease, opacity .25s ease;
+    }
+
+    .nav-hamburger[aria-expanded="true"] span:nth-child(1) {
+      transform: translateY(6.5px) rotate(45deg);
+    }
+
+    .nav-hamburger[aria-expanded="true"] span:nth-child(2) {
+      opacity: 0;
+    }
+
+    .nav-hamburger[aria-expanded="true"] span:nth-child(3) {
+      transform: translateY(-6.5px) rotate(-45deg);
+    }
+
     @media (max-width: 800px) {
       nav {
         padding: 18px 5vw;
       }
 
+      .nav-hamburger {
+        display: flex;
+      }
+
+      .nav-right {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0;
+        background: rgba(36,17,5,.97);
+        backdrop-filter: blur(16px);
+        border-bottom: 1px solid var(--border);
+        max-height: 0;
+        overflow: hidden;
+        opacity: 0;
+        transition: max-height .35s ease, opacity .3s ease;
+        pointer-events: none;
+      }
+
+      .nav-right.is-open {
+        max-height: 70vh;
+        opacity: 1;
+        pointer-events: auto;
+        overflow-y: auto;
+      }
+
       .nav-links {
-        gap: 13px;
-        font-size: 8px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0;
+        font-size: 11px;
+        padding: 8px 5vw 20px;
+      }
+
+      .nav-links a {
+        display: block;
+        width: 100%;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--border);
+        opacity: .85;
+      }
+
+      .lang-select {
+        margin: 0 5vw 20px;
       }
 
       .hero {
@@ -1201,11 +1282,6 @@
     }
 
     @media (max-width: 480px) {
-      .nav-links a:nth-child(4),
-      .nav-links a:nth-child(5) {
-        display: none;
-      }
-
       .catalogue {
         grid-template-columns: 1fr;
       }
@@ -1309,6 +1385,14 @@
       font-size: 20px;
       font-weight: 700;
       letter-spacing: -.02em;
+    }
+
+    .package-subtitle {
+      font-family: "DM Mono", monospace;
+      font-size: 10px;
+      letter-spacing: .06em;
+      color: var(--muted);
+      margin-top: 4px;
     }
 
     .package-price {
@@ -1827,6 +1911,10 @@
         <option value="ru">RU</option>
       </select>
     </div>
+
+    <button class="nav-hamburger" id="navHamburger" type="button" aria-label="Menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
   </nav>
 
   <!-- ================= HERO ================= -->
@@ -1937,7 +2025,8 @@
     <!-- ---- Packages ---- -->
     <div class="packages-grid">
       <div class="package-card package-custom">
-        <div class="package-name" data-i18n="pkg_custom_name">Armá tu propio paquete</div>
+        <div class="package-name" data-i18n="pkg_custom_name">🧩 PERSONALIZADO</div>
+        <div class="package-subtitle" data-i18n="pkg_custom_subtitle">Armá tu paquete personalizado</div>
         <p class="package-desc" data-i18n="pkg_custom_desc">¿Ya sabés qué necesitás? Elegí los servicios que quieras combinar de la lista y te armamos una cotización a medida, directo por WhatsApp.</p>
         <button class="service-btn" type="button" id="custom-toggle-btn" data-i18n="pkg_custom_toggle_btn">Elegir servicios</button>
         <div class="package-custom-list" id="custom-service-list" hidden></div>
@@ -1946,14 +2035,14 @@
       </div>
 
       <div class="package-card">
-        <div class="package-name" data-i18n="pkg_single_name">Single</div>
+        <div class="package-name" data-i18n="pkg_single_name">💿 SINGLE</div>
         <div class="package-price">$400.000 <span data-i18n="pkg_currency">ARS</span></div>
         <p class="package-desc" data-i18n="pkg_single_desc">Tu canción de punta a punta: grabación, mezcla, mastering y distribución en un solo paquete, con todo lo que necesitás para lanzarla de forma profesional.</p>
         <button class="service-btn package-cta" type="button" id="single-quote-btn" data-i18n="pkg_cta_reserve">Reservar por WhatsApp ↗</button>
       </div>
 
       <div class="package-card">
-        <div class="package-name" data-i18n="pkg_epalbum_name">EP / Álbum</div>
+        <div class="package-name" data-i18n="pkg_epalbum_name">📀 PROYECTO</div>
         <div class="package-toggle" role="group">
           <button type="button" class="package-toggle-btn" id="ep-btn" data-format="ep">
             <span data-i18n="pkg_ep_label">EP</span><span class="package-toggle-save">35% OFF</span>
@@ -2669,14 +2758,14 @@
         sl_contact: "Demos y Colaboraciones", contact_title_html: "HACÉ<br><span>RUIDO.</span>",
         btn_spotify: "Spotify ↗", btn_demo: "Enviar demo ↗", btn_instagram: "Instagram ↗", btn_playlist: "Playlist ↗",
         spotify_bar_label: "Preview", footer_rights: "TODOS LOS DERECHOS RESERVADOS",
-        pkg_custom_name: "Armá tu propio paquete de producción personalizado",
+        pkg_custom_name: "🧩 PERSONALIZADO", pkg_custom_subtitle: "Armá tu paquete personalizado",
         pkg_custom_desc: "¿Ya sabés qué necesitás? Elegí los servicios que quieras combinar de la lista y te armamos una cotización a medida, directo por WhatsApp.",
         pkg_custom_toggle_btn: "Elegir servicios", pkg_custom_cta: "Cotizar por WhatsApp ↗",
         pkg_custom_empty_hint: "Elegí al menos un servicio para cotizar.",
-        pkg_single_name: "Single",
+        pkg_single_name: "💿 SINGLE",
         pkg_single_desc: "Tu canción de punta a punta: grabación, mezcla, mastering y distribución en un solo paquete, con todo lo que necesitás para lanzarla de forma profesional.",
         pkg_cta_reserve: "Reservar por WhatsApp ↗",
-        pkg_epalbum_name: "EP / Álbum", pkg_ep_label: "EP", pkg_album_label: "Álbum",
+        pkg_epalbum_name: "📀 PROYECTO", pkg_ep_label: "EP", pkg_album_label: "Álbum",
         pkg_ep_save: "Ahorrás +35% vs. contratar todo por separado.",
         pkg_album_save: "Ahorrás +40% vs. contratar todo por separado.",
         pkg_songs_label: "Cantidad de canciones",
@@ -2749,14 +2838,14 @@
         sl_contact: "Demos &amp; Collaborations", contact_title_html: "MAKE<br><span>NOISE.</span>",
         btn_spotify: "Spotify ↗", btn_demo: "Send a demo ↗", btn_instagram: "Instagram ↗", btn_playlist: "Playlist ↗",
         spotify_bar_label: "Preview", footer_rights: "ALL RIGHTS RESERVED",
-        pkg_custom_name: "Build your own custom production package",
+        pkg_custom_name: "🧩 CUSTOM", pkg_custom_subtitle: "Build your custom package",
         pkg_custom_desc: "Already know what you need? Pick the services you want to combine from the list and we'll put together a custom quote, straight over WhatsApp.",
         pkg_custom_toggle_btn: "Choose services", pkg_custom_cta: "Quote via WhatsApp ↗",
         pkg_custom_empty_hint: "Pick at least one service to get a quote.",
-        pkg_single_name: "Single",
+        pkg_single_name: "💿 SINGLE",
         pkg_single_desc: "Your song from start to finish: recording, mixing, mastering and distribution in one package — everything you need to release it professionally.",
         pkg_cta_reserve: "Book via WhatsApp ↗",
-        pkg_epalbum_name: "EP / Album", pkg_ep_label: "EP", pkg_album_label: "Album",
+        pkg_epalbum_name: "📀 PROJECT", pkg_ep_label: "EP", pkg_album_label: "Album",
         pkg_ep_save: "Save +35% vs. booking everything separately.",
         pkg_album_save: "Save +40% vs. booking everything separately.",
         pkg_songs_label: "Number of songs",
@@ -2829,14 +2918,14 @@
         sl_contact: "Demos e Colaborações", contact_title_html: "FAÇA<br><span>BARULHO.</span>",
         btn_spotify: "Spotify ↗", btn_demo: "Enviar demo ↗", btn_instagram: "Instagram ↗", btn_playlist: "Playlist ↗",
         spotify_bar_label: "Preview", footer_rights: "TODOS OS DIREITOS RESERVADOS",
-        pkg_custom_name: "Monte seu próprio pacote de produção personalizado",
+        pkg_custom_name: "🧩 PERSONALIZADO", pkg_custom_subtitle: "Monte seu pacote personalizado",
         pkg_custom_desc: "Já sabe o que precisa? Escolha os serviços que quer combinar na lista e a gente monta um orçamento sob medida, direto pelo WhatsApp.",
         pkg_custom_toggle_btn: "Escolher serviços", pkg_custom_cta: "Orçar pelo WhatsApp ↗",
         pkg_custom_empty_hint: "Escolha pelo menos um serviço para orçar.",
-        pkg_single_name: "Single",
+        pkg_single_name: "💿 SINGLE",
         pkg_single_desc: "Sua música do início ao fim: gravação, mixagem, masterização e distribuição em um só pacote, com tudo o que você precisa para lançar de forma profissional.",
         pkg_cta_reserve: "Reservar pelo WhatsApp ↗",
-        pkg_epalbum_name: "EP / Álbum", pkg_ep_label: "EP", pkg_album_label: "Álbum",
+        pkg_epalbum_name: "📀 PROJETO", pkg_ep_label: "EP", pkg_album_label: "Álbum",
         pkg_ep_save: "Você economiza +35% em relação a contratar tudo separado.",
         pkg_album_save: "Você economiza +40% em relação a contratar tudo separado.",
         pkg_songs_label: "Quantidade de músicas",
@@ -2909,14 +2998,14 @@
         sl_contact: "Démos et Collaborations", contact_title_html: "FAITES<br><span>DU BRUIT.</span>",
         btn_spotify: "Spotify ↗", btn_demo: "Envoyer une démo ↗", btn_instagram: "Instagram ↗", btn_playlist: "Playlist ↗",
         spotify_bar_label: "Aperçu", footer_rights: "TOUS DROITS RÉSERVÉS",
-        pkg_custom_name: "Compose ton propre pack de production personnalisé",
+        pkg_custom_name: "🧩 PERSONNALISÉ", pkg_custom_subtitle: "Composez votre pack personnalisé",
         pkg_custom_desc: "Tu sais déjà ce dont tu as besoin ? Choisis les services que tu veux combiner dans la liste et on te prépare un devis sur mesure, directement par WhatsApp.",
         pkg_custom_toggle_btn: "Choisir les services", pkg_custom_cta: "Devis par WhatsApp ↗",
         pkg_custom_empty_hint: "Choisis au moins un service pour obtenir un devis.",
-        pkg_single_name: "Single",
+        pkg_single_name: "💿 SINGLE",
         pkg_single_desc: "Ton titre de A à Z : enregistrement, mixage, mastering et distribution en un seul pack, avec tout ce qu'il faut pour le sortir de façon professionnelle.",
         pkg_cta_reserve: "Réserver par WhatsApp ↗",
-        pkg_epalbum_name: "EP / Album", pkg_ep_label: "EP", pkg_album_label: "Album",
+        pkg_epalbum_name: "📀 PROJET", pkg_ep_label: "EP", pkg_album_label: "Album",
         pkg_ep_save: "Tu économises +35% par rapport aux services pris séparément.",
         pkg_album_save: "Tu économises +40% par rapport aux services pris séparément.",
         pkg_songs_label: "Nombre de titres",
@@ -2989,14 +3078,14 @@
         sl_contact: "Demo e Collaborazioni", contact_title_html: "FAI<br><span>RUMORE.</span>",
         btn_spotify: "Spotify ↗", btn_demo: "Invia una demo ↗", btn_instagram: "Instagram ↗", btn_playlist: "Playlist ↗",
         spotify_bar_label: "Anteprima", footer_rights: "TUTTI I DIRITTI RISERVATI",
-        pkg_custom_name: "Crea il tuo pacchetto di produzione personalizzato",
+        pkg_custom_name: "🧩 PERSONALIZZATO", pkg_custom_subtitle: "Crea il tuo pacchetto personalizzato",
         pkg_custom_desc: "Sai già cosa ti serve? Scegli i servizi che vuoi combinare dalla lista e ti prepariamo un preventivo su misura, direttamente via WhatsApp.",
         pkg_custom_toggle_btn: "Scegli i servizi", pkg_custom_cta: "Preventivo via WhatsApp ↗",
         pkg_custom_empty_hint: "Scegli almeno un servizio per richiedere un preventivo.",
-        pkg_single_name: "Singolo",
+        pkg_single_name: "💿 SINGOLO",
         pkg_single_desc: "Il tuo brano dall'inizio alla fine: registrazione, missaggio, mastering e distribuzione in un unico pacchetto, con tutto ciò che serve per pubblicarlo in modo professionale.",
         pkg_cta_reserve: "Prenota via WhatsApp ↗",
-        pkg_epalbum_name: "EP / Album", pkg_ep_label: "EP", pkg_album_label: "Album",
+        pkg_epalbum_name: "📀 PROGETTO", pkg_ep_label: "EP", pkg_album_label: "Album",
         pkg_ep_save: "Risparmi +35% rispetto a prendere i servizi separatamente.",
         pkg_album_save: "Risparmi +40% rispetto a prendere i servizi separatamente.",
         pkg_songs_label: "Numero di brani",
@@ -3069,14 +3158,14 @@
         sl_contact: "Demos &amp; Kollaborationen", contact_title_html: "MACH<br><span>LÄRM.</span>",
         btn_spotify: "Spotify ↗", btn_demo: "Demo senden ↗", btn_instagram: "Instagram ↗", btn_playlist: "Playlist ↗",
         spotify_bar_label: "Vorschau", footer_rights: "ALLE RECHTE VORBEHALTEN",
-        pkg_custom_name: "Stell dir dein eigenes individuelles Produktionspaket zusammen",
+        pkg_custom_name: "🧩 INDIVIDUELL", pkg_custom_subtitle: "Stell dir dein individuelles Paket zusammen",
         pkg_custom_desc: "Du weißt schon, was du brauchst? Wähl aus der Liste die Services aus, die du kombinieren möchtest, und wir erstellen dir direkt per WhatsApp ein individuelles Angebot.",
         pkg_custom_toggle_btn: "Services auswählen", pkg_custom_cta: "Angebot per WhatsApp ↗",
         pkg_custom_empty_hint: "Wähl mindestens einen Service für ein Angebot aus.",
-        pkg_single_name: "Single",
+        pkg_single_name: "💿 SINGLE",
         pkg_single_desc: "Dein Song von Anfang bis Ende: Aufnahme, Mixing, Mastering und Vertrieb in einem Paket — alles, was du für eine professionelle Veröffentlichung brauchst.",
         pkg_cta_reserve: "Buchen per WhatsApp ↗",
-        pkg_epalbum_name: "EP / Album", pkg_ep_label: "EP", pkg_album_label: "Album",
+        pkg_epalbum_name: "📀 PROJEKT", pkg_ep_label: "EP", pkg_album_label: "Album",
         pkg_ep_save: "Du sparst +35% gegenüber der Einzelbuchung aller Services.",
         pkg_album_save: "Du sparst +40% gegenüber der Einzelbuchung aller Services.",
         pkg_songs_label: "Anzahl der Songs",
@@ -3149,14 +3238,14 @@
         sl_contact: "Демо и Коллаборации", contact_title_html: "ЗАЯВИ<br><span>О СЕБЕ.</span>",
         btn_spotify: "Spotify ↗", btn_demo: "Отправить демо ↗", btn_instagram: "Instagram ↗", btn_playlist: "Плейлист ↗",
         spotify_bar_label: "Превью", footer_rights: "ВСЕ ПРАВА ЗАЩИЩЕНЫ",
-        pkg_custom_name: "Собери свой индивидуальный пакет продакшна",
+        pkg_custom_name: "🧩 ПЕРСОНАЛЬНЫЙ", pkg_custom_subtitle: "Собери свой персональный пакет",
         pkg_custom_desc: "Уже знаешь, что тебе нужно? Выбери услуги, которые хочешь объединить, из списка — и мы соберём индивидуальное предложение прямо в WhatsApp.",
         pkg_custom_toggle_btn: "Выбрать услуги", pkg_custom_cta: "Узнать цену в WhatsApp ↗",
         pkg_custom_empty_hint: "Выбери хотя бы одну услугу, чтобы получить предложение.",
-        pkg_single_name: "Сингл",
+        pkg_single_name: "💿 СИНГЛ",
         pkg_single_desc: "Твоя песня от начала до конца: запись, сведение, мастеринг и дистрибуция в одном пакете — всё, что нужно для профессионального релиза.",
         pkg_cta_reserve: "Забронировать в WhatsApp ↗",
-        pkg_epalbum_name: "EP / Альбом", pkg_ep_label: "EP", pkg_album_label: "Альбом",
+        pkg_epalbum_name: "📀 ПРОЕКТ", pkg_ep_label: "EP", pkg_album_label: "Альбом",
         pkg_ep_save: "Экономия +35% по сравнению с отдельной оплатой услуг.",
         pkg_album_save: "Экономия +40% по сравнению с отдельной оплатой услуг.",
         pkg_songs_label: "Количество песен",
@@ -3366,6 +3455,29 @@
     window.addEventListener("scroll", () => {
       nav.classList.toggle("scrolled", window.scrollY > 40);
     }, { passive: true });
+
+    // ---------- Menú hamburguesa (mobile) ----------
+    (function () {
+      const hamburger = document.getElementById("navHamburger");
+      const navRight = document.querySelector(".nav-right");
+      if (!hamburger || !navRight) return;
+
+      function closeMenu() {
+        navRight.classList.remove("is-open");
+        hamburger.setAttribute("aria-expanded", "false");
+      }
+
+      hamburger.addEventListener("click", () => {
+        const willOpen = !navRight.classList.contains("is-open");
+        navRight.classList.toggle("is-open", willOpen);
+        hamburger.setAttribute("aria-expanded", String(willOpen));
+      });
+
+      // Al elegir una sección o cerrar el select de idioma, se cierra solo.
+      navRight.querySelectorAll(".nav-links a").forEach((a) => {
+        a.addEventListener("click", closeMenu);
+      });
+    })();
 
     // ---------- Sol chico del nav ----------
     // Aparece exactamente cuando el sol grande del hero sale del viewport,
