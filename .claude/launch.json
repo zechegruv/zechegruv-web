@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "zechegruv-static",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "8811", "--directory", "ZECHE_GRUV_Web"],
+      "port": 8811
+    }
+  ]
+}
