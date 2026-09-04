@@ -16,42 +16,49 @@ const ARTIST_I18N = {
     label_listeners: "Oyentes mensuales", label_top_tracks: "Top canciones", loading_tracks: "Cargando…",
     tracks_error: "No pudimos cargar el top de canciones ahora mismo.", btn_spotify: "Escuchar en Spotify ↗",
     footer_rights: "TODOS LOS DERECHOS RESERVADOS", bio_placeholder: "Biografía próximamente.",
+    label_releases: "Lanzamientos con ZECHE GRUV",
   },
   en: {
     nav_back: "← Back to roster", artist_role: "ZECHE GRUV Artist", label_bio: "Biography",
     label_listeners: "Monthly listeners", label_top_tracks: "Top tracks", loading_tracks: "Loading…",
     tracks_error: "We couldn't load the top tracks right now.", btn_spotify: "Listen on Spotify ↗",
     footer_rights: "ALL RIGHTS RESERVED", bio_placeholder: "Biography coming soon.",
+    label_releases: "Releases with ZECHE GRUV",
   },
   pt: {
     nav_back: "← Voltar ao elenco", artist_role: "Artista ZECHE GRUV", label_bio: "Biografia",
     label_listeners: "Ouvintes mensais", label_top_tracks: "Top músicas", loading_tracks: "Carregando…",
     tracks_error: "Não conseguimos carregar o top de músicas agora.", btn_spotify: "Ouvir no Spotify ↗",
     footer_rights: "TODOS OS DIREITOS RESERVADOS", bio_placeholder: "Biografia em breve.",
+    label_releases: "Lançamentos com a ZECHE GRUV",
   },
   fr: {
     nav_back: "← Retour aux artistes", artist_role: "Artiste ZECHE GRUV", label_bio: "Biographie",
     label_listeners: "Auditeurs mensuels", label_top_tracks: "Meilleurs titres", loading_tracks: "Chargement…",
     tracks_error: "Impossible de charger les meilleurs titres pour le moment.", btn_spotify: "Écouter sur Spotify ↗",
     footer_rights: "TOUS DROITS RÉSERVÉS", bio_placeholder: "Biographie à venir.",
+    label_releases: "Sorties avec ZECHE GRUV",
   },
   it: {
     nav_back: "← Torna al roster", artist_role: "Artista ZECHE GRUV", label_bio: "Biografia",
     label_listeners: "Ascoltatori mensili", label_top_tracks: "Brani più ascoltati", loading_tracks: "Caricamento…",
     tracks_error: "Non siamo riusciti a caricare i brani più ascoltati ora.", btn_spotify: "Ascolta su Spotify ↗",
     footer_rights: "TUTTI I DIRITTI RISERVATI", bio_placeholder: "Biografia in arrivo.",
+    label_releases: "Uscite con ZECHE GRUV",
   },
   de: {
     nav_back: "← Zurück zum Roster", artist_role: "ZECHE GRUV Künstler:in", label_bio: "Biografie",
     label_listeners: "Monatliche Hörer:innen", label_top_tracks: "Top-Songs", loading_tracks: "Wird geladen…",
     tracks_error: "Die Top-Songs konnten gerade nicht geladen werden.", btn_spotify: "Auf Spotify hören ↗",
     footer_rights: "ALLE RECHTE VORBEHALTEN", bio_placeholder: "Biografie folgt in Kürze.",
+    label_releases: "Releases mit ZECHE GRUV",
   },
   ru: {
     nav_back: "← Назад к артистам", artist_role: "Артист ZECHE GRUV", label_bio: "Биография",
     label_listeners: "Слушателей в месяц", label_top_tracks: "Топ треков", loading_tracks: "Загрузка…",
     tracks_error: "Не удалось загрузить топ треков прямо сейчас.", btn_spotify: "Слушать на Spotify ↗",
     footer_rights: "ВСЕ ПРАВА ЗАЩИЩЕНЫ", bio_placeholder: "Биография скоро появится.",
+    label_releases: "Релизы с ZECHE GRUV",
   },
 };
 const SUPPORTED_LANGS = Object.keys(ARTIST_I18N);
@@ -171,6 +178,54 @@ function detectInitialLang() {
     renderTopTracks(topTracks, liveStats?.trackPlays);
   }
 
+  // ---------- Lanzamientos con ZECHE GRUV ----------
+  // Reusa /.netlify/functions/spotify-catalog (mismo catálogo completo que
+  // la home) y se queda solo con los items donde este artista figura como
+  // crédito. Si la function falla o no hay coincidencias, la sección queda
+  // oculta (hidden en el HTML) en vez de mostrar un bloque vacío.
+  const artistName = (root.dataset.artistName || "").trim().toLowerCase();
+
+  async function loadArtistReleases() {
+    const section = document.getElementById("artistReleasesSection");
+    const grid = document.getElementById("artistReleasesGrid");
+    if (!section || !grid || !artistName) return;
+
+    try {
+      const res = await fetch("/.netlify/functions/spotify-catalog");
+      if (!res.ok) throw new Error("bad response");
+      const { items } = await res.json();
+
+      const matches = (items || []).filter((item) =>
+        (item.artists || "").split(",").some((n) => n.trim().toLowerCase() === artistName)
+      );
+      if (!matches.length) return;
+
+      grid.innerHTML = matches.map((item) => `
+        <a href="${item.url}" target="_blank" rel="noopener" class="release-card"
+           data-spotify-uri="spotify:${item.type === "track" ? "track" : "album"}:${item.id}" data-spotify-name="${item.name}">
+          <div class="release-art"><img src="${item.cover || ""}" alt="${item.name} — cover art" loading="lazy" decoding="async"></div>
+          <div class="card-info">
+            <div class="card-name">${item.name}</div>
+            <div class="card-meta">${item.artists}${item.appearsOn ? " · Aparece en" : ""}</div>
+          </div>
+        </a>
+      `).join("");
+
+      grid.querySelectorAll("[data-spotify-uri]").forEach((el) => {
+        el.addEventListener("click", (event) => {
+          if (event.defaultPrevented || event.button !== 0) return;
+          if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+          event.preventDefault();
+          openPreview(el.dataset.spotifyUri);
+        });
+      });
+
+      section.hidden = false;
+    } catch (e) {
+      // sección queda oculta
+    }
+  }
+
   // ---------- Preview sin autoplay (mismo criterio que la home) ----------
   const bar = document.getElementById("spotify-bar");
   const mount = document.getElementById("spotify-bar-mount");
@@ -217,4 +272,5 @@ function detectInitialLang() {
 
   attachPreviewHandlers();
   loadStats();
+  loadArtistReleases();
 })();
