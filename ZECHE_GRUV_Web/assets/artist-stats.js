@@ -183,21 +183,25 @@ function detectInitialLang() {
   // la home) y se queda solo con los items donde este artista figura como
   // crédito. Si la function falla o no hay coincidencias, la sección queda
   // oculta (hidden en el HTML) en vez de mostrar un bloque vacío.
+  // Filtra por artistId de Spotify (no por nombre): el nombre acreditado en
+  // el track a veces difiere del roster (ej. "KiresOficial" vs "Kires"), el
+  // id en cambio es siempre el mismo.
   const artistName = (root.dataset.artistName || "").trim().toLowerCase();
 
   async function loadArtistReleases() {
     const section = document.getElementById("artistReleasesSection");
     const grid = document.getElementById("artistReleasesGrid");
-    if (!section || !grid || !artistName) return;
+    if (!section || !grid || (!artistId && !artistName)) return;
 
     try {
       const res = await fetch("/.netlify/functions/spotify-catalog");
       if (!res.ok) throw new Error("bad response");
       const { items } = await res.json();
 
-      const matches = (items || []).filter((item) =>
-        (item.artists || "").split(",").some((n) => n.trim().toLowerCase() === artistName)
-      );
+      const matches = (items || []).filter((item) => {
+        if (artistId && item.artistIds?.includes(artistId)) return true;
+        return (item.artists || "").split(",").some((n) => n.trim().toLowerCase() === artistName);
+      });
       if (!matches.length) return;
 
       grid.innerHTML = matches.map((item) => `

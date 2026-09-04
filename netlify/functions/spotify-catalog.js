@@ -55,6 +55,10 @@ function normalizeAlbum(album, appearsOn) {
     releaseDate: album.release_date,
     cover: album.images?.[0]?.url || null,
     artists: album.artists.map((a) => a.name).join(", "),
+    // IDs (no nombres) para que las páginas de artista puedan filtrar "sus"
+    // lanzamientos sin depender de que el nombre en Spotify coincida
+    // textualmente con el del roster (ej. "KiresOficial" vs "Kires").
+    artistIds: album.artists.map((a) => a.id),
     url: album.external_urls?.spotify || `https://open.spotify.com/album/${album.id}`,
   };
 }
@@ -68,6 +72,7 @@ function normalizeTrack(track) {
     releaseDate: track.album?.release_date || null,
     cover: track.album?.images?.[0]?.url || null,
     artists: track.artists.map((a) => a.name).join(", "),
+    artistIds: track.artists.map((a) => a.id),
     url: track.external_urls?.spotify || `https://open.spotify.com/track/${track.id}`,
   };
 }
