@@ -28,6 +28,7 @@ const EXTRA_ALBUM_IDS = [
   "0tclMzv83XAOpRtTZduBKy", // A.M.03 (Rouse bby)
   "6YmySpzsNXMuxekqcmdlGJ", // TACÚ
   "2G5d3XEXsb0Nnk7N9LRa77", // Plutão
+  "4apeckesjlerL4LitVdh9Z", // Bajo Cero (ENY B)
 ];
 
 // Mismo criterio que EXTRA_ALBUM_IDS pero para canciones sueltas que no
