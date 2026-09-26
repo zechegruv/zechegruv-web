@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="ENY B — ZECHE GRUV" />
+  <title>ENY B — ZECHE GRUV</title>
+
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/favicon/apple-touch-icon.png">
+  <link rel="manifest" href="/assets/favicon/site.webmanifest">
+  <meta name="theme-color" content="#4B2509">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/artist-pages.css">
+</head>
+
+<body data-artist-id="2TY5OSmjJjYkctYzqxhZe1" data-artist-slug="eny-b" data-artist-name="ENY B">
+  <nav>
+    <a class="nav-mark" href="../index.html">
+      <img class="nav-sun" src="../assets/zeche-gruv-sol.webp" alt="" aria-hidden="true">
+      ZECHE GRUV®
+    </a>
+    <div class="nav-right">
+      <a class="nav-back" href="../index.html#artists" data-i18n="nav_back">← Volver al roster</a>
+      <select class="lang-select" id="langSelect" aria-label="Language / Idioma">
+        <option value="es">ES</option>
+        <option value="en">EN</option>
+        <option value="pt">PT</option>
+        <option value="fr">FR</option>
+        <option value="it">IT</option>
+        <option value="de">DE</option>
+        <option value="ru">RU</option>
+      </select>
+    </div>
+  </nav>
+
+  <main>
+    <div class="artist-header">
+      <img class="artist-header-photo" src="https://i.scdn.co/image/ab67616100005174fade386a79098f1fc4c92656" alt="ENY B">
+      <div>
+        <h1 class="artist-header-name">ENY B</h1>
+        <div class="artist-header-role" data-i18n="artist_role">Artista ZECHE GRUV</div>
+      </div>
+    </div>
+
+    <div class="artist-section">
+      <div class="artist-section-label" data-i18n="label_bio">Biografía</div>
+      <p class="artist-bio" id="artistBio"></p>
+    </div>
+
+    <div class="artist-section">
+      <div class="artist-listeners" id="artistListeners">
+        <span class="artist-listeners-count" id="artistListenersCount"></span>
+        <span class="artist-listeners-label" data-i18n="label_listeners">Oyentes mensuales</span>
+      </div>
+    </div>
+
+    <div class="artist-section">
+      <div class="artist-section-label" data-i18n="label_top_tracks">Top canciones</div>
+      <div class="top-tracks" id="topTracksList">
+        <div class="top-tracks-empty" data-i18n="loading_tracks">Cargando…</div>
+      </div>
+    </div>
+
+    <div class="artist-section" id="artistReleasesSection" hidden>
+      <div class="artist-section-label" data-i18n="label_releases">Lanzamientos con ZECHE GRUV</div>
+      <div class="catalogue" id="artistReleasesGrid"></div>
+    </div>
+
+    <div class="artist-section">
+      <div class="buttons">
+        <a class="btn" href="https://open.spotify.com/artist/2TY5OSmjJjYkctYzqxhZe1" target="_blank" rel="noopener" data-i18n="btn_spotify">Escuchar en Spotify ↗</a>
+        <a class="btn" href="../index.html#artists" data-i18n="nav_back">← Volver al roster</a>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <span>ZECHE GRUV® — BUENOS AIRES</span>
+    <span><a href="https://www.instagram.com/zechegruv/" target="_blank" rel="noopener">INSTAGRAM</a> · <a href="https://open.spotify.com/intl-es/artist/0yIGrWjWqKnM7qJ0uyImij" target="_blank" rel="noopener">SPOTIFY</a></span>
+    <span>© 2026 <span data-i18n="footer_rights">TODOS LOS DERECHOS RESERVADOS</span></span>
+  </footer>
+
+  <div class="spotify-bar" id="spotify-bar">
+    <div class="spotify-bar-inner">
+      <div class="spotify-bar-mount" id="spotify-bar-mount"></div>
+      <button class="spotify-bar-close" id="spotify-bar-close" type="button" aria-label="Cerrar preview">✕</button>
+    </div>
+  </div>
+
+  <script type="application/json" id="bioData">{}</script>
+  <script src="https://open.spotify.com/embed/iframe-api/v1" async></script>
+  <script src="../assets/artist-stats.js"></script>
+</body>
+</html>
