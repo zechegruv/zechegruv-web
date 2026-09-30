@@ -2031,8 +2031,13 @@
       border-top: 1px solid var(--border);
     }
 
-    .camp-block-events .camp-copy {
-      order: 2;
+    .camp-block-events {
+      align-items: start;
+    }
+
+    .events-copy .camp-text {
+      max-width: 620px;
+      font-size: 16px;
     }
 
     .camp-eyebrow {
@@ -2067,7 +2072,19 @@
 
     .camp-media-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .camp-media-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); padding-bottom: 28px; }
-    .camp-media-4 img:nth-child(even) { transform: translateY(28px); }
+    .camp-media-4 img:nth-child(even) { --ty: 28px; }
+
+    /* Fotos del camp: la que está bajo el mouse se acerca a la pantalla y
+       las vecinas acompañan un poco, siguiendo al cursor (efecto "dock"). */
+    .camp-media-4 img {
+      position: relative;
+      transform: translateY(var(--ty, 0px)) scale(var(--s, 1));
+      transform-origin: center center;
+      filter: brightness(var(--b, 1));
+      box-shadow: 0 calc(var(--lift, 0) * 26px) calc(var(--lift, 0) * 60px) rgba(0, 0, 0, calc(var(--lift, 0) * .5));
+      transition: transform .32s cubic-bezier(.2, .8, .2, 1), filter .32s ease, box-shadow .32s ease;
+      will-change: transform;
+    }
     .camp-media-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 
     .camp-media img,
@@ -2137,14 +2154,15 @@
         padding-top: 60px;
       }
 
-      .camp-block-events .camp-copy {
-        order: 0;
+      .camp-block-events {
+        gap: 0;
       }
 
-      .camp-media-3 img:nth-child(2),
-      .camp-media-4 img:nth-child(even) {
+      .camp-media-3 img:nth-child(2) {
         transform: none;
       }
+
+      .camp-media-4 img:nth-child(even) { --ty: 0px; }
 
       .camp-media-4 {
         grid-template-columns: repeat(4, 62vw);
@@ -2322,6 +2340,16 @@
       .hero-logo-wrap { opacity: 1; transform: none; }
       .ambient { transition: none; }
     }
+
+    .label-director-age {
+      font-family: "DM Mono", monospace;
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: .1em;
+      color: var(--muted);
+      margin-left: 8px;
+      white-space: nowrap;
+    }
   </style>
 </head>
 
@@ -2426,12 +2454,12 @@
 
     <div class="label-grid">
       <p class="label-text" data-i18n-html="label_intro_html">
-        ZECHE GRUV nació en un cuarto, con un colchón parado contra la pared para que no se viera cuando llegaban los artistas. Hoy es un sello independiente con créditos en más de 35 canciones publicadas y más de 200 artistas que pasaron por el estudio.
+        ZECHE GRUV nació en un cuarto, con un colchón parado contra la pared: lo decorábamos y hacía de aislante acústico, además de dejarnos lugar para grabar. No se veía muy profesional, pero lo hacíamos igual. Hoy es un sello independiente con créditos en más de 35 canciones publicadas y más de 200 artistas que pasaron por el estudio.
       </p>
 
       <div class="label-side" data-i18n-html="label_side">
         <p>Lo que no cambió es la forma de trabajar: no venimos a cambiar tu idea, venimos a traducirla. Si algo está fuera de tiempo, lo acomodamos para que suene como lo escuchás en tu cabeza. Buscamos el equilibrio entre lo orgánico, lo experimental y una vueltita que haga que tu canción llegue a más gente.</p>
-        <p>Acá hay plantas, luces cálidas, desayuno o merienda, y nadie te cobra la hora extra por quedarte buscando la toma.</p>
+        <p>Acá hay plantas, luces cálidas, desayuno o merienda. Y no vivimos corriendo contra el reloj: si estamos cerca de la toma perfecta, nos tomamos unos minutos más para encontrarla.</p>
       </div>
     </div>
 
@@ -2439,11 +2467,11 @@
     <div class="label-director">
       <img class="label-director-photo" src="assets/team/yaco-santana.webp" alt="Yaco Santana" width="160" height="160" loading="lazy" decoding="async">
       <div>
-        <div class="label-director-name">Yaco Santana</div>
+        <div class="label-director-name">Yaco Santana <span class="label-director-age" id="yacoAge"></span></div>
         <div class="label-director-role" data-i18n="label_director_role">Fundador y director</div>
         <div class="label-director-bio" data-i18n-html="label_director_bio">
-          <p>Nací en Brasil y crecí viajando por Latinoamérica entre tambores y las canciones que me cantaba mi mamá. Estudié en el conservatorio, aprendí a grabar solo con tutoriales y trabajé de lo que fuera hasta que un día le aposté todo a la música. Con 25 años ya vivía de la música.</p>
-          <p>Conozco mucha música, del folclore al trap, del reggae al metal, así que cualquier mezcla loca que tengas en la cabeza la podemos hacer. Estoy en cada sesión, de la primera idea al lanzamiento.</p>
+          <p>Nací en Brasil y crecí viajando por Latinoamérica entre tambores y las canciones que me cantaba mi mamá. Me formé en el conservatorio y en la Escuela de Música de Buenos Aires, hice un curso de producción y aprendí a grabar de manera autodidacta. Trabajé de lo que fuera, hasta que un día dejé el trabajo que me hacía infeliz y le aposté todo a la música, que es lo que de verdad me mueve. Hoy vivo de eso.</p>
+          <p>Estudié y escuché mucha música: del clásico al folclore, del trap al metal. Por eso me encantan las mezclas raras; si tenés una en la cabeza, la podemos hacer. Estoy en cada sesión, de la primera idea al lanzamiento.</p>
         </div>
       </div>
     </div>
@@ -2713,14 +2741,9 @@
       <div class="camp-copy">
         <div class="camp-eyebrow" data-i18n="events_eyebrow">Eventos</div>
         <h3 class="camp-title" data-i18n="events_title">Shows y open mics</h3>
-        <p class="camp-text" data-i18n="events_text">Shows del sello y open mics para conocer nuevos talentos. Si cantás en el open mic, podés ser parte del próximo show. Fechas pronto acá.</p>
       </div>
-      <div class="camp-media camp-media-2">
-        <!-- FOTOS PENDIENTES de shows / open mic -->
-        <div class="media-placeholder"><span data-i18n="events_photo_soon">Fotos próximamente</span></div>
-        <!-- VIDEO PENDIENTE del open mic: reemplazar este div por
-             <video src="assets/events/open-mic.mp4" autoplay muted loop playsinline></video> -->
-        <div class="media-placeholder"><span data-i18n="events_video_soon">Video del open mic próximamente</span></div>
+      <div class="events-copy">
+        <p class="camp-text" data-i18n="events_text">El open mic es nuestra forma de escuchar nuevos talentos. Es el espacio que desde ZECHE GRUV les damos a los artistas que trabajan con nosotros para que se expresen, y una puerta abierta para los que todavía no nos conocen: vení, conectate y mostrá lo que hacés. Si cantás en el open mic, podés ser parte del próximo show. Fechas pronto acá.</p>
       </div>
     </div>
   </section>
@@ -3205,7 +3228,6 @@
     const I18N = {
       es: {
         // --- Textos web 2026-09 ---
-        events_photo_soon: "Fotos próximamente",
         meta_title: "ZECHE GRUV — Sello Discográfico Independiente",
         meta_desc: "Sello independiente y productora en Buenos Aires. Composición, grabación, mezcla, mastering, distribución y arte, sesión a sesión, con Yaco Santana.",
         nav_about: "Nosotros",
@@ -3221,10 +3243,10 @@
         hero_cta_secondary: "Escuchá el sello",
         sl_label: "Quiénes somos",
         st_label_html: "Un estudio que<br>se siente casa.",
-        label_intro_html: "ZECHE GRUV nació en un cuarto, con un colchón parado contra la pared para que no se viera cuando llegaban los artistas. Hoy es un sello independiente con créditos en más de 35 canciones publicadas y más de 200 artistas que pasaron por el estudio.",
-        label_side: "<p>Lo que no cambió es la forma de trabajar: no venimos a cambiar tu idea, venimos a traducirla. Si algo está fuera de tiempo, lo acomodamos para que suene como lo escuchás en tu cabeza. Buscamos el equilibrio entre lo orgánico, lo experimental y una vueltita que haga que tu canción llegue a más gente.</p><p>Acá hay plantas, luces cálidas, desayuno o merienda, y nadie te cobra la hora extra por quedarte buscando la toma.</p>",
+        label_intro_html: "ZECHE GRUV nació en un cuarto, con un colchón parado contra la pared: lo decorábamos y hacía de aislante acústico, además de dejarnos lugar para grabar. No se veía muy profesional, pero lo hacíamos igual. Hoy es un sello independiente con créditos en más de 35 canciones publicadas y más de 200 artistas que pasaron por el estudio.",
+        label_side: "<p>Lo que no cambió es la forma de trabajar: no venimos a cambiar tu idea, venimos a traducirla. Si algo está fuera de tiempo, lo acomodamos para que suene como lo escuchás en tu cabeza. Buscamos el equilibrio entre lo orgánico, lo experimental y una vueltita que haga que tu canción llegue a más gente.</p><p>Acá hay plantas, luces cálidas, desayuno o merienda. Y no vivimos corriendo contra el reloj: si estamos cerca de la toma perfecta, nos tomamos unos minutos más para encontrarla.</p>",
         label_director_role: "Fundador y director",
-        label_director_bio: "<p>Nací en Brasil y crecí viajando por Latinoamérica entre tambores y las canciones que me cantaba mi mamá. Estudié en el conservatorio, aprendí a grabar solo con tutoriales y trabajé de lo que fuera hasta que un día le aposté todo a la música. Con 25 años ya vivía de la música.</p><p>Conozco mucha música, del folclore al trap, del reggae al metal, así que cualquier mezcla loca que tengas en la cabeza la podemos hacer. Estoy en cada sesión, de la primera idea al lanzamiento.</p>",
+        label_director_bio: "<p>Nací en Brasil y crecí viajando por Latinoamérica entre tambores y las canciones que me cantaba mi mamá. Me formé en el conservatorio y en la Escuela de Música de Buenos Aires, hice un curso de producción y aprendí a grabar de manera autodidacta. Trabajé de lo que fuera, hasta que un día dejé el trabajo que me hacía infeliz y le aposté todo a la música, que es lo que de verdad me mueve. Hoy vivo de eso.</p><p>Estudié y escuché mucha música: del clásico al folclore, del trap al metal. Por eso me encantan las mezclas raras; si tenés una en la cabeza, la podemos hacer. Estoy en cada sesión, de la primera idea al lanzamiento.</p>",
         sl_session: "Cómo es una sesión",
         st_session_html: "Tu canción,<br>sesión a sesión.",
         session_intro: "Una vez por semana, dos horas, un tema por mes. Sin apuro, con dirección.",
@@ -3259,8 +3281,7 @@
         camp_text: "Nos vamos unos días a crear juntos: varios estudios, artistas de todos lados y música a toda hora. Estamos armando la próxima fecha; muy pronto vas a poder anotarte acá.",
         events_eyebrow: "Eventos",
         events_title: "Shows y open mics",
-        events_text: "Shows del sello y open mics para conocer nuevos talentos. Si cantás en el open mic, podés ser parte del próximo show. Fechas pronto acá.",
-        events_video_soon: "Video del open mic próximamente",
+        events_text: "El open mic es nuestra forma de escuchar nuevos talentos. Es el espacio que desde ZECHE GRUV les damos a los artistas que trabajan con nosotros para que se expresen, y una puerta abierta para los que todavía no nos conocen: vení, conectate y mostrá lo que hacés. Si cantás en el open mic, podés ser parte del próximo show. Fechas pronto acá.",
         sl_services: "Servicios y precios",
         st_services_html: "Elegí cómo<br>querés arrancar.",
         services_intro: "Trabajamos por proyecto porque las canciones necesitan tiempo. Cuantas más canciones hagamos juntos, menos te sale cada una.",
@@ -3332,7 +3353,6 @@
       },
       en: {
         // --- Textos web 2026-09 ---
-        events_photo_soon: "Photos coming soon",
         meta_title: "ZECHE GRUV — Independent Record Label",
         meta_desc: "Independent label and production house in Buenos Aires. Songwriting, recording, mixing, mastering, distribution and artwork, session by session, with Yaco Santana.",
         nav_about: "About",
@@ -3348,10 +3368,10 @@
         hero_cta_secondary: "Listen to the label",
         sl_label: "About us",
         st_label_html: "A studio that<br>feels like home.",
-        label_intro_html: "ZECHE GRUV was born in a bedroom, with a mattress propped up against the wall so artists wouldn't see it when they came in. Today it's an independent label with credits on more than 35 released songs, and over 200 artists have come through the studio.",
-        label_side: "<p>What hasn't changed is the way we work: we're not here to change your idea, we're here to translate it. If something's out of time, we tighten it up so it sounds the way you hear it in your head. We look for the balance between organic, experimental and that little twist that helps your song reach more people.</p><p>Here you'll find plants, warm lights, breakfast or an afternoon snack, and nobody charges you overtime for staying to chase the take.</p>",
+        label_intro_html: "ZECHE GRUV was born in a bedroom, with a mattress standing against the wall: we decorated it and used it as acoustic insulation, and it freed up room to record. It didn't look very professional, but we did it anyway. Today it's an independent label with credits on more than 35 released songs, and over 200 artists have come through the studio.",
+        label_side: "<p>What hasn't changed is the way we work: we're not here to change your idea, we're here to translate it. If something's out of time, we tighten it up so it sounds the way you hear it in your head. We look for the balance between organic, experimental and that little twist that helps your song reach more people.</p><p>Here you'll find plants, warm lights, breakfast or an afternoon snack. And we're not racing the clock: if we're close to the perfect take, we'll take a few extra minutes to get it.</p>",
         label_director_role: "Founder & director",
-        label_director_bio: "<p>I was born in Brazil and grew up traveling around Latin America, surrounded by drums and the songs my mom used to sing to me. I studied at the conservatory, taught myself to record with online tutorials and worked whatever jobs I could until one day I bet everything on music. By 25 I was already making a living from it.</p><p>I know a lot of music, from folk to trap, from reggae to metal, so whatever crazy mix you've got in your head, we can make it happen. I'm at every session, from the first idea to the release.</p>",
+        label_director_bio: "<p>I was born in Brazil and grew up traveling around Latin America, surrounded by drums and the songs my mom used to sing to me. I trained at the conservatory and at the Escuela de Música de Buenos Aires, took a production course and taught myself to record. I worked whatever jobs I could, until one day I quit the one that was making me unhappy and bet everything on music, the thing that truly moves me. Today I make my living from it.</p><p>I've studied and listened to a lot of music: from classical to Latin folk, from trap to metal. That's why I love unusual blends; if you've got one in your head, we can make it. I'm at every session, from the first idea to the release.</p>",
         sl_session: "How a session works",
         st_session_html: "Your song,<br>session by session.",
         session_intro: "Once a week, two hours, one song a month. No rush, with direction.",
@@ -3386,8 +3406,7 @@
         camp_text: "We get away for a few days to create together: several studios, artists from all over and music around the clock. We're putting together the next date; very soon you'll be able to sign up here.",
         events_eyebrow: "Events",
         events_title: "Shows & open mics",
-        events_text: "Label shows and open mics to discover new talent. If you sing at the open mic, you could be part of the next show. Dates coming soon.",
-        events_video_soon: "Open mic video coming soon",
+        events_text: "The open mic is how we discover new talent. It's the space ZECHE GRUV gives the artists we work with to express themselves, and an open door for those who don't know us yet: come by, connect and show what you do. If you sing at the open mic, you could be part of the next show. Dates coming soon.",
         sl_services: "Services & pricing",
         st_services_html: "Choose how<br>you want to start.",
         services_intro: "We work by project because songs need time. The more songs we make together, the less each one costs you.",
@@ -3459,7 +3478,6 @@
       },
       pt: {
         // --- Textos web 2026-09 ---
-        events_photo_soon: "Fotos em breve",
         meta_title: "ZECHE GRUV — Selo Discográfico Independente",
         meta_desc: "Selo independente e produtora em Buenos Aires. Composição, gravação, mixagem, masterização, distribuição e arte, sessão por sessão, com Yaco Santana.",
         nav_about: "Quem somos",
@@ -3475,10 +3493,10 @@
         hero_cta_secondary: "Ouça o selo",
         sl_label: "Quem somos",
         st_label_html: "Um estúdio com<br>cara de casa.",
-        label_intro_html: "A ZECHE GRUV nasceu num quarto, com um colchão encostado de pé na parede para ninguém ver quando os artistas chegavam. Hoje é um selo independente com créditos em mais de 35 músicas lançadas, e mais de 200 artistas já passaram pelo estúdio.",
-        label_side: "<p>O que não mudou foi o jeito de trabalhar: a gente não vem mudar a sua ideia, vem traduzi-la. Se algo está fora do tempo, a gente ajeita para soar do jeito que você ouve na sua cabeça. Buscamos o equilíbrio entre o orgânico, o experimental e aquele toque a mais que faz sua música chegar em mais gente.</p><p>Aqui tem plantas, luz quente, café da manhã ou lanche da tarde, e ninguém te cobra hora extra por ficar buscando o take.</p>",
+        label_intro_html: "A ZECHE GRUV nasceu num quarto, com um colchão em pé encostado na parede: a gente decorava e usava como isolamento acústico, e ainda sobrava espaço para gravar. Não parecia muito profissional, mas a gente fazia assim mesmo. Hoje é um selo independente com créditos em mais de 35 músicas lançadas, e mais de 200 artistas já passaram pelo estúdio.",
+        label_side: "<p>O que não mudou foi o jeito de trabalhar: a gente não vem mudar a sua ideia, vem traduzi-la. Se algo está fora do tempo, a gente ajeita para soar do jeito que você ouve na sua cabeça. Buscamos o equilíbrio entre o orgânico, o experimental e aquele toque a mais que faz sua música chegar em mais gente.</p><p>Aqui tem plantas, luz quente, café da manhã ou lanche da tarde. E a gente não vive correndo contra o relógio: se estamos perto do take perfeito, levamos uns minutos a mais para encontrá-lo.</p>",
         label_director_role: "Fundador e diretor",
-        label_director_bio: "<p>Nasci no Brasil e cresci viajando pela América Latina, entre tambores e as canções que minha mãe cantava para mim. Estudei no conservatório, aprendi a gravar sozinho com tutoriais e trabalhei no que aparecesse até que um dia apostei tudo na música. Com 25 anos eu já vivia de música.</p><p>Conheço muita música, do folclore ao trap, do reggae ao metal, então qualquer mistura maluca que você tiver na cabeça a gente consegue fazer. Estou em cada sessão, da primeira ideia ao lançamento.</p>",
+        label_director_bio: "<p>Nasci no Brasil e cresci viajando pela América Latina, entre tambores e as canções que minha mãe cantava para mim. Me formei no conservatório e na Escuela de Música de Buenos Aires, fiz um curso de produção e aprendi a gravar de forma autodidata. Trabalhei no que aparecesse, até que um dia larguei o trabalho que me fazia infeliz e apostei tudo na música, que é o que de verdade me move. Hoje vivo disso.</p><p>Estudei e ouvi muita música: do clássico ao folclore, do trap ao metal. Por isso adoro misturas diferentes; se você tem uma na cabeça, a gente consegue fazer. Estou em cada sessão, da primeira ideia ao lançamento.</p>",
         sl_session: "Como é uma sessão",
         st_session_html: "Sua música,<br>sessão por sessão.",
         session_intro: "Uma vez por semana, duas horas, uma música por mês. Sem pressa, com direção.",
@@ -3513,8 +3531,7 @@
         camp_text: "A gente vai embora por uns dias para criar junto: vários estúdios, artistas de todo lugar e música o tempo todo. Estamos preparando a próxima data; em breve você vai poder se inscrever aqui.",
         events_eyebrow: "Eventos",
         events_title: "Shows e open mics",
-        events_text: "Shows do selo e open mics para conhecer novos talentos. Se você cantar no open mic, pode fazer parte do próximo show. Datas em breve aqui.",
-        events_video_soon: "Vídeo do open mic em breve",
+        events_text: "O open mic é o nosso jeito de ouvir novos talentos. É o espaço que a ZECHE GRUV oferece aos artistas que trabalham com a gente para se expressarem, e uma porta aberta para quem ainda não nos conhece: vem, se conecta e mostra o que você faz. Se você cantar no open mic, pode fazer parte do próximo show. Datas em breve aqui.",
         sl_services: "Serviços e preços",
         st_services_html: "Escolha como<br>quer começar.",
         services_intro: "Trabalhamos por projeto porque as músicas precisam de tempo. Quanto mais músicas a gente fizer junto, menos sai cada uma.",
@@ -3586,7 +3603,6 @@
       },
       fr: {
         // --- Textos web 2026-09 ---
-        events_photo_soon: "Photos bientôt",
         meta_title: "ZECHE GRUV — Label Indépendant",
         meta_desc: "Label indépendant et studio de production à Buenos Aires. Composition, enregistrement, mixage, mastering, distribution et artwork, session après session, avec Yaco Santana.",
         nav_about: "À propos",
@@ -3602,10 +3618,10 @@
         hero_cta_secondary: "Écoute le label",
         sl_label: "Qui sommes-nous",
         st_label_html: "Un studio où l'on<br>se sent chez soi.",
-        label_intro_html: "ZECHE GRUV est né dans une chambre, avec un matelas calé debout contre le mur pour qu'on ne le voie pas quand les artistes arrivaient. Aujourd'hui, c'est un label indépendant crédité sur plus de 35 chansons publiées, et plus de 200 artistes sont passés par le studio.",
-        label_side: "<p>Ce qui n'a pas changé, c'est notre façon de travailler : on n'est pas là pour changer ton idée, on est là pour la traduire. Si quelque chose n'est pas en place rythmiquement, on l'ajuste pour que ça sonne comme tu l'entends dans ta tête. On cherche l'équilibre entre l'organique, l'expérimental et cette petite touche en plus qui aide ta chanson à toucher plus de monde.</p><p>Ici, il y a des plantes, des lumières chaudes, un petit-déjeuner ou un goûter, et personne ne te fait payer l'heure en plus si tu restes chercher la bonne prise.</p>",
+        label_intro_html: "ZECHE GRUV est né dans une chambre, avec un matelas debout contre le mur : on le décorait et il servait d'isolant acoustique, tout en nous laissant de la place pour enregistrer. Ça ne faisait pas très pro, mais on le faisait quand même. Aujourd'hui, c'est un label indépendant crédité sur plus de 35 chansons publiées, et plus de 200 artistes sont passés par le studio.",
+        label_side: "<p>Ce qui n'a pas changé, c'est notre façon de travailler : on n'est pas là pour changer ton idée, on est là pour la traduire. Si quelque chose n'est pas en place rythmiquement, on l'ajuste pour que ça sonne comme tu l'entends dans ta tête. On cherche l'équilibre entre l'organique, l'expérimental et cette petite touche en plus qui aide ta chanson à toucher plus de monde.</p><p>Ici, il y a des plantes, des lumières chaudes, un petit-déjeuner ou un goûter. Et on ne court pas après la montre : si on est tout près de la prise parfaite, on prend quelques minutes de plus pour la trouver.</p>",
         label_director_role: "Fondateur et directeur",
-        label_director_bio: "<p>Je suis né au Brésil et j'ai grandi en voyageant à travers l'Amérique latine, entre les tambours et les chansons que me chantait ma mère. J'ai étudié au conservatoire, j'ai appris à enregistrer tout seul avec des tutos et j'ai fait toutes sortes de boulots jusqu'au jour où j'ai tout misé sur la musique. À 25 ans, je vivais déjà de la musique.</p><p>Je connais plein de musiques, du folklore à la trap, du reggae au metal : quel que soit le mélange fou que tu as en tête, on peut le faire. Je suis là à chaque session, de la première idée à la sortie.</p>",
+        label_director_bio: "<p>Je suis né au Brésil et j'ai grandi en voyageant à travers l'Amérique latine, entre les tambours et les chansons que me chantait ma mère. Je me suis formé au conservatoire et à l'Escuela de Música de Buenos Aires, j'ai suivi une formation en production et j'ai appris à enregistrer en autodidacte. J'ai fait toutes sortes de boulots, jusqu'au jour où j'ai quitté celui qui me rendait malheureux pour tout miser sur la musique, ce qui me fait vraiment vibrer. Aujourd'hui, j'en vis.</p><p>J'ai étudié et écouté énormément de musique : du classique au folklore, de la trap au metal. C'est pour ça que j'adore les mélanges inattendus ; si tu en as un en tête, on peut le faire. Je suis là à chaque session, de la première idée à la sortie.</p>",
         sl_session: "Comment se passe une session",
         st_session_html: "Ta chanson,<br>session après session.",
         session_intro: "Une fois par semaine, deux heures, un morceau par mois. Sans se presser, avec une direction.",
@@ -3640,8 +3656,7 @@
         camp_text: "On part quelques jours pour créer ensemble : plusieurs studios, des artistes de partout et de la musique à toute heure. On prépare la prochaine date ; très bientôt, tu pourras t'inscrire ici.",
         events_eyebrow: "Événements",
         events_title: "Concerts et open mics",
-        events_text: "Des concerts du label et des open mics pour découvrir de nouveaux talents. Si tu chantes à l'open mic, tu peux faire partie du prochain concert. Dates bientôt ici.",
-        events_video_soon: "Vidéo de l'open mic bientôt",
+        events_text: "L'open mic, c'est notre façon de découvrir de nouveaux talents. C'est l'espace que ZECHE GRUV offre aux artistes avec qui on travaille pour s'exprimer, et une porte ouverte pour ceux qui ne nous connaissent pas encore : viens, rencontre du monde et montre ce que tu fais. Si tu chantes à l'open mic, tu peux faire partie du prochain concert. Dates bientôt ici.",
         sl_services: "Services et tarifs",
         st_services_html: "Choisis comment<br>tu veux commencer.",
         services_intro: "On travaille par projet parce que les chansons ont besoin de temps. Plus on fait de chansons ensemble, moins chacune te coûte.",
@@ -3713,7 +3728,6 @@
       },
       it: {
         // --- Textos web 2026-09 ---
-        events_photo_soon: "Foto in arrivo",
         meta_title: "ZECHE GRUV — Etichetta Discografica Indipendente",
         meta_desc: "Etichetta indipendente e casa di produzione a Buenos Aires. Composizione, registrazione, mix, mastering, distribuzione e artwork, sessione dopo sessione, con Yaco Santana.",
         nav_about: "Chi siamo",
@@ -3729,10 +3743,10 @@
         hero_cta_secondary: "Ascolta l'etichetta",
         sl_label: "Chi siamo",
         st_label_html: "Uno studio che<br>sa di casa.",
-        label_intro_html: "ZECHE GRUV è nato in una stanza, con un materasso in piedi contro il muro perché non si vedesse quando arrivavano gli artisti. Oggi è un'etichetta indipendente con crediti in più di 35 canzoni pubblicate, e più di 200 artisti sono passati dallo studio.",
-        label_side: "<p>Quello che non è cambiato è il modo di lavorare: non veniamo a cambiare la tua idea, veniamo a tradurla. Se qualcosa è fuori tempo, lo sistemiamo perché suoni come la senti nella tua testa. Cerchiamo l'equilibrio tra l'organico, lo sperimentale e quel tocco in più che aiuta la tua canzone ad arrivare a più persone.</p><p>Qui ci sono piante, luci calde, colazione o merenda, e nessuno ti fa pagare l'ora in più se resti a cercare la take giusta.</p>",
+        label_intro_html: "ZECHE GRUV è nato in una stanza, con un materasso in piedi contro il muro: lo decoravamo e lo usavamo come isolante acustico, così ci restava anche spazio per registrare. Non sembrava molto professionale, ma lo facevamo lo stesso. Oggi è un'etichetta indipendente con crediti in più di 35 canzoni pubblicate, e più di 200 artisti sono passati dallo studio.",
+        label_side: "<p>Quello che non è cambiato è il modo di lavorare: non veniamo a cambiare la tua idea, veniamo a tradurla. Se qualcosa è fuori tempo, lo sistemiamo perché suoni come la senti nella tua testa. Cerchiamo l'equilibrio tra l'organico, lo sperimentale e quel tocco in più che aiuta la tua canzone ad arrivare a più persone.</p><p>Qui ci sono piante, luci calde, colazione o merenda. E non corriamo contro l'orologio: se siamo vicini alla take perfetta, ci prendiamo qualche minuto in più per trovarla.</p>",
         label_director_role: "Fondatore e direttore",
-        label_director_bio: "<p>Sono nato in Brasile e sono cresciuto viaggiando per l'America Latina, tra tamburi e le canzoni che mi cantava mia mamma. Ho studiato al conservatorio, ho imparato a registrare da solo con i tutorial e ho fatto ogni tipo di lavoro finché un giorno ho puntato tutto sulla musica. A 25 anni vivevo già di musica.</p><p>Conosco tanta musica, dal folklore alla trap, dal reggae al metal, quindi qualsiasi mix folle tu abbia in testa, possiamo farlo. Ci sono a ogni sessione, dalla prima idea all'uscita.</p>",
+        label_director_bio: "<p>Sono nato in Brasile e sono cresciuto viaggiando per l'America Latina, tra tamburi e le canzoni che mi cantava mia mamma. Mi sono formato al conservatorio e all'Escuela de Música de Buenos Aires, ho fatto un corso di produzione e ho imparato a registrare da autodidatta. Ho fatto ogni tipo di lavoro, finché un giorno ho lasciato quello che mi rendeva infelice e ho puntato tutto sulla musica, ciò che davvero mi muove. Oggi vivo di questo.</p><p>Ho studiato e ascoltato tantissima musica: dalla classica al folklore, dalla trap al metal. Per questo adoro i mix insoliti; se ne hai uno in testa, possiamo farlo. Ci sono a ogni sessione, dalla prima idea all'uscita.</p>",
         sl_session: "Com'è una sessione",
         st_session_html: "La tua canzone,<br>sessione dopo sessione.",
         session_intro: "Una volta a settimana, due ore, un brano al mese. Senza fretta, con una direzione.",
@@ -3767,8 +3781,7 @@
         camp_text: "Partiamo per qualche giorno a creare insieme: diversi studi, artisti da ogni parte e musica a tutte le ore. Stiamo organizzando la prossima data; molto presto potrai iscriverti qui.",
         events_eyebrow: "Eventi",
         events_title: "Live e open mic",
-        events_text: "Live dell'etichetta e open mic per scoprire nuovi talenti. Se canti all'open mic, puoi far parte del prossimo live. Date presto qui.",
-        events_video_soon: "Video dell'open mic in arrivo",
+        events_text: "L'open mic è il nostro modo di scoprire nuovi talenti. È lo spazio che ZECHE GRUV offre agli artisti con cui lavoriamo per esprimersi, e una porta aperta per chi ancora non ci conosce: vieni, entra in contatto e mostra quello che fai. Se canti all'open mic, puoi far parte del prossimo live. Date presto qui.",
         sl_services: "Servizi e prezzi",
         st_services_html: "Scegli come<br>vuoi iniziare.",
         services_intro: "Lavoriamo per progetto perché le canzoni hanno bisogno di tempo. Più canzoni facciamo insieme, meno ti costa ciascuna.",
@@ -3840,7 +3853,6 @@
       },
       de: {
         // --- Textos web 2026-09 ---
-        events_photo_soon: "Fotos folgen bald",
         meta_title: "ZECHE GRUV — Unabhängiges Plattenlabel",
         meta_desc: "Unabhängiges Label und Produktionsstudio in Buenos Aires. Songwriting, Aufnahme, Mixing, Mastering, Vertrieb und Artwork, Session für Session, mit Yaco Santana.",
         nav_about: "Über uns",
@@ -3856,10 +3868,10 @@
         hero_cta_secondary: "Hör dir das Label an",
         sl_label: "Über uns",
         st_label_html: "Ein Studio wie<br>ein Zuhause.",
-        label_intro_html: "ZECHE GRUV ist in einem Zimmer entstanden, mit einer Matratze, die hochkant an der Wand stand, damit man sie nicht sah, wenn Künstler kamen. Heute ist es ein unabhängiges Label mit Credits auf über 35 veröffentlichten Songs, und mehr als 200 Künstler waren schon im Studio.",
-        label_side: "<p>Was sich nicht geändert hat, ist unsere Arbeitsweise: Wir wollen deine Idee nicht verändern, wir wollen sie übersetzen. Wenn etwas nicht im Timing ist, rücken wir es zurecht, damit es so klingt, wie du es im Kopf hörst. Wir suchen die Balance zwischen organisch, experimentell und diesem kleinen Extra, das deinen Song zu mehr Leuten bringt.</p><p>Hier gibt es Pflanzen, warmes Licht, Frühstück oder einen Snack am Nachmittag, und niemand berechnet dir die Extrastunde, wenn du bleibst, um den perfekten Take zu finden.</p>",
+        label_intro_html: "ZECHE GRUV ist in einem Zimmer entstanden, mit einer Matratze hochkant an der Wand: Wir haben sie dekoriert und als Schalldämmung genutzt, und so blieb auch Platz zum Aufnehmen. Besonders professionell sah das nicht aus, aber wir haben es trotzdem gemacht. Heute ist es ein unabhängiges Label mit Credits auf über 35 veröffentlichten Songs, und mehr als 200 Künstler waren schon im Studio.",
+        label_side: "<p>Was sich nicht geändert hat, ist unsere Arbeitsweise: Wir wollen deine Idee nicht verändern, wir wollen sie übersetzen. Wenn etwas nicht im Timing ist, rücken wir es zurecht, damit es so klingt, wie du es im Kopf hörst. Wir suchen die Balance zwischen organisch, experimentell und diesem kleinen Extra, das deinen Song zu mehr Leuten bringt.</p><p>Hier gibt es Pflanzen, warmes Licht, Frühstück oder einen Snack am Nachmittag. Und die Uhr hetzt uns nicht: Wenn wir kurz vor dem perfekten Take sind, nehmen wir uns ein paar Minuten mehr, um ihn zu finden.</p>",
         label_director_role: "Gründer und Leiter",
-        label_director_bio: "<p>Ich bin in Brasilien geboren und durch Lateinamerika reisend aufgewachsen, zwischen Trommeln und den Liedern, die meine Mama mir vorgesungen hat. Ich habe am Konservatorium studiert, mir das Aufnehmen mit Tutorials selbst beigebracht und alle möglichen Jobs gemacht, bis ich eines Tages alles auf die Musik gesetzt habe. Mit 25 habe ich schon von der Musik gelebt.</p><p>Ich kenne viel Musik, von Folklore bis Trap, von Reggae bis Metal. Egal, welche verrückte Mischung du im Kopf hast, wir kriegen sie hin. Ich bin bei jeder Session dabei, von der ersten Idee bis zum Release.</p>",
+        label_director_bio: "<p>Ich bin in Brasilien geboren und durch Lateinamerika reisend aufgewachsen, zwischen Trommeln und den Liedern, die meine Mama mir vorgesungen hat. Ausgebildet wurde ich am Konservatorium und an der Escuela de Música de Buenos Aires, dazu kam ein Produktionskurs, und das Aufnehmen habe ich mir selbst beigebracht. Ich habe alle möglichen Jobs gemacht, bis ich eines Tages den kündigte, der mich unglücklich gemacht hat, und alles auf die Musik gesetzt habe, das, was mich wirklich bewegt. Heute lebe ich davon.</p><p>Ich habe viel Musik studiert und gehört: von Klassik bis Folklore, von Trap bis Metal. Deshalb liebe ich ungewöhnliche Mischungen; wenn du eine im Kopf hast, setzen wir sie um. Ich bin bei jeder Session dabei, von der ersten Idee bis zum Release.</p>",
         sl_session: "So läuft eine Session",
         st_session_html: "Dein Song,<br>Session für Session.",
         session_intro: "Einmal pro Woche, zwei Stunden, ein Song pro Monat. Ohne Eile, mit Richtung.",
@@ -3894,8 +3906,7 @@
         camp_text: "Wir fahren ein paar Tage weg, um gemeinsam kreativ zu sein: mehrere Studios, Künstler von überall und Musik rund um die Uhr. Wir planen gerade den nächsten Termin; sehr bald kannst du dich hier anmelden.",
         events_eyebrow: "Events",
         events_title: "Shows & Open Mics",
-        events_text: "Shows des Labels und Open Mics, um neue Talente zu entdecken. Wenn du beim Open Mic singst, kannst du bei der nächsten Show dabei sein. Termine bald hier.",
-        events_video_soon: "Open-Mic-Video folgt bald",
+        events_text: "Das Open Mic ist unsere Art, neue Talente zu entdecken. Es ist der Raum, den ZECHE GRUV den Künstlern gibt, mit denen wir arbeiten, damit sie sich ausdrücken können, und eine offene Tür für alle, die uns noch nicht kennen: Komm vorbei, knüpf Kontakte und zeig, was du machst. Wenn du beim Open Mic singst, kannst du bei der nächsten Show dabei sein. Termine bald hier.",
         sl_services: "Leistungen & Preise",
         st_services_html: "Wähl aus, wie du<br>starten willst.",
         services_intro: "Wir arbeiten projektweise, weil Songs Zeit brauchen. Je mehr Songs wir zusammen machen, desto weniger kostet dich jeder einzelne.",
@@ -3967,7 +3978,6 @@
       },
       ru: {
         // --- Textos web 2026-09 ---
-        events_photo_soon: "Фото скоро",
         meta_title: "ZECHE GRUV — Независимый лейбл",
         meta_desc: "Независимый лейбл и продакшн-студия в Буэнос-Айресе. Сочинение, запись, сведение, мастеринг, дистрибуция и обложки — сессия за сессией, вместе с Yaco Santana.",
         nav_about: "О нас",
@@ -3983,10 +3993,10 @@
         hero_cta_secondary: "Послушай лейбл",
         sl_label: "Кто мы",
         st_label_html: "Студия, где ты<br>как дома.",
-        label_intro_html: "ZECHE GRUV родился в обычной комнате, с матрасом, прислонённым к стене, чтобы его не было видно, когда приходили артисты. Сегодня это независимый лейбл с кредитами в более чем 35 выпущенных песнях, и через студию прошли больше 200 артистов.",
-        label_side: "<p>Не изменилось одно — то, как мы работаем: мы не меняем твою идею, мы переводим её на язык звука. Если что-то не попадает в ритм, мы поправим, чтобы звучало так, как ты слышишь это в голове. Мы ищем баланс между живым звучанием, экспериментом и той самой изюминкой, которая помогает твоей песне дойти до большего числа людей.</p><p>Здесь есть растения, тёплый свет, завтрак или полдник, и никто не возьмёт с тебя за лишний час, если ты задержишься в поисках того самого дубля.</p>",
+        label_intro_html: "ZECHE GRUV родился в обычной комнате, с матрасом, поставленным к стене: мы его украшали, и он служил звукоизоляцией, а заодно освобождал место для записи. Выглядело это не слишком профессионально, но мы всё равно так делали. Сегодня это независимый лейбл с кредитами в более чем 35 выпущенных песнях, и через студию прошли больше 200 артистов.",
+        label_side: "<p>Не изменилось одно — то, как мы работаем: мы не меняем твою идею, мы переводим её на язык звука. Если что-то не попадает в ритм, мы поправим, чтобы звучало так, как ты слышишь это в голове. Мы ищем баланс между живым звучанием, экспериментом и той самой изюминкой, которая помогает твоей песне дойти до большего числа людей.</p><p>Здесь есть растения, тёплый свет, завтрак или полдник. И мы не гонимся за временем: если до идеального дубля совсем чуть-чуть, мы возьмём ещё несколько минут, чтобы его поймать.</p>",
         label_director_role: "Основатель и руководитель",
-        label_director_bio: "<p>Я родился в Бразилии и вырос, путешествуя по Латинской Америке, среди барабанов и песен, которые пела мне мама. Учился в консерватории, сам научился записывать по туториалам и работал кем придётся, пока однажды не поставил всё на музыку. В 25 лет я уже жил музыкой.</p><p>Я знаю много разной музыки — от фольклора до трэпа, от регги до метала, — так что любой безумный микс, который у тебя в голове, мы сможем сделать. Я на каждой сессии, от первой идеи до релиза.</p>",
+        label_director_bio: "<p>Я родился в Бразилии и вырос, путешествуя по Латинской Америке, среди барабанов и песен, которые пела мне мама. Учился в консерватории и в Музыкальной школе Буэнос-Айреса (Escuela de Música de Buenos Aires), прошёл курс продюсирования, а записывать научился сам. Работал кем придётся, пока однажды не ушёл с работы, которая делала меня несчастным, и не поставил всё на музыку — то, что по-настоящему меня зажигает. Сегодня я живу этим.</p><p>Я изучал и слушал очень много музыки: от классики до фольклора, от трэпа до метала. Поэтому обожаю необычные сочетания; если у тебя в голове есть такое — мы это сделаем. Я на каждой сессии, от первой идеи до релиза.</p>",
         sl_session: "Как проходит сессия",
         st_session_html: "Твоя песня,<br>сессия за сессией.",
         session_intro: "Раз в неделю, два часа, одна песня в месяц. Без спешки, но с направлением.",
@@ -4021,8 +4031,7 @@
         camp_text: "Уезжаем на несколько дней, чтобы творить вместе: несколько студий, артисты отовсюду и музыка круглые сутки. Мы готовим следующую дату; совсем скоро здесь можно будет записаться.",
         events_eyebrow: "События",
         events_title: "Концерты и open mic",
-        events_text: "Концерты лейбла и open mic, чтобы находить новые таланты. Если споёшь на open mic, можешь попасть в следующий концерт. Даты скоро здесь.",
-        events_video_soon: "Видео с open mic скоро",
+        events_text: "Open mic — это наш способ находить новые таланты. Это пространство, которое ZECHE GRUV даёт артистам, с которыми мы работаем, чтобы они могли выразить себя, и открытая дверь для тех, кто нас ещё не знает: приходи, знакомься и покажи, что ты делаешь. Если споёшь на open mic, можешь попасть в следующий концерт. Даты скоро здесь.",
         sl_services: "Услуги и цены",
         st_services_html: "Выбери, как<br>хочешь начать.",
         services_intro: "Мы работаем по проектам, потому что песням нужно время. Чем больше песен мы делаем вместе, тем дешевле обходится каждая.",
@@ -4134,6 +4143,32 @@
       return savedLang() || browserLang();
     }
 
+    // ---------- Edad de Yaco ----------
+    // Se calcula sola con la fecha de nacimiento: suma un año cada 11 de abril.
+    const YACO_BIRTH = { year: 2001, month: 4, day: 11 };
+    function yacoAge(now = new Date()) {
+      let age = now.getFullYear() - YACO_BIRTH.year;
+      const m = now.getMonth() + 1, d = now.getDate();
+      if (m < YACO_BIRTH.month || (m === YACO_BIRTH.month && d < YACO_BIRTH.day)) age--;
+      return age;
+    }
+    function renderYacoAge(lang) {
+      const el = document.getElementById("yacoAge");
+      if (!el) return;
+      const n = yacoAge();
+      const WORDS = {
+        es: "años", en: "years old", pt: "anos", fr: "ans", it: "anni", de: "Jahre",
+        ru: { one: "год", few: "года", many: "лет", other: "лет" },
+      };
+      let w = WORDS[lang] || WORDS.es;
+      if (typeof w === "object") {
+        let cat = "other";
+        try { cat = new Intl.PluralRules("ru").select(n); } catch (e) {}
+        w = w[cat] || w.other;
+      }
+      el.textContent = `· ${n} ${w}`;
+    }
+
     function applyLanguage(lang) {
       if (!I18N[lang]) lang = "es";
       currentLang = lang;
@@ -4151,6 +4186,8 @@
         const val = I18N[lang][el.getAttribute("data-i18n-html")];
         if (val !== undefined) el.innerHTML = val;
       });
+
+      renderYacoAge(lang);
 
       // Contenido armado por JS: hay que volver a generarlo para que
       // tome el texto del nuevo idioma.
@@ -4509,6 +4546,39 @@
         });
       }, { rootMargin: "-35% 0px -35% 0px" });
       sections.forEach((s) => sectionIO.observe(s));
+
+      // Fotos del camp: efecto de acercamiento que sigue al mouse.
+      const canHover = window.matchMedia("(hover: hover) and (pointer: fine) and (min-width: 801px)");
+      document.querySelectorAll(".camp-media-4").forEach((row) => {
+        const imgs = Array.from(row.querySelectorAll("img"));
+        let raf = null, lastX = 0;
+        function update() {
+          raf = null;
+          imgs.forEach((img) => {
+            const r = img.getBoundingClientRect();
+            const center = r.left + r.width / 2;
+            const dist = Math.abs(lastX - center) / (r.width * 1.25);
+            const t = Math.max(0, 1 - dist);
+            const e = t * t * (3 - 2 * t); // suavizado
+            img.style.setProperty("--s", (1 + 0.16 * e).toFixed(3));
+            img.style.setProperty("--lift", e.toFixed(3));
+            img.style.setProperty("--b", (0.8 + 0.2 * e).toFixed(3));
+            img.style.zIndex = String(Math.round(e * 10));
+          });
+        }
+        row.addEventListener("pointermove", (ev) => {
+          if (reduce || !canHover.matches || ev.pointerType !== "mouse") return;
+          lastX = ev.clientX;
+          if (!raf) raf = requestAnimationFrame(update);
+        });
+        row.addEventListener("pointerleave", () => {
+          if (raf) { cancelAnimationFrame(raf); raf = null; }
+          imgs.forEach((img) => {
+            ["--s", "--lift", "--b"].forEach((p) => img.style.removeProperty(p));
+            img.style.zIndex = "";
+          });
+        });
+      });
 
       // Portada: la foto se desvanece y se acerca apenas al bajar.
       if (reduce) return;

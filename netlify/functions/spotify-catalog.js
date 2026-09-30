@@ -22,6 +22,16 @@ const EXCLUDED_ALBUM_IDS = new Set([
   "4FOsGOqDjKkF5plimz3GGN", // RANGOS
 ]);
 
+// A pedido: lanzamientos que ZECHE GRUV solo distribuye (sale como artista
+// principal por ser la distribuidora, pero no se hicieron en el estudio).
+// Se filtran por nombre, sin importar mayúsculas ni tildes.
+const EXCLUDED_NAMES = new Set([
+  "antes de irme",
+]);
+const normName = (s) =>
+  String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+const isExcluded = (item) => EXCLUDED_ALBUM_IDS.has(item.id) || EXCLUDED_NAMES.has(normName(item.name));
+
 // A pedido: álbumes que sí tienen que estar pero la API no los devuelve
 // solos (ej. ZECHE GRUV acredita solo como producción, no como artista).
 const EXTRA_ALBUM_IDS = [
@@ -126,19 +136,19 @@ async function fetchAllAlbums() {
   // nos quedamos con una entrada por id, la que tenga fecha más reciente.
   const byId = new Map();
   for (const album of artistAlbums) {
-    if (EXCLUDED_ALBUM_IDS.has(album.id)) continue;
+    if (isExcluded(album)) continue;
     const existing = byId.get(album.id);
     if (!existing || album.release_date > existing.release_date) {
       byId.set(album.id, normalizeAlbum(album, album.album_group === "appears_on"));
     }
   }
   for (const album of extraAlbums) {
-    if (!byId.has(album.id)) {
+    if (!byId.has(album.id) && !isExcluded(album)) {
       byId.set(album.id, normalizeAlbum(album, false));
     }
   }
   for (const track of extraTracks) {
-    if (!byId.has(track.id)) {
+    if (!byId.has(track.id) && !isExcluded(track)) {
       byId.set(track.id, normalizeTrack(track));
     }
   }
