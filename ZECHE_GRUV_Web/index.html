@@ -1887,9 +1887,18 @@
       transition: border-color .3s ease, transform .3s ease;
     }
 
+    /* Tarjetas de la sesión: mismo acercamiento que las fotos del camp
+       (lo maneja el script de movimiento, solo en computadora). */
+    .session-card {
+      position: relative;
+      transform: scale(var(--s, 1));
+      filter: brightness(var(--b, 1));
+      box-shadow: 0 calc(var(--lift, 0) * 22px) calc(var(--lift, 0) * 50px) rgba(0, 0, 0, calc(var(--lift, 0) * .45));
+      transition: transform .32s cubic-bezier(.2, .8, .2, 1), filter .32s ease, box-shadow .32s ease, border-color .3s ease;
+    }
+
     .session-card:hover {
       border-color: rgba(245,166,35,.45);
-      transform: translateY(-3px);
     }
 
     .session-photo {
@@ -2350,6 +2359,192 @@
       margin-left: 8px;
       white-space: nowrap;
     }
+
+    /* ---------- Visor de fotos (camp) ----------
+       Tocar o hacer clic en una foto la abre grande; en el celular se pasa
+       de una a otra deslizando con el dedo. */
+    .camp-media-4 img { cursor: zoom-in; }
+
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      z-index: 300;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(20, 9, 2, .92);
+      backdrop-filter: blur(10px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .35s ease;
+    }
+
+    .lightbox.is-open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .lightbox-track {
+      display: flex;
+      width: 100%;
+      height: 100%;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .lightbox-track::-webkit-scrollbar { display: none; }
+
+    .lightbox-slide {
+      flex: 0 0 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 70px 5vw 60px;
+      scroll-snap-align: center;
+    }
+
+    .lightbox-slide img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      border: 1px solid var(--border);
+      box-shadow: 0 30px 80px rgba(0, 0, 0, .55);
+      transform: scale(.94);
+      transition: transform .45s cubic-bezier(.16, 1, .3, 1);
+    }
+
+    .lightbox.is-open .lightbox-slide img { transform: scale(1); }
+
+    .lightbox-btn {
+      position: absolute;
+      border: 1px solid rgba(240,224,192,.3);
+      background: rgba(36,17,5,.6);
+      color: var(--cream);
+      width: 44px;
+      height: 44px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background .25s ease, border-color .25s ease;
+    }
+
+    .lightbox-btn:hover { background: var(--orange); border-color: var(--orange); color: var(--brown-dark); }
+    .lightbox-close { top: 18px; right: 18px; }
+    .lightbox-prev { left: 3vw; top: 50%; transform: translateY(-50%); }
+    .lightbox-next { right: 3vw; top: 50%; transform: translateY(-50%); }
+
+    .lightbox-count {
+      position: absolute;
+      bottom: 22px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: "DM Mono", monospace;
+      font-size: 10px;
+      letter-spacing: .16em;
+      color: var(--beige);
+      opacity: .7;
+    }
+
+    @media (max-width: 800px) {
+      .lightbox-prev, .lightbox-next { display: none; }
+      .lightbox-slide { padding: 64px 12px 56px; }
+      .camp-media-4 { grid-template-columns: repeat(4, 74vw); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .lightbox, .lightbox-slide img { transition: none; }
+    }
+
+    /* ---------- Quiénes somos: título + historia a la izquierda,
+       foto del estudio + texto a la derecha (sin huecos) ---------- */
+    .label-grid {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+      gap: 6vw;
+      align-items: start;
+    }
+
+    .label-main .section-title {
+      margin-bottom: 44px;
+    }
+
+    .label-text {
+      font-size: clamp(21px, 2.3vw, 31px);
+      line-height: 1.42;
+    }
+
+    .label-aside {
+      padding-top: 10px;
+    }
+
+    .label-photo {
+      margin: 0 0 30px;
+      aspect-ratio: 4 / 5;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: var(--brown);
+    }
+
+    .label-photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: 62% center;
+      display: block;
+      transition: transform 1.2s cubic-bezier(.16, 1, .3, 1);
+    }
+
+    .label-photo:hover img {
+      transform: scale(1.04);
+    }
+
+    .label-side {
+      max-width: none;
+      font-size: 13.5px;
+    }
+
+    @media (max-width: 800px) {
+      .label-grid {
+        grid-template-columns: 1fr;
+        gap: 36px;
+      }
+
+      .label-main .section-title {
+        margin-bottom: 30px;
+      }
+
+      .label-photo {
+        aspect-ratio: 4 / 3;
+      }
+    }
+
+    /* Camp: texto arriba y las 4 fotos a todo el ancho, más grandes. */
+    @media (min-width: 801px) {
+      .camp-block:not(.camp-block-events) {
+        grid-template-columns: 1fr;
+        gap: 56px;
+      }
+
+      .camp-block:not(.camp-block-events) .camp-copy {
+        display: grid;
+        grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+        grid-template-areas: "eyebrow ." "title text";
+        column-gap: 6vw;
+        align-items: end;
+      }
+
+      .camp-block:not(.camp-block-events) .camp-eyebrow { grid-area: eyebrow; }
+      .camp-block:not(.camp-block-events) .camp-title { grid-area: title; margin-bottom: 0; }
+      .camp-block:not(.camp-block-events) .camp-text { grid-area: text; max-width: 620px; font-size: 16px; }
+
+      .camp-media-4 {
+        gap: 18px;
+        padding: 10px 0 48px;
+      }
+
+      .camp-media-4 img:nth-child(even) { --ty: 40px; }
+    }
   </style>
 </head>
 
@@ -2450,17 +2645,24 @@
   <!-- ================= QUIÉNES SOMOS ================= -->
   <section id="label" class="label-section">
     <div class="section-label">01 / <span data-i18n="sl_label">Quiénes somos</span></div>
-    <h2 class="section-title" data-i18n-html="st_label_html">Un estudio que<br>se siente casa.</h2>
-
     <div class="label-grid">
-      <p class="label-text" data-i18n-html="label_intro_html">
+      <div class="label-main">
+        <h2 class="section-title" data-i18n-html="st_label_html">Un estudio que<br>se siente casa.</h2>
+        <p class="label-text" data-i18n-html="label_intro_html">
         ZECHE GRUV nació en un cuarto, con un colchón parado contra la pared: lo decorábamos y hacía de aislante acústico, además de dejarnos lugar para grabar. No se veía muy profesional, pero lo hacíamos igual. Hoy es un sello independiente con créditos en más de 35 canciones publicadas y más de 200 artistas que pasaron por el estudio.
       </p>
+      </div>
 
-      <div class="label-side" data-i18n-html="label_side">
+      <aside class="label-aside">
+        <figure class="label-photo">
+          <img src="assets/studio/studio-4-800.webp" srcset="assets/studio/studio-4-800.webp 800w, assets/studio/studio-4.webp 1600w"
+               sizes="(max-width: 800px) 90vw, 36vw" alt="El estudio de ZECHE GRUV: plantas, teclados y luz cálida" width="1600" height="1200" loading="lazy" decoding="async">
+        </figure>
+        <div class="label-side" data-i18n-html="label_side">
         <p>Lo que no cambió es la forma de trabajar: no venimos a cambiar tu idea, venimos a traducirla. Si algo está fuera de tiempo, lo acomodamos para que suene como lo escuchás en tu cabeza. Buscamos el equilibrio entre lo orgánico, lo experimental y una vueltita que haga que tu canción llegue a más gente.</p>
         <p>Acá hay plantas, luces cálidas, desayuno o merienda. Y no vivimos corriendo contra el reloj: si estamos cerca de la toma perfecta, nos tomamos unos minutos más para encontrarla.</p>
       </div>
+      </aside>
     </div>
 
     <!-- Foto del director -->
@@ -4483,7 +4685,7 @@
 
       // Aparición de textos y tarjetas (con un pequeño escalonado en grillas).
       const sel = [
-        ".section-label", ".section-title", ".section-intro", ".label-text", ".label-side",
+        ".section-label", ".section-title", ".section-intro", ".label-text", ".label-photo", ".label-side",
         ".label-director", ".label-studio", ".session-card", ".session-outro", ".testimonial-card",
         ".artist-card", ".release", ".release-card", ".camp-copy", ".camp-media > *",
         ".package-card", ".includes-block", ".services-alacarte-title", ".contact-title",
@@ -4549,18 +4751,21 @@
 
       // Fotos del camp: efecto de acercamiento que sigue al mouse.
       const canHover = window.matchMedia("(hover: hover) and (pointer: fine) and (min-width: 801px)");
-      document.querySelectorAll(".camp-media-4").forEach((row) => {
-        const imgs = Array.from(row.querySelectorAll("img"));
+      [
+        [".camp-media-4", "img", 0.3, 1.35],
+        [".session-grid", ".session-card", 0.07, 1.1],
+      ].forEach(([rowSel, itemSel, amount, reach]) => document.querySelectorAll(rowSel).forEach((row) => {
+        const imgs = Array.from(row.querySelectorAll(itemSel));
         let raf = null, lastX = 0;
         function update() {
           raf = null;
           imgs.forEach((img) => {
             const r = img.getBoundingClientRect();
             const center = r.left + r.width / 2;
-            const dist = Math.abs(lastX - center) / (r.width * 1.25);
+            const dist = Math.abs(lastX - center) / (r.width * reach);
             const t = Math.max(0, 1 - dist);
             const e = t * t * (3 - 2 * t); // suavizado
-            img.style.setProperty("--s", (1 + 0.16 * e).toFixed(3));
+            img.style.setProperty("--s", (1 + amount * e).toFixed(3));
             img.style.setProperty("--lift", e.toFixed(3));
             img.style.setProperty("--b", (0.8 + 0.2 * e).toFixed(3));
             img.style.zIndex = String(Math.round(e * 10));
@@ -4578,7 +4783,7 @@
             img.style.zIndex = "";
           });
         });
-      });
+      }));
 
       // Portada: la foto se desvanece y se acerca apenas al bajar.
       if (reduce) return;
@@ -4596,6 +4801,76 @@
       }
       window.addEventListener("scroll", onScroll, { passive: true });
       onScroll();
+    })();
+  </script>
+
+
+  <!-- ================= VISOR DE FOTOS DEL CAMP ================= -->
+  <script>
+    (function () {
+      const imgs = Array.from(document.querySelectorAll(".camp-media-4 img"));
+      if (!imgs.length) return;
+      const box = document.createElement("div");
+      box.className = "lightbox";
+      box.setAttribute("role", "dialog");
+      box.setAttribute("aria-modal", "true");
+      box.setAttribute("aria-hidden", "true");
+      box.innerHTML = `
+        <div class="lightbox-track">${imgs.map((img) => `
+          <div class="lightbox-slide"><img src="${img.getAttribute("src").replace("-600.webp", ".webp")}" alt="${img.alt}" loading="lazy" decoding="async"></div>`).join("")}
+        </div>
+        <button class="lightbox-btn lightbox-close" type="button" aria-label="Cerrar">✕</button>
+        <button class="lightbox-btn lightbox-prev" type="button" aria-label="Anterior">←</button>
+        <button class="lightbox-btn lightbox-next" type="button" aria-label="Siguiente">→</button>
+        <div class="lightbox-count"></div>`;
+      document.body.appendChild(box);
+      const track = box.querySelector(".lightbox-track");
+      const count = box.querySelector(".lightbox-count");
+      let current = 0, lastFocus = null;
+
+      function go(i, smooth = true) {
+        current = (i + imgs.length) % imgs.length;
+        track.scrollTo({ left: current * track.clientWidth, behavior: smooth ? "smooth" : "auto" });
+        count.textContent = `${current + 1} / ${imgs.length}`;
+      }
+      function open(i) {
+        lastFocus = document.activeElement;
+        box.classList.add("is-open");
+        box.setAttribute("aria-hidden", "false");
+        document.documentElement.style.overflow = "hidden";
+        requestAnimationFrame(() => go(i, false));
+        box.querySelector(".lightbox-close").focus({ preventScroll: true });
+      }
+      function close() {
+        box.classList.remove("is-open");
+        box.setAttribute("aria-hidden", "true");
+        document.documentElement.style.overflow = "";
+        if (lastFocus) lastFocus.focus({ preventScroll: true });
+      }
+
+      imgs.forEach((img, i) => {
+        img.setAttribute("tabindex", "0");
+        img.addEventListener("click", () => open(i));
+        img.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(i); } });
+      });
+      box.querySelector(".lightbox-close").addEventListener("click", close);
+      box.querySelector(".lightbox-prev").addEventListener("click", () => go(current - 1));
+      box.querySelector(".lightbox-next").addEventListener("click", () => go(current + 1));
+      box.addEventListener("click", (e) => { if (e.target.classList.contains("lightbox-slide")) close(); });
+      document.addEventListener("keydown", (e) => {
+        if (!box.classList.contains("is-open")) return;
+        if (e.key === "Escape") close();
+        if (e.key === "ArrowRight") go(current + 1);
+        if (e.key === "ArrowLeft") go(current - 1);
+      });
+      let t = null;
+      track.addEventListener("scroll", () => {
+        clearTimeout(t);
+        t = setTimeout(() => {
+          current = Math.round(track.scrollLeft / track.clientWidth);
+          count.textContent = `${current + 1} / ${imgs.length}`;
+        }, 80);
+      }, { passive: true });
     })();
   </script>
 
