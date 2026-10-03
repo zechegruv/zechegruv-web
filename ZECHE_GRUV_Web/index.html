@@ -1514,6 +1514,46 @@
       display: none;
     }
 
+    .beat-search {
+      display: flex;
+    }
+
+    .beat-search input {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .beat-arrow {
+      flex-shrink: 0;
+      width: 40px;
+      border: 1px solid var(--border);
+      border-left: none;
+      background: var(--brown);
+      color: var(--cream);
+      cursor: pointer;
+      transition: background .2s ease, color .2s ease;
+    }
+
+    .beat-arrow svg {
+      display: block;
+      margin: 0 auto;
+      transition: transform .25s ease;
+    }
+
+    .beat-arrow:hover,
+    .beat-arrow[aria-expanded="true"] {
+      background: var(--orange);
+      color: var(--cream);
+    }
+
+    .beat-arrow[aria-expanded="true"] svg {
+      transform: rotate(180deg);
+    }
+
+    .beat-list[hidden] {
+      display: none;
+    }
+
     .beat-list {
       display: flex;
       flex-direction: column;
@@ -3301,6 +3341,7 @@
     };
     let selectedBeat = null;
     let beatPanelOpen = false;
+    let beatListOpen = false; // lista completa, se abre con la flecha
 
     const escHtml = (str) => String(str).replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
     // Para buscar sin importar mayúsculas ni tildes.
@@ -3313,28 +3354,88 @@
       const picker = BEAT_CATALOG.beats.length ? `
             <button class="service-btn" type="button" data-action="toggle-beats" aria-expanded="${beatPanelOpen}">${t.beat_pick_btn}</button>
             <div class="beat-panel" id="beat-panel" ${beatPanelOpen ? "" : "hidden"}>
-              <div class="service-field">
-                <input type="search" id="beat-search" placeholder="${t.beat_search_placeholder}" autocomplete="off">
+              <div class="service-field beat-search">
+                <input type="text" id="beat-search" placeholder="${t.beat_search_placeholder}" autocomplete="off" spellcheck="false">
+                <button type="button" class="beat-arrow" data-action="toggle-beat-list" aria-label="${t.beat_show_all}" title="${t.beat_show_all}" aria-expanded="${beatListOpen}">
+                  <svg width="12" height="8" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1.5l5 5 5-5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
               </div>
-              <div class="beat-list" id="beat-list"></div>
+              <div class="beat-list" id="beat-list" hidden></div>
             </div>
             <div class="beat-selected" id="beat-selected"></div>
             <p class="package-hint" id="beat-hint">${t.beat_pick_hint}</p>` : "";
       return viewBtn || picker ? `<div class="beat-picker">${viewBtn}${picker}</div>` : "";
     }
 
+    // Distancia de edición (Levenshtein), para tolerar errores de tipeo.
+    function editDistance(a, b) {
+      let prev = Array.from({ length: b.length + 1 }, (_, j) => j);
+      for (let i = 1; i <= a.length; i++) {
+        const row = [i];
+        for (let j = 1; j <= b.length; j++) {
+          row[j] = Math.min(prev[j] + 1, row[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+        }
+        prev = row;
+      }
+      return prev[b.length];
+    }
+
+    // Buscador de beats: cada palabra escrita tiene que aparecer en el
+    // nombre (en cualquier orden; sirve buscar por BPM o tonalidad, ej.
+    // "102" o "bbmin"). Ordena por qué tan bien coincide: palabra exacta >
+    // empieza igual > la contiene > se parece (1-2 letras de diferencia).
+    function searchBeats(query) {
+      const all = BEAT_CATALOG.beats.map((name, i) => ({ name, i }));
+      const tokens = normText(query).split(/[^a-z0-9#]+/).filter(Boolean);
+      if (!tokens.length) return all;
+      return all
+        .map((b) => {
+          const words = normText(b.name).split(/[^a-z0-9#]+/).filter(Boolean);
+          let score = 0;
+          for (const tok of tokens) {
+            let best = 0;
+            for (const w of words) {
+              if (w === tok) best = Math.max(best, 4);
+              else if (w.startsWith(tok)) best = Math.max(best, 3);
+              else if (w.includes(tok)) best = Math.max(best, 2);
+              else if (tok.length >= 4) {
+                // compara contra el comienzo de la palabra, con una letra de más o de menos
+                const dist = Math.min(...[-1, 0, 1].map((d) => editDistance(tok, w.slice(0, tok.length + d))));
+                if (dist <= (tok.length >= 7 ? 2 : 1)) best = Math.max(best, 1);
+              }
+            }
+            if (!best) return null;
+            score += best;
+          }
+          return { ...b, score };
+        })
+        .filter(Boolean)
+        .sort((a, b) => b.score - a.score || a.i - b.i);
+    }
+
+    // La lista solo se muestra si se está escribiendo (sugerencias) o si
+    // se abrió la lista completa con la flecha.
     function renderBeatList() {
       const listEl = document.getElementById("beat-list");
       if (!listEl) return;
       const t = I18N[currentLang];
-      const query = normText(document.getElementById("beat-search").value);
-      const items = BEAT_CATALOG.beats
-        .map((name, i) => ({ name, i }))
-        .filter((b) => normText(b.name).includes(query));
+      const query = document.getElementById("beat-search").value;
+      const visible = beatListOpen || normText(query) !== "";
+      const items = visible ? searchBeats(query) : [];
+      listEl.toggleAttribute("hidden", !visible);
       listEl.innerHTML = items.length
         ? items.map((b) => `<button type="button" class="beat-item${b.name === selectedBeat ? " is-active" : ""}" data-action="pick-beat" data-index="${b.i}">${escHtml(b.name)}</button>`).join("")
         : `<div class="beat-empty">${t.beat_none}</div>`;
+      servicesGrid.querySelector(".beat-arrow")?.setAttribute("aria-expanded", beatListOpen);
       document.getElementById("beat-selected").textContent = selectedBeat ? `${t.beat_selected} ${selectedBeat}` : "";
+    }
+
+    function pickBeat(index) {
+      selectedBeat = BEAT_CATALOG.beats[index];
+      beatListOpen = false;
+      document.getElementById("beat-search").value = "";
+      document.getElementById("beat-hint").classList.remove("is-visible");
+      renderBeatList();
     }
 
     function setBeatPanelOpen(open) {
@@ -3488,10 +3589,11 @@
       } else if (action === "toggle-beats") {
         setBeatPanelOpen(!beatPanelOpen);
         if (beatPanelOpen) document.getElementById("beat-search").focus();
-      } else if (action === "pick-beat") {
-        selectedBeat = BEAT_CATALOG.beats[+btn.dataset.index];
-        document.getElementById("beat-hint").classList.remove("is-visible");
+      } else if (action === "toggle-beat-list") {
+        beatListOpen = !beatListOpen;
         renderBeatList();
+      } else if (action === "pick-beat") {
+        pickBeat(+btn.dataset.index);
       } else if (action === "quote-mezcla") {
         const canales = document.getElementById("mezcla-canales")?.value || "sin especificar";
         const duracion = document.getElementById("mezcla-duracion")?.value || "sin especificar";
@@ -3515,6 +3617,20 @@
     // Buscador de beats — filtra la lista mientras se escribe.
     servicesGrid.addEventListener("input", (event) => {
       if (event.target.id === "beat-search") renderBeatList();
+    });
+
+    // Enter elige la primera sugerencia; Escape cierra la lista.
+    servicesGrid.addEventListener("keydown", (event) => {
+      if (event.target.id !== "beat-search") return;
+      if (event.key === "Enter") {
+        event.preventDefault();
+        const first = searchBeats(event.target.value)[0];
+        if (first && (beatListOpen || normText(event.target.value))) pickBeat(first.i);
+      } else if (event.key === "Escape") {
+        beatListOpen = false;
+        event.target.value = "";
+        renderBeatList();
+      }
     });
 
     // Distribución — muestra el campo "motivo" solo si está migrando
@@ -3811,7 +3927,7 @@
         pkg_currency: "ARS", pkg_currency_monthly: "ARS / mes",
         pkg_addon_video: "Sumar video", pkg_addon_cover: "Sumar portada", pkg_addons_once: "pago único", pkg_addon_free: "Bonificada",
         beat_view_catalog: "Ver catálogo ↗", beat_pick_btn: "Elegir beat", beat_search_placeholder: "Buscá el beat por nombre…",
-        beat_none: "No encontramos un beat con ese nombre.", beat_pick_hint: "Elegí un beat del catálogo para reservarlo.", beat_selected: "Beat elegido:",
+        beat_none: "No encontramos un beat con ese nombre.", beat_pick_hint: "Elegí un beat del catálogo para reservarlo.", beat_selected: "Beat elegido:", beat_show_all: "Ver todos los beats",
         alacarte_title: "¿Preferís armar todo por tu cuenta? Elegí servicios sueltos:",
         svc_cta_consult: "Consultar por WhatsApp ↗", svc_price_quote: "Consultar presupuesto",
         mezcla_canales_label: "Cantidad de canales", mezcla_duracion_label: "Duración de la canción (min:seg)",
@@ -3938,7 +4054,7 @@
         pkg_currency: "ARS", pkg_currency_monthly: "ARS / mo",
         pkg_addon_video: "Add a video", pkg_addon_cover: "Add cover art", pkg_addons_once: "one-time payment", pkg_addon_free: "Free",
         beat_view_catalog: "View catalogue ↗", beat_pick_btn: "Choose a beat", beat_search_placeholder: "Search the beat by name…",
-        beat_none: "No beat found with that name.", beat_pick_hint: "Pick a beat from the catalogue to book it.", beat_selected: "Selected beat:",
+        beat_none: "No beat found with that name.", beat_pick_hint: "Pick a beat from the catalogue to book it.", beat_selected: "Selected beat:", beat_show_all: "Show all beats",
         includes_3: "Distribution to every platform (editorial playlist pitching for +$30,000, packs only)",
         alacarte_title: "Prefer to build it yourself? Pick individual services:",
         svc_cta_consult: "Ask via WhatsApp ↗", svc_price_quote: "Get a quote",
@@ -4066,7 +4182,7 @@
         pkg_currency: "ARS", pkg_currency_monthly: "ARS / mês",
         pkg_addon_video: "Adicionar vídeo", pkg_addon_cover: "Adicionar capa", pkg_addons_once: "pagamento único", pkg_addon_free: "Bonificada",
         beat_view_catalog: "Ver catálogo ↗", beat_pick_btn: "Escolher beat", beat_search_placeholder: "Busque o beat pelo nome…",
-        beat_none: "Não encontramos um beat com esse nome.", beat_pick_hint: "Escolha um beat do catálogo para reservar.", beat_selected: "Beat escolhido:",
+        beat_none: "Não encontramos um beat com esse nome.", beat_pick_hint: "Escolha um beat do catálogo para reservar.", beat_selected: "Beat escolhido:", beat_show_all: "Ver todos os beats",
         includes_3: "Distribuição para todas as plataformas (pitch para playlists editoriais por +$30.000, exclusivo dos pacotes)",
         alacarte_title: "Prefere montar tudo por conta própria? Escolha serviços avulsos:",
         svc_cta_consult: "Consultar pelo WhatsApp ↗", svc_price_quote: "Consultar orçamento",
@@ -4194,7 +4310,7 @@
         pkg_currency: "ARS", pkg_currency_monthly: "ARS / mois",
         pkg_addon_video: "Ajouter une vidéo", pkg_addon_cover: "Ajouter une pochette", pkg_addons_once: "paiement unique", pkg_addon_free: "Offerte",
         beat_view_catalog: "Voir le catalogue ↗", beat_pick_btn: "Choisir un beat", beat_search_placeholder: "Cherche le beat par son nom…",
-        beat_none: "Aucun beat trouvé avec ce nom.", beat_pick_hint: "Choisis un beat du catalogue pour le réserver.", beat_selected: "Beat choisi :",
+        beat_none: "Aucun beat trouvé avec ce nom.", beat_pick_hint: "Choisis un beat du catalogue pour le réserver.", beat_selected: "Beat choisi :", beat_show_all: "Voir tous les beats",
         includes_3: "Distribution sur toutes les plateformes (pitch aux playlists éditoriales pour +30 000 $, réservé aux packs)",
         alacarte_title: "Tu préfères tout composer toi-même ? Choisis des services à l'unité :",
         svc_cta_consult: "Demander par WhatsApp ↗", svc_price_quote: "Devis sur demande",
@@ -4322,7 +4438,7 @@
         pkg_currency: "ARS", pkg_currency_monthly: "ARS / mese",
         pkg_addon_video: "Aggiungi video", pkg_addon_cover: "Aggiungi copertina", pkg_addons_once: "pagamento unico", pkg_addon_free: "In omaggio",
         beat_view_catalog: "Vedi il catalogo ↗", beat_pick_btn: "Scegli un beat", beat_search_placeholder: "Cerca il beat per nome…",
-        beat_none: "Nessun beat trovato con questo nome.", beat_pick_hint: "Scegli un beat dal catalogo per prenotarlo.", beat_selected: "Beat scelto:",
+        beat_none: "Nessun beat trovato con questo nome.", beat_pick_hint: "Scegli un beat dal catalogo per prenotarlo.", beat_selected: "Beat scelto:", beat_show_all: "Mostra tutti i beat",
         includes_3: "Distribuzione su tutte le piattaforme (pitch alle playlist editoriali per +$30.000, solo nei pacchetti)",
         alacarte_title: "Preferisci creare tutto per conto tuo? Scegli i servizi singoli:",
         svc_cta_consult: "Chiedi via WhatsApp ↗", svc_price_quote: "Richiedi un preventivo",
@@ -4450,7 +4566,7 @@
         pkg_currency: "ARS", pkg_currency_monthly: "ARS / Monat",
         pkg_addon_video: "Video hinzufügen", pkg_addon_cover: "Cover hinzufügen", pkg_addons_once: "einmalige Zahlung", pkg_addon_free: "Gratis",
         beat_view_catalog: "Katalog ansehen ↗", beat_pick_btn: "Beat auswählen", beat_search_placeholder: "Beat nach Namen suchen…",
-        beat_none: "Kein Beat mit diesem Namen gefunden.", beat_pick_hint: "Wähle einen Beat aus dem Katalog, um ihn zu reservieren.", beat_selected: "Gewählter Beat:",
+        beat_none: "Kein Beat mit diesem Namen gefunden.", beat_pick_hint: "Wähle einen Beat aus dem Katalog, um ihn zu reservieren.", beat_selected: "Gewählter Beat:", beat_show_all: "Alle Beats anzeigen",
         includes_3: "Vertrieb auf allen Plattformen (Pitching an redaktionelle Playlists für +$30.000, nur in den Paketen)",
         alacarte_title: "Lieber alles selbst zusammenstellen? Wähl einzelne Services:",
         svc_cta_consult: "Anfragen per WhatsApp ↗", svc_price_quote: "Angebot anfordern",
@@ -4578,7 +4694,7 @@
         pkg_currency: "ARS", pkg_currency_monthly: "ARS / мес",
         pkg_addon_video: "Добавить видео", pkg_addon_cover: "Добавить обложку", pkg_addons_once: "разовый платёж", pkg_addon_free: "Бесплатно",
         beat_view_catalog: "Смотреть каталог ↗", beat_pick_btn: "Выбрать бит", beat_search_placeholder: "Найди бит по названию…",
-        beat_none: "Бит с таким названием не найден.", beat_pick_hint: "Выбери бит из каталога, чтобы забронировать.", beat_selected: "Выбранный бит:",
+        beat_none: "Бит с таким названием не найден.", beat_pick_hint: "Выбери бит из каталога, чтобы забронировать.", beat_selected: "Выбранный бит:", beat_show_all: "Показать все биты",
         includes_3: "Дистрибуция на все платформы (питчинг в редакционные плейлисты за +$30 000, только в пакетах)",
         alacarte_title: "Хочешь собрать всё сам? Выбери отдельные услуги:",
         svc_cta_consult: "Спросить в WhatsApp ↗", svc_price_quote: "Узнать стоимость",
