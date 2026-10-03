@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Sello independiente y productora en Buenos Aires. Composición, grabación, mezcla, mastering, distribución y arte, sesión a sesión, con Yaco Santana.">
+  <meta name="description" content="Sello Discográfico independiente y productora. Desarrollo artístico integral, composición, grabación, producción, mezcla, mastering, distribución, portada y video, sesión a sesión, con Yaco Santana.">
   <title>ZECHE GRUV — Sello Discográfico Independiente</title>
   <link rel="canonical" href="https://www.zechegruv.com/">
 
@@ -12,7 +12,7 @@
   <meta property="og:site_name" content="ZECHE GRUV">
   <meta property="og:url" content="https://www.zechegruv.com/">
   <meta property="og:title" content="ZECHE GRUV — Encontrá tu ADN sonoro.">
-  <meta property="og:description" content="Sello independiente y productora en Buenos Aires. Composición, grabación, mezcla, mastering, distribución y arte, sesión a sesión, con Yaco Santana.">
+  <meta property="og:description" content="Sello Discográfico independiente y productora. Desarrollo artístico integral, composición, grabación, producción, mezcla, mastering, distribución, portada y video, sesión a sesión, con Yaco Santana.">
   <meta property="og:image" content="https://www.zechegruv.com/assets/og-image.jpg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -44,6 +44,7 @@
        Marrón oscuro:     #241105
        Naranja:            #F07800
        Naranja suave:      #F5A623
+       Rojo (descuentos):  #D62828
        Beige:              #F0E0C0
        Crema:              #FFF4DC
        ========================================================= */
@@ -54,6 +55,7 @@
       --brown-mid: #69350B;
       --orange: #F07800;
       --orange-soft: #F5A623;
+      --red: #D62828;
       --beige: #F0E0C0;
       --cream: #FFF4DC;
       --muted: #C9A980;
@@ -578,7 +580,7 @@
     .btn:hover {
       background: var(--orange);
       border-color: var(--orange);
-      color: var(--brown-dark);
+      color: var(--cream);
       transform: translateY(-3px);
     }
 
@@ -953,7 +955,7 @@
     .service-btn:hover {
       background: var(--orange);
       border-color: var(--orange);
-      color: var(--brown-dark);
+      color: var(--cream);
       transform: translateY(-3px);
     }
 
@@ -1022,7 +1024,7 @@
     .spotify-bar-close:hover {
       background: var(--orange);
       border-color: var(--orange);
-      color: var(--brown-dark);
+      color: var(--cream);
     }
 
     /* ---------- Mobile ---------- */
@@ -1326,6 +1328,30 @@
       min-height: 1em;
     }
 
+    .package-extras {
+      font-family: "DM Mono", monospace;
+      font-size: 12px;
+      letter-spacing: .04em;
+      color: var(--orange-soft);
+    }
+
+    .package-extras:empty {
+      display: none;
+    }
+
+    .package-addons {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      border-top: 1px solid var(--border);
+      padding-top: 12px;
+    }
+
+    .package-check-row .pc-price s {
+      opacity: .6;
+      margin-right: 6px;
+    }
+
     .package-desc {
       color: var(--beige);
       opacity: .72;
@@ -1372,9 +1398,9 @@
       letter-spacing: .04em;
       padding: 2px 7px;
       border-radius: 999px;
-      background: var(--cream);
-      color: var(--brown-dark);
-      box-shadow: 0 0 0 1px rgba(255,244,220,.55), 0 2px 8px rgba(255,244,220,.25);
+      background: var(--red);
+      color: #fff;
+      box-shadow: 0 0 0 1px rgba(255,255,255,.35), 0 2px 8px rgba(214,40,40,.35);
       opacity: 1;
       white-space: nowrap;
       animation: save-pop 2.4s ease-in-out infinite;
@@ -1387,14 +1413,12 @@
 
     .package-toggle-btn.is-active {
       background: var(--orange-soft);
-      color: var(--brown-dark);
+      color: var(--cream);
       opacity: 1;
     }
 
     .package-toggle-btn.is-active .package-toggle-save {
-      background: var(--brown-dark);
-      color: var(--cream);
-      box-shadow: 0 0 0 1px rgba(255,244,220,.3);
+      box-shadow: 0 0 0 1px rgba(255,255,255,.7);
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -1463,6 +1487,83 @@
       text-transform: none;
       color: var(--beige);
       margin-bottom: 0;
+    }
+
+    /* ---------- Catálogo de beats (card "Instrumental de catálogo") ---------- */
+
+    .beat-picker {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .beat-picker .service-btn {
+      margin-top: 0;
+      text-decoration: none;
+    }
+
+    .beat-panel {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .beat-panel[hidden] {
+      display: none;
+    }
+
+    .beat-list {
+      display: flex;
+      flex-direction: column;
+      max-height: 220px;
+      overflow-y: auto;
+      border: 1px solid var(--border);
+    }
+
+    .beat-item {
+      flex-shrink: 0;
+      text-align: left;
+      background: none;
+      border: none;
+      border-bottom: 1px solid var(--border);
+      color: var(--beige);
+      font-family: "Manrope", sans-serif;
+      font-size: 12.5px;
+      padding: 9px 10px;
+      cursor: pointer;
+      transition: background .2s ease;
+    }
+
+    .beat-item:last-child {
+      border-bottom: none;
+    }
+
+    .beat-item:hover {
+      background: var(--brown);
+    }
+
+    .beat-item.is-active {
+      background: var(--orange);
+      color: var(--cream);
+    }
+
+    .beat-empty {
+      padding: 10px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .beat-selected {
+      font-family: "DM Mono", monospace;
+      font-size: 11px;
+      letter-spacing: .04em;
+      color: var(--orange-soft);
+    }
+
+    .beat-selected:empty {
+      display: none;
     }
 
     .package-hint {
@@ -1739,7 +1840,7 @@
     .studio-nav-btn:hover {
       background: var(--orange-soft);
       border-color: var(--orange-soft);
-      color: var(--brown-dark);
+      color: var(--cream);
     }
 
     #studioPrev { left: 12px; }
@@ -1839,7 +1940,7 @@
     .btn-primary {
       background: var(--orange);
       border-color: var(--orange);
-      color: var(--brown-dark);
+      color: var(--cream);
       font-weight: 500;
     }
 
@@ -2430,7 +2531,7 @@
       transition: background .25s ease, border-color .25s ease;
     }
 
-    .lightbox-btn:hover { background: var(--orange); border-color: var(--orange); color: var(--brown-dark); }
+    .lightbox-btn:hover { background: var(--orange); border-color: var(--orange); color: var(--cream); }
     .lightbox-close { top: 18px; right: 18px; }
     .lightbox-prev { left: 3vw; top: 50%; transform: translateY(-50%); }
     .lightbox-next { right: 3vw; top: 50%; transform: translateY(-50%); }
@@ -2630,7 +2731,7 @@
       <div class="hero-copy">
         <h1 class="hero-title" data-i18n="hero_title">Encontrá tu ADN sonoro.</h1>
         <p class="hero-description" data-i18n-html="hero_desc_html">
-          Sello independiente y productora en Buenos Aires. Composición, grabación, mezcla, mastering, distribución y arte, sesión a sesión, con <a href="https://open.spotify.com/intl-es/artist/0yIGrWjWqKnM7qJ0uyImij" target="_blank" rel="noopener">Yaco Santana</a>.
+          Sello Discográfico independiente y productora. Desarrollo artístico integral, composición, grabación, producción, mezcla, mastering, distribución, portada y video, sesión a sesión, con <a href="https://open.spotify.com/intl-es/artist/0yIGrWjWqKnM7qJ0uyImij" target="_blank" rel="noopener">Yaco Santana</a>.
         </p>
         <div class="buttons hero-buttons">
           <a class="btn btn-primary" href="https://wa.me/5491133287422?text=Hola%20ZECHE%20GRUV!%20Quiero%20ir%20a%20conocer%20el%20estudio%20%F0%9F%99%8C" target="_blank" rel="noopener" data-i18n="hero_cta_primary">Vení a conocer el estudio ↗</a>
@@ -2969,8 +3070,20 @@
 
       <div class="package-card">
         <div class="package-name" data-i18n="pkg_single_name">💿 SINGLE</div>
-        <div class="package-price">$400.000 <span data-i18n="pkg_currency">ARS</span></div>
+        <div class="package-price" id="single-price">$400.000 <span>ARS</span></div>
         <p class="package-desc" data-i18n="pkg_single_desc">Tu canción de punta a punta, en cuatro sesiones: la creamos, la grabamos, la mezclamos, la masterizamos y la subimos a todas las plataformas.</p>
+        <div class="package-addons" id="single-addons">
+          <label class="package-check-row">
+            <input type="checkbox" data-addon="video">
+            <span data-i18n="pkg_addon_video">Sumar video</span>
+            <span class="pc-price"></span>
+          </label>
+          <label class="package-check-row">
+            <input type="checkbox" data-addon="cover">
+            <span data-i18n="pkg_addon_cover">Sumar portada</span>
+            <span class="pc-price"></span>
+          </label>
+        </div>
         <button class="service-btn package-cta" type="button" id="single-quote-btn" data-i18n="pkg_cta_reserve">Quiero arrancar ↗</button>
       </div>
 
@@ -2985,12 +3098,25 @@
           </button>
         </div>
         <div class="package-price" id="epalbum-price"></div>
+        <div class="package-extras" id="epalbum-extras"></div>
         <div class="package-save" id="epalbum-save"></div>
         <div class="service-field">
           <label for="epalbum-songs" data-i18n="pkg_songs_label">Cantidad de canciones</label>
           <input type="number" id="epalbum-songs" min="1" placeholder="Ej: 5">
         </div>
         <p class="package-desc" data-i18n="pkg_epalbum_desc">Para quienes quieren construir algo más grande. Elegí EP o álbum, contanos cuántos temas y armamos el camino juntos.</p>
+        <div class="package-addons" id="epalbum-addons">
+          <label class="package-check-row">
+            <input type="checkbox" data-addon="video">
+            <span data-i18n="pkg_addon_video">Sumar video</span>
+            <span class="pc-price"></span>
+          </label>
+          <label class="package-check-row">
+            <input type="checkbox" data-addon="cover">
+            <span data-i18n="pkg_addon_cover">Sumar portada</span>
+            <span class="pc-price"></span>
+          </label>
+        </div>
         <div class="package-hint" id="epalbum-hint" data-i18n="pkg_epalbum_choose_hint">Elegí un formato para ver el precio</div>
         <button class="service-btn package-cta" type="button" id="epalbum-quote-btn" data-i18n="pkg_cta_quote">Charlemos tu proyecto ↗</button>
       </div>
@@ -3154,11 +3280,70 @@
       { key: "mixtering", name: "Mixtering (mezcla por stems, hasta 8 stems)", price: "$50.000 ARS" },
       { key: "instrumental_catalogo", name: "Instrumental de catálogo", price: "$60.000 ARS" },
       { key: "instrumental_personalizada", name: "Instrumental personalizada (4 revisiones)", price: "$90.000 ARS" },
-      { key: "coverart", name: "Portada / Coverart", price: "$25.000 ARS" },
-      { key: "videoclip", name: "Videoclip (grabación y edición)", price: "$125.000 ARS" },
+      { key: "coverart", name: "Portada / Coverart", price: "$45.000 ARS" },
+      { key: "videoclip", name: "Videoclip (grabación y edición)", price: "$160.000 ARS" },
       { key: "videolyrics", name: "VideoLyrics", price: "$50.000 ARS" },
       { key: "session_musicians", name: "Grabación de guitarras / bajo / batería / coros", price: "$25.000 ARS / hora" },
     ];
+
+    // Catálogo de beats (card "Instrumental de catálogo").
+    //  - url: link público de untitled para ESCUCHAR el catálogo (sin
+    //    vencimiento y con las descargas desactivadas).
+    //  - beats: nombres de los beats, tal cual figuran en untitled. Hay que
+    //    mantener esta lista a mano cada vez que se suma o se vende un beat.
+    // Mientras "url" esté vacío no se muestra el botón "Ver catálogo", y
+    // mientras "beats" esté vacío no se muestra el buscador.
+    const BEAT_CATALOG = {
+      url: "https://untitled.stream/library/project/C7PxptukoEKLShhj4DQ6K",
+      beats: [
+        "Bouncy - Bbmin 102Bpm @prodyeiko",
+      ],
+    };
+    let selectedBeat = null;
+    let beatPanelOpen = false;
+
+    const escHtml = (str) => String(str).replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+    // Para buscar sin importar mayúsculas ni tildes.
+    const normText = (str) => String(str).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+
+    function beatPickerHtml(t) {
+      const viewBtn = BEAT_CATALOG.url
+        ? `<a class="service-btn" href="${escHtml(BEAT_CATALOG.url)}" target="_blank" rel="noopener">${t.beat_view_catalog}</a>`
+        : "";
+      const picker = BEAT_CATALOG.beats.length ? `
+            <button class="service-btn" type="button" data-action="toggle-beats" aria-expanded="${beatPanelOpen}">${t.beat_pick_btn}</button>
+            <div class="beat-panel" id="beat-panel" ${beatPanelOpen ? "" : "hidden"}>
+              <div class="service-field">
+                <input type="search" id="beat-search" placeholder="${t.beat_search_placeholder}" autocomplete="off">
+              </div>
+              <div class="beat-list" id="beat-list"></div>
+            </div>
+            <div class="beat-selected" id="beat-selected"></div>
+            <p class="package-hint" id="beat-hint">${t.beat_pick_hint}</p>` : "";
+      return viewBtn || picker ? `<div class="beat-picker">${viewBtn}${picker}</div>` : "";
+    }
+
+    function renderBeatList() {
+      const listEl = document.getElementById("beat-list");
+      if (!listEl) return;
+      const t = I18N[currentLang];
+      const query = normText(document.getElementById("beat-search").value);
+      const items = BEAT_CATALOG.beats
+        .map((name, i) => ({ name, i }))
+        .filter((b) => normText(b.name).includes(query));
+      listEl.innerHTML = items.length
+        ? items.map((b) => `<button type="button" class="beat-item${b.name === selectedBeat ? " is-active" : ""}" data-action="pick-beat" data-index="${b.i}">${escHtml(b.name)}</button>`).join("")
+        : `<div class="beat-empty">${t.beat_none}</div>`;
+      document.getElementById("beat-selected").textContent = selectedBeat ? `${t.beat_selected} ${selectedBeat}` : "";
+    }
+
+    function setBeatPanelOpen(open) {
+      beatPanelOpen = open;
+      const panel = document.getElementById("beat-panel");
+      if (!panel) return;
+      panel.toggleAttribute("hidden", !open);
+      servicesGrid.querySelector('[data-action="toggle-beats"]')?.setAttribute("aria-expanded", open);
+    }
 
     const servicesGrid = document.getElementById("services-grid");
 
@@ -3172,6 +3357,7 @@
           </div>
           <div class="service-desc">${t.svc[s.key].desc}</div>
           <div class="service-price">${s.price}</div>
+          ${s.key === "instrumental_catalogo" ? beatPickerHtml(t) : ""}
           <button class="service-btn" type="button" data-action="reserve-fixed" data-index="${i}">${t.svc_cta_reserve}</button>
         </div>
       `).join("");
@@ -3254,6 +3440,7 @@
       `;
 
       servicesGrid.innerHTML = fixedCards + mezclaCard + distribucionCard + playbackCard;
+      renderBeatList();
       updateDistroPitchAvailability();
     }
 
@@ -3286,7 +3473,25 @@
 
       if (action === "reserve-fixed") {
         const s = SERVICES[+btn.dataset.index];
+        // Instrumental de catálogo: si hay lista de beats, hay que elegir
+        // uno para que el nombre viaje en el mensaje.
+        if (s.key === "instrumental_catalogo" && BEAT_CATALOG.beats.length) {
+          if (!selectedBeat) {
+            setBeatPanelOpen(true);
+            document.getElementById("beat-hint").classList.add("is-visible");
+            return;
+          }
+          window.open(waLink(`Hola! Quiero reservar el beat "${selectedBeat}" del catálogo (${s.name}, ${s.price}).`), "_blank", "noopener");
+          return;
+        }
         window.open(waLink(`Hola! Quiero reservar: ${s.name} (${s.price}).`), "_blank", "noopener");
+      } else if (action === "toggle-beats") {
+        setBeatPanelOpen(!beatPanelOpen);
+        if (beatPanelOpen) document.getElementById("beat-search").focus();
+      } else if (action === "pick-beat") {
+        selectedBeat = BEAT_CATALOG.beats[+btn.dataset.index];
+        document.getElementById("beat-hint").classList.remove("is-visible");
+        renderBeatList();
       } else if (action === "quote-mezcla") {
         const canales = document.getElementById("mezcla-canales")?.value || "sin especificar";
         const duracion = document.getElementById("mezcla-duracion")?.value || "sin especificar";
@@ -3305,6 +3510,11 @@
       } else if (action === "quote-playback") {
         window.open(waLink("Hola! Quiero consultar sobre Playback y Tune."), "_blank", "noopener");
       }
+    });
+
+    // Buscador de beats — filtra la lista mientras se escribe.
+    servicesGrid.addEventListener("input", (event) => {
+      if (event.target.id === "beat-search") renderBeatList();
     });
 
     // Distribución — muestra el campo "motivo" solo si está migrando
@@ -3353,9 +3563,67 @@
       window.open(waLink(msg), "_blank", "noopener");
     });
 
-    // Single — reserva directa, precio fijo
+    // Extras opcionales de los packs (video y portada). El precio base es
+    // el mismo que el del servicio individual (ver SERVICES) y cada pack le
+    // aplica su propio descuento: Single sin descuento, EP 35%, Álbum 40%.
+    const ADDONS = {
+      video: { price: 160000, label: "Video" },
+      cover: { price: 45000, label: "Portada" },
+    };
+    const PACK_DISCOUNT = { single: 0, ep: 0.35, album: 0.40 };
+    const SINGLE_PRICE = 400000;
+
+    const fmtARS = (n) => "$" + Math.round(n).toLocaleString("es-AR");
+    // Precios redondeados a mano: pisan el cálculo por porcentaje.
+    const ADDON_PRICE_OVERRIDE = {
+      single: { video: 130000, cover: 40000 },
+      ep: { video: 120000, cover: 30000 },
+      album: { video: 100000, cover: 30000 },
+    };
+    const addonPrice = (key, pack) =>
+      ADDON_PRICE_OVERRIDE[pack]?.[key] ?? ADDONS[key].price * (1 - (PACK_DISCOUNT[pack] || 0));
+
+    // Devuelve los extras tildados de un pack, con su precio ya descontado,
+    // y de paso actualiza el precio que se ve al lado de cada checkbox.
+    // En Álbum la portada queda bonificada si además se suma el video
+    // (la portada sola se cobra con el descuento normal).
+    function readAddons(containerEl, pack) {
+      const t = I18N[currentLang];
+      const picked = [];
+      const withVideo = !!containerEl.querySelector('input[data-addon="video"]')?.checked;
+      containerEl.querySelectorAll("input[data-addon]").forEach((input) => {
+        const key = input.dataset.addon;
+        const free = pack === "album" && key === "cover" && withVideo;
+        const price = free ? 0 : addonPrice(key, pack);
+        const priceEl = input.closest(".package-check-row").querySelector(".pc-price");
+        if (free) priceEl.innerHTML = `<s>${fmtARS(ADDONS[key].price)}</s>${t.pkg_addon_free}`;
+        else if (price < ADDONS[key].price) priceEl.innerHTML = `<s>${fmtARS(ADDONS[key].price)}</s>+${fmtARS(price)}`;
+        else priceEl.innerHTML = `+${fmtARS(price)}`;
+        if (input.checked) picked.push({ label: ADDONS[key].label, price });
+      });
+      return picked;
+    }
+    const addonsTotal = (picked) => picked.reduce((sum, a) => sum + a.price, 0);
+    const addonsText = (picked) => picked.map(a => `${a.label} (${a.price ? "+" + fmtARS(a.price) : "bonificada"})`).join(", ");
+
+    // Single — reserva directa, precio fijo (+ extras si los suma)
+    const singlePriceEl = document.getElementById("single-price");
+    const singleAddonsEl = document.getElementById("single-addons");
+
+    function renderSingle() {
+      const t = I18N[currentLang];
+      const total = SINGLE_PRICE + addonsTotal(readAddons(singleAddonsEl, "single"));
+      singlePriceEl.innerHTML = `${fmtARS(total)} <span>${t.pkg_currency}</span>`;
+    }
+    singleAddonsEl.addEventListener("change", renderSingle);
+
     document.getElementById("single-quote-btn").addEventListener("click", () => {
-      window.open(waLink("Hola! Quiero reservar el pack Single ($400.000 ARS)."), "_blank", "noopener");
+      const picked = readAddons(singleAddonsEl, "single");
+      let msg = `Hola! Quiero reservar el pack Single (${fmtARS(SINGLE_PRICE)} ARS).`;
+      if (picked.length) {
+        msg += `\nExtras: ${addonsText(picked)}\nTotal: ${fmtARS(SINGLE_PRICE + addonsTotal(picked))} ARS`;
+      }
+      window.open(waLink(msg), "_blank", "noopener");
     });
 
     // EP / Álbum — el precio es fijo por formato (no depende de la cantidad
@@ -3376,11 +3644,20 @@
     const epalbumSaveEl = document.getElementById("epalbum-save");
     const epalbumSongsInput = document.getElementById("epalbum-songs");
     const epalbumHintEl = document.getElementById("epalbum-hint");
+    const epalbumExtrasEl = document.getElementById("epalbum-extras");
+    const epalbumAddonsEl = document.getElementById("epalbum-addons");
 
     function renderEpAlbum() {
       const t = I18N[currentLang];
       epBtn.classList.toggle("is-active", epalbumFormat === "ep");
       albumBtn.classList.toggle("is-active", epalbumFormat === "album");
+
+      // Los extras (video / portada) se pagan una sola vez, aparte de la
+      // mensualidad, con el descuento del formato elegido.
+      const picked = readAddons(epalbumAddonsEl, epalbumFormat);
+      epalbumExtrasEl.textContent = epalbumFormat && picked.length
+        ? `+ ${fmtARS(addonsTotal(picked))} ${t.pkg_currency} · ${t.pkg_addons_once}`
+        : "";
 
       if (!epalbumFormat) {
         epalbumPriceEl.innerHTML = `<span class="package-price-placeholder">${t.pkg_epalbum_choose_hint}</span>`;
@@ -3394,6 +3671,8 @@
       epalbumSaveEl.textContent = t[cfg.saveKey];
       epalbumSongsInput.placeholder = cfg.placeholder;
     }
+
+    epalbumAddonsEl.addEventListener("change", renderEpAlbum);
 
     epBtn.addEventListener("click", () => {
       epalbumFormat = "ep";
@@ -3413,7 +3692,11 @@
       }
       const cfg = EPALBUM[epalbumFormat];
       const songs = epalbumSongsInput.value || "sin especificar";
-      const msg = `Hola! Quiero cotizar un ${cfg.label} (${cfg.price} ARS por mes, hasta terminar el proyecto).\nCantidad de canciones: ${songs}`;
+      let msg = `Hola! Quiero cotizar un ${cfg.label} (${cfg.price} ARS por mes, hasta terminar el proyecto).\nCantidad de canciones: ${songs}`;
+      const picked = readAddons(epalbumAddonsEl, epalbumFormat);
+      if (picked.length) {
+        msg += `\nExtras (pago único, con descuento de pack): ${addonsText(picked)}\nTotal extras: ${fmtARS(addonsTotal(picked))} ARS`;
+      }
       window.open(waLink(msg), "_blank", "noopener");
     });
 
@@ -3430,7 +3713,7 @@
       es: {
         // --- Textos web 2026-09 ---
         meta_title: "ZECHE GRUV — Sello Discográfico Independiente",
-        meta_desc: "Sello independiente y productora en Buenos Aires. Composición, grabación, mezcla, mastering, distribución y arte, sesión a sesión, con Yaco Santana.",
+        meta_desc: "Sello Discográfico independiente y productora. Desarrollo artístico integral, composición, grabación, producción, mezcla, mastering, distribución, portada y video, sesión a sesión, con Yaco Santana.",
         nav_about: "Nosotros",
         nav_session: "La sesión",
         nav_artists: "Artistas",
@@ -3439,7 +3722,7 @@
         nav_services: "Servicios",
         nav_contact: "Contacto",
         hero_title: "Encontrá tu ADN sonoro.",
-        hero_desc_html: "Sello independiente y productora en Buenos Aires. Composición, grabación, mezcla, mastering, distribución y arte, sesión a sesión, con <a href=\"https://open.spotify.com/intl-es/artist/0yIGrWjWqKnM7qJ0uyImij\" target=\"_blank\" rel=\"noopener\">Yaco Santana</a>.",
+        hero_desc_html: "Sello Discográfico independiente y productora. Desarrollo artístico integral, composición, grabación, producción, mezcla, mastering, distribución, portada y video, sesión a sesión, con <a href=\"https://open.spotify.com/intl-es/artist/0yIGrWjWqKnM7qJ0uyImij\" target=\"_blank\" rel=\"noopener\">Yaco Santana</a>.",
         hero_cta_primary: "Vení a conocer el estudio ↗",
         hero_cta_secondary: "Escuchá el sello",
         sl_label: "Quiénes somos",
@@ -3526,6 +3809,9 @@
         pkg_songs_label: "Cantidad de canciones",
         pkg_epalbum_choose_hint: "Elegí un formato para ver el precio",
         pkg_currency: "ARS", pkg_currency_monthly: "ARS / mes",
+        pkg_addon_video: "Sumar video", pkg_addon_cover: "Sumar portada", pkg_addons_once: "pago único", pkg_addon_free: "Bonificada",
+        beat_view_catalog: "Ver catálogo ↗", beat_pick_btn: "Elegir beat", beat_search_placeholder: "Buscá el beat por nombre…",
+        beat_none: "No encontramos un beat con ese nombre.", beat_pick_hint: "Elegí un beat del catálogo para reservarlo.", beat_selected: "Beat elegido:",
         alacarte_title: "¿Preferís armar todo por tu cuenta? Elegí servicios sueltos:",
         svc_cta_consult: "Consultar por WhatsApp ↗", svc_price_quote: "Consultar presupuesto",
         mezcla_canales_label: "Cantidad de canales", mezcla_duracion_label: "Duración de la canción (min:seg)",
@@ -3555,7 +3841,7 @@
       en: {
         // --- Textos web 2026-09 ---
         meta_title: "ZECHE GRUV — Independent Record Label",
-        meta_desc: "Independent label and production house in Buenos Aires. Songwriting, recording, mixing, mastering, distribution and artwork, session by session, with Yaco Santana.",
+        meta_desc: "Independent record label and production house. Full artist development, songwriting, recording, production, mixing, mastering, distribution, cover art and video, session by session, with Yaco Santana.",
         nav_about: "About",
         nav_session: "The session",
         nav_artists: "Artists",
@@ -3564,7 +3850,7 @@
         nav_services: "Services",
         nav_contact: "Contact",
         hero_title: "Find your sonic DNA.",
-        hero_desc_html: "Independent label and production house in Buenos Aires. Songwriting, recording, mixing, mastering, distribution and artwork, session by session, with <a href=\"https://open.spotify.com/intl-es/artist/0yIGrWjWqKnM7qJ0uyImij\" target=\"_blank\" rel=\"noopener\">Yaco Santana</a>.",
+        hero_desc_html: "Independent record label and production house. Full artist development, songwriting, recording, production, mixing, mastering, distribution, cover art and video, session by session, with <a href=\"https://open.spotify.com/intl-es/artist/0yIGrWjWqKnM7qJ0uyImij\" target=\"_blank\" rel=\"noopener\">Yaco Santana</a>.",
         hero_cta_primary: "Come see the studio ↗",
         hero_cta_secondary: "Listen to the label",
         sl_label: "About us",
@@ -3650,6 +3936,9 @@
         pkg_songs_label: "Number of songs",
         pkg_epalbum_choose_hint: "Choose a format to see the price",
         pkg_currency: "ARS", pkg_currency_monthly: "ARS / mo",
+        pkg_addon_video: "Add a video", pkg_addon_cover: "Add cover art", pkg_addons_once: "one-time payment", pkg_addon_free: "Free",
+        beat_view_catalog: "View catalogue ↗", beat_pick_btn: "Choose a beat", beat_search_placeholder: "Search the beat by name…",
+        beat_none: "No beat found with that name.", beat_pick_hint: "Pick a beat from the catalogue to book it.", beat_selected: "Selected beat:",
         includes_3: "Distribution to every platform (editorial playlist pitching for +$30,000, packs only)",
         alacarte_title: "Prefer to build it yourself? Pick individual services:",
         svc_cta_consult: "Ask via WhatsApp ↗", svc_price_quote: "Get a quote",
@@ -3680,7 +3969,7 @@
       pt: {
         // --- Textos web 2026-09 ---
         meta_title: "ZECHE GRUV — Selo Discográfico Independente",
-        meta_desc: "Selo independente e produtora em Buenos Aires. Composição, gravação, mixagem, masterização, distribuição e arte, sessão por sessão, com Yaco Santana.",
+        meta_desc: "Selo discográfico independente e produtora. Desenvolvimento artístico integral, composição, gravação, produção, mixagem, masterização, distribuição, capa e vídeo, sessão por sessão, com Yaco Santana.",
         nav_about: "Quem somos",
         nav_session: "A sessão",
         nav_artists: "Artistas",
@@ -3689,7 +3978,7 @@
         nav_services: "Serviços",
         nav_contact: "Contato",
         hero_title: "Encontre seu DNA sonoro.",
-        hero_desc_html: "Selo independente e produtora em Buenos Aires. Composição, gravação, mixagem, masterização, distribuição e arte, sessão por sessão, com <a href=\"https://open.spotify.com/intl-es/artist/0yIGrWjWqKnM7qJ0uyImij\" target=\"_blank\" rel=\"noopener\">Yaco Santana</a>.",
+        hero_desc_html: "Selo discográfico independente e produtora. Desenvolvimento artístico integral, composição, gravação, produção, mixagem, masterização, distribuição, capa e vídeo, sessão por sessão, com <a href=\"https://open.spotify.com/intl-es/artist/0yIGrWjWqKnM7qJ0uyImij\" target=\"_blank\" rel=\"noopener\">Yaco Santana</a>.",
         hero_cta_primary: "Venha conhecer o estúdio ↗",
         hero_cta_secondary: "Ouça o selo",
         sl_label: "Quem somos",
@@ -3775,6 +4064,9 @@
         pkg_songs_label: "Quantidade de músicas",
         pkg_epalbum_choose_hint: "Escolha um formato para ver o preço",
         pkg_currency: "ARS", pkg_currency_monthly: "ARS / mês",
+        pkg_addon_video: "Adicionar vídeo", pkg_addon_cover: "Adicionar capa", pkg_addons_once: "pagamento único", pkg_addon_free: "Bonificada",
+        beat_view_catalog: "Ver catálogo ↗", beat_pick_btn: "Escolher beat", beat_search_placeholder: "Busque o beat pelo nome…",
+        beat_none: "Não encontramos um beat com esse nome.", beat_pick_hint: "Escolha um beat do catálogo para reservar.", beat_selected: "Beat escolhido:",
         includes_3: "Distribuição para todas as plataformas (pitch para playlists editoriais por +$30.000, exclusivo dos pacotes)",
         alacarte_title: "Prefere montar tudo por conta própria? Escolha serviços avulsos:",
         svc_cta_consult: "Consultar pelo WhatsApp ↗", svc_price_quote: "Consultar orçamento",
@@ -3805,7 +4097,7 @@
       fr: {
         // --- Textos web 2026-09 ---
         meta_title: "ZECHE GRUV — Label Indépendant",
-        meta_desc: "Label indépendant et studio de production à Buenos Aires. Composition, enregistrement, mixage, mastering, distribution et artwork, session après session, avec Yaco Santana.",
+        meta_desc: "Label discographique indépendant et studio de production. Développement artistique complet, composition, enregistrement, production, mixage, mastering, distribution, pochette et vidéo, session après session, avec Yaco Santana.",
         nav_about: "À propos",
         nav_session: "La session",
         nav_artists: "Artistes",
@@ -3814,7 +4106,7 @@
         nav_services: "Services",
         nav_contact: "Contact",
         hero_title: "Trouve ton ADN sonore.",
-        hero_desc_html: "Label indépendant et studio de production à Buenos Aires. Composition, enregistrement, mixage, mastering, distribution et artwork, session après session, avec <a href=\"https://open.spotify.com/intl-es/artist/0yIGrWjWqKnM7qJ0uyImij\" target=\"_blank\" rel=\"noopener\">Yaco Santana</a>.",
+        hero_desc_html: "Label discographique indépendant et studio de production. Développement artistique complet, composition, enregistrement, production, mixage, mastering, distribution, pochette et vidéo, session après session, avec <a href=\"https://open.spotify.com/intl-es/artist/0yIGrWjWqKnM7qJ0uyImij\" target=\"_blank\" rel=\"noopener\">Yaco Santana</a>.",
         hero_cta_primary: "Viens découvrir le studio ↗",
         hero_cta_secondary: "Écoute le label",
         sl_label: "Qui sommes-nous",
@@ -3900,6 +4192,9 @@
         pkg_songs_label: "Nombre de titres",
         pkg_epalbum_choose_hint: "Choisis un format pour voir le prix",
         pkg_currency: "ARS", pkg_currency_monthly: "ARS / mois",
+        pkg_addon_video: "Ajouter une vidéo", pkg_addon_cover: "Ajouter une pochette", pkg_addons_once: "paiement unique", pkg_addon_free: "Offerte",
+        beat_view_catalog: "Voir le catalogue ↗", beat_pick_btn: "Choisir un beat", beat_search_placeholder: "Cherche le beat par son nom…",
+        beat_none: "Aucun beat trouvé avec ce nom.", beat_pick_hint: "Choisis un beat du catalogue pour le réserver.", beat_selected: "Beat choisi :",
         includes_3: "Distribution sur toutes les plateformes (pitch aux playlists éditoriales pour +30 000 $, réservé aux packs)",
         alacarte_title: "Tu préfères tout composer toi-même ? Choisis des services à l'unité :",
         svc_cta_consult: "Demander par WhatsApp ↗", svc_price_quote: "Devis sur demande",
@@ -3930,7 +4225,7 @@
       it: {
         // --- Textos web 2026-09 ---
         meta_title: "ZECHE GRUV — Etichetta Discografica Indipendente",
-        meta_desc: "Etichetta indipendente e casa di produzione a Buenos Aires. Composizione, registrazione, mix, mastering, distribuzione e artwork, sessione dopo sessione, con Yaco Santana.",
+        meta_desc: "Etichetta discografica indipendente e casa di produzione. Sviluppo artistico completo, composizione, registrazione, produzione, mix, mastering, distribuzione, copertina e video, sessione dopo sessione, con Yaco Santana.",
         nav_about: "Chi siamo",
         nav_session: "La sessione",
         nav_artists: "Artisti",
@@ -3939,7 +4234,7 @@
         nav_services: "Servizi",
         nav_contact: "Contatti",
         hero_title: "Trova il tuo DNA sonoro.",
-        hero_desc_html: "Etichetta indipendente e casa di produzione a Buenos Aires. Composizione, registrazione, mix, mastering, distribuzione e artwork, sessione dopo sessione, con <a href=\"https://open.spotify.com/intl-es/artist/0yIGrWjWqKnM7qJ0uyImij\" target=\"_blank\" rel=\"noopener\">Yaco Santana</a>.",
+        hero_desc_html: "Etichetta discografica indipendente e casa di produzione. Sviluppo artistico completo, composizione, registrazione, produzione, mix, mastering, distribuzione, copertina e video, sessione dopo sessione, con <a href=\"https://open.spotify.com/intl-es/artist/0yIGrWjWqKnM7qJ0uyImij\" target=\"_blank\" rel=\"noopener\">Yaco Santana</a>.",
         hero_cta_primary: "Vieni a conoscere lo studio ↗",
         hero_cta_secondary: "Ascolta l'etichetta",
         sl_label: "Chi siamo",
@@ -4025,6 +4320,9 @@
         pkg_songs_label: "Numero di brani",
         pkg_epalbum_choose_hint: "Scegli un formato per vedere il prezzo",
         pkg_currency: "ARS", pkg_currency_monthly: "ARS / mese",
+        pkg_addon_video: "Aggiungi video", pkg_addon_cover: "Aggiungi copertina", pkg_addons_once: "pagamento unico", pkg_addon_free: "In omaggio",
+        beat_view_catalog: "Vedi il catalogo ↗", beat_pick_btn: "Scegli un beat", beat_search_placeholder: "Cerca il beat per nome…",
+        beat_none: "Nessun beat trovato con questo nome.", beat_pick_hint: "Scegli un beat dal catalogo per prenotarlo.", beat_selected: "Beat scelto:",
         includes_3: "Distribuzione su tutte le piattaforme (pitch alle playlist editoriali per +$30.000, solo nei pacchetti)",
         alacarte_title: "Preferisci creare tutto per conto tuo? Scegli i servizi singoli:",
         svc_cta_consult: "Chiedi via WhatsApp ↗", svc_price_quote: "Richiedi un preventivo",
@@ -4055,7 +4353,7 @@
       de: {
         // --- Textos web 2026-09 ---
         meta_title: "ZECHE GRUV — Unabhängiges Plattenlabel",
-        meta_desc: "Unabhängiges Label und Produktionsstudio in Buenos Aires. Songwriting, Aufnahme, Mixing, Mastering, Vertrieb und Artwork, Session für Session, mit Yaco Santana.",
+        meta_desc: "Unabhängiges Plattenlabel und Produktionsstudio. Ganzheitliche Künstlerentwicklung, Songwriting, Aufnahme, Produktion, Mixing, Mastering, Vertrieb, Cover und Video, Session für Session, mit Yaco Santana.",
         nav_about: "Über uns",
         nav_session: "Die Session",
         nav_artists: "Künstler",
@@ -4064,7 +4362,7 @@
         nav_services: "Leistungen",
         nav_contact: "Kontakt",
         hero_title: "Finde deine Sound-DNA.",
-        hero_desc_html: "Unabhängiges Label und Produktionsstudio in Buenos Aires. Songwriting, Aufnahme, Mixing, Mastering, Vertrieb und Artwork, Session für Session, mit <a href=\"https://open.spotify.com/intl-es/artist/0yIGrWjWqKnM7qJ0uyImij\" target=\"_blank\" rel=\"noopener\">Yaco Santana</a>.",
+        hero_desc_html: "Unabhängiges Plattenlabel und Produktionsstudio. Ganzheitliche Künstlerentwicklung, Songwriting, Aufnahme, Produktion, Mixing, Mastering, Vertrieb, Cover und Video, Session für Session, mit <a href=\"https://open.spotify.com/intl-es/artist/0yIGrWjWqKnM7qJ0uyImij\" target=\"_blank\" rel=\"noopener\">Yaco Santana</a>.",
         hero_cta_primary: "Lern das Studio kennen ↗",
         hero_cta_secondary: "Hör dir das Label an",
         sl_label: "Über uns",
@@ -4150,6 +4448,9 @@
         pkg_songs_label: "Anzahl der Songs",
         pkg_epalbum_choose_hint: "Wähl ein Format, um den Preis zu sehen",
         pkg_currency: "ARS", pkg_currency_monthly: "ARS / Monat",
+        pkg_addon_video: "Video hinzufügen", pkg_addon_cover: "Cover hinzufügen", pkg_addons_once: "einmalige Zahlung", pkg_addon_free: "Gratis",
+        beat_view_catalog: "Katalog ansehen ↗", beat_pick_btn: "Beat auswählen", beat_search_placeholder: "Beat nach Namen suchen…",
+        beat_none: "Kein Beat mit diesem Namen gefunden.", beat_pick_hint: "Wähle einen Beat aus dem Katalog, um ihn zu reservieren.", beat_selected: "Gewählter Beat:",
         includes_3: "Vertrieb auf allen Plattformen (Pitching an redaktionelle Playlists für +$30.000, nur in den Paketen)",
         alacarte_title: "Lieber alles selbst zusammenstellen? Wähl einzelne Services:",
         svc_cta_consult: "Anfragen per WhatsApp ↗", svc_price_quote: "Angebot anfordern",
@@ -4180,7 +4481,7 @@
       ru: {
         // --- Textos web 2026-09 ---
         meta_title: "ZECHE GRUV — Независимый лейбл",
-        meta_desc: "Независимый лейбл и продакшн-студия в Буэнос-Айресе. Сочинение, запись, сведение, мастеринг, дистрибуция и обложки — сессия за сессией, вместе с Yaco Santana.",
+        meta_desc: "Независимый лейбл звукозаписи и продакшн-студия. Комплексное развитие артиста, сочинение, запись, продакшн, сведение, мастеринг, дистрибуция, обложка и видео — сессия за сессией, вместе с Yaco Santana.",
         nav_about: "О нас",
         nav_session: "Сессия",
         nav_artists: "Артисты",
@@ -4189,7 +4490,7 @@
         nav_services: "Услуги",
         nav_contact: "Контакты",
         hero_title: "Найди свою звуковую ДНК.",
-        hero_desc_html: "Независимый лейбл и продакшн-студия в Буэнос-Айресе. Сочинение, запись, сведение, мастеринг, дистрибуция и обложки — сессия за сессией, вместе с <a href=\"https://open.spotify.com/intl-es/artist/0yIGrWjWqKnM7qJ0uyImij\" target=\"_blank\" rel=\"noopener\">Yaco Santana</a>.",
+        hero_desc_html: "Независимый лейбл звукозаписи и продакшн-студия. Комплексное развитие артиста, сочинение, запись, продакшн, сведение, мастеринг, дистрибуция, обложка и видео — сессия за сессией, вместе с <a href=\"https://open.spotify.com/intl-es/artist/0yIGrWjWqKnM7qJ0uyImij\" target=\"_blank\" rel=\"noopener\">Yaco Santana</a>.",
         hero_cta_primary: "Приходи в студию ↗",
         hero_cta_secondary: "Послушай лейбл",
         sl_label: "Кто мы",
@@ -4275,6 +4576,9 @@
         pkg_songs_label: "Количество песен",
         pkg_epalbum_choose_hint: "Выбери формат, чтобы увидеть цену",
         pkg_currency: "ARS", pkg_currency_monthly: "ARS / мес",
+        pkg_addon_video: "Добавить видео", pkg_addon_cover: "Добавить обложку", pkg_addons_once: "разовый платёж", pkg_addon_free: "Бесплатно",
+        beat_view_catalog: "Смотреть каталог ↗", beat_pick_btn: "Выбрать бит", beat_search_placeholder: "Найди бит по названию…",
+        beat_none: "Бит с таким названием не найден.", beat_pick_hint: "Выбери бит из каталога, чтобы забронировать.", beat_selected: "Выбранный бит:",
         includes_3: "Дистрибуция на все платформы (питчинг в редакционные плейлисты за +$30 000, только в пакетах)",
         alacarte_title: "Хочешь собрать всё сам? Выбери отдельные услуги:",
         svc_cta_consult: "Спросить в WhatsApp ↗", svc_price_quote: "Узнать стоимость",
@@ -4394,6 +4698,7 @@
       // tome el texto del nuevo idioma.
       renderServiceCards();
       renderCustomChecklist();
+      renderSingle();
       renderEpAlbum();
 
       langSelect.value = lang;
