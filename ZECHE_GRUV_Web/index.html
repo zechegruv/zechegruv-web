@@ -196,6 +196,78 @@
       opacity: 1;
     }
 
+    /* Menú "Oportunidades": al hacer clic deja elegir Camps o Shows y open mic. */
+    .nav-drop { position: relative; }
+
+    .nav-drop-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0;
+      border: none;
+      background: none;
+      font: inherit;
+      letter-spacing: inherit;
+      text-transform: inherit;
+      color: var(--beige);
+      opacity: .75;
+      cursor: pointer;
+      transition: .25s ease;
+    }
+
+    .nav-drop-btn:hover,
+    .nav-drop.is-open .nav-drop-btn {
+      color: var(--orange-soft);
+      opacity: 1;
+    }
+
+    .nav-drop-caret {
+      font-size: 9px;
+      transition: transform .25s ease;
+    }
+
+    .nav-drop.is-open .nav-drop-caret { transform: rotate(180deg); }
+
+    .nav-drop-menu {
+      position: absolute;
+      top: calc(100% + 16px);
+      left: -18px;
+      display: flex;
+      flex-direction: column;
+      min-width: 100%;
+      padding: 6px 0;
+      background: var(--brown-dark);
+      border: 1px solid var(--border);
+      box-shadow: 0 18px 50px rgba(0, 0, 0, .5);
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-6px);
+      transition: opacity .2s ease, transform .25s cubic-bezier(.16, 1, .3, 1), visibility .2s;
+    }
+
+    .nav-drop.is-open .nav-drop-menu {
+      opacity: 1;
+      visibility: visible;
+      transform: none;
+    }
+
+    .nav-drop-right .nav-drop-menu { left: auto; right: -18px; }
+
+    .nav-drop-menu a {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 9px 18px;
+      white-space: nowrap;
+    }
+
+    .nav-drop-logo {
+      height: 34px;
+      width: auto;
+      flex: none;
+    }
+
     /* ---------- Hero ---------- */
 
     .hero {
@@ -1116,6 +1188,35 @@
         opacity: .85;
       }
 
+      /* En el celu "Oportunidades" se despliega dentro del mismo menú. */
+      .nav-drop { width: 100%; }
+
+      .nav-drop-btn {
+        width: 100%;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--border);
+        opacity: .85;
+      }
+
+      .nav-drop-menu {
+        position: static;
+        display: none;
+        min-width: 0;
+        padding: 0 0 0 16px;
+        background: none;
+        border: none;
+        box-shadow: none;
+        opacity: 1;
+        visibility: visible;
+        transform: none;
+        transition: none;
+      }
+
+      .nav-drop.is-open .nav-drop-menu { display: flex; }
+
+      .nav-drop-menu a { display: flex; justify-content: flex-start; gap: 14px; padding: 9px 0; }
+
       .lang-select {
         margin: 0 5vw 20px;
       }
@@ -1246,6 +1347,24 @@
 
     /* ---------- Packages (arriba de Servicios) ---------- */
 
+    /* Servicios se divide en dos: Desarrollo artístico (los packs) y Servicios individuales. */
+    .services-subhead {
+      font-size: clamp(26px, 3vw, 40px);
+      line-height: 1.05;
+      letter-spacing: -.04em;
+      font-weight: 700;
+      margin-bottom: 22px;
+      scroll-margin-top: 110px;
+    }
+
+    #individual-services {
+      margin-top: 90px;
+      padding-top: 70px;
+      border-top: 1px solid var(--border);
+      scroll-margin-top: 40px;
+      margin-bottom: 12px;
+    }
+
     .services-alacarte-title {
       font-family: "DM Mono", monospace;
       font-size: 11px;
@@ -1366,8 +1485,8 @@
 
     .package-toggle {
       display: flex;
-      border: 1px solid var(--border);
-      width: fit-content;
+      border: 1px solid rgba(245, 166, 35, .55);
+      width: 100%;
     }
 
     .package-toggle-btn {
@@ -1377,26 +1496,30 @@
       border: none;
       background: none;
       color: var(--beige);
-      opacity: .65;
+      opacity: .9;
+      flex: 1;
+      justify-content: center;
+      flex-wrap: wrap;
       font-family: "DM Mono", monospace;
-      font-size: 10px;
-      letter-spacing: .12em;
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: .1em;
       text-transform: uppercase;
-      padding: 8px 16px;
+      padding: 14px 10px;
       cursor: pointer;
       transition: .25s ease;
     }
 
     .package-toggle-btn + .package-toggle-btn {
-      border-left: 1px solid var(--border);
+      border-left: 1px solid rgba(245, 166, 35, .55);
     }
 
     .package-toggle-save {
       font-family: "DM Mono", monospace;
-      font-size: 8.5px;
+      font-size: 10.5px;
       font-weight: 800;
       letter-spacing: .04em;
-      padding: 2px 7px;
+      padding: 3px 8px;
       border-radius: 999px;
       background: var(--red);
       color: #fff;
@@ -1442,6 +1565,107 @@
     .package-custom-list[hidden] {
       display: none;
     }
+
+    /* Personalizado: cada servicio con su cantidad (− n +). */
+    .package-custom-list { max-height: 340px; gap: 0; padding: 4px 2px; }
+
+    .package-qty-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      font-size: 12.5px;
+      color: var(--beige);
+    }
+
+    .package-qty-row + .package-qty-row { border-top: 1px solid rgba(240, 224, 192, .09); }
+
+    .package-qty-info {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      opacity: .8;
+      transition: opacity .2s ease;
+    }
+
+    .package-qty-info .pc-price {
+      font-family: "DM Mono", monospace;
+      font-size: 10px;
+      color: var(--muted);
+    }
+
+    .package-qty-row.is-picked .package-qty-info { opacity: 1; color: var(--cream); }
+
+    .package-qty {
+      display: flex;
+      align-items: center;
+      border: 1px solid var(--border);
+      transition: border-color .2s ease;
+    }
+
+    .package-qty-row.is-picked .package-qty { border-color: rgba(245, 166, 35, .7); }
+
+    .package-qty-btn {
+      width: 30px;
+      height: 30px;
+      border: none;
+      background: none;
+      color: var(--cream);
+      font-family: "DM Mono", monospace;
+      font-size: 15px;
+      line-height: 1;
+      cursor: pointer;
+      transition: background-color .2s ease, color .2s ease;
+    }
+
+    .package-qty-btn:hover:not(:disabled) { background: var(--orange-soft); color: var(--brown-dark); }
+    .package-qty-btn:disabled { opacity: .3; cursor: default; }
+
+    .package-qty-value {
+      min-width: 26px;
+      text-align: center;
+      font-family: "DM Mono", monospace;
+      font-size: 13px;
+      color: var(--beige);
+    }
+
+    .package-qty-row.is-picked .package-qty-value { color: var(--orange-soft); }
+
+    /* Beats del catálogo dentro del pack personalizado. */
+    .package-beats {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 2px 0 14px;
+    }
+
+    .package-beats[hidden] { display: none; }
+
+    .package-beats + .package-qty-row { border-top: 1px solid rgba(240, 224, 192, .09); }
+
+    .package-beats-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      font-family: "DM Mono", monospace;
+      font-size: 10px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--orange-soft);
+    }
+
+    .package-beats-head b { color: var(--cream); font-weight: 500; margin-left: 4px; }
+
+    .package-beats-link { color: var(--beige); text-decoration: underline; text-underline-offset: 3px; white-space: nowrap; }
+    .package-beats-link:hover { color: var(--orange-soft); }
+
+    .package-beats .beat-list { max-height: 150px; }
+
+    .custom-beat-item:disabled { opacity: .4; cursor: not-allowed; }
+
+    #beat-catalog { scroll-margin-top: 110px; }
 
     .package-check-row {
       display: flex;
@@ -1675,6 +1899,13 @@
       margin-bottom: 50px;
     }
 
+    .session-intro {
+      font-size: 18px;
+      line-height: 1.6;
+      opacity: .85;
+      max-width: 680px;
+    }
+
     .testimonials-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -1792,10 +2023,10 @@
 
     .label-director-bio {
       color: var(--beige);
-      opacity: .75;
-      font-size: 13px;
-      line-height: 1.75;
-      max-width: 520px;
+      opacity: .85;
+      font-size: 17px;
+      line-height: 1.65;
+      max-width: 680px;
     }
 
     .label-studio {
@@ -1847,11 +2078,14 @@
       overflow: hidden;
     }
 
+    /* Las fotos del estudio salieron con luz de día (blancos fríos): se les
+       da un tono más cálido para que acompañen la paleta del sitio. */
     .studio-slide img {
       width: 100%;
       height: 100%;
       object-fit: cover;
       display: block;
+      filter: sepia(.26) saturate(1.22) brightness(.97);
     }
 
     .studio-photo-placeholder {
@@ -1995,6 +2229,11 @@
 
     @media (max-width: 1100px) and (min-width: 801px) {
       .nav-links { gap: 16px; }
+    }
+
+    /* Con "Oportunidades" el menú es más largo: se aprieta un poco antes de pasar a hamburguesa. */
+    @media (max-width: 960px) and (min-width: 801px) {
+      .nav-links { gap: 11px; letter-spacing: .07em; }
     }
 
     /* Quiénes somos: los textos ahora tienen párrafos */
@@ -2148,6 +2387,50 @@
       padding-bottom: 140px;
     }
 
+    /* En PC, artistas, último lanzamiento y catálogos van más compactos:
+       menos aire, portada más chica y más tarjetas por fila. */
+    @media (min-width: 801px) {
+      #artists,
+      #releases {
+        padding-top: 96px;
+        padding-bottom: 96px;
+      }
+
+      #artists .section-title,
+      #releases .section-title,
+      #catalogue .section-title,
+      #full-catalogue .section-title { margin-bottom: 42px; }
+
+      .artists-grid {
+        grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+        gap: 18px 14px;
+      }
+
+      .release {
+        grid-template-columns: minmax(240px, 360px) minmax(300px, 1fr);
+        gap: clamp(36px, 5vw, 72px);
+      }
+
+      .release-title {
+        font-size: clamp(40px, 5vw, 72px);
+        margin: 12px 0 16px;
+      }
+
+      #catalogue,
+      #full-catalogue {
+        padding-top: 48px;
+        padding-bottom: 48px;
+      }
+
+      #full-catalogue { padding-bottom: 100px; }
+
+      #catalogue .catalogue,
+      #full-catalogue .catalogue {
+        grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+        gap: 14px;
+      }
+    }
+
     .section-label-sub {
       color: var(--muted);
     }
@@ -2166,6 +2449,204 @@
       padding-right: max(5vw, calc((100vw - var(--max)) / 2 + 5vw));
       border-top: 1px solid var(--border);
       border-bottom: 1px solid var(--border);
+    }
+
+    /* Shows y open mics: mismo recurso que el camp, con su logo como marca de
+       agua a la derecha. El borde de arriba queda a la altura de "Eventos". */
+    .camp-block-events { position: relative; }
+
+    .camp-block-events .camp-copy,
+    .camp-block-events .events-copy {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Quiénes tocaron: shows y open mic. */
+    .events-lineup {
+      grid-column: 1 / -1;
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 32px clamp(32px, 5vw, 80px);
+      margin-top: 56px;
+      padding-top: 40px;
+      border-top: 1px solid var(--border);
+    }
+
+    .events-lineup .camp-lineup-list { font-size: clamp(20px, 2.1vw, 29px); }
+
+    /* El open mic va más chico que los shows. */
+    .events-lineup > div:last-child .camp-lineup-list {
+      font-size: clamp(15px, 1.35vw, 19px);
+      font-weight: 600;
+      letter-spacing: -.02em;
+    }
+
+    .events-lineup + .events-videos { margin-top: 48px; }
+
+    .event-video-tag {
+      margin-left: auto;
+      color: var(--beige);
+      opacity: .7;
+    }
+
+    @media (max-width: 800px) {
+      .events-lineup {
+        grid-template-columns: 1fr;
+        margin-top: 36px;
+        padding-top: 30px;
+      }
+
+      .events-lineup + .events-videos { margin-top: 34px; }
+    }
+
+    /* Videos de los shows: fragmentos sin audio, en loop mientras se ven. */
+    .events-videos {
+      grid-column: 1 / -1;
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr));
+      gap: clamp(16px, 2.4vw, 32px);
+      margin-top: 64px;
+    }
+
+    .event-video {
+      position: relative;
+      margin: 0;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: var(--brown-dark);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, .45);
+      transition: border-color .45s ease, box-shadow .45s ease;
+    }
+
+    .event-video video {
+      width: 100%;
+      height: auto;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+      display: block;
+      transition: transform 1.2s cubic-bezier(.16, 1, .3, 1);
+    }
+
+    .event-video figcaption {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      padding: 56px 18px 16px;
+      background: linear-gradient(to top, rgba(20, 9, 2, .85), rgba(20, 9, 2, 0));
+      font-family: "DM Mono", monospace;
+      font-size: 11px;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      pointer-events: none;
+    }
+
+    .event-video figcaption a {
+      color: var(--cream);
+      text-decoration: none;
+      pointer-events: auto;
+      transition: color .25s ease;
+    }
+
+    .event-video figcaption a:hover { color: var(--orange-soft); }
+
+    @media (hover: hover) {
+      .event-video:hover {
+        border-color: rgba(245, 166, 35, .45);
+        box-shadow: 0 30px 80px rgba(0, 0, 0, .6);
+      }
+
+      .event-video:hover video { transform: scale(1.04); }
+    }
+
+    @media (max-width: 800px) {
+      .events-videos { margin-top: 36px; }
+    }
+
+    /* Cabecera de shows: slogan grande con el logo como marca de agua a la
+       derecha, igual que la del camp. */
+    .events-head {
+      grid-column: 1 / -1;
+      position: relative;
+      margin-bottom: 56px;
+    }
+
+    .events-head .section-title {
+      position: relative;
+      z-index: 1;
+      margin-bottom: 0;
+    }
+
+    .events-logo {
+      position: absolute;
+      right: 0;
+      top: -31px;
+      z-index: 0;
+      height: calc(100% + 75px);
+      width: auto;
+      opacity: .7;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    @media (max-width: 800px) {
+      .events-head { margin-bottom: 40px; }
+
+      .events-logo {
+        right: -3vw;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 54vw;
+        height: auto;
+        opacity: .2;
+      }
+    }
+
+    /* Título de la sección con el logo del camp como marca de agua a la derecha. */
+    .camps-head {
+      position: relative;
+      margin-bottom: 65px;
+    }
+
+    .camps-head .section-title {
+      position: relative;
+      z-index: 1;
+      margin-bottom: 0;
+    }
+
+    /* El borde de arriba del logo queda a la altura del rótulo "06 / …" y el
+       de abajo un poco por debajo del título, sin llegar al texto del camp. */
+    .camp-logo {
+      position: absolute;
+      right: 0;
+      top: 0;
+      z-index: 0;
+      height: calc(100% + 44px);
+      width: auto;
+      opacity: .7;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    /* En el celu queda detrás del título, más tenue, asomando por la derecha. */
+    @media (max-width: 800px) {
+      .camps-head { margin-bottom: 50px; }
+
+      .camp-logo {
+        right: -3vw;
+        top: 56%;
+        transform: translateY(-50%);
+        width: 60vw;
+        height: auto;
+        opacity: .2;
+      }
     }
 
     .camp-block {
@@ -2215,6 +2696,12 @@
       max-width: 460px;
     }
 
+    .camp-block:not(.camp-block-events) .camp-text {
+      font-size: 17px;
+      line-height: 1.65;
+      opacity: .9;
+    }
+
     .camp-media {
       display: grid;
       gap: 12px;
@@ -2249,6 +2736,252 @@
 
     .camp-media-3 img:nth-child(2) {
       transform: translateY(28px);
+    }
+
+    /* Videos y créditos del camp comparten fila en pantallas anchas, así la
+       sección no se hace tan larga. */
+    .camp-showcase {
+      display: grid;
+      gap: 44px;
+    }
+
+    @media (min-width: 1000px) {
+      .camp-showcase {
+        grid-template-columns: minmax(0, 440px) minmax(0, 1fr);
+        gap: clamp(36px, 4.5vw, 72px);
+        align-items: center;
+        padding-top: 32px;
+        border-top: 1px solid var(--border);
+      }
+
+      .camp-showcase .camp-videos {
+        max-width: none;
+        gap: 16px;
+        padding: 6px 0 22px;
+      }
+
+      .camp-showcase .camp-video figcaption {
+        gap: 7px;
+        padding: 40px 10px 12px;
+        font-size: 9px;
+        letter-spacing: .12em;
+      }
+
+      .camp-showcase .camp-video-side:not(:hover) { --ty: 14px; --drift: -18px; }
+      .camp-showcase .camp-video-main:not(:hover) { --drift: 10px; }
+
+      .camp-showcase .camp-credits {
+        gap: 28px;
+        padding-top: 0;
+        border-top: 0;
+      }
+
+      .camp-showcase .camp-lineup-list {
+        font-size: clamp(18px, 1.7vw, 24px);
+        gap: .22em .45em;
+      }
+
+      .camp-showcase .camp-thanks { gap: 20px 24px; }
+      .camp-showcase .camp-thanks dd { font-size: 15px; line-height: 1.5; }
+      .camp-showcase .camp-thanks dt { margin-bottom: 8px; }
+    }
+
+    /* Créditos del primer camp: artistas (con link a su página cuando la
+       tienen) y los medios y emprendimientos que acompañaron. */
+    .camp-credits {
+      display: grid;
+      gap: 44px;
+      padding-top: 44px;
+      border-top: 1px solid var(--border);
+    }
+
+    .camp-lineup-list {
+      list-style: none;
+      display: flex;
+      flex-wrap: wrap;
+      gap: .28em .5em;
+      margin: 0;
+      padding: 0;
+      font-size: clamp(21px, 2.5vw, 34px);
+      line-height: 1.2;
+      letter-spacing: -.04em;
+      font-weight: 700;
+    }
+
+    .camp-lineup-list li { display: flex; align-items: baseline; gap: .5em; }
+
+    .camp-lineup-list li:not(:last-child)::after {
+      content: "·";
+      color: var(--orange);
+    }
+
+    .camp-lineup-list a,
+    .camp-lineup-list span { color: var(--cream); }
+
+    .camp-lineup-list a,
+    .camp-thanks a {
+      text-decoration: none;
+      background: linear-gradient(var(--orange-soft), var(--orange-soft)) left bottom / 0 1px no-repeat;
+      transition: color .25s ease, background-size .35s cubic-bezier(.16, 1, .3, 1);
+    }
+
+    .camp-lineup-list a:hover,
+    .camp-thanks a:hover {
+      color: var(--orange-soft);
+      background-size: 100% 1px;
+    }
+
+    .camp-thanks {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 28px 32px;
+      margin: 0;
+    }
+
+    .camp-thanks dt {
+      font-family: "DM Mono", monospace;
+      font-size: 10px;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: var(--orange-soft);
+      margin-bottom: 10px;
+    }
+
+    .camp-thanks dd {
+      margin: 0;
+      font-size: 16px;
+      line-height: 1.6;
+      color: var(--beige);
+    }
+
+    .camp-thanks a { color: var(--cream); }
+
+    @media (max-width: 800px) {
+      .camp-credits { gap: 34px; padding-top: 34px; }
+      .camp-thanks { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    /* Videos del camp: el compilado al frente y los otros dos abiertos en
+       abanico detrás. Sin audio, en loop mientras están en pantalla. */
+    .camp-videos {
+      --p: 0;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.24fr) minmax(0, 1fr);
+      align-items: center;
+      gap: clamp(18px, 2.4vw, 34px);
+      width: 100%;
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 20px 0 40px;
+    }
+
+    .camp-video {
+      position: relative;
+      margin: 0;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: var(--brown-dark);
+      transform: translate(var(--tx, 0%), calc(var(--ty, 0px) + var(--p) * var(--drift, 0px))) rotate(var(--rot, 0deg)) scale(var(--sc, 1));
+      transition: transform .9s cubic-bezier(.16, 1, .3, 1), opacity .7s ease, filter .45s ease, box-shadow .45s ease, border-color .45s ease;
+      will-change: transform;
+    }
+
+    .camp-video video {
+      width: 100%;
+      height: auto;
+      aspect-ratio: 9 / 16;
+      object-fit: cover;
+      display: block;
+    }
+
+    .camp-video-main {
+      z-index: 2;
+      --drift: 16px;
+      border-color: rgba(245, 166, 35, .45);
+      box-shadow: 0 34px 90px rgba(0, 0, 0, .6), 0 0 70px rgba(240, 120, 0, .14);
+    }
+
+    .camp-video-side {
+      z-index: 1;
+      --ty: 22px;
+      --drift: -30px;
+      filter: brightness(.78) saturate(.9);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, .45);
+    }
+
+    .camp-video-l { --rot: -4deg; }
+    .camp-video-r { --rot: 4deg; }
+
+    .camp-video figcaption {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      padding: 56px 16px 16px;
+      background: linear-gradient(to top, rgba(20, 9, 2, .85), rgba(20, 9, 2, 0));
+      font-family: "DM Mono", monospace;
+      font-size: 10px;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: var(--cream);
+      pointer-events: none;
+    }
+
+    .camp-video-num { color: var(--orange-soft); }
+
+    .camp-video-bar {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 2px;
+      background: rgba(255, 244, 220, .16);
+    }
+
+    .camp-video-bar i {
+      display: block;
+      height: 100%;
+      background: var(--orange);
+      transform-origin: left center;
+      transform: scaleX(var(--prog, 0));
+    }
+
+    /* Entrada: salen de atrás del compilado y se abren. */
+    .camp-videos.is-armed:not(.is-in) .camp-video { opacity: 0; }
+    .camp-videos.is-armed:not(.is-in) .camp-video-main { --sc: .9; --ty: 40px; }
+    .camp-videos.is-in .camp-video-side { transition-delay: .12s; }
+    .camp-videos.is-in .camp-video-r { transition-delay: .2s; }
+    .camp-videos.is-settled .camp-video { transition-delay: 0s; }
+
+    @media (min-width: 801px) {
+      .camp-videos.is-armed:not(.is-in) .camp-video-l { --tx: 85%; --rot: 0deg; --sc: .88; }
+      .camp-videos.is-armed:not(.is-in) .camp-video-r { --tx: -85%; --rot: 0deg; --sc: .88; }
+    }
+
+    /* Al pasar el mouse el video se agranda bastante (sin llegar a pantalla
+       completa), se endereza y pasa al frente. */
+    @media (hover: hover) and (min-width: 801px) {
+      .camp-video:hover {
+        --rot: 0deg;
+        --sc: 1.8;
+        --ty: 0px;
+        --drift: 0px;
+        z-index: 6;
+        filter: none;
+        border-color: rgba(245, 166, 35, .55);
+        box-shadow: 0 40px 110px rgba(0, 0, 0, .7);
+        transition-duration: .55s, .7s, .3s, .3s, .3s;
+      }
+
+      .camp-video-l { transform-origin: 25% 50%; }
+      .camp-video-r { transform-origin: 75% 50%; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .camp-video { transition: none; --drift: 0px; }
     }
 
     .camp-media .media-placeholder {
@@ -2327,6 +3060,32 @@
       .camp-media-4::-webkit-scrollbar { display: none; }
 
       .camp-media-4 img { scroll-snap-align: start; }
+
+      /* En el celu: carrusel que arranca con el compilado al centro. */
+      .camp-videos {
+        display: flex;
+        gap: 12px;
+        max-width: none;
+        width: auto;
+        margin: 0 -5vw;
+        padding: 14px 21vw 30px;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: none;
+      }
+
+      .camp-videos::-webkit-scrollbar { display: none; }
+
+      .camp-video {
+        flex: 0 0 58vw;
+        scroll-snap-align: center;
+        --tx: 0%;
+        --rot: 0deg;
+        --ty: 0px;
+        --drift: 0px;
+      }
+
+      .camp-video-side { filter: none; }
 
       .camp-media-3 {
         grid-template-columns: repeat(3, 62vw);
@@ -2504,6 +3263,156 @@
     /* ---------- Visor de fotos (camp) ----------
        Tocar o hacer clic en una foto la abre grande; en el celular se pasa
        de una a otra deslizando con el dedo. */
+    /* ---------- Formulario "Vení a conocer el estudio" ---------- */
+    .visit-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 300;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: rgba(20, 9, 2, .88);
+      backdrop-filter: blur(10px);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity .3s ease, visibility .3s;
+    }
+
+    .visit-modal.is-open {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .visit-dialog {
+      position: relative;
+      width: 100%;
+      max-width: 540px;
+      max-height: calc(100dvh - 40px);
+      overflow-y: auto;
+      padding: 36px 34px 34px;
+      background: var(--brown-dark);
+      border: 1px solid rgba(245, 166, 35, .4);
+      box-shadow: 0 40px 120px rgba(0, 0, 0, .7);
+      transform: translateY(14px);
+      transition: transform .4s cubic-bezier(.16, 1, .3, 1);
+    }
+
+    .visit-modal.is-open .visit-dialog { transform: none; }
+
+    .visit-close {
+      position: absolute;
+      top: 12px;
+      right: 14px;
+      width: 36px;
+      height: 36px;
+      border: none;
+      background: none;
+      color: var(--beige);
+      font-size: 26px;
+      line-height: 1;
+      cursor: pointer;
+      transition: color .2s ease;
+    }
+
+    .visit-close:hover { color: var(--orange-soft); }
+
+    .visit-title {
+      font-size: clamp(26px, 3.4vw, 38px);
+      line-height: 1.05;
+      letter-spacing: -.04em;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .visit-intro {
+      color: var(--beige);
+      opacity: .8;
+      font-size: 14.5px;
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+
+    .visit-form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .visit-hp { position: absolute; left: -9999px; }
+
+    .visit-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .visit-field {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      font-family: "DM Mono", monospace;
+      font-size: 10px;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--orange-soft);
+    }
+
+    .visit-field input,
+    .visit-field textarea {
+      width: 100%;
+      background: var(--brown);
+      border: 1px solid var(--border);
+      color: var(--cream);
+      font-family: "Manrope", sans-serif;
+      font-size: 16px;
+      letter-spacing: normal;
+      text-transform: none;
+      padding: 11px 12px;
+      border-radius: 0;
+    }
+
+    .visit-field textarea { resize: vertical; min-height: 84px; }
+
+    .visit-field input:focus,
+    .visit-field textarea:focus {
+      outline: none;
+      border-color: var(--orange-soft);
+    }
+
+    .visit-check {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--beige);
+      cursor: pointer;
+    }
+
+    .visit-check input {
+      accent-color: var(--orange-soft);
+      width: 16px;
+      height: 16px;
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+
+    .visit-submit {
+      align-self: flex-start;
+      margin-top: 6px;
+      cursor: pointer;
+    }
+
+    .visit-submit:disabled { opacity: .6; cursor: progress; }
+
+    @media (max-width: 560px) {
+      .visit-modal { padding: 10px; align-items: flex-end; }
+      .visit-dialog { padding: 30px 20px 24px; max-height: calc(100dvh - 20px); }
+      .visit-row { grid-template-columns: 1fr; }
+      .visit-submit { align-self: stretch; text-align: center; }
+    }
+
     .camp-media-4 img { cursor: zoom-in; }
 
     .lightbox {
@@ -2631,7 +3540,7 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
-      object-position: center 35%;
+      object-position: center 60%;
       display: block;
       transition: transform 1.2s cubic-bezier(.16, 1, .3, 1);
     }
@@ -2677,7 +3586,7 @@
 
       .camp-block:not(.camp-block-events) .camp-eyebrow { grid-area: eyebrow; }
       .camp-block:not(.camp-block-events) .camp-title { grid-area: title; margin-bottom: 0; }
-      .camp-block:not(.camp-block-events) .camp-text { grid-area: text; max-width: 620px; font-size: 16px; }
+      .camp-block:not(.camp-block-events) .camp-text { grid-area: text; max-width: 680px; font-size: 20px; line-height: 1.6; }
 
       .camp-media-4 {
         gap: 18px;
@@ -2706,8 +3615,21 @@
         <a href="#session" data-i18n="nav_session">La sesión</a>
         <a href="#artists" data-i18n="nav_artists">Artistas</a>
         <a href="#releases" data-i18n="nav_releases">Lanzamientos</a>
-        <a href="#camps" data-i18n="nav_camps">Camps</a>
-        <a href="#services" data-i18n="nav_services">Servicios</a>
+        <div class="nav-drop">
+          <button type="button" class="nav-drop-btn" id="navOppsBtn" aria-expanded="false" aria-haspopup="true" aria-controls="navOppsMenu"><span data-i18n="nav_opps">Oportunidades</span><span class="nav-drop-caret" aria-hidden="true">▾</span></button>
+          <div class="nav-drop-menu" id="navOppsMenu">
+            <a href="#camps"><span data-i18n="nav_camps">Camps</span><img class="nav-drop-logo" src="assets/camps/zeche-gruv-camp-logo-mini.webp" alt="" width="115" height="96" decoding="async"></a>
+            <a href="#events"><span data-i18n="nav_events">Shows y open mic</span><img class="nav-drop-logo" src="assets/camps/zeche-gruv-shows-logo-mini.webp" alt="" width="87" height="96" decoding="async"></a>
+          </div>
+        </div>
+        <div class="nav-drop nav-drop-right">
+          <button type="button" class="nav-drop-btn" aria-expanded="false" aria-haspopup="true" aria-controls="navServicesMenu"><span data-i18n="nav_services">Servicios</span><span class="nav-drop-caret" aria-hidden="true">▾</span></button>
+          <div class="nav-drop-menu" id="navServicesMenu">
+            <a href="#memberships" data-i18n="nav_memberships">Desarrollo artístico</a>
+            <a href="#individual-services" data-i18n="nav_individual">Servicios individuales</a>
+            <a href="#beat-catalog" id="navBeatsLink" data-i18n="nav_beats">Catálogo de beats</a>
+          </div>
+        </div>
         <a href="#contact" data-i18n="nav_contact">Contacto</a>
       </div>
 
@@ -2726,6 +3648,53 @@
       <span></span><span></span><span></span>
     </button>
   </nav>
+
+  <!-- ================= VISITA AL ESTUDIO: formulario previo a la agenda ================= -->
+  <!-- Los datos se guardan con Netlify Forms (form "visita-estudio") y después
+       se lleva a la persona a la agenda (ver VISIT_BOOKING_URL en el script). -->
+  <div class="visit-modal" id="visitModal" aria-hidden="true">
+    <div class="visit-dialog" role="dialog" aria-modal="true" aria-labelledby="visitTitle">
+      <button type="button" class="visit-close" id="visitClose" aria-label="Cerrar">×</button>
+      <div class="camp-eyebrow" data-i18n="visit_eyebrow">Visita al estudio</div>
+      <h2 class="visit-title" id="visitTitle" data-i18n="visit_title">Vení a conocer el estudio</h2>
+      <p class="visit-intro" data-i18n="visit_intro">Contanos quién sos y en el siguiente paso elegís día y horario.</p>
+
+      <form class="visit-form" id="visitForm" name="visita-estudio" method="POST" data-netlify="true" netlify-honeypot="bot-field">
+        <input type="hidden" name="form-name" value="visita-estudio">
+        <input type="hidden" name="idioma" id="visitLang" value="es">
+        <p class="visit-hp" aria-hidden="true"><label>No completar: <input name="bot-field" tabindex="-1" autocomplete="off"></label></p>
+
+        <label class="visit-field">
+          <span data-i18n="visit_name">Nombre artístico</span>
+          <input type="text" name="nombre_artistico" required maxlength="80" autocomplete="nickname">
+        </label>
+        <div class="visit-row">
+          <label class="visit-field">
+            <span data-i18n="visit_phone">Teléfono (WhatsApp)</span>
+            <input type="tel" name="telefono" required maxlength="30" autocomplete="tel" inputmode="tel">
+          </label>
+          <label class="visit-field">
+            <span data-i18n="visit_email">Mail</span>
+            <input type="email" name="email" required maxlength="120" autocomplete="email">
+          </label>
+        </div>
+        <label class="visit-field">
+          <span data-i18n="visit_ig">Instagram</span>
+          <input type="text" name="instagram" maxlength="60" placeholder="@" autocapitalize="none" spellcheck="false">
+        </label>
+        <label class="visit-field">
+          <span data-i18n="visit_reason">Motivo de la visita</span>
+          <textarea name="motivo" required rows="3" maxlength="600"></textarea>
+        </label>
+        <label class="visit-check">
+          <input type="checkbox" name="novedades" value="si">
+          <span data-i18n="visit_news">Quiero recibir novedades de ZECHE GRUV por mail.</span>
+        </label>
+
+        <button class="btn btn-primary visit-submit" type="submit" id="visitSubmit" data-i18n="visit_submit">Continuar y elegir horario ↗</button>
+      </form>
+    </div>
+  </div>
 
   <!-- ================= HERO ================= -->
   <header class="hero">
@@ -2774,7 +3743,7 @@
           Sello Discográfico independiente y productora. Desarrollo artístico integral, composición, grabación, producción, mezcla, mastering, distribución, portada y video, sesión a sesión, con <a href="https://open.spotify.com/intl-es/artist/0yIGrWjWqKnM7qJ0uyImij" target="_blank" rel="noopener">Yaco Santana</a>.
         </p>
         <div class="buttons hero-buttons">
-          <a class="btn btn-primary" href="https://wa.me/5491133287422?text=Hola%20ZECHE%20GRUV!%20Quiero%20ir%20a%20conocer%20el%20estudio%20%F0%9F%99%8C" target="_blank" rel="noopener" data-i18n="hero_cta_primary">Vení a conocer el estudio ↗</a>
+          <a class="btn btn-primary" href="https://wa.me/5491133287422?text=Hola%20ZECHE%20GRUV!%20Quiero%20ir%20a%20conocer%20el%20estudio%20%F0%9F%99%8C" target="_blank" rel="noopener" data-visit-open data-i18n="hero_cta_primary">Vení a conocer el estudio ↗</a>
           <a class="btn" href="https://open.spotify.com/playlist/1FbK9IaTCJMCtTLQSg7ayI" target="_blank" rel="noopener" data-i18n="hero_cta_secondary">Escuchá el sello</a>
         </div>
       </div>
@@ -2790,13 +3759,13 @@
       <div class="label-main">
         <h2 class="section-title" data-i18n-html="st_label_html">Un estudio que<br>se siente casa.</h2>
         <p class="label-text" data-i18n-html="label_intro_html">
-          ZECHE GRUV empezó en mi cuarto. Para hacer lugar parábamos el colchón contra la pared, lo decorábamos un poco y, de paso, nos servía de aislante. No era el estudio más profesional del mundo, pero grabábamos igual, con lo que teníamos y muchas ganas. Hoy somos un sello independiente con créditos en más de 35 canciones publicadas, y ya pasaron más de 200 artistas por el estudio.
+          ZECHE GRUV nació en una habitación. Para hacer lugar, el colchón iba parado contra la pared y, de paso, servía de aislante. No era el estudio más profesional del mundo, pero se grababa igual, con lo que había y muchas ganas. Hoy somos un sello independiente con créditos en más de 35 canciones publicadas, y por el estudio ya pasaron más de 200 artistas.
         </p>
       </div>
 
       <aside class="label-aside">
         <figure class="label-photo">
-          <img src="assets/studio/zeche-estudio.webp" alt="Yaco Santana (Zeche) sonriendo en el estudio de ZECHE GRUV, con auriculares, guitarras y teclados detrás, bajo luz cálida" width="600" height="750" loading="lazy" decoding="async">
+          <img src="assets/studio/estudio-sala.webp" alt="El estudio de ZECHE GRUV: escritorio con monitores, silla naranja, guitarras y bajo colgados en la pared, teclados, plantas y paneles acústicos bajo luz azul" width="600" height="750" loading="lazy" decoding="async">
         </figure>
         <div class="label-side" data-i18n-html="label_side">
         <p>Lo que no cambió es la forma de trabajar: no venimos a cambiar tu idea, venimos a traducirla. Si algo está fuera de tiempo, lo acomodamos para que suene como lo escuchás en tu cabeza. Buscamos el equilibrio entre lo orgánico, lo experimental y una vueltita que haga que tu canción llegue a más gente.</p>
@@ -2812,8 +3781,8 @@
         <div class="label-director-name">Yaco Santana <span class="label-director-age" id="yacoAge"></span></div>
         <div class="label-director-role" data-i18n="label_director_role">Fundador y director</div>
         <div class="label-director-bio" data-i18n-html="label_director_bio">
-          <p>Nací en Brasil y crecí viajando por Latinoamérica entre tambores y las canciones que me cantaba mi mamá. Me formé en el conservatorio y en la Escuela de Música de Buenos Aires, hice un curso de producción y aprendí a grabar de manera autodidacta. Trabajé de lo que fuera, hasta que un día dejé el trabajo que me hacía infeliz y le aposté todo a la música, que es lo que de verdad me mueve. Hoy vivo de eso.</p>
-          <p>Estudié y escuché mucha música: del clásico al folclore, del trap al metal. Por eso me encantan las mezclas raras; si tenés una en la cabeza, la podemos hacer. Estoy en cada sesión, de la primera idea al lanzamiento.</p>
+          <p>Yaco Santana nació en Brasil y creció viajando por Latinoamérica, entre tambores y las canciones que le cantaba su madre. Se formó en el conservatorio, estudió Producción Musical en la Escuela de Música de Buenos Aires y profundizó su aprendizaje de manera autodidacta. Tras varios años en otros trabajos, decidió dedicarse por completo a la música, y hoy vive de ella.</p>
+          <p>Su formación y su escucha van del clásico al folclore y del trap al metal; de ahí su afinidad por las fusiones poco convencionales. Acompaña personalmente cada sesión, desde la primera idea hasta el lanzamiento.</p>
         </div>
       </div>
     </div>
@@ -2836,7 +3805,7 @@
   <section id="session">
     <div class="section-label">02 / <span data-i18n="sl_session">Cómo es una sesión</span></div>
     <h2 class="section-title" data-i18n-html="st_session_html">Tu canción,<br>sesión a sesión.</h2>
-    <p class="section-intro" data-i18n="session_intro">Una vez por semana, dos horas, un tema por mes. Sin apuro, con dirección.</p>
+    <p class="section-intro session-intro" data-i18n="session_intro">Una vez por semana, dos horas, un tema por mes. Sin apuro, con dirección.</p>
 
     <div class="session-grid">
       <article class="session-card">
@@ -2886,8 +3855,8 @@
     </div>
 
     <div class="session-outro">
-      <p data-i18n="session_outro">Después viene la distribución y, si querés, el video. Y seguimos: ideas de contenido, live sessions, open mics y recomendaciones para shows.</p>
-      <a class="btn btn-primary" href="https://wa.me/5491133287422?text=Hola%20ZECHE%20GRUV!%20Quiero%20ir%20a%20conocer%20el%20estudio%20%F0%9F%99%8C" target="_blank" rel="noopener" data-i18n="hero_cta_primary">Vení a conocer el estudio ↗</a>
+      <p data-i18n="session_outro">Después viene la distribución y, si querés, el video.</p>
+      <a class="btn btn-primary" href="https://wa.me/5491133287422?text=Hola%20ZECHE%20GRUV!%20Quiero%20ir%20a%20conocer%20el%20estudio%20%F0%9F%99%8C" target="_blank" rel="noopener" data-visit-open data-i18n="hero_cta_primary">Vení a conocer el estudio ↗</a>
     </div>
   </section>
 
@@ -3062,13 +4031,16 @@
 
   <!-- ================= CAMPS Y EVENTOS ================= -->
   <section id="camps" class="camps-section">
-    <div class="section-label">06 / <span data-i18n="sl_camps">Camps y eventos</span></div>
-    <h2 class="section-title" data-i18n-html="st_camps_html">Nos juntamos<br>a crear.</h2>
+    <div class="camps-head">
+      <div class="section-label">06 / <span data-i18n="sl_camps">Camps y eventos</span></div>
+      <h2 class="section-title" data-i18n-html="st_camps_html">Nos juntamos<br>a crear.</h2>
+      <img class="camp-logo" src="assets/camps/zeche-gruv-camp-logo.webp" alt="Logo de ZECHE GRUV Camp: una carpa entre pinos con un sol detrás" width="900" height="750" loading="lazy" decoding="async">
+    </div>
 
     <div class="camp-block">
       <div class="camp-copy">
         <div class="camp-eyebrow" data-i18n="camp_eyebrow">Camp</div>
-        <h3 class="camp-title">ZECHE GRUV Campamento Creativo</h3>
+        <h3 class="camp-title" data-i18n="camp_title">ZECHE GRUV Campamento Creativo</h3>
         <p class="camp-text" data-i18n="camp_text">Nos vamos unos días a crear juntos: varios estudios, artistas de todos lados y música a toda hora. Estamos armando la próxima fecha; muy pronto vas a poder anotarte acá.</p>
       </div>
       <div class="camp-media camp-media-4">
@@ -3077,15 +4049,118 @@
         <img class="" src="assets/camps/camp-3-600.webp" srcset="assets/camps/camp-3-600.webp 600w, assets/camps/camp-3.webp 1200w" sizes="(max-width: 800px) 45vw, 22vw" alt="ZECHE GRUV Campamento Creativo — produciendo" width="1200" height="1500" loading="lazy" decoding="async">
         <img class="" src="assets/camps/camp-4-600.webp" srcset="assets/camps/camp-4-600.webp 600w, assets/camps/camp-4.webp 1200w" sizes="(max-width: 800px) 45vw, 22vw" alt="ZECHE GRUV Campamento Creativo — artistas del camp" width="1200" height="1500" loading="lazy" decoding="async">
       </div>
+      <div class="camp-showcase">
+      <div class="camp-videos">
+        <figure class="camp-video camp-video-side camp-video-l">
+          <video src="assets/camps/camp-artistas.mp4" poster="assets/camps/camp-artistas-poster.webp" width="720" height="1280" muted loop playsinline preload="none" aria-label="ZECHE GRUV Campamento Creativo — los artistas del camp alrededor de la mesa"></video>
+          <figcaption><span class="camp-video-num">01</span><span data-i18n="camp_video_1">La juntada</span></figcaption>
+          <span class="camp-video-bar" aria-hidden="true"><i></i></span>
+        </figure>
+        <figure class="camp-video camp-video-main">
+          <video src="assets/camps/camp-compilado.mp4" poster="assets/camps/camp-compilado-poster.webp" width="720" height="1280" muted loop playsinline preload="none" aria-label="ZECHE GRUV Campamento Creativo — compilado del camp"></video>
+          <figcaption><span class="camp-video-num">02</span><span data-i18n="camp_video_2">Así se vive el camp</span></figcaption>
+          <span class="camp-video-bar" aria-hidden="true"><i></i></span>
+        </figure>
+        <figure class="camp-video camp-video-side camp-video-r">
+          <video src="assets/camps/camp-comida.mp4" poster="assets/camps/camp-comida-poster.webp" width="720" height="1280" muted loop playsinline preload="none" aria-label="ZECHE GRUV Campamento Creativo — la comida del camp"></video>
+          <figcaption><span class="camp-video-num">03</span><span data-i18n="camp_video_3">Se come rico</span></figcaption>
+          <span class="camp-video-bar" aria-hidden="true"><i></i></span>
+        </figure>
+      </div>
+      <div class="camp-credits">
+        <div class="camp-lineup">
+          <div class="camp-eyebrow" data-i18n="camp_lineup_label">Algunos de los artistas del primer camp</div>
+          <ul class="camp-lineup-list">
+            <li><a href="artistas/kires.html">Kires</a></li>
+            <li><a href="artistas/rouse-bby.html">Rouse bby</a></li>
+            <li><a href="artistas/pazz.html">Pazz</a></li>
+            <li><a href="artistas/lowkey-santo.html">Lowkey Santo</a></li>
+            <li><a href="artistas/borja-trece.html">Borja Trece</a></li>
+            <li><a href="artistas/jugo-solar.html">Jugo Solar</a></li>
+            <li><span>Mila Montiel</span></li>
+            <li><span>Zua Suarez</span></li>
+            <li><a href="artistas/axia-bebe.html">Axia Bebe</a></li>
+            <li><span>Cami Machin</span></li>
+            <li><span>Pussy Guarras</span></li>
+            <li><a href="artistas/br1.html">BR1</a></li>
+            <li><a href="artistas/casteyano.html">Casteyano</a></li>
+            <li><span>Mila Bellami</span></li>
+            <li><a href="artistas/lusan.html">Lusan</a></li>
+            <li><a href="artistas/maki.html">Maki</a></li>
+            <li><a href="artistas/bhae.html">Bhae</a></li>
+            <li><a href="artistas/anita-pau.html">Anita Pau</a></li>
+            <li><span>Wavn</span></li>
+            <li><span>JablonK</span></li>
+            <li><a href="artistas/pastelita.html">Pastelita</a></li>
+          </ul>
+        </div>
+        <dl class="camp-thanks">
+          <div>
+            <dt data-i18n="camp_press_label">Prensa</dt>
+            <dd><a href="https://www.instagram.com/delunderparaelunder/" target="_blank" rel="noopener">Del Under Para el Under</a></dd>
+            <dd><a href="https://www.instagram.com/all.santoz/" target="_blank" rel="noopener">All Santoz</a></dd>
+            <dd><a href="https://www.instagram.com/newblood.ok/" target="_blank" rel="noopener">New Blood</a></dd>
+          </div>
+          <div>
+            <dt data-i18n="camp_food_label">Comida japonesa, cortesía de</dt>
+            <dd><a href="https://www.instagram.com/ronin.vd/" target="_blank" rel="noopener">Ronin.vd</a></dd>
+          </div>
+          <div>
+            <dt data-i18n="camp_hair_label">Cortes de pelo</dt>
+            <dd><a href="https://www.instagram.com/cocorapadook/" target="_blank" rel="noopener">Cocorapadook</a></dd>
+          </div>
+          <div>
+            <dt data-i18n="camp_prod_label">Producido y llevado a cabo por</dt>
+            <dd>ZECHE GRUV</dd>
+          </div>
+        </dl>
+      </div>
+      </div>
     </div>
 
-    <div class="camp-block camp-block-events">
+    <div class="camp-block camp-block-events" id="events">
+      <div class="events-head">
+        <h2 class="section-title" data-i18n-html="st_events_html">El escenario<br>es tuyo.</h2>
+        <img class="events-logo" src="assets/camps/zeche-gruv-shows-logo.webp" alt="Logo de ZECHE GRUV Shows &amp; Open Mic: un sol con estrellas y un micrófono" width="817" height="900" loading="lazy" decoding="async">
+      </div>
       <div class="camp-copy">
         <div class="camp-eyebrow" data-i18n="events_eyebrow">Eventos</div>
         <h3 class="camp-title" data-i18n="events_title">Shows y open mics</h3>
       </div>
       <div class="events-copy">
         <p class="camp-text" data-i18n="events_text">El open mic es nuestra forma de escuchar nuevos talentos. Es el espacio que desde ZECHE GRUV les damos a los artistas que trabajan con nosotros para que se expresen, y una puerta abierta para los que todavía no nos conocen: vení, conectate y mostrá lo que hacés. Si cantás en el open mic, podés ser parte del próximo show. Fechas pronto acá.</p>
+      </div>
+      <div class="events-lineup">
+        <div>
+          <div class="camp-eyebrow" data-i18n="events_shows_label">Shows</div>
+          <ul class="camp-lineup-list">
+            <li><a href="artistas/kires.html">Kires</a></li>
+            <li><a href="artistas/bhae.html">Bhae</a></li>
+            <li><a href="artistas/anita-pau.html">Anita Pau</a></li>
+            <li><a href="artistas/yaco-santana.html">Yaco Santana</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="camp-eyebrow" data-i18n="events_openmic_label">Open mic · algunos de los que se presentaron</div>
+          <ul class="camp-lineup-list">
+            <li><a href="artistas/jugo-solar.html">Jugo Solar</a></li>
+            <li><span>Mila Montiel</span></li>
+            <li><span>Bastian264</span></li>
+            <li><span>Kaino</span></li>
+          </ul>
+        </div>
+      </div>
+      <div class="events-videos">
+        <figure class="event-video">
+          <video src="assets/events/show-jugo-solar.mp4" poster="assets/events/show-jugo-solar-poster.webp" width="1280" height="720" muted loop playsinline preload="none" aria-label="Jugo Solar en vivo en un show de ZECHE GRUV"></video>
+          <figcaption><span class="camp-video-num">01</span><a href="artistas/jugo-solar.html">Jugo Solar</a><span class="event-video-tag">Open mic</span></figcaption>
+          <span class="camp-video-bar" aria-hidden="true"><i></i></span>
+        </figure>
+        <figure class="event-video">
+          <video src="assets/events/show-yaco-santana.mp4" poster="assets/events/show-yaco-santana-poster.webp" width="1280" height="720" muted loop playsinline preload="none" aria-label="Yaco Santana en vivo en un show de ZECHE GRUV"></video>
+          <figcaption><span class="camp-video-num">02</span><a href="artistas/yaco-santana.html">Yaco Santana</a><span class="event-video-tag">Show</span></figcaption>
+          <span class="camp-video-bar" aria-hidden="true"><i></i></span>
+        </figure>
       </div>
     </div>
   </section>
@@ -3097,6 +4172,7 @@
     <p class="section-intro" data-i18n="services_intro">Trabajamos por proyecto porque las canciones necesitan tiempo. Cuantas más canciones hagamos juntos, menos te sale cada una.</p>
 
     <!-- ---- Packages ---- -->
+    <h3 class="services-subhead" id="memberships" data-i18n="nav_memberships">Desarrollo artístico</h3>
     <div class="packages-grid">
       <div class="package-card package-custom">
         <div class="package-name" data-i18n="pkg_custom_name">🧩 PERSONALIZADO</div>
@@ -3115,12 +4191,12 @@
         <div class="package-addons" id="single-addons">
           <label class="package-check-row">
             <input type="checkbox" data-addon="video">
-            <span data-i18n="pkg_addon_video">Sumar video</span>
+            <span data-i18n="pkg_addon_video">Video</span>
             <span class="pc-price"></span>
           </label>
           <label class="package-check-row">
             <input type="checkbox" data-addon="cover">
-            <span data-i18n="pkg_addon_cover">Sumar portada</span>
+            <span data-i18n="pkg_addon_cover">Portada</span>
             <span class="pc-price"></span>
           </label>
         </div>
@@ -3148,12 +4224,12 @@
         <div class="package-addons" id="epalbum-addons">
           <label class="package-check-row">
             <input type="checkbox" data-addon="video">
-            <span data-i18n="pkg_addon_video">Sumar video</span>
+            <span data-i18n="pkg_addon_video">Video</span>
             <span class="pc-price"></span>
           </label>
           <label class="package-check-row">
             <input type="checkbox" data-addon="cover">
-            <span data-i18n="pkg_addon_cover">Sumar portada</span>
+            <span data-i18n="pkg_addon_cover">Portada</span>
             <span class="pc-price"></span>
           </label>
         </div>
@@ -3175,6 +4251,7 @@
       </ul>
     </div>
 
+    <h3 class="services-subhead" id="individual-services" data-i18n="nav_individual">Servicios individuales</h3>
     <div class="services-alacarte-title" data-i18n="alacarte_title">¿Preferís armar todo por tu cuenta? Elegí servicios sueltos:</div>
     <div class="services-grid" id="services-grid"></div>
   </section>
@@ -3448,11 +4525,14 @@
 
     const servicesGrid = document.getElementById("services-grid");
 
+    // El botón "Catálogo de beats" del menú lleva a la tarjeta y abre el buscador.
+    document.getElementById("navBeatsLink")?.addEventListener("click", () => setBeatPanelOpen(true));
+
     function renderServiceCards() {
       const t = I18N[currentLang];
 
       const fixedCards = SERVICES.map((s, i) => `
-        <div class="service-card">
+        <div class="service-card"${s.key === "instrumental_catalogo" ? ' id="beat-catalog"' : ""}>
           <div class="service-top">
             <div class="service-name">${t.svc[s.key].name}</div>
           </div>
@@ -3656,26 +4736,93 @@
       else customListEl.setAttribute("hidden", "");
     });
 
+    // Cantidad elegida de cada servicio (mismo orden que SERVICES). Se guarda
+    // acá para que no se pierda al cambiar de idioma.
+    const customQty = SERVICES.map(() => 0);
+    const CUSTOM_QTY_MAX = 20;
+    // Beats del catálogo elegidos dentro del pack personalizado: como mucho
+    // tantos como "Instrumental de catálogo" se hayan sumado.
+    const CUSTOM_BEAT_INDEX = SERVICES.findIndex((sv) => sv.key === "instrumental_catalogo");
+    let customBeats = [];
+
+    function renderCustomBeats() {
+      const box = document.getElementById("custom-beats");
+      if (!box) return;
+      const t = I18N[currentLang];
+      const limit = customQty[CUSTOM_BEAT_INDEX] || 0;
+      customBeats = customBeats.filter((name) => BEAT_CATALOG.beats.includes(name)).slice(0, limit);
+      box.toggleAttribute("hidden", !limit || !BEAT_CATALOG.beats.length);
+      if (!limit) { box.innerHTML = ""; return; }
+      const full = customBeats.length >= limit;
+      const viewLink = BEAT_CATALOG.url
+        ? `<a class="package-beats-link" href="${escHtml(BEAT_CATALOG.url)}" target="_blank" rel="noopener">${t.beat_view_catalog}</a>`
+        : "";
+      box.innerHTML = `
+        <div class="package-beats-head">
+          <span>${t.custom_beats_label} <b>${customBeats.length} / ${limit}</b></span>
+          ${viewLink}
+        </div>
+        <div class="beat-list">
+          ${BEAT_CATALOG.beats.map((name, k) => {
+            const on = customBeats.includes(name);
+            return `<button type="button" class="beat-item custom-beat-item${on ? " is-active" : ""}" data-beat="${k}" aria-pressed="${on}"${!on && full ? " disabled" : ""}>${escHtml(name)}</button>`;
+          }).join("")}
+        </div>`;
+    }
+
     function renderCustomChecklist() {
       const t = I18N[currentLang];
       customListEl.innerHTML = SERVICES.map((s, i) => `
-        <label class="package-check-row">
-          <input type="checkbox" value="${i}">
-          <span>${t.svc[s.key].name}</span>
-          <span class="pc-price">${s.price}</span>
-        </label>
+        <div class="package-qty-row${customQty[i] ? " is-picked" : ""}" data-index="${i}">
+          <div class="package-qty-info">
+            <span>${t.svc[s.key].name}</span>
+            <span class="pc-price">${s.price}</span>
+          </div>
+          <div class="package-qty" role="group" aria-label="${t.svc[s.key].name}">
+            <button type="button" class="package-qty-btn" data-step="-1" aria-label="−"${customQty[i] ? "" : " disabled"}>−</button>
+            <output class="package-qty-value" aria-live="polite">${customQty[i]}</output>
+            <button type="button" class="package-qty-btn" data-step="1" aria-label="+"${customQty[i] >= CUSTOM_QTY_MAX ? " disabled" : ""}>+</button>
+          </div>
+        </div>${i === CUSTOM_BEAT_INDEX ? '<div class="package-beats" id="custom-beats" hidden></div>' : ""}
       `).join("");
+      renderCustomBeats();
     }
 
+    customListEl.addEventListener("click", (event) => {
+      const beatBtn = event.target.closest(".custom-beat-item");
+      if (beatBtn) {
+        const name = BEAT_CATALOG.beats[+beatBtn.dataset.beat];
+        if (customBeats.includes(name)) customBeats = customBeats.filter((n) => n !== name);
+        else if (customBeats.length < customQty[CUSTOM_BEAT_INDEX]) customBeats.push(name);
+        renderCustomBeats();
+        return;
+      }
+      const btn = event.target.closest(".package-qty-btn");
+      if (!btn) return;
+      const row = btn.closest(".package-qty-row");
+      const i = +row.dataset.index;
+      customQty[i] = Math.max(0, Math.min(CUSTOM_QTY_MAX, customQty[i] + (+btn.dataset.step)));
+      row.classList.toggle("is-picked", customQty[i] > 0);
+      row.querySelector(".package-qty-value").textContent = customQty[i];
+      row.querySelector('[data-step="-1"]').disabled = customQty[i] === 0;
+      row.querySelector('[data-step="1"]').disabled = customQty[i] >= CUSTOM_QTY_MAX;
+      if (i === CUSTOM_BEAT_INDEX) renderCustomBeats();
+      if (customQty.some(Boolean)) customHintEl.classList.remove("is-visible");
+    });
+
     document.getElementById("custom-quote-btn").addEventListener("click", () => {
-      const checked = Array.from(customListEl.querySelectorAll("input:checked"));
-      if (!checked.length) {
+      const picked = SERVICES.map((sv, i) => ({ name: sv.name, qty: customQty[i], i })).filter((x) => x.qty > 0);
+      if (!picked.length) {
         customHintEl.classList.add("is-visible");
+        if (customListEl.hasAttribute("hidden")) customListEl.removeAttribute("hidden");
         return;
       }
       customHintEl.classList.remove("is-visible");
-      const names = checked.map(c => SERVICES[+c.value.trim() || +c.value].name);
-      const msg = `Hola! Quiero armar un paquete con estos servicios:\n- ${names.join("\n- ")}\n\n¿Me pasás una cotización?`;
+      const lines = picked.map((x) => {
+        const beats = x.i === CUSTOM_BEAT_INDEX && customBeats.length ? ` (beats: ${customBeats.join(", ")})` : "";
+        return `- ${x.qty} × ${x.name}${beats}`;
+      });
+      const msg = `Hola! Quiero armar un paquete con estos servicios:\n${lines.join("\n")}\n\n¿Me pasás una cotización?`;
       window.open(waLink(msg), "_blank", "noopener");
     });
 
@@ -3712,7 +4859,9 @@
         const free = pack === "album" && key === "cover" && withVideo;
         const price = free ? 0 : addonPrice(key, pack);
         const priceEl = input.closest(".package-check-row").querySelector(".pc-price");
-        if (free) priceEl.innerHTML = `<s>${fmtARS(ADDONS[key].price)}</s>${t.pkg_addon_free}`;
+        // Sin formato elegido (EP / Álbum) todavía no se muestra ningún precio.
+        if (!pack) priceEl.innerHTML = "";
+        else if (free) priceEl.innerHTML = `<s>${fmtARS(ADDONS[key].price)}</s>${t.pkg_addon_free}`;
         else if (price < ADDONS[key].price) priceEl.innerHTML = `<s>${fmtARS(ADDONS[key].price)}</s>+${fmtARS(price)}`;
         else priceEl.innerHTML = `+${fmtARS(price)}`;
         if (input.checked) picked.push({ label: ADDONS[key].label, price });
@@ -3835,18 +4984,35 @@
         nav_artists: "Artistas",
         nav_releases: "Lanzamientos",
         nav_camps: "Camps",
+        nav_opps: "Oportunidades",
+        nav_events: "Shows y open mic",
         nav_services: "Servicios",
+        nav_memberships: "Desarrollo artístico",
+        nav_individual: "Servicios individuales",
+        nav_beats: "Catálogo de beats",
+        custom_beats_label: "Elegí tus beats",
         nav_contact: "Contacto",
         hero_title: "Encontrá tu ADN sonoro.",
         hero_desc_html: "Sello Discográfico independiente y productora. Desarrollo artístico integral, composición, grabación, producción, mezcla, mastering, distribución, portada y video, sesión a sesión, con <a href=\"https://open.spotify.com/intl-es/artist/0yIGrWjWqKnM7qJ0uyImij\" target=\"_blank\" rel=\"noopener\">Yaco Santana</a>.",
         hero_cta_primary: "Vení a conocer el estudio ↗",
+        visit_eyebrow: "Visita al estudio",
+        visit_title: "Vení a conocer el estudio",
+        visit_intro: "Contanos quién sos y en el siguiente paso elegís día y horario.",
+        visit_name: "Nombre artístico",
+        visit_phone: "Teléfono (WhatsApp)",
+        visit_email: "Mail",
+        visit_ig: "Instagram",
+        visit_reason: "Motivo de la visita",
+        visit_news: "Quiero recibir novedades de ZECHE GRUV por mail.",
+        visit_submit: "Continuar y elegir horario ↗",
+        visit_sending: "Enviando…",
         hero_cta_secondary: "Escuchá el sello",
         sl_label: "Quiénes somos",
         st_label_html: "Un estudio que<br>se siente casa.",
-        label_intro_html: "ZECHE GRUV empezó en mi cuarto. Para hacer lugar parábamos el colchón contra la pared, lo decorábamos un poco y, de paso, nos servía de aislante. No era el estudio más profesional del mundo, pero grabábamos igual, con lo que teníamos y muchas ganas. Hoy somos un sello independiente con créditos en más de 35 canciones publicadas, y ya pasaron más de 200 artistas por el estudio.",
+        label_intro_html: "ZECHE GRUV nació en una habitación. Para hacer lugar, el colchón iba parado contra la pared y, de paso, servía de aislante. No era el estudio más profesional del mundo, pero se grababa igual, con lo que había y muchas ganas. Hoy somos un sello independiente con créditos en más de 35 canciones publicadas, y por el estudio ya pasaron más de 200 artistas.",
         label_side: "<p>Lo que no cambió es la forma de trabajar: no venimos a cambiar tu idea, venimos a traducirla. Si algo está fuera de tiempo, lo acomodamos para que suene como lo escuchás en tu cabeza. Buscamos el equilibrio entre lo orgánico, lo experimental y una vueltita que haga que tu canción llegue a más gente.</p><p>Acá hay plantas, luces cálidas, desayuno o merienda. Y no vivimos corriendo contra el reloj: si estamos cerca de la toma perfecta, nos tomamos unos minutos más para encontrarla.</p>",
         label_director_role: "Fundador y director",
-        label_director_bio: "<p>Nací en Brasil y crecí viajando por Latinoamérica entre tambores y las canciones que me cantaba mi mamá. Me formé en el conservatorio y en la Escuela de Música de Buenos Aires, hice un curso de producción y aprendí a grabar de manera autodidacta. Trabajé de lo que fuera, hasta que un día dejé el trabajo que me hacía infeliz y le aposté todo a la música, que es lo que de verdad me mueve. Hoy vivo de eso.</p><p>Estudié y escuché mucha música: del clásico al folclore, del trap al metal. Por eso me encantan las mezclas raras; si tenés una en la cabeza, la podemos hacer. Estoy en cada sesión, de la primera idea al lanzamiento.</p>",
+        label_director_bio: "<p>Yaco Santana nació en Brasil y creció viajando por Latinoamérica, entre tambores y las canciones que le cantaba su madre. Se formó en el conservatorio, estudió Producción Musical en la Escuela de Música de Buenos Aires y profundizó su aprendizaje de manera autodidacta. Tras varios años en otros trabajos, decidió dedicarse por completo a la música, y hoy vive de ella.</p><p>Su formación y su escucha van del clásico al folclore y del trap al metal; de ahí su afinidad por las fusiones poco convencionales. Acompaña personalmente cada sesión, desde la primera idea hasta el lanzamiento.</p>",
         sl_session: "Cómo es una sesión",
         st_session_html: "Tu canción,<br>sesión a sesión.",
         session_intro: "Una vez por semana, dos horas, un tema por mes. Sin apuro, con dirección.",
@@ -3862,7 +5028,7 @@
         session_step3_text: "Te acompaño en cada toma: sacar más la voz, ponerle aire, encontrar el flow.",
         session_step4_title: "La forma final",
         session_step4_text: "Arreglos, detalles y la canción lista para mezcla y mastering.",
-        session_outro: "Después viene la distribución y, si querés, el video. Y seguimos: ideas de contenido, live sessions, open mics y recomendaciones para shows.",
+        session_outro: "Después viene la distribución y, si querés, el video.",
         session_photo_soon: "Foto próximamente",
         sl_testimonials: "Lo que dicen los artistas",
         st_testimonials_html: "Lo que dicen<br>los artistas.",
@@ -3877,10 +5043,22 @@
         st_full_catalogue_html: "Todo el<br>catálogo.",
         sl_camps: "Camps y eventos",
         st_camps_html: "Nos juntamos<br>a crear.",
+        st_events_html: "El escenario<br>es tuyo.",
         camp_eyebrow: "Camp",
+        camp_title: "ZECHE GRUV Campamento Creativo",
         camp_text: "Nos vamos unos días a crear juntos: varios estudios, artistas de todos lados y música a toda hora. Estamos armando la próxima fecha; muy pronto vas a poder anotarte acá.",
+        camp_lineup_label: "Algunos de los artistas del primer camp",
+        camp_press_label: "Prensa",
+        camp_food_label: "Comida japonesa, cortesía de",
+        camp_hair_label: "Cortes de pelo",
+        camp_prod_label: "Producido y llevado a cabo por",
+        camp_video_1: "La juntada",
+        camp_video_2: "Así se vive el camp",
+        camp_video_3: "Se come rico",
         events_eyebrow: "Eventos",
         events_title: "Shows y open mics",
+        events_shows_label: "Shows",
+        events_openmic_label: "Open mic · algunos de los que se presentaron",
         events_text: "El open mic es nuestra forma de escuchar nuevos talentos. Es el espacio que desde ZECHE GRUV les damos a los artistas que trabajan con nosotros para que se expresen, y una puerta abierta para los que todavía no nos conocen: vení, conectate y mostrá lo que hacés. Si cantás en el open mic, podés ser parte del próximo show. Fechas pronto acá.",
         sl_services: "Servicios y precios",
         st_services_html: "Elegí cómo<br>querés arrancar.",
@@ -3925,7 +5103,7 @@
         pkg_songs_label: "Cantidad de canciones",
         pkg_epalbum_choose_hint: "Elegí un formato para ver el precio",
         pkg_currency: "ARS", pkg_currency_monthly: "ARS / mes",
-        pkg_addon_video: "Sumar video", pkg_addon_cover: "Sumar portada", pkg_addons_once: "pago único", pkg_addon_free: "Bonificada",
+        pkg_addon_video: "Video", pkg_addon_cover: "Portada", pkg_addons_once: "pago único", pkg_addon_free: "Bonificada",
         beat_view_catalog: "Ver catálogo ↗", beat_pick_btn: "Elegir beat", beat_search_placeholder: "Buscá el beat por nombre…",
         beat_none: "No encontramos un beat con ese nombre.", beat_pick_hint: "Elegí un beat del catálogo para reservarlo.", beat_selected: "Beat elegido:", beat_show_all: "Ver todos los beats",
         alacarte_title: "¿Preferís armar todo por tu cuenta? Elegí servicios sueltos:",
@@ -3963,18 +5141,35 @@
         nav_artists: "Artists",
         nav_releases: "Releases",
         nav_camps: "Camps",
+        nav_opps: "Opportunities",
+        nav_events: "Shows & open mic",
         nav_services: "Services",
+        nav_memberships: "Artist development",
+        nav_individual: "Individual services",
+        nav_beats: "Beat catalogue",
+        custom_beats_label: "Choose your beats",
         nav_contact: "Contact",
         hero_title: "Find your sonic DNA.",
         hero_desc_html: "Independent record label and production house. Full artist development, songwriting, recording, production, mixing, mastering, distribution, cover art and video, session by session, with <a href=\"https://open.spotify.com/intl-es/artist/0yIGrWjWqKnM7qJ0uyImij\" target=\"_blank\" rel=\"noopener\">Yaco Santana</a>.",
         hero_cta_primary: "Come see the studio ↗",
+        visit_eyebrow: "Studio visit",
+        visit_title: "Come see the studio",
+        visit_intro: "Tell us who you are and in the next step you'll pick a day and time.",
+        visit_name: "Artist name",
+        visit_phone: "Phone (WhatsApp)",
+        visit_email: "Email",
+        visit_ig: "Instagram",
+        visit_reason: "Reason for your visit",
+        visit_news: "I'd like to get ZECHE GRUV news by email.",
+        visit_submit: "Continue and pick a time ↗",
+        visit_sending: "Sending…",
         hero_cta_secondary: "Listen to the label",
         sl_label: "About us",
         st_label_html: "A studio that<br>feels like home.",
-        label_intro_html: "ZECHE GRUV started in my bedroom. To make room, we'd stand the mattress up against the wall, decorate it a bit, and it doubled as acoustic insulation. It wasn't the most professional studio in the world, but we recorded anyway, with whatever we had and a lot of heart. Today we're an independent label with credits on more than 35 released songs, and over 200 artists have come through the studio.",
+        label_intro_html: "ZECHE GRUV was born in a bedroom. To make room, the mattress stood up against the wall and doubled as acoustic insulation. It wasn't the most professional studio in the world, but the recording happened anyway, with whatever was at hand and a lot of heart. Today we're an independent label with credits on more than 35 released songs, and over 200 artists have come through the studio.",
         label_side: "<p>What hasn't changed is the way we work: we're not here to change your idea, we're here to translate it. If something's out of time, we tighten it up so it sounds the way you hear it in your head. We look for the balance between organic, experimental and that little twist that helps your song reach more people.</p><p>Here you'll find plants, warm lights, breakfast or an afternoon snack. And we're not racing the clock: if we're close to the perfect take, we'll take a few extra minutes to get it.</p>",
         label_director_role: "Founder & director",
-        label_director_bio: "<p>I was born in Brazil and grew up traveling around Latin America, surrounded by drums and the songs my mom used to sing to me. I trained at the conservatory and at the Escuela de Música de Buenos Aires, took a production course and taught myself to record. I worked whatever jobs I could, until one day I quit the one that was making me unhappy and bet everything on music, the thing that truly moves me. Today I make my living from it.</p><p>I've studied and listened to a lot of music: from classical to Latin folk, from trap to metal. That's why I love unusual blends; if you've got one in your head, we can make it. I'm at every session, from the first idea to the release.</p>",
+        label_director_bio: "<p>Yaco Santana was born in Brazil and grew up traveling around Latin America, surrounded by drums and the songs his mother sang to him. He trained at the conservatory, studied Music Production at the Escuela de Música de Buenos Aires and deepened his craft through self-directed study. After several years in other jobs, he chose to dedicate himself fully to music, and today it is his living.</p><p>His training and listening range from classical to folk and from trap to metal, which explains his affinity for unconventional fusions. He is personally involved in every session, from the first idea to the release.</p>",
         sl_session: "How a session works",
         st_session_html: "Your song,<br>session by session.",
         session_intro: "Once a week, two hours, one song a month. No rush, with direction.",
@@ -3990,7 +5185,7 @@
         session_step3_text: "I'm with you on every take: bringing your voice out more, giving it air, finding the flow.",
         session_step4_title: "The final shape",
         session_step4_text: "Arrangements, details and the song ready for mixing and mastering.",
-        session_outro: "Then comes distribution and, if you want, the video. And we keep going: content ideas, live sessions, open mics and tips for shows.",
+        session_outro: "Then comes distribution and, if you want, the video.",
         session_photo_soon: "Photo coming soon",
         sl_testimonials: "What artists say",
         st_testimonials_html: "What artists<br>say.",
@@ -4005,10 +5200,22 @@
         st_full_catalogue_html: "The whole<br>catalogue.",
         sl_camps: "Camps & events",
         st_camps_html: "We get together<br>to create.",
+        st_events_html: "The stage<br>is yours.",
         camp_eyebrow: "Camp",
+        camp_title: "ZECHE GRUV Creative Camp",
         camp_text: "We get away for a few days to create together: several studios, artists from all over and music around the clock. We're putting together the next date; very soon you'll be able to sign up here.",
+        camp_lineup_label: "Some of the artists from the first camp",
+        camp_press_label: "Press",
+        camp_food_label: "Japanese food, courtesy of",
+        camp_hair_label: "Haircuts",
+        camp_prod_label: "Produced and run by",
+        camp_video_1: "The hangout",
+        camp_video_2: "This is the camp",
+        camp_video_3: "Good food too",
         events_eyebrow: "Events",
         events_title: "Shows & open mics",
+        events_shows_label: "Shows",
+        events_openmic_label: "Open mic · some of the artists who performed",
         events_text: "The open mic is how we discover new talent. It's the space ZECHE GRUV gives the artists we work with to express themselves, and an open door for those who don't know us yet: come by, connect and show what you do. If you sing at the open mic, you could be part of the next show. Dates coming soon.",
         sl_services: "Services & pricing",
         st_services_html: "Choose how<br>you want to start.",
@@ -4052,7 +5259,7 @@
         pkg_songs_label: "Number of songs",
         pkg_epalbum_choose_hint: "Choose a format to see the price",
         pkg_currency: "ARS", pkg_currency_monthly: "ARS / mo",
-        pkg_addon_video: "Add a video", pkg_addon_cover: "Add cover art", pkg_addons_once: "one-time payment", pkg_addon_free: "Free",
+        pkg_addon_video: "Video", pkg_addon_cover: "Cover art", pkg_addons_once: "one-time payment", pkg_addon_free: "Free",
         beat_view_catalog: "View catalogue ↗", beat_pick_btn: "Choose a beat", beat_search_placeholder: "Search the beat by name…",
         beat_none: "No beat found with that name.", beat_pick_hint: "Pick a beat from the catalogue to book it.", beat_selected: "Selected beat:", beat_show_all: "Show all beats",
         includes_3: "Distribution to every platform (editorial playlist pitching for +$30,000, packs only)",
@@ -4091,18 +5298,35 @@
         nav_artists: "Artistas",
         nav_releases: "Lançamentos",
         nav_camps: "Camps",
+        nav_opps: "Oportunidades",
+        nav_events: "Shows e open mic",
         nav_services: "Serviços",
+        nav_memberships: "Desenvolvimento artístico",
+        nav_individual: "Serviços avulsos",
+        nav_beats: "Catálogo de beats",
+        custom_beats_label: "Escolha seus beats",
         nav_contact: "Contato",
         hero_title: "Encontre seu DNA sonoro.",
         hero_desc_html: "Selo discográfico independente e produtora. Desenvolvimento artístico integral, composição, gravação, produção, mixagem, masterização, distribuição, capa e vídeo, sessão por sessão, com <a href=\"https://open.spotify.com/intl-es/artist/0yIGrWjWqKnM7qJ0uyImij\" target=\"_blank\" rel=\"noopener\">Yaco Santana</a>.",
         hero_cta_primary: "Venha conhecer o estúdio ↗",
+        visit_eyebrow: "Visita ao estúdio",
+        visit_title: "Venha conhecer o estúdio",
+        visit_intro: "Conte quem você é e, no próximo passo, escolha dia e horário.",
+        visit_name: "Nome artístico",
+        visit_phone: "Telefone (WhatsApp)",
+        visit_email: "E-mail",
+        visit_ig: "Instagram",
+        visit_reason: "Motivo da visita",
+        visit_news: "Quero receber novidades da ZECHE GRUV por e-mail.",
+        visit_submit: "Continuar e escolher horário ↗",
+        visit_sending: "Enviando…",
         hero_cta_secondary: "Ouça o selo",
         sl_label: "Quem somos",
         st_label_html: "Um estúdio com<br>cara de casa.",
-        label_intro_html: "A ZECHE GRUV começou no meu quarto. Para abrir espaço, a gente encostava o colchão em pé na parede, decorava um pouco e, de quebra, ele servia de isolamento acústico. Não era o estúdio mais profissional do mundo, mas a gente gravava assim mesmo, com o que tinha e muita vontade. Hoje somos um selo independente com créditos em mais de 35 músicas lançadas, e mais de 200 artistas já passaram pelo estúdio.",
+        label_intro_html: "A ZECHE GRUV nasceu em um quarto. Para abrir espaço, o colchão ficava em pé contra a parede e, de quebra, servia de isolamento acústico. Não era o estúdio mais profissional do mundo, mas se gravava assim mesmo, com o que havia e muita vontade. Hoje somos um selo independente com créditos em mais de 35 músicas lançadas, e mais de 200 artistas já passaram pelo estúdio.",
         label_side: "<p>O que não mudou foi o jeito de trabalhar: a gente não vem mudar a sua ideia, vem traduzi-la. Se algo está fora do tempo, a gente ajeita para soar do jeito que você ouve na sua cabeça. Buscamos o equilíbrio entre o orgânico, o experimental e aquele toque a mais que faz sua música chegar em mais gente.</p><p>Aqui tem plantas, luz quente, café da manhã ou lanche da tarde. E a gente não vive correndo contra o relógio: se estamos perto do take perfeito, levamos uns minutos a mais para encontrá-lo.</p>",
         label_director_role: "Fundador e diretor",
-        label_director_bio: "<p>Nasci no Brasil e cresci viajando pela América Latina, entre tambores e as canções que minha mãe cantava para mim. Me formei no conservatório e na Escuela de Música de Buenos Aires, fiz um curso de produção e aprendi a gravar de forma autodidata. Trabalhei no que aparecesse, até que um dia larguei o trabalho que me fazia infeliz e apostei tudo na música, que é o que de verdade me move. Hoje vivo disso.</p><p>Estudei e ouvi muita música: do clássico ao folclore, do trap ao metal. Por isso adoro misturas diferentes; se você tem uma na cabeça, a gente consegue fazer. Estou em cada sessão, da primeira ideia ao lançamento.</p>",
+        label_director_bio: "<p>Yaco Santana nasceu no Brasil e cresceu viajando pela América Latina, entre tambores e as canções que sua mãe cantava para ele. Formou-se no conservatório, estudou Produção Musical na Escuela de Música de Buenos Aires e aprofundou seu aprendizado de forma autodidata. Depois de vários anos em outros trabalhos, decidiu dedicar-se por completo à música, e hoje vive dela.</p><p>Sua formação e sua escuta vão do clássico ao folclore e do trap ao metal; daí sua afinidade com fusões pouco convencionais. Acompanha pessoalmente cada sessão, da primeira ideia ao lançamento.</p>",
         sl_session: "Como é uma sessão",
         st_session_html: "Sua música,<br>sessão por sessão.",
         session_intro: "Uma vez por semana, duas horas, uma música por mês. Sem pressa, com direção.",
@@ -4118,7 +5342,7 @@
         session_step3_text: "Te acompanho em cada take: soltar mais a voz, dar ar, encontrar o flow.",
         session_step4_title: "A forma final",
         session_step4_text: "Arranjos, detalhes e a música pronta para mixagem e masterização.",
-        session_outro: "Depois vem a distribuição e, se você quiser, o clipe. E seguimos juntos: ideias de conteúdo, live sessions, open mics e dicas para shows.",
+        session_outro: "Depois vem a distribuição e, se você quiser, o clipe.",
         session_photo_soon: "Foto em breve",
         sl_testimonials: "O que dizem os artistas",
         st_testimonials_html: "O que dizem<br>os artistas.",
@@ -4133,10 +5357,22 @@
         st_full_catalogue_html: "Todo o<br>catálogo.",
         sl_camps: "Camps e eventos",
         st_camps_html: "A gente se junta<br>para criar.",
+        st_events_html: "O palco<br>é seu.",
         camp_eyebrow: "Camp",
+        camp_title: "ZECHE GRUV Acampamento Criativo",
         camp_text: "A gente vai embora por uns dias para criar junto: vários estúdios, artistas de todo lugar e música o tempo todo. Estamos preparando a próxima data; em breve você vai poder se inscrever aqui.",
+        camp_lineup_label: "Alguns dos artistas do primeiro camp",
+        camp_press_label: "Imprensa",
+        camp_food_label: "Comida japonesa, cortesia de",
+        camp_hair_label: "Cortes de cabelo",
+        camp_prod_label: "Produzido e realizado por",
+        camp_video_1: "O encontro",
+        camp_video_2: "Assim é o camp",
+        camp_video_3: "Come-se bem",
         events_eyebrow: "Eventos",
         events_title: "Shows e open mics",
+        events_shows_label: "Shows",
+        events_openmic_label: "Open mic · alguns dos que se apresentaram",
         events_text: "O open mic é o nosso jeito de ouvir novos talentos. É o espaço que a ZECHE GRUV oferece aos artistas que trabalham com a gente para se expressarem, e uma porta aberta para quem ainda não nos conhece: vem, se conecta e mostra o que você faz. Se você cantar no open mic, pode fazer parte do próximo show. Datas em breve aqui.",
         sl_services: "Serviços e preços",
         st_services_html: "Escolha como<br>quer começar.",
@@ -4180,7 +5416,7 @@
         pkg_songs_label: "Quantidade de músicas",
         pkg_epalbum_choose_hint: "Escolha um formato para ver o preço",
         pkg_currency: "ARS", pkg_currency_monthly: "ARS / mês",
-        pkg_addon_video: "Adicionar vídeo", pkg_addon_cover: "Adicionar capa", pkg_addons_once: "pagamento único", pkg_addon_free: "Bonificada",
+        pkg_addon_video: "Vídeo", pkg_addon_cover: "Capa", pkg_addons_once: "pagamento único", pkg_addon_free: "Bonificada",
         beat_view_catalog: "Ver catálogo ↗", beat_pick_btn: "Escolher beat", beat_search_placeholder: "Busque o beat pelo nome…",
         beat_none: "Não encontramos um beat com esse nome.", beat_pick_hint: "Escolha um beat do catálogo para reservar.", beat_selected: "Beat escolhido:", beat_show_all: "Ver todos os beats",
         includes_3: "Distribuição para todas as plataformas (pitch para playlists editoriais por +$30.000, exclusivo dos pacotes)",
@@ -4219,18 +5455,35 @@
         nav_artists: "Artistes",
         nav_releases: "Sorties",
         nav_camps: "Camps",
+        nav_opps: "Opportunités",
+        nav_events: "Concerts et open mic",
         nav_services: "Services",
+        nav_memberships: "Développement artistique",
+        nav_individual: "Services à l'unité",
+        nav_beats: "Catalogue de beats",
+        custom_beats_label: "Choisis tes beats",
         nav_contact: "Contact",
         hero_title: "Trouve ton ADN sonore.",
         hero_desc_html: "Label discographique indépendant et studio de production. Développement artistique complet, composition, enregistrement, production, mixage, mastering, distribution, pochette et vidéo, session après session, avec <a href=\"https://open.spotify.com/intl-es/artist/0yIGrWjWqKnM7qJ0uyImij\" target=\"_blank\" rel=\"noopener\">Yaco Santana</a>.",
         hero_cta_primary: "Viens découvrir le studio ↗",
+        visit_eyebrow: "Visite du studio",
+        visit_title: "Viens découvrir le studio",
+        visit_intro: "Dis-nous qui tu es et, à l'étape suivante, choisis le jour et l'heure.",
+        visit_name: "Nom d'artiste",
+        visit_phone: "Téléphone (WhatsApp)",
+        visit_email: "E-mail",
+        visit_ig: "Instagram",
+        visit_reason: "Motif de la visite",
+        visit_news: "Je souhaite recevoir les actus de ZECHE GRUV par e-mail.",
+        visit_submit: "Continuer et choisir un créneau ↗",
+        visit_sending: "Envoi…",
         hero_cta_secondary: "Écoute le label",
         sl_label: "Qui sommes-nous",
         st_label_html: "Un studio où l'on<br>se sent chez soi.",
-        label_intro_html: "ZECHE GRUV a commencé dans ma chambre. Pour faire de la place, on mettait le matelas debout contre le mur, on le décorait un peu et, au passage, il servait d'isolant. Ce n'était pas le studio le plus pro du monde, mais on enregistrait quand même, avec ce qu'on avait et beaucoup d'envie. Aujourd'hui, on est un label indépendant crédité sur plus de 35 chansons publiées, et plus de 200 artistes sont passés par le studio.",
+        label_intro_html: "ZECHE GRUV est né dans une chambre. Pour faire de la place, le matelas était posé debout contre le mur et, au passage, servait d'isolant. Ce n'était pas le studio le plus professionnel du monde, mais on y enregistrait quand même, avec les moyens du bord et beaucoup d'envie. Aujourd'hui, nous sommes un label indépendant crédité sur plus de 35 chansons publiées, et plus de 200 artistes sont passés par le studio.",
         label_side: "<p>Ce qui n'a pas changé, c'est notre façon de travailler : on n'est pas là pour changer ton idée, on est là pour la traduire. Si quelque chose n'est pas en place rythmiquement, on l'ajuste pour que ça sonne comme tu l'entends dans ta tête. On cherche l'équilibre entre l'organique, l'expérimental et cette petite touche en plus qui aide ta chanson à toucher plus de monde.</p><p>Ici, il y a des plantes, des lumières chaudes, un petit-déjeuner ou un goûter. Et on ne court pas après la montre : si on est tout près de la prise parfaite, on prend quelques minutes de plus pour la trouver.</p>",
         label_director_role: "Fondateur et directeur",
-        label_director_bio: "<p>Je suis né au Brésil et j'ai grandi en voyageant à travers l'Amérique latine, entre les tambours et les chansons que me chantait ma mère. Je me suis formé au conservatoire et à l'Escuela de Música de Buenos Aires, j'ai suivi une formation en production et j'ai appris à enregistrer en autodidacte. J'ai fait toutes sortes de boulots, jusqu'au jour où j'ai quitté celui qui me rendait malheureux pour tout miser sur la musique, ce qui me fait vraiment vibrer. Aujourd'hui, j'en vis.</p><p>J'ai étudié et écouté énormément de musique : du classique au folklore, de la trap au metal. C'est pour ça que j'adore les mélanges inattendus ; si tu en as un en tête, on peut le faire. Je suis là à chaque session, de la première idée à la sortie.</p>",
+        label_director_bio: "<p>Yaco Santana est né au Brésil et a grandi en voyageant à travers l'Amérique latine, entre les tambours et les chansons que lui chantait sa mère. Formé au conservatoire, il a étudié la production musicale à l'Escuela de Música de Buenos Aires et a approfondi son apprentissage en autodidacte. Après plusieurs années dans d'autres métiers, il a choisi de se consacrer entièrement à la musique, dont il vit aujourd'hui.</p><p>Sa formation et son écoute vont du classique au folklore et de la trap au metal ; d'où son affinité pour les fusions peu conventionnelles. Il accompagne personnellement chaque session, de la première idée à la sortie.</p>",
         sl_session: "Comment se passe une session",
         st_session_html: "Ta chanson,<br>session après session.",
         session_intro: "Une fois par semaine, deux heures, un morceau par mois. Sans se presser, avec une direction.",
@@ -4246,7 +5499,7 @@
         session_step3_text: "Je t'accompagne à chaque prise : faire ressortir ta voix, lui donner de l'air, trouver le flow.",
         session_step4_title: "La forme finale",
         session_step4_text: "Arrangements, détails, et le morceau prêt pour le mixage et le mastering.",
-        session_outro: "Ensuite vient la distribution et, si tu veux, le clip. Et on continue : idées de contenu, live sessions, open mics et conseils pour tes concerts.",
+        session_outro: "Ensuite vient la distribution et, si tu veux, le clip.",
         session_photo_soon: "Photo bientôt",
         sl_testimonials: "Ce que disent les artistes",
         st_testimonials_html: "Ce que disent<br>les artistes.",
@@ -4261,10 +5514,22 @@
         st_full_catalogue_html: "Tout le<br>catalogue.",
         sl_camps: "Camps et événements",
         st_camps_html: "On se retrouve<br>pour créer.",
+        st_events_html: "La scène<br>est à toi.",
         camp_eyebrow: "Camp",
+        camp_title: "ZECHE GRUV Camp Créatif",
         camp_text: "On part quelques jours pour créer ensemble : plusieurs studios, des artistes de partout et de la musique à toute heure. On prépare la prochaine date ; très bientôt, tu pourras t'inscrire ici.",
+        camp_lineup_label: "Quelques artistes du premier camp",
+        camp_press_label: "Presse",
+        camp_food_label: "Cuisine japonaise, offerte par",
+        camp_hair_label: "Coupes de cheveux",
+        camp_prod_label: "Produit et organisé par",
+        camp_video_1: "La bande",
+        camp_video_2: "Le camp, en vrai",
+        camp_video_3: "On mange bien",
         events_eyebrow: "Événements",
         events_title: "Concerts et open mics",
+        events_shows_label: "Concerts",
+        events_openmic_label: "Open mic · quelques artistes qui sont montés sur scène",
         events_text: "L'open mic, c'est notre façon de découvrir de nouveaux talents. C'est l'espace que ZECHE GRUV offre aux artistes avec qui on travaille pour s'exprimer, et une porte ouverte pour ceux qui ne nous connaissent pas encore : viens, rencontre du monde et montre ce que tu fais. Si tu chantes à l'open mic, tu peux faire partie du prochain concert. Dates bientôt ici.",
         sl_services: "Services et tarifs",
         st_services_html: "Choisis comment<br>tu veux commencer.",
@@ -4308,7 +5573,7 @@
         pkg_songs_label: "Nombre de titres",
         pkg_epalbum_choose_hint: "Choisis un format pour voir le prix",
         pkg_currency: "ARS", pkg_currency_monthly: "ARS / mois",
-        pkg_addon_video: "Ajouter une vidéo", pkg_addon_cover: "Ajouter une pochette", pkg_addons_once: "paiement unique", pkg_addon_free: "Offerte",
+        pkg_addon_video: "Vidéo", pkg_addon_cover: "Pochette", pkg_addons_once: "paiement unique", pkg_addon_free: "Offerte",
         beat_view_catalog: "Voir le catalogue ↗", beat_pick_btn: "Choisir un beat", beat_search_placeholder: "Cherche le beat par son nom…",
         beat_none: "Aucun beat trouvé avec ce nom.", beat_pick_hint: "Choisis un beat du catalogue pour le réserver.", beat_selected: "Beat choisi :", beat_show_all: "Voir tous les beats",
         includes_3: "Distribution sur toutes les plateformes (pitch aux playlists éditoriales pour +30 000 $, réservé aux packs)",
@@ -4347,18 +5612,35 @@
         nav_artists: "Artisti",
         nav_releases: "Uscite",
         nav_camps: "Camp",
+        nav_opps: "Opportunità",
+        nav_events: "Live e open mic",
         nav_services: "Servizi",
+        nav_memberships: "Sviluppo artistico",
+        nav_individual: "Servizi singoli",
+        nav_beats: "Catalogo beat",
+        custom_beats_label: "Scegli i tuoi beat",
         nav_contact: "Contatti",
         hero_title: "Trova il tuo DNA sonoro.",
         hero_desc_html: "Etichetta discografica indipendente e casa di produzione. Sviluppo artistico completo, composizione, registrazione, produzione, mix, mastering, distribuzione, copertina e video, sessione dopo sessione, con <a href=\"https://open.spotify.com/intl-es/artist/0yIGrWjWqKnM7qJ0uyImij\" target=\"_blank\" rel=\"noopener\">Yaco Santana</a>.",
         hero_cta_primary: "Vieni a conoscere lo studio ↗",
+        visit_eyebrow: "Visita allo studio",
+        visit_title: "Vieni a conoscere lo studio",
+        visit_intro: "Raccontaci chi sei e nel passo successivo scegli giorno e orario.",
+        visit_name: "Nome d'arte",
+        visit_phone: "Telefono (WhatsApp)",
+        visit_email: "E-mail",
+        visit_ig: "Instagram",
+        visit_reason: "Motivo della visita",
+        visit_news: "Voglio ricevere le novità di ZECHE GRUV via e-mail.",
+        visit_submit: "Continua e scegli l'orario ↗",
+        visit_sending: "Invio…",
         hero_cta_secondary: "Ascolta l'etichetta",
         sl_label: "Chi siamo",
         st_label_html: "Uno studio che<br>sa di casa.",
-        label_intro_html: "ZECHE GRUV è nato nella mia stanza. Per fare spazio mettevamo il materasso in piedi contro il muro, lo decoravamo un po' e, già che c'era, faceva da isolante. Non era lo studio più professionale del mondo, ma registravamo lo stesso, con quello che avevamo e tanta voglia. Oggi siamo un'etichetta indipendente con crediti in più di 35 canzoni pubblicate, e più di 200 artisti sono passati dallo studio.",
+        label_intro_html: "ZECHE GRUV è nato in una stanza. Per fare spazio, il materasso stava in piedi contro il muro e, già che c'era, faceva da isolante. Non era lo studio più professionale del mondo, ma si registrava lo stesso, con quello che c'era e tanta voglia. Oggi siamo un'etichetta indipendente con crediti in più di 35 canzoni pubblicate, e più di 200 artisti sono passati dallo studio.",
         label_side: "<p>Quello che non è cambiato è il modo di lavorare: non veniamo a cambiare la tua idea, veniamo a tradurla. Se qualcosa è fuori tempo, lo sistemiamo perché suoni come la senti nella tua testa. Cerchiamo l'equilibrio tra l'organico, lo sperimentale e quel tocco in più che aiuta la tua canzone ad arrivare a più persone.</p><p>Qui ci sono piante, luci calde, colazione o merenda. E non corriamo contro l'orologio: se siamo vicini alla take perfetta, ci prendiamo qualche minuto in più per trovarla.</p>",
         label_director_role: "Fondatore e direttore",
-        label_director_bio: "<p>Sono nato in Brasile e sono cresciuto viaggiando per l'America Latina, tra tamburi e le canzoni che mi cantava mia mamma. Mi sono formato al conservatorio e all'Escuela de Música de Buenos Aires, ho fatto un corso di produzione e ho imparato a registrare da autodidatta. Ho fatto ogni tipo di lavoro, finché un giorno ho lasciato quello che mi rendeva infelice e ho puntato tutto sulla musica, ciò che davvero mi muove. Oggi vivo di questo.</p><p>Ho studiato e ascoltato tantissima musica: dalla classica al folklore, dalla trap al metal. Per questo adoro i mix insoliti; se ne hai uno in testa, possiamo farlo. Ci sono a ogni sessione, dalla prima idea all'uscita.</p>",
+        label_director_bio: "<p>Yaco Santana è nato in Brasile ed è cresciuto viaggiando per l'America Latina, tra tamburi e le canzoni che gli cantava sua madre. Si è formato al conservatorio, ha studiato Produzione Musicale all'Escuela de Música de Buenos Aires e ha approfondito la sua formazione da autodidatta. Dopo diversi anni in altri lavori, ha scelto di dedicarsi completamente alla musica, di cui oggi vive.</p><p>La sua formazione e i suoi ascolti vanno dalla classica al folklore e dalla trap al metal; da qui la sua affinità per le fusioni poco convenzionali. Segue personalmente ogni sessione, dalla prima idea all'uscita.</p>",
         sl_session: "Com'è una sessione",
         st_session_html: "La tua canzone,<br>sessione dopo sessione.",
         session_intro: "Una volta a settimana, due ore, un brano al mese. Senza fretta, con una direzione.",
@@ -4374,7 +5656,7 @@
         session_step3_text: "Ti accompagno in ogni take: tirare fuori di più la voce, darle aria, trovare il flow.",
         session_step4_title: "La forma finale",
         session_step4_text: "Arrangiamenti, dettagli e il brano pronto per mix e mastering.",
-        session_outro: "Poi arriva la distribuzione e, se vuoi, il video. E andiamo avanti: idee per i contenuti, live session, open mic e consigli per i live.",
+        session_outro: "Poi arriva la distribuzione e, se vuoi, il video.",
         session_photo_soon: "Foto in arrivo",
         sl_testimonials: "Cosa dicono gli artisti",
         st_testimonials_html: "Cosa dicono<br>gli artisti.",
@@ -4389,10 +5671,22 @@
         st_full_catalogue_html: "Tutto il<br>catalogo.",
         sl_camps: "Camp ed eventi",
         st_camps_html: "Ci ritroviamo<br>per creare.",
+        st_events_html: "Il palco<br>è tuo.",
         camp_eyebrow: "Camp",
+        camp_title: "ZECHE GRUV Camp Creativo",
         camp_text: "Partiamo per qualche giorno a creare insieme: diversi studi, artisti da ogni parte e musica a tutte le ore. Stiamo organizzando la prossima data; molto presto potrai iscriverti qui.",
+        camp_lineup_label: "Alcuni degli artisti del primo camp",
+        camp_press_label: "Stampa",
+        camp_food_label: "Cucina giapponese, offerta da",
+        camp_hair_label: "Tagli di capelli",
+        camp_prod_label: "Prodotto e realizzato da",
+        camp_video_1: "Il ritrovo",
+        camp_video_2: "Così si vive il camp",
+        camp_video_3: "Si mangia bene",
         events_eyebrow: "Eventi",
         events_title: "Live e open mic",
+        events_shows_label: "Live",
+        events_openmic_label: "Open mic · alcuni degli artisti che si sono esibiti",
         events_text: "L'open mic è il nostro modo di scoprire nuovi talenti. È lo spazio che ZECHE GRUV offre agli artisti con cui lavoriamo per esprimersi, e una porta aperta per chi ancora non ci conosce: vieni, entra in contatto e mostra quello che fai. Se canti all'open mic, puoi far parte del prossimo live. Date presto qui.",
         sl_services: "Servizi e prezzi",
         st_services_html: "Scegli come<br>vuoi iniziare.",
@@ -4436,7 +5730,7 @@
         pkg_songs_label: "Numero di brani",
         pkg_epalbum_choose_hint: "Scegli un formato per vedere il prezzo",
         pkg_currency: "ARS", pkg_currency_monthly: "ARS / mese",
-        pkg_addon_video: "Aggiungi video", pkg_addon_cover: "Aggiungi copertina", pkg_addons_once: "pagamento unico", pkg_addon_free: "In omaggio",
+        pkg_addon_video: "Video", pkg_addon_cover: "Copertina", pkg_addons_once: "pagamento unico", pkg_addon_free: "In omaggio",
         beat_view_catalog: "Vedi il catalogo ↗", beat_pick_btn: "Scegli un beat", beat_search_placeholder: "Cerca il beat per nome…",
         beat_none: "Nessun beat trovato con questo nome.", beat_pick_hint: "Scegli un beat dal catalogo per prenotarlo.", beat_selected: "Beat scelto:", beat_show_all: "Mostra tutti i beat",
         includes_3: "Distribuzione su tutte le piattaforme (pitch alle playlist editoriali per +$30.000, solo nei pacchetti)",
@@ -4475,18 +5769,35 @@
         nav_artists: "Künstler",
         nav_releases: "Releases",
         nav_camps: "Camps",
+        nav_opps: "Möglichkeiten",
+        nav_events: "Shows & Open Mic",
         nav_services: "Leistungen",
+        nav_memberships: "Künstlerentwicklung",
+        nav_individual: "Einzelne Services",
+        nav_beats: "Beat-Katalog",
+        custom_beats_label: "Wähl deine Beats",
         nav_contact: "Kontakt",
         hero_title: "Finde deine Sound-DNA.",
         hero_desc_html: "Unabhängiges Plattenlabel und Produktionsstudio. Ganzheitliche Künstlerentwicklung, Songwriting, Aufnahme, Produktion, Mixing, Mastering, Vertrieb, Cover und Video, Session für Session, mit <a href=\"https://open.spotify.com/intl-es/artist/0yIGrWjWqKnM7qJ0uyImij\" target=\"_blank\" rel=\"noopener\">Yaco Santana</a>.",
         hero_cta_primary: "Lern das Studio kennen ↗",
+        visit_eyebrow: "Studiobesuch",
+        visit_title: "Komm das Studio kennenlernen",
+        visit_intro: "Erzähl uns, wer du bist – im nächsten Schritt wählst du Tag und Uhrzeit.",
+        visit_name: "Künstlername",
+        visit_phone: "Telefon (WhatsApp)",
+        visit_email: "E-Mail",
+        visit_ig: "Instagram",
+        visit_reason: "Grund deines Besuchs",
+        visit_news: "Ich möchte Neuigkeiten von ZECHE GRUV per E-Mail erhalten.",
+        visit_submit: "Weiter und Termin wählen ↗",
+        visit_sending: "Wird gesendet…",
         hero_cta_secondary: "Hör dir das Label an",
         sl_label: "Über uns",
         st_label_html: "Ein Studio wie<br>ein Zuhause.",
-        label_intro_html: "ZECHE GRUV hat in meinem Zimmer angefangen. Um Platz zu schaffen, haben wir die Matratze hochkant an die Wand gestellt, ein bisschen dekoriert, und nebenbei hat sie als Schalldämmung gedient. Es war nicht das professionellste Studio der Welt, aber wir haben trotzdem aufgenommen, mit dem, was wir hatten, und mit viel Lust. Heute sind wir ein unabhängiges Label mit Credits auf über 35 veröffentlichten Songs, und mehr als 200 Künstler waren schon im Studio.",
+        label_intro_html: "ZECHE GRUV ist in einem Schlafzimmer entstanden. Um Platz zu schaffen, stand die Matratze hochkant an der Wand und diente nebenbei als Schalldämmung. Es war nicht das professionellste Studio der Welt, aber aufgenommen wurde trotzdem, mit dem, was da war, und mit viel Lust. Heute sind wir ein unabhängiges Label mit Credits auf über 35 veröffentlichten Songs, und mehr als 200 Künstler waren schon im Studio.",
         label_side: "<p>Was sich nicht geändert hat, ist unsere Arbeitsweise: Wir wollen deine Idee nicht verändern, wir wollen sie übersetzen. Wenn etwas nicht im Timing ist, rücken wir es zurecht, damit es so klingt, wie du es im Kopf hörst. Wir suchen die Balance zwischen organisch, experimentell und diesem kleinen Extra, das deinen Song zu mehr Leuten bringt.</p><p>Hier gibt es Pflanzen, warmes Licht, Frühstück oder einen Snack am Nachmittag. Und die Uhr hetzt uns nicht: Wenn wir kurz vor dem perfekten Take sind, nehmen wir uns ein paar Minuten mehr, um ihn zu finden.</p>",
         label_director_role: "Gründer und Leiter",
-        label_director_bio: "<p>Ich bin in Brasilien geboren und durch Lateinamerika reisend aufgewachsen, zwischen Trommeln und den Liedern, die meine Mama mir vorgesungen hat. Ausgebildet wurde ich am Konservatorium und an der Escuela de Música de Buenos Aires, dazu kam ein Produktionskurs, und das Aufnehmen habe ich mir selbst beigebracht. Ich habe alle möglichen Jobs gemacht, bis ich eines Tages den kündigte, der mich unglücklich gemacht hat, und alles auf die Musik gesetzt habe, das, was mich wirklich bewegt. Heute lebe ich davon.</p><p>Ich habe viel Musik studiert und gehört: von Klassik bis Folklore, von Trap bis Metal. Deshalb liebe ich ungewöhnliche Mischungen; wenn du eine im Kopf hast, setzen wir sie um. Ich bin bei jeder Session dabei, von der ersten Idee bis zum Release.</p>",
+        label_director_bio: "<p>Yaco Santana wurde in Brasilien geboren und wuchs auf Reisen durch Lateinamerika auf, zwischen Trommeln und den Liedern, die seine Mutter ihm vorsang. Er wurde am Konservatorium ausgebildet, studierte Musikproduktion an der Escuela de Música de Buenos Aires und vertiefte sein Können im Selbststudium. Nach mehreren Jahren in anderen Berufen entschied er sich, sich ganz der Musik zu widmen, von der er heute lebt.</p><p>Seine Ausbildung und seine Hörgewohnheiten reichen von Klassik bis Folklore und von Trap bis Metal; daher seine Vorliebe für unkonventionelle Fusionen. Er begleitet jede Session persönlich, von der ersten Idee bis zum Release.</p>",
         sl_session: "So läuft eine Session",
         st_session_html: "Dein Song,<br>Session für Session.",
         session_intro: "Einmal pro Woche, zwei Stunden, ein Song pro Monat. Ohne Eile, mit Richtung.",
@@ -4502,7 +5813,7 @@
         session_step3_text: "Ich begleite dich bei jedem Take: mehr aus deiner Stimme holen, ihr Luft geben, den Flow finden.",
         session_step4_title: "Der letzte Schliff",
         session_step4_text: "Arrangements, Details und der Song bereit für Mixing und Mastering.",
-        session_outro: "Danach kommen der Vertrieb und, wenn du willst, das Video. Und es geht weiter: Content-Ideen, Live-Sessions, Open Mics und Tipps für deine Auftritte.",
+        session_outro: "Danach kommen der Vertrieb und, wenn du willst, das Video.",
         session_photo_soon: "Foto folgt bald",
         sl_testimonials: "Was Künstler sagen",
         st_testimonials_html: "Was Künstler<br>sagen.",
@@ -4517,10 +5828,22 @@
         st_full_catalogue_html: "Der ganze<br>Katalog.",
         sl_camps: "Camps & Events",
         st_camps_html: "Wir kommen zusammen,<br>um zu kreieren.",
+        st_events_html: "Die Bühne<br>gehört dir.",
         camp_eyebrow: "Camp",
+        camp_title: "ZECHE GRUV Kreativ-Camp",
         camp_text: "Wir fahren ein paar Tage weg, um gemeinsam kreativ zu sein: mehrere Studios, Künstler von überall und Musik rund um die Uhr. Wir planen gerade den nächsten Termin; sehr bald kannst du dich hier anmelden.",
+        camp_lineup_label: "Einige der Artists vom ersten Camp",
+        camp_press_label: "Presse",
+        camp_food_label: "Japanisches Essen, mit freundlicher Unterstützung von",
+        camp_hair_label: "Haarschnitte",
+        camp_prod_label: "Produziert und umgesetzt von",
+        camp_video_1: "Die Runde",
+        camp_video_2: "So fühlt sich das Camp an",
+        camp_video_3: "Gut gegessen wird auch",
         events_eyebrow: "Events",
         events_title: "Shows & Open Mics",
+        events_shows_label: "Shows",
+        events_openmic_label: "Open Mic · einige der Artists, die aufgetreten sind",
         events_text: "Das Open Mic ist unsere Art, neue Talente zu entdecken. Es ist der Raum, den ZECHE GRUV den Künstlern gibt, mit denen wir arbeiten, damit sie sich ausdrücken können, und eine offene Tür für alle, die uns noch nicht kennen: Komm vorbei, knüpf Kontakte und zeig, was du machst. Wenn du beim Open Mic singst, kannst du bei der nächsten Show dabei sein. Termine bald hier.",
         sl_services: "Leistungen & Preise",
         st_services_html: "Wähl aus, wie du<br>starten willst.",
@@ -4564,7 +5887,7 @@
         pkg_songs_label: "Anzahl der Songs",
         pkg_epalbum_choose_hint: "Wähl ein Format, um den Preis zu sehen",
         pkg_currency: "ARS", pkg_currency_monthly: "ARS / Monat",
-        pkg_addon_video: "Video hinzufügen", pkg_addon_cover: "Cover hinzufügen", pkg_addons_once: "einmalige Zahlung", pkg_addon_free: "Gratis",
+        pkg_addon_video: "Video", pkg_addon_cover: "Cover", pkg_addons_once: "einmalige Zahlung", pkg_addon_free: "Gratis",
         beat_view_catalog: "Katalog ansehen ↗", beat_pick_btn: "Beat auswählen", beat_search_placeholder: "Beat nach Namen suchen…",
         beat_none: "Kein Beat mit diesem Namen gefunden.", beat_pick_hint: "Wähle einen Beat aus dem Katalog, um ihn zu reservieren.", beat_selected: "Gewählter Beat:", beat_show_all: "Alle Beats anzeigen",
         includes_3: "Vertrieb auf allen Plattformen (Pitching an redaktionelle Playlists für +$30.000, nur in den Paketen)",
@@ -4603,18 +5926,35 @@
         nav_artists: "Артисты",
         nav_releases: "Релизы",
         nav_camps: "Кэмпы",
+        nav_opps: "Возможности",
+        nav_events: "Концерты и open mic",
         nav_services: "Услуги",
+        nav_memberships: "Развитие артиста",
+        nav_individual: "Отдельные услуги",
+        nav_beats: "Каталог битов",
+        custom_beats_label: "Выбери свои биты",
         nav_contact: "Контакты",
         hero_title: "Найди свою звуковую ДНК.",
         hero_desc_html: "Независимый лейбл звукозаписи и продакшн-студия. Комплексное развитие артиста, сочинение, запись, продакшн, сведение, мастеринг, дистрибуция, обложка и видео — сессия за сессией, вместе с <a href=\"https://open.spotify.com/intl-es/artist/0yIGrWjWqKnM7qJ0uyImij\" target=\"_blank\" rel=\"noopener\">Yaco Santana</a>.",
         hero_cta_primary: "Приходи в студию ↗",
+        visit_eyebrow: "Визит в студию",
+        visit_title: "Приходи познакомиться со студией",
+        visit_intro: "Расскажи, кто ты, а на следующем шаге выбери день и время.",
+        visit_name: "Творческое имя",
+        visit_phone: "Телефон (WhatsApp)",
+        visit_email: "E-mail",
+        visit_ig: "Instagram",
+        visit_reason: "Цель визита",
+        visit_news: "Хочу получать новости ZECHE GRUV по e-mail.",
+        visit_submit: "Продолжить и выбрать время ↗",
+        visit_sending: "Отправка…",
         hero_cta_secondary: "Послушай лейбл",
         sl_label: "Кто мы",
         st_label_html: "Студия, где ты<br>как дома.",
-        label_intro_html: "ZECHE GRUV начинался в моей комнате. Чтобы освободить место, мы ставили матрас к стене, немного его украшали, и заодно он работал как звукоизоляция. Это была не самая профессиональная студия в мире, но мы всё равно записывались, с тем, что было, и с большим желанием. Сегодня мы независимый лейбл с кредитами в более чем 35 выпущенных песнях, и через студию прошли больше 200 артистов.",
+        label_intro_html: "ZECHE GRUV родился в обычной комнате. Чтобы освободить место, матрас ставили к стене, и заодно он работал как звукоизоляция. Это была не самая профессиональная студия в мире, но записи всё равно шли: с тем, что было, и с большим желанием. Сегодня мы независимый лейбл с участием более чем в 35 выпущенных песнях, а через студию прошло уже более 200 артистов.",
         label_side: "<p>Не изменилось одно — то, как мы работаем: мы не меняем твою идею, мы переводим её на язык звука. Если что-то не попадает в ритм, мы поправим, чтобы звучало так, как ты слышишь это в голове. Мы ищем баланс между живым звучанием, экспериментом и той самой изюминкой, которая помогает твоей песне дойти до большего числа людей.</p><p>Здесь есть растения, тёплый свет, завтрак или полдник. И мы не гонимся за временем: если до идеального дубля совсем чуть-чуть, мы возьмём ещё несколько минут, чтобы его поймать.</p>",
         label_director_role: "Основатель и руководитель",
-        label_director_bio: "<p>Я родился в Бразилии и вырос, путешествуя по Латинской Америке, среди барабанов и песен, которые пела мне мама. Учился в консерватории и в Музыкальной школе Буэнос-Айреса (Escuela de Música de Buenos Aires), прошёл курс продюсирования, а записывать научился сам. Работал кем придётся, пока однажды не ушёл с работы, которая делала меня несчастным, и не поставил всё на музыку — то, что по-настоящему меня зажигает. Сегодня я живу этим.</p><p>Я изучал и слушал очень много музыки: от классики до фольклора, от трэпа до метала. Поэтому обожаю необычные сочетания; если у тебя в голове есть такое — мы это сделаем. Я на каждой сессии, от первой идеи до релиза.</p>",
+        label_director_bio: "<p>Яко Сантана родился в Бразилии и вырос, путешествуя по Латинской Америке, среди барабанов и песен, которые пела ему мать. Он учился в консерватории, изучал музыкальное продюсирование в Музыкальной школе Буэнос-Айреса (Escuela de Música de Buenos Aires) и углублял знания самостоятельно. После нескольких лет на других работах он решил полностью посвятить себя музыке и сегодня живёт ею.</p><p>Его образование и слушательский опыт охватывают всё от классики до фольклора и от трэпа до метала; отсюда его интерес к необычным сочетаниям жанров. Он лично сопровождает каждую сессию, от первой идеи до релиза.</p>",
         sl_session: "Как проходит сессия",
         st_session_html: "Твоя песня,<br>сессия за сессией.",
         session_intro: "Раз в неделю, два часа, одна песня в месяц. Без спешки, но с направлением.",
@@ -4630,7 +5970,7 @@
         session_step3_text: "Я рядом на каждом дубле: раскрыть голос, дать ему воздух, найти флоу.",
         session_step4_title: "Финальная форма",
         session_step4_text: "Аранжировка, детали и песня, готовая к сведению и мастерингу.",
-        session_outro: "Потом дистрибуция и, если захочешь, клип. И мы идём дальше: идеи для контента, live-сессии, open mic и советы для концертов.",
+        session_outro: "Потом дистрибуция и, если захочешь, клип.",
         session_photo_soon: "Фото скоро",
         sl_testimonials: "Что говорят артисты",
         st_testimonials_html: "Что говорят<br>артисты.",
@@ -4645,10 +5985,22 @@
         st_full_catalogue_html: "Весь<br>каталог.",
         sl_camps: "Кэмпы и события",
         st_camps_html: "Собираемся,<br>чтобы творить.",
+        st_events_html: "Сцена<br>твоя.",
         camp_eyebrow: "Кэмп",
+        camp_title: "ZECHE GRUV Творческий кэмп",
         camp_text: "Уезжаем на несколько дней, чтобы творить вместе: несколько студий, артисты отовсюду и музыка круглые сутки. Мы готовим следующую дату; совсем скоро здесь можно будет записаться.",
+        camp_lineup_label: "Некоторые артисты первого кэмпа",
+        camp_press_label: "Пресса",
+        camp_food_label: "Японская кухня — любезно от",
+        camp_hair_label: "Стрижки",
+        camp_prod_label: "Продюсирование и организация",
+        camp_video_1: "Все вместе",
+        camp_video_2: "Так проходит кэмп",
+        camp_video_3: "И вкусно едим",
         events_eyebrow: "События",
         events_title: "Концерты и open mic",
+        events_shows_label: "Концерты",
+        events_openmic_label: "Open mic · некоторые из выступавших",
         events_text: "Open mic — это наш способ находить новые таланты. Это пространство, которое ZECHE GRUV даёт артистам, с которыми мы работаем, чтобы они могли выразить себя, и открытая дверь для тех, кто нас ещё не знает: приходи, знакомься и покажи, что ты делаешь. Если споёшь на open mic, можешь попасть в следующий концерт. Даты скоро здесь.",
         sl_services: "Услуги и цены",
         st_services_html: "Выбери, как<br>хочешь начать.",
@@ -4692,7 +6044,7 @@
         pkg_songs_label: "Количество песен",
         pkg_epalbum_choose_hint: "Выбери формат, чтобы увидеть цену",
         pkg_currency: "ARS", pkg_currency_monthly: "ARS / мес",
-        pkg_addon_video: "Добавить видео", pkg_addon_cover: "Добавить обложку", pkg_addons_once: "разовый платёж", pkg_addon_free: "Бесплатно",
+        pkg_addon_video: "Видео", pkg_addon_cover: "Обложка", pkg_addons_once: "разовый платёж", pkg_addon_free: "Бесплатно",
         beat_view_catalog: "Смотреть каталог ↗", beat_pick_btn: "Выбрать бит", beat_search_placeholder: "Найди бит по названию…",
         beat_none: "Бит с таким названием не найден.", beat_pick_hint: "Выбери бит из каталога, чтобы забронировать.", beat_selected: "Выбранный бит:", beat_show_all: "Показать все биты",
         includes_3: "Дистрибуция на все платформы (питчинг в редакционные плейлисты за +$30 000, только в пакетах)",
@@ -4995,6 +6347,112 @@
       });
     })();
 
+    // ---------- Menús desplegables del nav (Oportunidades, Servicios) ----------
+    (function () {
+      const drops = Array.from(document.querySelectorAll(".nav-drop"));
+      if (!drops.length) return;
+
+      function setOpen(drop, open) {
+        drop.classList.toggle("is-open", open);
+        drop.querySelector(".nav-drop-btn").setAttribute("aria-expanded", String(open));
+      }
+      const closeAll = (except) => drops.forEach((d) => { if (d !== except) setOpen(d, false); });
+
+      drops.forEach((drop) => {
+        drop.querySelector(".nav-drop-btn").addEventListener("click", (event) => {
+          event.stopPropagation();
+          closeAll(drop);
+          setOpen(drop, !drop.classList.contains("is-open"));
+        });
+        drop.querySelectorAll("a").forEach((a) => a.addEventListener("click", () => setOpen(drop, false)));
+      });
+      document.addEventListener("click", (event) => {
+        if (!event.target.closest(".nav-drop")) closeAll();
+      });
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") closeAll();
+      });
+    })();
+
+    // ---------- Visita al estudio: formulario y agenda ----------
+    // Link de la agenda (Calendly / Cal.com). Mientras esté vacío, al enviar
+    // el formulario se abre WhatsApp con los datos cargados, para no perder
+    // la consulta.
+    const VISIT_BOOKING_URL = "";
+
+    (function () {
+      const modal = document.getElementById("visitModal");
+      const form = document.getElementById("visitForm");
+      if (!modal || !form) return;
+      const submitBtn = document.getElementById("visitSubmit");
+      let lastFocus = null;
+
+      function openVisit() {
+        lastFocus = document.activeElement;
+        document.getElementById("visitLang").value = document.documentElement.lang || "es";
+        modal.classList.add("is-open");
+        modal.setAttribute("aria-hidden", "false");
+        document.body.style.overflow = "hidden";
+        setTimeout(() => form.elements.nombre_artistico.focus(), 60);
+      }
+
+      function closeVisit() {
+        modal.classList.remove("is-open");
+        modal.setAttribute("aria-hidden", "true");
+        document.body.style.overflow = "";
+        if (lastFocus && lastFocus.focus) lastFocus.focus();
+      }
+
+      document.querySelectorAll("[data-visit-open]").forEach((el) => {
+        el.addEventListener("click", (event) => { event.preventDefault(); openVisit(); });
+      });
+      document.getElementById("visitClose").addEventListener("click", closeVisit);
+      modal.addEventListener("click", (event) => { if (event.target === modal) closeVisit(); });
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && modal.classList.contains("is-open")) closeVisit();
+      });
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        if (!form.reportValidity()) return;
+        const t = I18N[document.documentElement.lang] || I18N.es;
+        const data = new FormData(form);
+        submitBtn.disabled = true;
+        submitBtn.textContent = t.visit_sending;
+
+        // Guarda los datos (Netlify Forms). Si falla o tarda, igual se sigue
+        // a la agenda: no se le traba el turno a nadie por un error de red.
+        try {
+          await Promise.race([
+            fetch("/", {
+              method: "POST",
+              headers: { "Content-Type": "application/x-www-form-urlencoded" },
+              body: new URLSearchParams(data).toString(),
+            }),
+            new Promise((resolve) => setTimeout(resolve, 6000)),
+          ]);
+        } catch (e) {}
+
+        if (VISIT_BOOKING_URL) {
+          window.location.href = VISIT_BOOKING_URL;
+          return;
+        }
+        const msg = `Hola ZECHE GRUV! Quiero ir a conocer el estudio 🙌\n`
+          + `Nombre artístico: ${data.get("nombre_artistico")}\n`
+          + `Teléfono: ${data.get("telefono")}\n`
+          + `Mail: ${data.get("email")}\n`
+          + `Instagram: ${data.get("instagram") || "-"}\n`
+          + `Motivo de la visita: ${data.get("motivo")}`;
+        window.location.href = `https://wa.me/5491133287422?text=${encodeURIComponent(msg)}`;
+      });
+
+      // Si la persona vuelve atrás desde la agenda, el botón queda usable.
+      window.addEventListener("pageshow", () => {
+        submitBtn.disabled = false;
+        submitBtn.textContent = (I18N[document.documentElement.lang] || I18N.es).visit_submit;
+      });
+    })();
+
     // ---------- Sol chico del nav ----------
     // Aparece exactamente cuando el sol grande del hero sale del viewport,
     // y desaparece apenas vuelve a entrar — así nunca se ven los dos a la vez.
@@ -5291,6 +6749,79 @@
           count.textContent = `${current + 1} / ${imgs.length}`;
         }, 80);
       }, { passive: true });
+    })();
+  </script>
+
+  <script>
+    // Videos del camp: entran en abanico, se mueven apenas con el scroll y
+    // se reproducen (sin audio) solo mientras se ven.
+    (() => {
+      const stage = document.querySelector(".camp-videos");
+      if (!stage) return;
+      const cards = Array.from(stage.querySelectorAll(".camp-video"));
+      const vids = cards.map((c) => c.querySelector("video"))
+        .concat(Array.from(document.querySelectorAll(".events-videos video")));
+      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (reduce || !("IntersectionObserver" in window)) {
+        vids.forEach((v) => { v.controls = true; });
+        return;
+      }
+
+      // En el celu el carrusel arranca centrado en el compilado.
+      const main = stage.querySelector(".camp-video-main");
+      const center = () => {
+        if (stage.scrollWidth > stage.clientWidth + 4) {
+          stage.scrollLeft = main.offsetLeft - (stage.clientWidth - main.offsetWidth) / 2;
+        }
+      };
+      center();
+      window.addEventListener("load", center, { once: true });
+      window.matchMedia("(max-width: 800px)").addEventListener("change", () => requestAnimationFrame(center));
+
+      // Entrada.
+      stage.classList.add("is-armed");
+      const enterIO = new IntersectionObserver(([entry]) => {
+        if (!entry.isIntersecting) return;
+        stage.classList.add("is-in");
+        setTimeout(() => stage.classList.add("is-settled"), 1300);
+        enterIO.disconnect();
+      }, { threshold: 0.2 });
+      enterIO.observe(stage);
+
+      // Reproducción + barrita de progreso.
+      const playing = new Set();
+      let raf = null;
+      function tick() {
+        playing.forEach((v) => {
+          if (v.duration) v.parentElement.style.setProperty("--prog", (v.currentTime / v.duration).toFixed(4));
+        });
+        raf = playing.size ? requestAnimationFrame(tick) : null;
+      }
+      const playIO = new IntersectionObserver((entries) => {
+        entries.forEach(({ target, isIntersecting }) => {
+          if (isIntersecting) { target.play().catch(() => {}); playing.add(target); }
+          else { target.pause(); playing.delete(target); }
+        });
+        if (playing.size && !raf) raf = requestAnimationFrame(tick);
+      }, { threshold: 0.6 });
+      vids.forEach((v) => playIO.observe(v));
+
+      // Parallax suave: los laterales y el central se cruzan al scrollear.
+      let ticking = false;
+      function onScroll() {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(() => {
+          ticking = false;
+          const r = stage.getBoundingClientRect();
+          const vh = window.innerHeight;
+          if (r.bottom < -100 || r.top > vh + 100) return;
+          const p = ((r.top + r.height / 2) - vh / 2) / vh;
+          stage.style.setProperty("--p", Math.max(-1, Math.min(1, p)).toFixed(3));
+        });
+      }
+      window.addEventListener("scroll", onScroll, { passive: true });
+      onScroll();
     })();
   </script>
 
