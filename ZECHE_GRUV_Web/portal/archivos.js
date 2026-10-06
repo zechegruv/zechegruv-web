@@ -28,6 +28,10 @@
     return mb >= 1 ? `${mb.toFixed(mb >= 100 ? 0 : 1).replace(".", ",")} MB` : `${Math.max(1, Math.round(bytes / 1024))} KB`;
   }
 
+  // Formatos que los navegadores reproducen sin descargar.
+  const PLAYABLE = /\.(mp3|wav|m4a|aac|flac|ogg|oga)$/i;
+  const PLAY_ICONS = '<svg class="icon-play" width="12" height="12" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 1.5v11l9-5.5z" fill="currentColor"/></svg><svg class="icon-pause" width="12" height="12" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 1.5h3v11H3zM8 1.5h3v11H8z" fill="currentColor"/></svg>';
+
   function tableHtml(files) {
     return `
       <div class="table-wrap">
@@ -36,7 +40,9 @@
           <tbody>
             ${files.map((f) => `
               <tr>
-                <td>${esc(f.name)}</td>
+                <td><div class="file-name">${f.url && PLAYABLE.test(f.name)
+                  ? `<button class="play-btn" type="button" data-play="${esc(f.url)}" data-name="${esc(f.name)}" aria-label="Escuchar ${esc(f.name)}">${PLAY_ICONS}</button>`
+                  : ""}<span>${esc(f.name)}</span></div></td>
                 <td>${fmtDate(f.created)}</td>
                 <td>${fmtDate(f.modified)}</td>
                 <td>${fmtSize(f.size)}</td>
@@ -66,6 +72,7 @@
     }
     const status = $("filesStatus");
     const list = $("filesList");
+    closePlayer();
     status.textContent = "Cargando…";
     list.replaceChildren();
     $("filesTools").hidden = true;
@@ -104,6 +111,75 @@
     $("filesTools").hidden = data.groups.length < 2;
     syncToggle();
   }
+
+  // ---------- Escucha previa ----------
+  // Un solo reproductor para toda la sección: al darle play a otro archivo
+  // se corta el que estaba sonando.
+  const audio = $("playerAudio");
+  const fmtTime = (s) => (Number.isFinite(s) ? `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}` : "0:00");
+  let seeking = false;
+
+  function syncPlayer() {
+    const playing = !audio.paused && !audio.ended;
+    $("player").classList.toggle("is-playing", playing);
+    $("playerToggle").setAttribute("aria-label", playing ? "Pausar" : "Reproducir");
+    document.querySelectorAll("#filesList .play-btn").forEach((btn) => {
+      const current = btn.dataset.play === audio.dataset.url;
+      btn.classList.toggle("is-current", current);
+      btn.classList.toggle("is-playing", current && playing);
+    });
+  }
+
+  function closePlayer() {
+    audio.pause();
+    audio.removeAttribute("src");
+    delete audio.dataset.url;
+    audio.load();
+    $("player").hidden = true;
+    syncPlayer();
+  }
+
+  $("filesList").addEventListener("click", (event) => {
+    const btn = event.target.closest(".play-btn");
+    if (!btn) return;
+    if (audio.dataset.url === btn.dataset.play) {
+      if (audio.paused) audio.play().catch(() => {}); else audio.pause();
+      return;
+    }
+    audio.dataset.url = btn.dataset.play;
+    audio.src = btn.dataset.play;
+    $("playerName").textContent = btn.dataset.name;
+    $("playerNow").textContent = "0:00";
+    $("playerTotal").textContent = "0:00";
+    $("playerSeek").value = 0;
+    $("player").hidden = false;
+    audio.play().catch(() => {});
+    syncPlayer();
+  });
+
+  $("playerToggle").addEventListener("click", () => { if (audio.paused) audio.play().catch(() => {}); else audio.pause(); });
+  $("playerClose").addEventListener("click", closePlayer);
+  ["play", "pause", "ended"].forEach((type) => audio.addEventListener(type, syncPlayer));
+  audio.addEventListener("loadedmetadata", () => { $("playerTotal").textContent = fmtTime(audio.duration); });
+  audio.addEventListener("timeupdate", () => {
+    if (seeking) return;
+    $("playerNow").textContent = fmtTime(audio.currentTime);
+    if (audio.duration) $("playerSeek").value = Math.round((audio.currentTime / audio.duration) * 1000);
+  });
+  audio.addEventListener("error", () => {
+    if (!audio.dataset.url) return;
+    // Los links de OneDrive vencen al rato: hay que volver a abrir la sección.
+    $("playerName").textContent = "No pudimos reproducir este audio. Volvé a abrir la sección y probá de nuevo.";
+    syncPlayer();
+  });
+  $("playerSeek").addEventListener("input", () => { seeking = true; if (audio.duration) $("playerNow").textContent = fmtTime(($("playerSeek").value / 1000) * audio.duration); });
+  $("playerSeek").addEventListener("change", () => { if (audio.duration) audio.currentTime = ($("playerSeek").value / 1000) * audio.duration; seeking = false; });
+
+  // Si se sale de la sección (volver, cambiar de pestaña, cerrar sesión), el audio se corta.
+  new MutationObserver(() => { if ($("panel-files").hidden && !$("player").hidden) closePlayer(); })
+    .observe($("panel-files"), { attributes: true, attributeFilter: ["hidden"] });
+  new MutationObserver(() => { if ($("view-app").hidden && !$("player").hidden) closePlayer(); })
+    .observe($("view-app"), { attributes: true, attributeFilter: ["hidden"] });
 
   // Un solo botón para desplegar todas las canciones o volver a ver solo los grupos.
   const groupsEls = () => [...document.querySelectorAll("#filesList .file-group")];

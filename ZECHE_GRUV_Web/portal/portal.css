@@ -952,6 +952,115 @@ fieldset:disabled .add-credit { display: none; }
 .files-table .btn { padding: 8px 12px; display: inline-block; }
 .files-table td:last-child { text-align: right; }
 
+/* Escucha previa */
+
+.play-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  margin-right: 12px;
+  vertical-align: middle;
+  border: 1px solid rgba(240, 224, 192, .3);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--cream);
+  cursor: pointer;
+  transition: background .2s ease, border-color .2s ease;
+}
+
+.play-btn:hover,
+.play-btn.is-current {
+  background: var(--orange);
+  border-color: var(--orange);
+}
+
+.play-btn:focus-visible,
+.player-btn:focus-visible {
+  outline: 2px solid var(--orange-soft);
+  outline-offset: 2px;
+}
+
+.play-btn .icon-pause,
+.play-btn.is-playing .icon-play,
+.player .icon-pause,
+.player.is-playing .icon-play { display: none; }
+
+.play-btn.is-playing .icon-pause,
+.player.is-playing .icon-pause { display: block; }
+
+.files-table .file-name { display: flex; align-items: center; }
+.files-table .file-name span { min-width: 0; overflow-wrap: anywhere; }
+
+.player {
+  position: sticky;
+  bottom: 16px;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 20px;
+  padding: 14px 16px;
+  border: 1px solid rgba(245, 166, 35, .55);
+  background: rgba(36, 17, 5, .97);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, .55);
+}
+
+.player-btn {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--orange);
+  color: var(--cream);
+  cursor: pointer;
+}
+
+.player-close {
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.player-close:hover { color: var(--cream); }
+
+.player-main { flex: 1; min-width: 0; }
+
+.player-name {
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 6px;
+}
+
+.player-seek {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.player-seek input {
+  flex: 1;
+  min-width: 0;
+  accent-color: var(--orange);
+}
+
+.player-time {
+  font-family: "DM Mono", monospace;
+  font-size: 10px;
+  color: var(--muted);
+  min-width: 34px;
+}
+
+.player-time:last-child { text-align: right; }
+
 /* Guía y preguntas frecuentes */
 
 .help {

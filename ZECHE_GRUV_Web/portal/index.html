@@ -248,6 +248,24 @@
           <button class="btn" type="button" id="filesToggleAll">Desplegar todo</button>
         </div>
         <div id="filesList"></div>
+
+        <!-- Reproductor: escucha previa de los audios sin descargarlos -->
+        <div class="player" id="player" hidden>
+          <button class="player-btn" type="button" id="playerToggle" aria-label="Pausar">
+            <svg class="icon-play" width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 1.5v11l9-5.5z" fill="currentColor"/></svg>
+            <svg class="icon-pause" width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 1.5h3v11H3zM8 1.5h3v11H8z" fill="currentColor"/></svg>
+          </button>
+          <div class="player-main">
+            <div class="player-name" id="playerName"></div>
+            <div class="player-seek">
+              <span class="player-time" id="playerNow">0:00</span>
+              <input type="range" id="playerSeek" min="0" max="1000" value="0" aria-label="Posición del audio">
+              <span class="player-time" id="playerTotal">0:00</span>
+            </div>
+          </div>
+          <button class="player-btn player-close" type="button" id="playerClose" aria-label="Cerrar reproductor">✕</button>
+          <audio id="playerAudio" preload="none"></audio>
+        </div>
       </div>
 
       <!-- Distribución: lista de lanzamientos -->
