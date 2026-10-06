@@ -167,13 +167,43 @@
     $("showPasswordBtn").setAttribute("aria-pressed", show);
   });
 
+  // Recuperar contraseña. Supabase deja pedir un mail cada 60 segundos por
+  // cuenta, así que después de cada pedido el link queda en espera con una
+  // cuenta regresiva (también si se recarga la página).
+  const FORGOT_WAIT_SECONDS = 60;
+  const FORGOT_KEY = "zg-portal-recuperar-hasta";
+  const FORGOT_LABEL = $("forgotBtn").textContent;
+  let forgotTimer = null;
+
+  function tickForgot() {
+    const left = Math.ceil((Number(sessionStorage.getItem(FORGOT_KEY)) - Date.now()) / 1000);
+    const waiting = left > 0;
+    $("forgotBtn").disabled = waiting;
+    $("forgotBtn").textContent = waiting ? `Podés pedir otro mail en ${left} s` : FORGOT_LABEL;
+    if (!waiting) { clearInterval(forgotTimer); forgotTimer = null; sessionStorage.removeItem(FORGOT_KEY); }
+  }
+  function startForgotWait() {
+    sessionStorage.setItem(FORGOT_KEY, Date.now() + FORGOT_WAIT_SECONDS * 1000);
+    clearInterval(forgotTimer);
+    forgotTimer = setInterval(tickForgot, 1000);
+    tickForgot();
+  }
+  if (sessionStorage.getItem(FORGOT_KEY)) { forgotTimer = setInterval(tickForgot, 1000); tickForgot(); }
+
   $("forgotBtn").addEventListener("click", async () => {
     const email = $("loginEmail").value.trim();
     if (!email) { $("loginEmail").focus(); setMsg($("loginMsg"), "Escribí tu mail arriba y volvé a tocar este link.", true); return; }
+    $("forgotBtn").disabled = true;
     const { error } = await db.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
+    if (error && error.status !== 429) {
+      $("forgotBtn").disabled = false;
+      setMsg($("loginMsg"), "No pudimos enviar el mail. Probá de nuevo en un momento.", true);
+      return;
+    }
+    startForgotWait();
     setMsg($("loginMsg"), error
-      ? "No pudimos enviar el mail. Probá de nuevo en un momento."
-      : "Si ese mail tiene cuenta, te llega un link para elegir una contraseña nueva.", !!error);
+      ? "Ya te mandamos un mail hace un momento. Revisá tu bandeja (y spam) y esperá un minuto para pedir otro."
+      : "Si ese mail tiene cuenta, te llega un link para elegir una contraseña nueva. Revisá también la carpeta de spam.", !!error);
   });
 
   $("recoveryForm").addEventListener("submit", async (event) => {

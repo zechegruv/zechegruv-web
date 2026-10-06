@@ -297,6 +297,8 @@ main {
 }
 
 .link-btn:hover { color: var(--orange-soft); }
+.link-btn:disabled { cursor: default; text-decoration: none; color: var(--muted); opacity: .8; }
+.link-btn:disabled:hover { color: var(--muted); }
 
 #backToArtists { margin-bottom: 26px; }
 
