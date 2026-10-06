@@ -63,7 +63,7 @@ here = os.path.dirname(os.path.abspath(__file__))
 invite = mail(
     "invite",
     "Tu espacio ya<br>está listo.",
-    "Hola{{ if .Data.display_name }}, <b>{{ .Data.display_name }}</b>{{ end }}. Bienvenid@ al portal de artistas de ZECHE GRUV. Donde vas a encontrar toda la data de tu proyecto en un solo lugar: tus referencias y letras, los exports y masters de cada canción, tu membresía y el formulario para distribuir tu música.",
+    "Hola{{ if .Data.display_name }}, <b>{{ .Data.display_name }}</b>{{ end }}. Bienvenid@ al portal de artistas de ZECHE GRUV, donde vas a encontrar toda la data de tu proyecto en un solo lugar: tus referencias y letras, los exports y masters de cada canción, tu membresía y el formulario para distribuir tu música.",
     box(row("Usuario", "{{ .Email }}") + "\n" + row("Contraseña", "La elegís vos en tu primer ingreso") + "\n" + row("Dirección del portal", '<a href="https://zechegruv.com/portal/" style="color:#F5A623;text-decoration:none;">zechegruv.com/portal</a>')),
     "Entrar por primera vez",
     "Este link es personal y sirve una sola vez: vence en 24 horas. Si se venció, entrá a zechegruv.com/portal, tocá “¿Olvidaste tu contraseña?” y te mandamos uno nuevo.",
