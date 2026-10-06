@@ -194,6 +194,14 @@ main {
 .field select option { color: #241105; }
 .field input:disabled { opacity: .55; }
 
+/* Campos que completa el navegador solo: sin el fondo claro por defecto. */
+.field input:-webkit-autofill,
+.field input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--cream);
+  box-shadow: 0 0 0 1000px #2c1d12 inset;
+  caret-color: var(--cream);
+}
+
 .field input:focus-visible,
 .field select:focus-visible,
 .btn:focus-visible,
@@ -538,31 +546,51 @@ a.chip:hover { border-color: var(--orange-soft); color: var(--orange-soft); }
   color: var(--beige);
 }
 
-/* Login: el acceso a la izquierda y, al lado, la invitación a empezar
-   para quien llega sin tener cuenta. En celular va debajo. */
+/* Login: encabezado a todo el ancho y, debajo, dos tarjetas parejas
+   (ingresar / empezar a trabajar con el sello). En celular, una debajo
+   de la otra. */
 .view-login {
-  max-width: 920px;
+  max-width: 960px;
   margin: 0 auto;
+}
+
+.login-head { margin-bottom: 32px; }
+
+.view-login .title {
+  font-size: clamp(36px, 5.4vw, 60px);
+  margin-bottom: 16px;
+}
+
+.login-lead {
+  max-width: 62ch;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--beige);
+}
+
+.login-grid {
   display: grid;
-  grid-template-columns: minmax(0, 440px) minmax(0, 1fr);
-  gap: 40px;
-  align-items: start;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  align-items: stretch;
 }
 
 .cta-card {
-  margin-top: 124px;
+  display: flex;
+  flex-direction: column;
   border-color: rgba(245, 166, 35, .45);
 }
 
+.cta-card .btn-cta { margin-top: auto; }
+.cta-card .eyebrow { margin-bottom: 12px; }
+
 .cta-title {
-  font-size: clamp(24px, 3vw, 32px);
+  font-size: clamp(26px, 3.2vw, 36px);
   font-weight: 800;
   letter-spacing: -.04em;
-  line-height: 1.02;
+  line-height: 1.04;
   margin-bottom: 14px;
 }
-
-.cta-card .eyebrow { margin-bottom: 10px; }
 
 .cta-text {
   font-size: 14px;
@@ -907,8 +935,7 @@ fieldset:disabled .add-credit { display: none; }
 .help-body dd { margin-top: 3px; }
 
 @media (max-width: 800px) {
-  .view-login { grid-template-columns: 1fr; gap: 0; max-width: 440px; }
-  .cta-card { margin-top: 28px; }
+  .login-grid { grid-template-columns: 1fr; }
   .row { grid-template-columns: 1fr; }
   .credit-grid { grid-template-columns: 1fr; }
   main { padding-top: 44px; }

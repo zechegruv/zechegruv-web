@@ -38,39 +38,44 @@
 
     <!-- ---------- Login ---------- -->
     <section class="view view-login" id="view-login" hidden>
-      <div class="login-col">
-      <div class="eyebrow">Portal de artistas</div>
-      <h1 class="title">Entrá a tu<br>espacio.</h1>
-      <p class="notice notice-login">Este portal es para artistas con un proyecto activo en ZECHE GRUV. Solo vas a poder ingresar si estás trabajando con nosotros en un single, un EP o un álbum.</p>
-      <form class="card form" id="loginForm" novalidate>
-        <div class="field">
-          <label for="loginEmail">Mail</label>
-          <input type="email" id="loginEmail" autocomplete="username" required>
-        </div>
-        <div class="field">
-          <label for="loginPassword">Contraseña</label>
-          <div class="password-wrap">
-            <input type="password" id="loginPassword" autocomplete="current-password" required>
-            <button class="password-toggle" type="button" id="showPasswordBtn" aria-pressed="false">Ver</button>
+      <header class="login-head">
+        <div class="eyebrow">Portal de artistas</div>
+        <h1 class="title">Entrá a tu espacio.</h1>
+        <p class="login-lead">Este portal es para artistas con un proyecto activo en ZECHE GRUV. Solo vas a poder ingresar si estás trabajando con nosotros en un single, un EP o un álbum.</p>
+      </header>
+
+      <div class="login-grid">
+        <form class="card form" id="loginForm" novalidate>
+          <h2 class="card-title">Ingresar</h2>
+          <div class="field">
+            <label for="loginEmail">Mail</label>
+            <input type="email" id="loginEmail" autocomplete="username" required>
           </div>
+          <div class="field">
+            <label for="loginPassword">Contraseña</label>
+            <div class="password-wrap">
+              <input type="password" id="loginPassword" autocomplete="current-password" required>
+              <button class="password-toggle" type="button" id="showPasswordBtn" aria-pressed="false">Ver</button>
+            </div>
+          </div>
+          <label class="check">
+            <input type="checkbox" id="rememberMe" checked>
+            <span>Recordarme en este dispositivo</span>
+          </label>
+          <p class="msg" id="loginMsg" role="alert"></p>
+          <button class="btn btn-primary" type="submit" id="loginSubmit">Entrar</button>
+          <button class="link-btn" type="button" id="forgotBtn">¿Olvidaste tu contraseña? Te mandamos un mail para cambiarla</button>
+        </form>
+
+        <div class="card cta-card">
+          <div class="eyebrow">¿Todavía no trabajamos juntos?</div>
+          <h2 class="cta-title">Tu música puede empezar acá.</h2>
+          <p class="cta-text">Si nunca hiciste música con nosotros, este es el momento. Mirá cómo podemos trabajar tu próxima canción, tu EP o tu álbum.</p>
+          <a class="btn btn-primary btn-cta" href="../index.html#memberships">Empecemos con tu desarrollo artístico ↗</a>
         </div>
-        <label class="check">
-          <input type="checkbox" id="rememberMe" checked>
-          <span>Recordarme en este dispositivo</span>
-        </label>
-        <p class="msg" id="loginMsg" role="alert"></p>
-        <button class="btn btn-primary" type="submit" id="loginSubmit">Entrar</button>
-        <button class="link-btn" type="button" id="forgotBtn">¿Olvidaste tu contraseña? Te mandamos un mail para cambiarla</button>
-      </form>
-      <p class="muted small">¿Tenés un proyecto activo y todavía no recibiste tu acceso? Escribinos y te lo mandamos.</p>
       </div>
 
-      <div class="card cta-card">
-        <div class="eyebrow">¿Todavía no trabajamos juntos?</div>
-        <h2 class="cta-title">Tu música<br>puede empezar acá.</h2>
-        <p class="cta-text">Si nunca hiciste música con nosotros, este es el momento. Mirá cómo podemos trabajar tu próxima canción, tu EP o tu álbum.</p>
-        <a class="btn btn-primary btn-cta" href="../index.html#memberships">Empecemos con tu desarrollo artístico ↗</a>
-      </div>
+      <p class="muted small">¿Tenés un proyecto activo y todavía no recibiste tu acceso? Escribinos y te lo mandamos.</p>
     </section>
 
     <!-- ---------- Elegir contraseña (link del mail de invitación o de recuperación) ---------- -->
