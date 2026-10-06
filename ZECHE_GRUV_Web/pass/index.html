@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ZG PASS — Entradas de ZECHE GRUV</title>
+  <meta name="description" content="Conseguí tu entrada para los shows, open mics y camps de ZECHE GRUV.">
+  <link rel="canonical" href="https://www.zechegruv.com/pass/">
+  <meta property="og:title" content="ZG PASS — Entradas de ZECHE GRUV">
+  <meta property="og:description" content="Conseguí tu entrada para los shows, open mics y camps de ZECHE GRUV.">
+  <meta property="og:image" content="https://www.zechegruv.com/assets/og-image.jpg">
+
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/favicon/apple-touch-icon.png">
+  <meta name="theme-color" content="#4B2509">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/portal/portal.css">
+  <link rel="stylesheet" href="/pass/pass.css">
+</head>
+
+<body>
+  <nav>
+    <a class="nav-mark" href="/">
+      <img class="nav-sun" src="/assets/zeche-gruv-sol.webp" alt="" aria-hidden="true">
+      ZECHE GRUV®
+    </a>
+    <div class="nav-right">
+      <a class="pass-wordmark" href="/pass/">ZG PASS</a>
+    </div>
+  </nav>
+
+  <main>
+    <!-- ---------- Cargando ---------- -->
+    <section id="view-loading">
+      <div class="spinner" role="status" aria-label="Cargando"></div>
+    </section>
+
+    <!-- ---------- Aviso (error, sin eventos) ---------- -->
+    <section id="view-state" hidden>
+      <div class="state">
+        <div class="eyebrow">ZG PASS</div>
+        <h1 class="title title-sm" id="stateTitle"></h1>
+        <p class="lead" id="stateText"></p>
+        <div class="actions"><a class="btn" href="/pass/" id="stateBtn">Ver eventos</a></div>
+      </div>
+    </section>
+
+    <!-- ---------- Listado ---------- -->
+    <section id="view-list" hidden>
+      <div class="eyebrow">ZG PASS / Entradas</div>
+      <h1 class="title">Conseguí<br>tu entrada.</h1>
+      <div class="event-list" id="eventList"></div>
+    </section>
+
+    <!-- ---------- Evento y compra ---------- -->
+    <section id="view-event" hidden>
+      <div class="event">
+        <div>
+          <img class="event-art" id="eventArt" alt="">
+          <div class="eyebrow" id="eventKicker"></div>
+          <h1 class="title title-sm" id="eventName"></h1>
+          <dl class="event-meta" id="eventMeta"></dl>
+          <p class="event-text" id="eventDescription" hidden></p>
+          <p class="event-text" id="eventInfo" hidden></p>
+        </div>
+
+        <div class="buy">
+          <!-- Compra en curso guardada en este dispositivo -->
+          <p class="notice" id="resumeBox" hidden>Tenés una compra en curso. <a class="link-btn" id="resumeLink" href="#">Ver mi orden</a></p>
+
+          <div class="card" id="closedBox" hidden>
+            <span class="pill" id="closedPill"></span>
+            <p class="lead" id="closedText" style="margin-top:14px"></p>
+          </div>
+
+          <form class="card form" id="buyForm" novalidate hidden>
+            <h2 class="card-title">Conseguí tu entrada</h2>
+
+            <div class="buy-type">
+              <strong id="typeName"></strong>
+              <span id="typePrice"></span>
+            </div>
+            <div class="field" id="typeField" hidden>
+              <label for="typeSelect">Tipo de entrada</label>
+              <select id="typeSelect"></select>
+            </div>
+
+            <div class="field">
+              <label id="qtyLabel">Cantidad</label>
+              <div class="qty" role="group" aria-labelledby="qtyLabel">
+                <button type="button" id="qtyLess" aria-label="Una entrada menos">−</button>
+                <output id="qtyValue" aria-live="polite">1</output>
+                <button type="button" id="qtyMore" aria-label="Una entrada más">+</button>
+              </div>
+              <p class="hint" id="qtyHint"></p>
+            </div>
+
+            <div class="field">
+              <label for="firstName">Nombre</label>
+              <input type="text" id="firstName" autocomplete="given-name" maxlength="60" required>
+            </div>
+            <div class="field">
+              <label for="lastName">Apellido</label>
+              <input type="text" id="lastName" autocomplete="family-name" maxlength="60" required>
+            </div>
+            <div class="field">
+              <label for="email">Mail</label>
+              <input type="email" id="email" autocomplete="email" maxlength="160" inputmode="email" required>
+            </div>
+            <div class="field">
+              <label for="email2">Repetí tu mail</label>
+              <input type="email" id="email2" autocomplete="off" maxlength="160" inputmode="email" required>
+              <p class="hint">Ahí te mandamos la entrada.</p>
+            </div>
+
+            <div class="buy-total">
+              <span>Total</span>
+              <strong id="total"></strong>
+            </div>
+
+            <div class="before-pay">
+              <h3>Antes de pagar</h3>
+              <ol>
+                <li>Te vamos a llevar a <strong>Mercado Pago</strong> para completar el pago.</li>
+                <li>Cuando termines, <strong>esperá unos segundos</strong>: volvés solo a ZECHE GRUV y ahí ves tu entrada.</li>
+                <li>También te la mandamos por mail.</li>
+                <li>Tenés <strong>15 minutos</strong> para pagar; después los lugares se liberan.</li>
+              </ol>
+            </div>
+
+            <p class="msg" id="buyMsg" role="alert"></p>
+            <button class="btn btn-primary" type="submit" id="buySubmit">Ir a pagar</button>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="/pass/ticket.js"></script>
+  <script src="/pass/pass.js"></script>
+</body>
+</html>

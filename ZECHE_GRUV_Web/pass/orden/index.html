@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="referrer" content="no-referrer" />
+  <title>Tu entrada — ZG PASS</title>
+
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/favicon/apple-touch-icon.png">
+  <meta name="theme-color" content="#4B2509">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/portal/portal.css">
+  <link rel="stylesheet" href="/pass/pass.css">
+</head>
+
+<body>
+  <nav>
+    <a class="nav-mark" href="/">
+      <img class="nav-sun" src="/assets/zeche-gruv-sol.webp" alt="" aria-hidden="true">
+      ZECHE GRUV®
+    </a>
+    <div class="nav-right">
+      <a class="pass-wordmark" href="/pass/">ZG PASS</a>
+    </div>
+  </nav>
+
+  <main>
+    <!-- ---------- Confirmando el pago ---------- -->
+    <section id="view-waiting">
+      <div class="state">
+        <div class="spinner" role="status" aria-label="Cargando"></div>
+        <div class="eyebrow" id="waitNumber">ZG PASS</div>
+        <h1 class="title title-sm" id="waitTitle">Estamos confirmando tu pago…</h1>
+        <p class="lead" id="waitText">No cierres esta página. Suele tardar unos segundos.</p>
+      </div>
+    </section>
+
+    <!-- ---------- Aviso (pago no completado, orden vencida, error) ---------- -->
+    <section id="view-state" hidden>
+      <div class="state">
+        <div class="eyebrow" id="stateNumber">ZG PASS</div>
+        <h1 class="title title-sm" id="stateTitle"></h1>
+        <p class="lead" id="stateText"></p>
+        <div class="actions"><a class="btn btn-primary" href="/pass/" id="stateBtn">Volver a intentar</a></div>
+      </div>
+    </section>
+
+    <!-- ---------- Entradas ---------- -->
+    <section id="view-paid" hidden>
+      <div class="order-head">
+        <div class="eyebrow" id="paidNumber"></div>
+        <h1 class="title" id="paidTitle">¡Tu entrada está confirmada!</h1>
+        <p class="lead" id="paidText"></p>
+      </div>
+      <div class="tickets" id="tickets"></div>
+    </section>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+  <script src="/pass/ticket.js"></script>
+  <script src="/pass/orden/orden.js"></script>
+</body>
+</html>

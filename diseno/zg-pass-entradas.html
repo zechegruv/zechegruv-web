@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>ZG PASS — propuesta de entradas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* Boceto de diseño (no se publica): dos variantes de la entrada digital.
+       Todo lo que está marcado con data-f es texto que cambia en cada evento. */
+    @font-face {
+      font-family: 'TAN Nimbus';
+      src: url('../ZECHE_GRUV_Web/assets/fonts/TANNIMBUS.otf') format('opentype');
+      font-display: swap;
+    }
+
+    :root {
+      --brown: #4B2509;
+      --brown-dark: #241105;
+      --orange: #F07800;
+      --orange-soft: #F5A623;
+      --beige: #F0E0C0;
+      --cream: #FFF4DC;
+      --muted: #C9A980;
+      --page: #150a03;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--page);
+      color: var(--cream);
+      font-family: "Manrope", sans-serif;
+      padding: 40px 16px 80px;
+    }
+
+    .sheet-head { max-width: 860px; margin: 0 auto 36px; }
+    .eyebrow {
+      font-family: "DM Mono", monospace;
+      font-size: 11px;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: var(--orange-soft);
+    }
+    .sheet-head h1 { font-size: clamp(30px, 5vw, 46px); font-weight: 800; letter-spacing: -.05em; line-height: 1; margin: 10px 0 12px; }
+    .sheet-head p { color: var(--muted); max-width: 60ch; line-height: 1.55; font-size: 15px; }
+
+    .tickets {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 48px 56px;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    .ticket-col { width: 100%; max-width: 380px; }
+    .ticket-col > .eyebrow { margin-bottom: 14px; color: var(--muted); }
+
+    /* ---------- Entrada ---------- */
+    .pass {
+      --bg: #241105;
+      --bg-glow: #5a2c0a;
+      --ink: var(--cream);
+      --soft: var(--beige);
+      --dim: #C9A980;
+      --accent: var(--orange-soft);
+      --accent-2: #B98AC9;
+      --line: rgba(240, 224, 192, .2);
+      --qr-dark: #241105;
+      position: relative;
+      color: var(--ink);
+      background:
+        radial-gradient(120% 60% at 50% 0%, var(--bg-glow) 0%, transparent 62%),
+        var(--bg);
+      border-radius: 22px;
+      overflow: hidden;
+      box-shadow: 0 30px 60px -20px rgba(0, 0, 0, .7), inset 0 0 0 1px var(--line);
+    }
+    .pass-camp {
+      --bg: #232c16;
+      --bg-glow: #4a5a26;
+      --dim: #B9BE94;
+      --accent: #F5A623;
+      --accent-2: #A9B77A;
+      --line: rgba(240, 224, 192, .22);
+      --qr-dark: #1b2311;
+    }
+    /* Grano del sitio, muy sutil. */
+    .pass::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
+      opacity: .09;
+      mix-blend-mode: overlay;
+      pointer-events: none;
+    }
+
+    .pass-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 18px 22px 0;
+      position: relative;
+    }
+    .pass-brand { font-family: 'TAN Nimbus', Georgia, serif; font-size: 21px; color: var(--accent); line-height: 1; padding-top: 4px; }
+    .pass-brand small {
+      display: block;
+      font-family: "DM Mono", monospace;
+      font-size: 8.5px;
+      letter-spacing: .2em;
+      color: var(--dim);
+      margin-top: 7px;
+    }
+    .pass-type {
+      font-family: "DM Mono", monospace;
+      font-size: 10.5px;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      border: 1px solid var(--accent-2);
+      color: var(--accent-2);
+      padding: 7px 11px;
+      border-radius: 999px;
+    }
+
+    .pass-logo { display: block; height: 176px; width: auto; margin: 16px auto 0; position: relative; }
+
+    .pass-main { padding: 18px 22px 22px; position: relative; }
+    .pass-kicker {
+      font-family: "DM Mono", monospace;
+      font-size: 10.5px;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: var(--accent-2);
+      margin-bottom: 8px;
+    }
+    .pass-title { font-size: 29px; font-weight: 800; letter-spacing: -.045em; line-height: 1.02; text-wrap: balance; }
+
+    .pass-meta { display: grid; grid-template-columns: 1.25fr 1fr; gap: 16px 14px; margin-top: 20px; }
+    .pass-meta .wide { grid-column: 1 / -1; }
+    .pass-meta dt {
+      font-family: "DM Mono", monospace;
+      font-size: 9.5px;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: var(--dim);
+      margin-bottom: 4px;
+    }
+    .pass-meta dd { font-size: 16px; font-weight: 700; letter-spacing: -.02em; line-height: 1.2; }
+    .pass-meta dd span { display: block; font-size: 12.5px; font-weight: 500; color: var(--soft); letter-spacing: 0; margin-top: 2px; }
+
+    /* Troquel: línea punteada con dos muescas, como una entrada cortable. */
+    .pass-cut { position: relative; height: 26px; }
+    .pass-cut::before {
+      content: "";
+      position: absolute;
+      left: 26px; right: 26px; top: 50%;
+      border-top: 2px dashed var(--line);
+    }
+    .pass-cut i { position: absolute; top: 0; width: 26px; height: 26px; border-radius: 50%; background: var(--page); }
+    .pass-cut i:first-child { left: -13px; }
+    .pass-cut i:last-child { right: -13px; }
+
+    .pass-stub { padding: 16px 22px 20px; text-align: center; position: relative; }
+    .pass-holder { font-size: 19px; font-weight: 800; letter-spacing: -.03em; }
+    .pass-holder-label {
+      font-family: "DM Mono", monospace;
+      font-size: 9.5px;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: var(--dim);
+      margin-bottom: 4px;
+    }
+
+    /* El QR va siempre oscuro sobre crema y con margen libre: la estética
+       está en el marco, no en los módulos, para que escanee en cualquier celular. */
+    .pass-qr {
+      position: relative;
+      width: 232px;
+      margin: 16px auto 14px;
+      padding: 16px;
+      background: var(--cream);
+      border-radius: 18px;
+      box-shadow: 0 0 0 1px var(--accent), 0 0 0 6px rgba(245, 166, 35, .12);
+    }
+    .pass-qr svg { display: block; width: 100%; height: auto; }
+    .pass-qr img {
+      position: absolute;
+      left: 50%; top: 50%;
+      width: 44px; height: 44px;
+      transform: translate(-50%, -50%);
+      background: var(--cream);
+      border-radius: 50%;
+      padding: 4px;
+    }
+    .pass-id { font-family: "DM Mono", monospace; font-size: 15px; font-weight: 500; letter-spacing: .14em; color: var(--accent); }
+    .pass-note { font-size: 12px; line-height: 1.5; color: var(--soft); margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line); text-align: left; }
+    .pass-foot {
+      display: flex;
+      justify-content: space-between;
+      font-family: "DM Mono", monospace;
+      font-size: 9px;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: var(--dim);
+      margin-top: 14px;
+    }
+  </style>
+</head>
+<body>
+  <header class="sheet-head">
+    <div class="eyebrow">ZG PASS / Propuesta de diseño</div>
+    <h1>Entradas digitales</h1>
+    <p>Dos variantes sobre la misma estructura. El marco, los colores y el logo dependen del tipo de experiencia; el nombre, la fecha, el lugar, el titular y el código son texto que cambia en cada evento. Los datos de abajo son de ejemplo.</p>
+  </header>
+
+  <main class="tickets">
+    <div class="ticket-col">
+      <div class="eyebrow">01 / Shows &amp; Open Mic</div>
+      <article class="pass pass-shows">
+        <div class="pass-top">
+          <div class="pass-brand">ZG PASS<small>ZECHE GRUV · RECORD LABEL</small></div>
+          <div class="pass-type" data-f="tipo">General</div>
+        </div>
+        <img class="pass-logo" src="../ZECHE_GRUV_Web/assets/camps/zeche-gruv-shows-logo.webp" alt="ZECHE GRUV Shows &amp; Open Mic">
+        <div class="pass-main">
+          <div class="pass-kicker" data-f="categoria">Show + Open mic</div>
+          <h2 class="pass-title" data-f="evento">ZECHE GRUV Shows &amp; Open Mic #2</h2>
+          <dl class="pass-meta">
+            <div><dt>Fecha</dt><dd data-f="fecha">Sáb 24 oct 2026</dd></div>
+            <div><dt>Hora</dt><dd data-f="hora">20:00 h</dd></div>
+            <div class="wide"><dt>Lugar</dt><dd data-f="lugar">Sergio Souza Teatro<span>Ciudad de Buenos Aires</span></dd></div>
+          </dl>
+        </div>
+        <div class="pass-cut"><i></i><i></i></div>
+        <div class="pass-stub">
+          <div class="pass-holder-label">Titular</div>
+          <div class="pass-holder" data-f="titular">Nombre Apellido</div>
+          <div class="pass-qr" data-qr="https://www.zechegruv.com/pass/EJEMPLO-k3Jx9QmT7vB2nR8wLc5Y"><img src="../ZECHE_GRUV_Web/assets/mail/sol.png" alt=""></div>
+          <div class="pass-id" data-f="codigo">ZG-26-000184</div>
+          <p class="pass-note" data-f="info">Mostrá este QR en la puerta. Cada entrada sirve para un solo ingreso.</p>
+          <div class="pass-foot"><span>Entrada 1 de 2</span><span>zechegruv.com</span></div>
+        </div>
+      </article>
+    </div>
+
+    <div class="ticket-col">
+      <div class="eyebrow">02 / Camps</div>
+      <article class="pass pass-camp">
+        <div class="pass-top">
+          <div class="pass-brand">ZG PASS<small>ZECHE GRUV · RECORD LABEL</small></div>
+          <div class="pass-type" data-f="tipo">Camp completo</div>
+        </div>
+        <img class="pass-logo" src="../ZECHE_GRUV_Web/assets/camps/zeche-gruv-camp-logo.webp" alt="ZECHE GRUV Camp">
+        <div class="pass-main">
+          <div class="pass-kicker" data-f="categoria">Campamento creativo</div>
+          <h2 class="pass-title" data-f="evento">Nombre del camp</h2>
+          <dl class="pass-meta">
+            <div><dt>Fecha</dt><dd data-f="fecha">Del 00 al 00 mes</dd></div>
+            <div><dt>Ingreso</dt><dd data-f="hora">00:00 h</dd></div>
+            <div class="wide"><dt>Lugar</dt><dd data-f="lugar">Lugar del camp<span>Localidad, provincia</span></dd></div>
+          </dl>
+        </div>
+        <div class="pass-cut"><i></i><i></i></div>
+        <div class="pass-stub">
+          <div class="pass-holder-label">Titular</div>
+          <div class="pass-holder" data-f="titular">Nombre Apellido</div>
+          <div class="pass-qr" data-qr="https://www.zechegruv.com/pass/EJEMPLO-Hq7Lw2ZpN4cV9sXdT6mB"><img src="../ZECHE_GRUV_Web/assets/mail/sol.png" alt=""></div>
+          <div class="pass-id" data-f="codigo">ZG-26-000207</div>
+          <p class="pass-note" data-f="info">Mostrá este QR al llegar. Cada entrada sirve para un solo ingreso.</p>
+          <div class="pass-foot"><span>Entrada 1 de 1</span><span>zechegruv.com</span></div>
+        </div>
+      </article>
+    </div>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+  <script>
+    // QR de muestra: corrección de errores alta (H) para que el sol del
+    // centro no impida la lectura.
+    document.querySelectorAll(".pass-qr").forEach((box) => {
+      const qr = qrcode(0, "H");
+      qr.addData(box.dataset.qr);
+      qr.make();
+      const n = qr.getModuleCount();
+      const dark = getComputedStyle(box).getPropertyValue("--qr-dark").trim();
+      let rects = "";
+      for (let r = 0; r < n; r++) {
+        for (let c = 0; c < n; c++) {
+          if (qr.isDark(r, c)) rects += `<rect x="${c}" y="${r}" width="1.02" height="1.02"/>`;
+        }
+      }
+      box.insertAdjacentHTML("afterbegin", `<svg viewBox="0 0 ${n} ${n}" fill="${dark}" shape-rendering="crispEdges" role="img" aria-label="Código QR de la entrada">${rects}</svg>`);
+    });
+  </script>
+</body>
+</html>
