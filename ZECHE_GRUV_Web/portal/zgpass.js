@@ -7,7 +7,7 @@
   const P = window.ZGPortal;
   const { db, $, setMsg } = P;
   const { fmtDate, fmtTime, fmtMoney, el, renderTicket } = window.ZGPass;
-  const JSQR_URL = "https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js";
+  const JSQR_URL = "https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js";
   const STATE = { draft: "Borrador (no se ve)", published: "A la venta", closed: "Venta cerrada", cancelled: "Cancelado" };
   const ORIGIN = { mercadopago: "Mercado Pago", cash: "Efectivo", transfer: "Transferencia", none: "—" };
 
