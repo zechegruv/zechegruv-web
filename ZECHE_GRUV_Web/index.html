@@ -1259,13 +1259,37 @@
         grid-template-columns: 1fr;
       }
 
+      /* En el celu, catálogos y artistas van de a 4 por fila: las
+         tarjetas quedan chicas, así que el texto se achica y en el
+         catálogo solo se muestra el nombre del lanzamiento. */
       .catalogue {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 8px;
       }
 
+      .catalogue .card-info { padding: 22px 6px 6px; }
+
+      .catalogue .card-name {
+        font-size: 9px;
+        line-height: 1.2;
+        letter-spacing: -.01em;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        overflow: hidden;
+      }
+
+      .catalogue .card-meta { display: none; }
+
       .artists-grid {
-        grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
-        gap: 18px 12px;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 16px 10px;
+      }
+
+      .artist-name {
+        font-size: 10px;
+        line-height: 1.25;
+        overflow-wrap: anywhere;
       }
 
       .services-grid {
@@ -1283,10 +1307,6 @@
     }
 
     @media (max-width: 480px) {
-      .catalogue {
-        grid-template-columns: 1fr;
-      }
-
       .release-card:last-child {
         display: block;
       }
@@ -1700,19 +1720,6 @@
       cursor: not-allowed;
     }
 
-    /* Sobreescribe ".service-field label" (uppercase, DM Mono 9px) cuando el
-       checkbox de pitching vive dentro de un .service-field — necesita
-       mayor especificidad para que gane sobre esa regla más genérica. */
-    .service-field .package-check-row {
-      display: flex;
-      font-family: inherit;
-      font-size: 12.5px;
-      letter-spacing: normal;
-      text-transform: none;
-      color: var(--beige);
-      margin-bottom: 0;
-    }
-
     /* ---------- Catálogo de beats (card "Instrumental de catálogo") ---------- */
 
     .beat-picker {
@@ -1837,6 +1844,48 @@
       height: 0;
       overflow: hidden;
       transition: opacity .2s ease;
+    }
+
+    /* Aviso flotante sobre el campo de canciones (rangos de EP / Álbum). */
+    .service-field:has(.package-popup) { position: relative; }
+
+    .package-popup {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: calc(100% + 8px);
+      z-index: 5;
+      padding: 12px 14px;
+      border: 1px solid var(--orange-soft);
+      background: var(--brown-dark);
+      box-shadow: 0 14px 34px rgba(0, 0, 0, .55);
+      color: var(--cream);
+      font-size: 12px;
+      line-height: 1.45;
+      cursor: pointer;
+      animation: package-popup-in .25s ease;
+    }
+
+    .package-popup strong {
+      color: var(--orange);
+      font-size: 14px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .package-popup b {
+      display: block;
+      margin-top: 8px;
+      font-family: "DM Mono", monospace;
+      font-size: 10px;
+      font-weight: 400;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--orange-soft);
+    }
+
+    @keyframes package-popup-in {
+      from { opacity: 0; transform: translateY(-6px); }
     }
 
     .package-hint.is-visible {
@@ -2501,7 +2550,8 @@
       .events-lineup + .events-videos { margin-top: 34px; }
     }
 
-    /* Videos de los shows: fragmentos sin audio, en loop mientras se ven. */
+    /* Videos de los shows: fragmentos en loop mientras se ven. Arrancan sin
+       audio; el botón de sonido lo activa de a un video por vez. */
     .events-videos {
       grid-column: 1 / -1;
       position: relative;
@@ -2556,6 +2606,34 @@
     }
 
     .event-video figcaption a:hover { color: var(--orange-soft); }
+
+    .event-video-sound {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      z-index: 2;
+      display: grid;
+      place-items: center;
+      width: 38px;
+      height: 38px;
+      padding: 0;
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      background: rgba(20, 9, 2, .65);
+      color: var(--cream);
+      cursor: pointer;
+      transition: background .25s ease, color .25s ease, border-color .25s ease;
+    }
+
+    .event-video-sound:hover { border-color: var(--orange-soft); color: var(--orange-soft); }
+    .event-video-sound .icon-sound-on,
+    .event-video-sound[aria-pressed="true"] .icon-sound-off { display: none; }
+    .event-video-sound[aria-pressed="true"] .icon-sound-on { display: block; }
+    .event-video-sound[aria-pressed="true"] {
+      background: var(--orange);
+      border-color: var(--orange);
+      color: var(--brown-dark);
+    }
 
     @media (hover: hover) {
       .event-video:hover {
@@ -3768,7 +3846,7 @@
           <img src="assets/studio/estudio-sala.webp" alt="El estudio de ZECHE GRUV: escritorio con monitores, silla naranja, guitarras y bajo colgados en la pared, teclados, plantas y paneles acústicos bajo luz azul" width="600" height="750" loading="lazy" decoding="async">
         </figure>
         <div class="label-side" data-i18n-html="label_side">
-        <p>Lo que no cambió es la forma de trabajar: no venimos a cambiar tu idea, venimos a traducirla. Si algo está fuera de tiempo, lo acomodamos para que suene como lo escuchás en tu cabeza. Buscamos el equilibrio entre lo orgánico, lo experimental y una vueltita que haga que tu canción llegue a más gente.</p>
+        <p>Lo que no cambió es la forma de trabajar: no venimos a cambiar tu idea, venimos a traducirla. Si algo está fuera de tiempo, lo acomodamos para que suene como lo escuchás en tu cabeza. Buscamos el equilibrio entre lo orgánico, lo experimental y una vuelta que haga que tu canción llegue a más gente.</p>
         <p>Acá hay plantas, luces cálidas, desayuno o merienda. Y no vivimos corriendo contra el reloj: si estamos cerca de la toma perfecta, nos tomamos unos minutos más para encontrarla.</p>
       </div>
       </aside>
@@ -4109,10 +4187,6 @@
             <dt data-i18n="camp_hair_label">Cortes de pelo</dt>
             <dd><a href="https://www.instagram.com/cocorapadook/" target="_blank" rel="noopener">Cocorapadook</a></dd>
           </div>
-          <div>
-            <dt data-i18n="camp_prod_label">Producido y llevado a cabo por</dt>
-            <dd>ZECHE GRUV</dd>
-          </div>
         </dl>
       </div>
       </div>
@@ -4153,11 +4227,19 @@
       <div class="events-videos">
         <figure class="event-video">
           <video src="assets/events/show-jugo-solar.mp4" poster="assets/events/show-jugo-solar-poster.webp" width="1280" height="720" muted loop playsinline preload="none" aria-label="Jugo Solar en vivo en un show de ZECHE GRUV"></video>
+          <button class="event-video-sound" type="button" aria-pressed="false" aria-label="Activar sonido">
+            <svg class="icon-sound-off" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2 6h2.5L8 3v10L4.5 10H2z" fill="currentColor"/><path d="M10.5 6l3.5 4m0-4l-3.5 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+            <svg class="icon-sound-on" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2 6h2.5L8 3v10L4.5 10H2z" fill="currentColor"/><path d="M10.5 5.5a3.5 3.5 0 010 5M12.3 3.6a6 6 0 010 8.8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          </button>
           <figcaption><span class="camp-video-num">01</span><a href="artistas/jugo-solar.html">Jugo Solar</a><span class="event-video-tag">Open mic</span></figcaption>
           <span class="camp-video-bar" aria-hidden="true"><i></i></span>
         </figure>
         <figure class="event-video">
           <video src="assets/events/show-yaco-santana.mp4" poster="assets/events/show-yaco-santana-poster.webp" width="1280" height="720" muted loop playsinline preload="none" aria-label="Yaco Santana en vivo en un show de ZECHE GRUV"></video>
+          <button class="event-video-sound" type="button" aria-pressed="false" aria-label="Activar sonido">
+            <svg class="icon-sound-off" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2 6h2.5L8 3v10L4.5 10H2z" fill="currentColor"/><path d="M10.5 6l3.5 4m0-4l-3.5 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+            <svg class="icon-sound-on" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2 6h2.5L8 3v10L4.5 10H2z" fill="currentColor"/><path d="M10.5 5.5a3.5 3.5 0 010 5M12.3 3.6a6 6 0 010 8.8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          </button>
           <figcaption><span class="camp-video-num">02</span><a href="artistas/yaco-santana.html">Yaco Santana</a><span class="event-video-tag">Show</span></figcaption>
           <span class="camp-video-bar" aria-hidden="true"><i></i></span>
         </figure>
@@ -4167,9 +4249,9 @@
 
   <!-- ================= MUSICAL SERVICES ================= -->
   <section id="services">
-    <div class="section-label">07 / <span data-i18n="sl_services">Servicios y precios</span></div>
+    <div class="section-label">07 / <span data-i18n="sl_services">Servicios y valores</span></div>
     <h2 class="section-title" data-i18n-html="st_services_html">Elegí cómo<br>querés arrancar.</h2>
-    <p class="section-intro" data-i18n="services_intro">Trabajamos por proyecto porque las canciones necesitan tiempo. Cuantas más canciones hagamos juntos, menos te sale cada una.</p>
+    <p class="section-intro" data-i18n="services_intro">Trabajamos por proyecto porque las canciones necesitan tiempo.</p>
 
     <!-- ---- Packages ---- -->
     <h3 class="services-subhead" id="memberships" data-i18n="nav_memberships">Desarrollo artístico</h3>
@@ -4218,7 +4300,8 @@
         <div class="package-save" id="epalbum-save"></div>
         <div class="service-field">
           <label for="epalbum-songs" data-i18n="pkg_songs_label">Cantidad de canciones</label>
-          <input type="number" id="epalbum-songs" min="1" placeholder="Ej: 5">
+          <input type="number" id="epalbum-songs" min="3" placeholder="Ej: 5">
+          <div class="package-popup" id="epalbum-songs-popup" role="status" hidden></div>
         </div>
         <p class="package-desc" data-i18n="pkg_epalbum_desc">Para quienes quieren construir algo más grande. Elegí EP o álbum, contanos cuántos temas y armamos el camino juntos.</p>
         <div class="package-addons" id="epalbum-addons">
@@ -4243,7 +4326,7 @@
       <ul class="includes-list">
         <li data-i18n="includes_1">4 sesiones de 2 horas, una por semana</li>
         <li data-i18n="includes_2">Mezcla y mastering</li>
-        <li data-i18n="includes_3">Distribución a todas las plataformas (pitch a playlists editoriales por +$30.000, exclusivo de los packs)</li>
+        <li data-i18n="includes_3">Distribución a todas las plataformas (pitch a playlists editoriales únicamente incluido en PROYECTO)</li>
         <li data-i18n="includes_4">Pistas para tus shows en vivo, entregadas con el máster entre 7 y 15 días después de grabar las voces finales</li>
         <li data-i18n="includes_5">Seguimiento por WhatsApp entre sesión y sesión</li>
         <li data-i18n="includes_6">Backup en la nube de tus proyectos</li>
@@ -4413,7 +4496,9 @@
     const BEAT_CATALOG = {
       url: "https://untitled.stream/library/project/C7PxptukoEKLShhj4DQ6K",
       beats: [
+        "FUTUR3 - F#m 154 bpm @prodyeiko",
         "Bouncy - Bbmin 102Bpm @prodyeiko",
+        "OMG - Cmin 130bpm @prodyeiko",
       ],
     };
     let selectedBeat = null;
@@ -4596,14 +4681,6 @@
               <label for="distro-motivo">${t.distro_motivo_label}</label>
               <textarea id="distro-motivo" placeholder="${t.distro_motivo_placeholder}"></textarea>
             </div>
-            <div class="service-field">
-              <label class="package-check-row" id="distro-pitch-row" for="distro-pitch">
-                <input type="checkbox" id="distro-pitch">
-                <span>${t.distro_pitch_label}</span>
-                <span class="pc-price">+$30.000</span>
-              </label>
-              <p class="package-hint" id="distro-pitch-hint">${t.distro_pitch_disabled_hint}</p>
-            </div>
           </div>
           <button class="service-btn" type="button" data-action="quote-distro">${t.svc_cta_quote}</button>
         </div>
@@ -4622,26 +4699,6 @@
 
       servicesGrid.innerHTML = fixedCards + mezclaCard + distribucionCard + playbackCard;
       renderBeatList();
-      updateDistroPitchAvailability();
-    }
-
-    // Pitching solo aplica a lanzamientos nuevos: si el usuario indica que
-    // las canciones ya se habían estrenado antes, o que está migrando desde
-    // otro agregador/distribuidora, el pitch queda deshabilitado y se
-    // desmarca automáticamente.
-    function updateDistroPitchAvailability() {
-      const estrenadas = document.getElementById("distro-estrenadas")?.value;
-      const migrando = document.getElementById("distro-migrando")?.value;
-      const pitchCheckbox = document.getElementById("distro-pitch");
-      const pitchHint = document.getElementById("distro-pitch-hint");
-      if (!pitchCheckbox) return;
-
-      const isNewRelease = estrenadas === "No" && migrando === "No";
-      const disqualified = estrenadas === "Sí" || migrando === "Sí";
-
-      pitchCheckbox.disabled = !isNewRelease;
-      if (!isNewRelease) pitchCheckbox.checked = false;
-      if (pitchHint) pitchHint.classList.toggle("is-visible", disqualified);
     }
 
     // Un solo listener delegado en el contenedor: como el HTML de adentro se
@@ -4684,10 +4741,8 @@
         const estrenadas = document.getElementById("distro-estrenadas")?.value || "sin especificar";
         const migrando = document.getElementById("distro-migrando")?.value || "sin especificar";
         const motivo = document.getElementById("distro-motivo")?.value;
-        const pitch = document.getElementById("distro-pitch")?.checked;
         let msg = `Hola! Quiero cotizar Distribución.\nCantidad de canciones: ${canciones}\n¿Ya se habían estrenado?: ${estrenadas}\n¿Migrando de otra distribuidora?: ${migrando}`;
         if (migrando === "Sí" && motivo) msg += `\nMotivo del cambio: ${motivo}`;
-        msg += `\nPitching a playlists editoriales (+$30.000): ${pitch ? "Sí" : "No"}`;
         window.open(waLink(msg), "_blank", "noopener");
       } else if (action === "quote-playback") {
         window.open(waLink("Hola! Quiero consultar sobre Playback y Tune."), "_blank", "noopener");
@@ -4719,9 +4774,6 @@
       if (event.target.id === "distro-migrando") {
         const wrap = document.getElementById("distro-motivo-wrap");
         if (wrap) wrap.style.display = event.target.value === "Sí" ? "block" : "none";
-      }
-      if (event.target.id === "distro-migrando" || event.target.id === "distro-estrenadas") {
-        updateDistroPitchAvailability();
       }
     });
 
@@ -4902,6 +4954,11 @@
       album: { price: "$350.000", saveKey: "pkg_album_save", placeholder: "Ej: 10", label: "Álbum" },
     };
     let epalbumFormat = null; // null hasta que el cliente elige EP o Álbum
+    // Mínimos de canciones: un EP lleva al menos 3 y un Álbum al menos 8.
+    const EP_MIN_SONGS = 3;
+    const ALBUM_MIN_SONGS = 8;
+    let epalbumSongsNote = null; // key de I18N del popup de rangos (EP 3-7 / Álbum 8+)
+    let epalbumPopupTimer = null;
 
     const epBtn = document.getElementById("ep-btn");
     const albumBtn = document.getElementById("album-btn");
@@ -4911,11 +4968,54 @@
     const epalbumHintEl = document.getElementById("epalbum-hint");
     const epalbumExtrasEl = document.getElementById("epalbum-extras");
     const epalbumAddonsEl = document.getElementById("epalbum-addons");
+    const epalbumPopupEl = document.getElementById("epalbum-songs-popup");
+
+    // El formato lo define la cantidad de canciones: de 3 a 7 es un EP y
+    // de 8 en adelante un Álbum. Se respeta el número que escribió la
+    // persona y lo que se ajusta es la selección de formato; menos de 3 no
+    // se permite (sube a 3). El popup explica los rangos cuando el ajuste
+    // pisa algo que la persona había elegido.
+    function enforceSongLimits() {
+      let n = parseInt(epalbumSongsInput.value, 10);
+      epalbumSongsNote = null;
+      if (Number.isNaN(n)) return;
+      if (n < EP_MIN_SONGS) {
+        n = EP_MIN_SONGS;
+        epalbumSongsInput.value = n;
+        epalbumSongsNote = "pkg_range_min";
+      }
+      const format = n >= ALBUM_MIN_SONGS ? "album" : "ep";
+      if (epalbumFormat && epalbumFormat !== format) {
+        epalbumSongsNote = format === "ep" ? "pkg_range_to_ep" : "pkg_range_to_album";
+      }
+      epalbumFormat = format;
+      epalbumHintEl.classList.remove("is-visible");
+      if (epalbumSongsNote) {
+        clearTimeout(epalbumPopupTimer);
+        epalbumPopupTimer = setTimeout(closeSongsPopup, 7000);
+      }
+    }
+
+    function closeSongsPopup() {
+      clearTimeout(epalbumPopupTimer);
+      epalbumSongsNote = null;
+      epalbumPopupEl.hidden = true;
+    }
+    epalbumPopupEl.addEventListener("click", closeSongsPopup);
 
     function renderEpAlbum() {
       const t = I18N[currentLang];
       epBtn.classList.toggle("is-active", epalbumFormat === "ep");
       albumBtn.classList.toggle("is-active", epalbumFormat === "album");
+
+      epalbumPopupEl.innerHTML = epalbumSongsNote ? `${t[epalbumSongsNote]}<b>${t.pkg_range_legend_html}</b>` : "";
+      epalbumPopupEl.hidden = !epalbumSongsNote;
+
+      // Video y portada no se pueden sumar hasta elegir EP o Álbum.
+      epalbumAddonsEl.querySelectorAll("input[data-addon]").forEach((input) => {
+        input.disabled = !epalbumFormat;
+        if (!epalbumFormat) input.checked = false;
+      });
 
       // Los extras (video / portada) se pagan una sola vez, aparte de la
       // mensualidad, con el descuento del formato elegido.
@@ -4938,15 +5038,27 @@
     }
 
     epalbumAddonsEl.addEventListener("change", renderEpAlbum);
+    // Si tocan un extra sin haber elegido formato, se les avisa que falta.
+    epalbumAddonsEl.addEventListener("click", () => {
+      if (!epalbumFormat) epalbumHintEl.classList.add("is-visible");
+    });
 
     epBtn.addEventListener("click", () => {
       epalbumFormat = "ep";
       epalbumHintEl.classList.remove("is-visible");
+      enforceSongLimits();
       renderEpAlbum();
     });
     albumBtn.addEventListener("click", () => {
       epalbumFormat = "album";
       epalbumHintEl.classList.remove("is-visible");
+      enforceSongLimits();
+      renderEpAlbum();
+    });
+    // Se valida al terminar de escribir (no en cada tecla, para poder
+    // tipear "10" sin que el "1" cambie el formato).
+    epalbumSongsInput.addEventListener("change", () => {
+      enforceSongLimits();
       renderEpAlbum();
     });
 
@@ -4955,14 +5067,53 @@
         epalbumHintEl.classList.add("is-visible");
         return;
       }
+      enforceSongLimits();
+      // La cantidad de canciones es obligatoria: hace falta para el contrato.
+      if (!epalbumSongsInput.value) {
+        epalbumSongsNote = "pkg_songs_required";
+        clearTimeout(epalbumPopupTimer);
+        epalbumPopupTimer = setTimeout(closeSongsPopup, 7000);
+        renderEpAlbum();
+        epalbumSongsInput.focus();
+        return;
+      }
+      renderEpAlbum();
       const cfg = EPALBUM[epalbumFormat];
-      const songs = epalbumSongsInput.value || "sin especificar";
+      const songs = epalbumSongsInput.value;
       let msg = `Hola! Quiero cotizar un ${cfg.label} (${cfg.price} ARS por mes, hasta terminar el proyecto).\nCantidad de canciones: ${songs}`;
       const picked = readAddons(epalbumAddonsEl, epalbumFormat);
       if (picked.length) {
         msg += `\nExtras (pago único, con descuento de pack): ${addonsText(picked)}\nTotal extras: ${fmtARS(addonsTotal(picked))} ARS`;
       }
       window.open(waLink(msg), "_blank", "noopener");
+    });
+
+    // ---------- Sonido de los videos de shows / open mic ----------
+    // Arrancan muteados. El botón activa el audio de un solo video a la
+    // vez: al activar uno, el otro se silencia y queda así hasta que lo
+    // vuelvan a activar a mano.
+    const eventVideos = Array.from(document.querySelectorAll(".event-video video"));
+
+    function renderEventVideoSound() {
+      const t = I18N[currentLang];
+      eventVideos.forEach((v) => {
+        const btn = v.parentElement.querySelector(".event-video-sound");
+        btn.setAttribute("aria-pressed", !v.muted);
+        btn.setAttribute("aria-label", v.muted ? t.video_sound_on : t.video_sound_off);
+      });
+    }
+
+    eventVideos.forEach((v) => {
+      v.parentElement.querySelector(".event-video-sound").addEventListener("click", () => {
+        v.muted = !v.muted;
+        if (!v.muted) v.play().catch(() => {});
+      });
+      // También cubre el caso de que el audio se active desde los
+      // controles nativos del video.
+      v.addEventListener("volumechange", () => {
+        if (!v.muted) eventVideos.forEach((o) => { if (o !== v) o.muted = true; });
+        renderEventVideoSound();
+      });
     });
 
     // ---------- Traducción de la página ----------
@@ -5010,7 +5161,7 @@
         sl_label: "Quiénes somos",
         st_label_html: "Un estudio que<br>se siente casa.",
         label_intro_html: "ZECHE GRUV nació en una habitación. Para hacer lugar, el colchón iba parado contra la pared y, de paso, servía de aislante. No era el estudio más profesional del mundo, pero se grababa igual, con lo que había y muchas ganas. Hoy somos un sello independiente con créditos en más de 35 canciones publicadas, y por el estudio ya pasaron más de 200 artistas.",
-        label_side: "<p>Lo que no cambió es la forma de trabajar: no venimos a cambiar tu idea, venimos a traducirla. Si algo está fuera de tiempo, lo acomodamos para que suene como lo escuchás en tu cabeza. Buscamos el equilibrio entre lo orgánico, lo experimental y una vueltita que haga que tu canción llegue a más gente.</p><p>Acá hay plantas, luces cálidas, desayuno o merienda. Y no vivimos corriendo contra el reloj: si estamos cerca de la toma perfecta, nos tomamos unos minutos más para encontrarla.</p>",
+        label_side: "<p>Lo que no cambió es la forma de trabajar: no venimos a cambiar tu idea, venimos a traducirla. Si algo está fuera de tiempo, lo acomodamos para que suene como lo escuchás en tu cabeza. Buscamos el equilibrio entre lo orgánico, lo experimental y una vuelta que haga que tu canción llegue a más gente.</p><p>Acá hay plantas, luces cálidas, desayuno o merienda. Y no vivimos corriendo contra el reloj: si estamos cerca de la toma perfecta, nos tomamos unos minutos más para encontrarla.</p>",
         label_director_role: "Fundador y director",
         label_director_bio: "<p>Yaco Santana nació en Brasil y creció viajando por Latinoamérica, entre tambores y las canciones que le cantaba su madre. Se formó en el conservatorio, estudió Producción Musical en la Escuela de Música de Buenos Aires y profundizó su aprendizaje de manera autodidacta. Tras varios años en otros trabajos, decidió dedicarse por completo a la música, y hoy vive de ella.</p><p>Su formación y su escucha van del clásico al folclore y del trap al metal; de ahí su afinidad por las fusiones poco convencionales. Acompaña personalmente cada sesión, desde la primera idea hasta el lanzamiento.</p>",
         sl_session: "Cómo es una sesión",
@@ -5051,7 +5202,6 @@
         camp_press_label: "Prensa",
         camp_food_label: "Comida japonesa, cortesía de",
         camp_hair_label: "Cortes de pelo",
-        camp_prod_label: "Producido y llevado a cabo por",
         camp_video_1: "La juntada",
         camp_video_2: "Así se vive el camp",
         camp_video_3: "Se come rico",
@@ -5060,9 +5210,9 @@
         events_shows_label: "Shows",
         events_openmic_label: "Open mic · algunos de los que se presentaron",
         events_text: "El open mic es nuestra forma de escuchar nuevos talentos. Es el espacio que desde ZECHE GRUV les damos a los artistas que trabajan con nosotros para que se expresen, y una puerta abierta para los que todavía no nos conocen: vení, conectate y mostrá lo que hacés. Si cantás en el open mic, podés ser parte del próximo show. Fechas pronto acá.",
-        sl_services: "Servicios y precios",
+        sl_services: "Servicios y valores",
         st_services_html: "Elegí cómo<br>querés arrancar.",
-        services_intro: "Trabajamos por proyecto porque las canciones necesitan tiempo. Cuantas más canciones hagamos juntos, menos te sale cada una.",
+        services_intro: "Trabajamos por proyecto porque las canciones necesitan tiempo.",
         pkg_custom_subtitle: "Armá tu proyecto a medida",
         pkg_custom_cta: "Armemos tu plan ↗",
         pkg_cta_reserve: "Quiero arrancar ↗",
@@ -5074,7 +5224,7 @@
         includes_title: "Todo proyecto incluye:",
         includes_1: "4 sesiones de 2 horas, una por semana",
         includes_2: "Mezcla y mastering",
-        includes_3: "Distribución a todas las plataformas (pitch a playlists editoriales por +$30.000, exclusivo de los packs)",
+        includes_3: "Distribución a todas las plataformas (pitch a playlists editoriales únicamente incluido en PROYECTO)",
         includes_4: "Pistas para tus shows en vivo, entregadas con el máster entre 7 y 15 días después de grabar las voces finales",
         includes_5: "Seguimiento por WhatsApp entre sesión y sesión",
         includes_6: "Backup en la nube de tus proyectos",
@@ -5102,6 +5252,12 @@
         pkg_album_save: "Ahorrás +40% vs. contratar todo por separado.",
         pkg_songs_label: "Cantidad de canciones",
         pkg_epalbum_choose_hint: "Elegí un formato para ver el precio",
+        pkg_range_min: "El mínimo para un proyecto son 3 canciones.",
+        pkg_songs_required: "Contanos cuántas canciones va a tener tu proyecto: lo necesitamos para armar el contrato antes de comenzar.",
+        pkg_range_to_ep: "Con menos de 8 canciones, tu proyecto es un EP.",
+        pkg_range_to_album: "Con 8 canciones o más, tenés un <strong>40% de descuento</strong>.",
+        pkg_range_legend_html: "EP: 3 a 7 canciones<br>Álbum: 8 o más",
+        video_sound_on: "Activar sonido", video_sound_off: "Silenciar",
         pkg_currency: "ARS", pkg_currency_monthly: "ARS / mes",
         pkg_addon_video: "Video", pkg_addon_cover: "Portada", pkg_addons_once: "pago único", pkg_addon_free: "Bonificada",
         beat_view_catalog: "Ver catálogo ↗", beat_pick_btn: "Elegir beat", beat_search_placeholder: "Buscá el beat por nombre…",
@@ -5114,8 +5270,6 @@
         distro_migrando_label: "¿Estás migrando de otra distribuidora?",
         distro_motivo_label: "¿Por qué buscás cambiar de distribuidora?",
         distro_motivo_placeholder: "Contanos brevemente...", select_choose: "Elegir...", yes: "Sí", no: "No",
-        distro_pitch_label: "Sumar pitching a playlists editoriales",
-        distro_pitch_disabled_hint: "El pitching solo está disponible para canciones que se distribuyen por primera vez — no aplica si ya se habían estrenado antes o si estás migrando desde otra distribuidora.",
         lang_aria: "Idioma",
         svc: {
           session: { name: "Hora de sesión de grabación", desc: "Una hora de estudio con ingeniero en sala, espacio acustizado para grabar voces y/o instrumentos. Ideal si ya tenés el tema armado y necesitás capturarlo con calidad y asistencia profesional." },
@@ -5128,7 +5282,7 @@
           videolyrics: { name: "VideoLyrics", desc: "Video con letras animadas sincronizadas a tu canción, una opción más accesible para tener contenido audiovisual en redes y YouTube." },
           session_musicians: { name: "Grabación de guitarras / bajo / batería / coros", desc: "Sumamos músicos de sesión para grabar sobre tu tema, con el instrumento y la sala ya preparados." },
           mezcla: { name: "Mezcla", desc: "Mezcla profesional de tu canción; el precio varía según la cantidad de canales y la duración del tema — lo cotizás completando esos datos." },
-          distro: { name: "Distribución a todas las plataformas", desc: "Subimos tu música a Spotify, Apple Music, YouTube Music y el resto de las plataformas. Si es un lanzamiento nuevo, podés sumar el pitch a playlists editoriales como opción adicional (+$30.000)." },
+          distro: { name: "Distribución a todas las plataformas", desc: "Subimos tu música a Spotify, Apple Music, YouTube Music y el resto de las plataformas." },
           playback: { name: "Playback y Tune", desc: "No es solo armar la pista de playback: el día de tu show, estamos ahí con vos. Te entregamos las pistas listas y hacemos el tune en tiempo real, en vivo, acompañando cada matiz de tu interpretación arriba del escenario. Es el estándar ZECHE GRUV para shows en directo: cero baches, cero sustos, sonido con nivel de gira profesional de punta a punta." },
         },
       },
@@ -5167,7 +5321,7 @@
         sl_label: "About us",
         st_label_html: "A studio that<br>feels like home.",
         label_intro_html: "ZECHE GRUV was born in a bedroom. To make room, the mattress stood up against the wall and doubled as acoustic insulation. It wasn't the most professional studio in the world, but the recording happened anyway, with whatever was at hand and a lot of heart. Today we're an independent label with credits on more than 35 released songs, and over 200 artists have come through the studio.",
-        label_side: "<p>What hasn't changed is the way we work: we're not here to change your idea, we're here to translate it. If something's out of time, we tighten it up so it sounds the way you hear it in your head. We look for the balance between organic, experimental and that little twist that helps your song reach more people.</p><p>Here you'll find plants, warm lights, breakfast or an afternoon snack. And we're not racing the clock: if we're close to the perfect take, we'll take a few extra minutes to get it.</p>",
+        label_side: "<p>What hasn't changed is the way we work: we're not here to change your idea, we're here to translate it. If something's out of time, we tighten it up so it sounds the way you hear it in your head. We look for the balance between organic, experimental and a twist that helps your song reach more people.</p><p>Here you'll find plants, warm lights, breakfast or an afternoon snack. And we're not racing the clock: if we're close to the perfect take, we'll take a few extra minutes to get it.</p>",
         label_director_role: "Founder & director",
         label_director_bio: "<p>Yaco Santana was born in Brazil and grew up traveling around Latin America, surrounded by drums and the songs his mother sang to him. He trained at the conservatory, studied Music Production at the Escuela de Música de Buenos Aires and deepened his craft through self-directed study. After several years in other jobs, he chose to dedicate himself fully to music, and today it is his living.</p><p>His training and listening range from classical to folk and from trap to metal, which explains his affinity for unconventional fusions. He is personally involved in every session, from the first idea to the release.</p>",
         sl_session: "How a session works",
@@ -5208,7 +5362,6 @@
         camp_press_label: "Press",
         camp_food_label: "Japanese food, courtesy of",
         camp_hair_label: "Haircuts",
-        camp_prod_label: "Produced and run by",
         camp_video_1: "The hangout",
         camp_video_2: "This is the camp",
         camp_video_3: "Good food too",
@@ -5217,9 +5370,9 @@
         events_shows_label: "Shows",
         events_openmic_label: "Open mic · some of the artists who performed",
         events_text: "The open mic is how we discover new talent. It's the space ZECHE GRUV gives the artists we work with to express themselves, and an open door for those who don't know us yet: come by, connect and show what you do. If you sing at the open mic, you could be part of the next show. Dates coming soon.",
-        sl_services: "Services & pricing",
+        sl_services: "Services & rates",
         st_services_html: "Choose how<br>you want to start.",
-        services_intro: "We work by project because songs need time. The more songs we make together, the less each one costs you.",
+        services_intro: "We work by project because songs need time.",
         pkg_custom_subtitle: "Build your project your way",
         pkg_custom_cta: "Let's build your plan ↗",
         pkg_cta_reserve: "I want to start ↗",
@@ -5258,11 +5411,17 @@
         pkg_album_save: "Save +40% vs. booking everything separately.",
         pkg_songs_label: "Number of songs",
         pkg_epalbum_choose_hint: "Choose a format to see the price",
+        pkg_range_min: "A project takes at least 3 songs.",
+        pkg_songs_required: "Tell us how many songs your project will have: we need it to draw up the contract before we start.",
+        pkg_range_to_ep: "With fewer than 8 songs, your project is an EP.",
+        pkg_range_to_album: "With 8 songs or more, you get <strong>40% off</strong>.",
+        pkg_range_legend_html: "EP: 3 to 7 songs<br>Album: 8 or more",
+        video_sound_on: "Turn sound on", video_sound_off: "Mute",
         pkg_currency: "ARS", pkg_currency_monthly: "ARS / mo",
         pkg_addon_video: "Video", pkg_addon_cover: "Cover art", pkg_addons_once: "one-time payment", pkg_addon_free: "Free",
         beat_view_catalog: "View catalogue ↗", beat_pick_btn: "Choose a beat", beat_search_placeholder: "Search the beat by name…",
         beat_none: "No beat found with that name.", beat_pick_hint: "Pick a beat from the catalogue to book it.", beat_selected: "Selected beat:", beat_show_all: "Show all beats",
-        includes_3: "Distribution to every platform (editorial playlist pitching for +$30,000, packs only)",
+        includes_3: "Distribution to every platform (editorial playlist pitching included only in PROJECT)",
         alacarte_title: "Prefer to build it yourself? Pick individual services:",
         svc_cta_consult: "Ask via WhatsApp ↗", svc_price_quote: "Get a quote",
         mezcla_canales_label: "Number of channels", mezcla_duracion_label: "Song duration (min:sec)",
@@ -5271,8 +5430,6 @@
         distro_migrando_label: "Are you switching from another distributor?",
         distro_motivo_label: "Why are you looking to switch distributors?",
         distro_motivo_placeholder: "Tell us briefly...", select_choose: "Choose...", yes: "Yes", no: "No",
-        distro_pitch_label: "Add editorial playlist pitching",
-        distro_pitch_disabled_hint: "Pitching is only available for songs being distributed for the first time — it doesn't apply if they were already released before or if you're migrating from another distributor.",
         lang_aria: "Language",
         svc: {
           session: { name: "Recording session hour", desc: "One hour of studio time with an engineer in the room, an acoustically treated space to record vocals and/or instruments. Great if your song is already arranged and you just need to capture it with professional quality and support." },
@@ -5285,7 +5442,7 @@
           videolyrics: { name: "Lyric video", desc: "A lyric video synced to your song — a more accessible way to have video content for socials and YouTube." },
           session_musicians: { name: "Guitar / bass / drums / backing vocals recording", desc: "We bring in session musicians to record over your track, with the instrument and the room already set up." },
           mezcla: { name: "Mixing", desc: "Professional mix of your song; the price depends on the number of channels and the song's length — get a quote by filling in those details." },
-          distro: { name: "Distribution to every platform", desc: "We upload your music to Spotify, Apple Music, YouTube Music and every other platform. If it's a brand-new release, you can add editorial playlist pitching as an extra (+$30,000)." },
+          distro: { name: "Distribution to every platform", desc: "We upload your music to Spotify, Apple Music, YouTube Music and every other platform." },
           playback: { name: "Playback &amp; tuning", desc: "This isn't just about building the playback track. On show day, we're there with you: we hand you the finished tracks and run the tune live, in real time, following every nuance of your performance on stage. This is the ZECHE GRUV standard for live shows — zero glitches, zero surprises, professional touring-grade sound from start to finish." },
         },
       },
@@ -5365,7 +5522,6 @@
         camp_press_label: "Imprensa",
         camp_food_label: "Comida japonesa, cortesia de",
         camp_hair_label: "Cortes de cabelo",
-        camp_prod_label: "Produzido e realizado por",
         camp_video_1: "O encontro",
         camp_video_2: "Assim é o camp",
         camp_video_3: "Come-se bem",
@@ -5374,9 +5530,9 @@
         events_shows_label: "Shows",
         events_openmic_label: "Open mic · alguns dos que se apresentaram",
         events_text: "O open mic é o nosso jeito de ouvir novos talentos. É o espaço que a ZECHE GRUV oferece aos artistas que trabalham com a gente para se expressarem, e uma porta aberta para quem ainda não nos conhece: vem, se conecta e mostra o que você faz. Se você cantar no open mic, pode fazer parte do próximo show. Datas em breve aqui.",
-        sl_services: "Serviços e preços",
+        sl_services: "Serviços e valores",
         st_services_html: "Escolha como<br>quer começar.",
-        services_intro: "Trabalhamos por projeto porque as músicas precisam de tempo. Quanto mais músicas a gente fizer junto, menos sai cada uma.",
+        services_intro: "Trabalhamos por projeto porque as músicas precisam de tempo.",
         pkg_custom_subtitle: "Monte seu projeto sob medida",
         pkg_custom_cta: "Vamos montar seu plano ↗",
         pkg_cta_reserve: "Quero começar ↗",
@@ -5415,11 +5571,17 @@
         pkg_album_save: "Você economiza +40% em relação a contratar tudo separado.",
         pkg_songs_label: "Quantidade de músicas",
         pkg_epalbum_choose_hint: "Escolha um formato para ver o preço",
+        pkg_range_min: "O mínimo para um projeto são 3 músicas.",
+        pkg_songs_required: "Conte quantas músicas o seu projeto vai ter: precisamos disso para fazer o contrato antes de começar.",
+        pkg_range_to_ep: "Com menos de 8 músicas, seu projeto é um EP.",
+        pkg_range_to_album: "Com 8 músicas ou mais, você tem <strong>40% de desconto</strong>.",
+        pkg_range_legend_html: "EP: 3 a 7 músicas<br>Álbum: 8 ou mais",
+        video_sound_on: "Ativar som", video_sound_off: "Silenciar",
         pkg_currency: "ARS", pkg_currency_monthly: "ARS / mês",
         pkg_addon_video: "Vídeo", pkg_addon_cover: "Capa", pkg_addons_once: "pagamento único", pkg_addon_free: "Bonificada",
         beat_view_catalog: "Ver catálogo ↗", beat_pick_btn: "Escolher beat", beat_search_placeholder: "Busque o beat pelo nome…",
         beat_none: "Não encontramos um beat com esse nome.", beat_pick_hint: "Escolha um beat do catálogo para reservar.", beat_selected: "Beat escolhido:", beat_show_all: "Ver todos os beats",
-        includes_3: "Distribuição para todas as plataformas (pitch para playlists editoriais por +$30.000, exclusivo dos pacotes)",
+        includes_3: "Distribuição para todas as plataformas (pitch para playlists editoriais incluído apenas no PROJETO)",
         alacarte_title: "Prefere montar tudo por conta própria? Escolha serviços avulsos:",
         svc_cta_consult: "Consultar pelo WhatsApp ↗", svc_price_quote: "Consultar orçamento",
         mezcla_canales_label: "Quantidade de canais", mezcla_duracion_label: "Duração da música (min:seg)",
@@ -5428,8 +5590,6 @@
         distro_migrando_label: "Você está migrando de outra distribuidora?",
         distro_motivo_label: "Por que você quer trocar de distribuidora?",
         distro_motivo_placeholder: "Conte brevemente...", select_choose: "Escolher...", yes: "Sim", no: "Não",
-        distro_pitch_label: "Adicionar pitch para playlists editoriais",
-        distro_pitch_disabled_hint: "O pitch só está disponível para músicas distribuídas pela primeira vez — não se aplica se elas já tinham sido lançadas antes ou se você está migrando de outra distribuidora.",
         lang_aria: "Idioma",
         svc: {
           session: { name: "Hora de sessão de gravação", desc: "Uma hora de estúdio com engenheiro na sala, espaço acusticamente tratado para gravar vocais e/ou instrumentos. Ideal se a música já está pronta e você só precisa capturá-la com qualidade e suporte profissional." },
@@ -5442,7 +5602,7 @@
           videolyrics: { name: "VideoLyrics", desc: "Vídeo com letra animada sincronizada com sua música, uma opção mais acessível para ter conteúdo audiovisual nas redes e no YouTube." },
           session_musicians: { name: "Gravação de guitarra / baixo / bateria / vocais de apoio", desc: "Trazemos músicos de sessão para gravar em cima da sua música, com o instrumento e a sala já prontos." },
           mezcla: { name: "Mixagem", desc: "Mixagem profissional da sua música; o preço varia de acordo com a quantidade de canais e a duração da faixa — você orça preenchendo esses dados." },
-          distro: { name: "Distribuição para todas as plataformas", desc: "Subimos sua música no Spotify, Apple Music, YouTube Music e nas demais plataformas. Se for um lançamento novo, você pode adicionar o pitch para playlists editoriais como opção extra (+$30.000)." },
+          distro: { name: "Distribuição para todas as plataformas", desc: "Subimos sua música no Spotify, Apple Music, YouTube Music e nas demais plataformas." },
           playback: { name: "Playback e afinação", desc: "Não é só montar a faixa de playback: no dia do show, a gente está lá com você. Entregamos as faixas prontas e fazemos o tune ao vivo, em tempo real, acompanhando cada detalhe da sua performance no palco. É o padrão ZECHE GRUV para shows ao vivo: zero falhas, zero sustos, som com nível de turnê profissional do início ao fim." },
         },
       },
@@ -5522,7 +5682,6 @@
         camp_press_label: "Presse",
         camp_food_label: "Cuisine japonaise, offerte par",
         camp_hair_label: "Coupes de cheveux",
-        camp_prod_label: "Produit et organisé par",
         camp_video_1: "La bande",
         camp_video_2: "Le camp, en vrai",
         camp_video_3: "On mange bien",
@@ -5533,7 +5692,7 @@
         events_text: "L'open mic, c'est notre façon de découvrir de nouveaux talents. C'est l'espace que ZECHE GRUV offre aux artistes avec qui on travaille pour s'exprimer, et une porte ouverte pour ceux qui ne nous connaissent pas encore : viens, rencontre du monde et montre ce que tu fais. Si tu chantes à l'open mic, tu peux faire partie du prochain concert. Dates bientôt ici.",
         sl_services: "Services et tarifs",
         st_services_html: "Choisis comment<br>tu veux commencer.",
-        services_intro: "On travaille par projet parce que les chansons ont besoin de temps. Plus on fait de chansons ensemble, moins chacune te coûte.",
+        services_intro: "On travaille par projet parce que les chansons ont besoin de temps.",
         pkg_custom_subtitle: "Monte ton projet sur mesure",
         pkg_custom_cta: "Construisons ton plan ↗",
         pkg_cta_reserve: "Je veux commencer ↗",
@@ -5572,11 +5731,17 @@
         pkg_album_save: "Tu économises +40% par rapport aux services pris séparément.",
         pkg_songs_label: "Nombre de titres",
         pkg_epalbum_choose_hint: "Choisis un format pour voir le prix",
+        pkg_range_min: "Un projet compte au minimum 3 titres.",
+        pkg_songs_required: "Dis-nous combien de titres aura ton projet : on en a besoin pour préparer le contrat avant de commencer.",
+        pkg_range_to_ep: "Avec moins de 8 titres, ton projet est un EP.",
+        pkg_range_to_album: "Avec 8 titres ou plus, tu as <strong>40 % de réduction</strong>.",
+        pkg_range_legend_html: "EP : 3 à 7 titres<br>Album : 8 ou plus",
+        video_sound_on: "Activer le son", video_sound_off: "Couper le son",
         pkg_currency: "ARS", pkg_currency_monthly: "ARS / mois",
         pkg_addon_video: "Vidéo", pkg_addon_cover: "Pochette", pkg_addons_once: "paiement unique", pkg_addon_free: "Offerte",
         beat_view_catalog: "Voir le catalogue ↗", beat_pick_btn: "Choisir un beat", beat_search_placeholder: "Cherche le beat par son nom…",
         beat_none: "Aucun beat trouvé avec ce nom.", beat_pick_hint: "Choisis un beat du catalogue pour le réserver.", beat_selected: "Beat choisi :", beat_show_all: "Voir tous les beats",
-        includes_3: "Distribution sur toutes les plateformes (pitch aux playlists éditoriales pour +30 000 $, réservé aux packs)",
+        includes_3: "Distribution sur toutes les plateformes (pitch aux playlists éditoriales inclus uniquement dans PROJET)",
         alacarte_title: "Tu préfères tout composer toi-même ? Choisis des services à l'unité :",
         svc_cta_consult: "Demander par WhatsApp ↗", svc_price_quote: "Devis sur demande",
         mezcla_canales_label: "Nombre de canaux", mezcla_duracion_label: "Durée du titre (min:sec)",
@@ -5585,8 +5750,6 @@
         distro_migrando_label: "Tu changes de distributeur ?",
         distro_motivo_label: "Pourquoi veux-tu changer de distributeur ?",
         distro_motivo_placeholder: "Explique brièvement...", select_choose: "Choisir...", yes: "Oui", no: "Non",
-        distro_pitch_label: "Ajouter le pitch aux playlists éditoriales",
-        distro_pitch_disabled_hint: "Le pitch est disponible uniquement pour les titres distribués pour la première fois — il ne s'applique pas s'ils étaient déjà sortis avant ou si tu changes de distributeur.",
         lang_aria: "Langue",
         svc: {
           session: { name: "Heure de session d'enregistrement", desc: "Une heure de studio avec un ingénieur du son, un espace traité acoustiquement pour enregistrer des voix et/ou des instruments. Idéal si ton titre est déjà arrangé et que tu dois juste le capturer avec une qualité et un accompagnement professionnels." },
@@ -5599,7 +5762,7 @@
           videolyrics: { name: "Lyric vidéo", desc: "Vidéo avec paroles animées synchronisées à ton titre, une option plus accessible pour avoir du contenu vidéo sur les réseaux et YouTube." },
           session_musicians: { name: "Enregistrement guitare / basse / batterie / chœurs", desc: "On fait appel à des musiciens de session pour enregistrer sur ton titre, avec l'instrument et la salle déjà prêts." },
           mezcla: { name: "Mixage", desc: "Mixage professionnel de ton titre ; le prix dépend du nombre de canaux et de la durée du titre — obtiens un devis en remplissant ces informations." },
-          distro: { name: "Distribution sur toutes les plateformes", desc: "On met ta musique sur Spotify, Apple Music, YouTube Music et toutes les autres plateformes. S'il s'agit d'une toute nouvelle sortie, tu peux ajouter le pitch aux playlists éditoriales en option (+30 000 $)." },
+          distro: { name: "Distribution sur toutes les plateformes", desc: "On met ta musique sur Spotify, Apple Music, YouTube Music et toutes les autres plateformes." },
           playback: { name: "Playback et accordage", desc: "Ce n'est pas juste préparer la piste de playback : le jour du concert, on est là avec toi. On te remet les pistes prêtes et on fait le tune en direct, en temps réel, en suivant chaque nuance de ta prestation sur scène. C'est le standard ZECHE GRUV pour les concerts live : zéro raté, zéro surprise, un son digne d'une tournée professionnelle du début à la fin." },
         },
       },
@@ -5679,7 +5842,6 @@
         camp_press_label: "Stampa",
         camp_food_label: "Cucina giapponese, offerta da",
         camp_hair_label: "Tagli di capelli",
-        camp_prod_label: "Prodotto e realizzato da",
         camp_video_1: "Il ritrovo",
         camp_video_2: "Così si vive il camp",
         camp_video_3: "Si mangia bene",
@@ -5690,7 +5852,7 @@
         events_text: "L'open mic è il nostro modo di scoprire nuovi talenti. È lo spazio che ZECHE GRUV offre agli artisti con cui lavoriamo per esprimersi, e una porta aperta per chi ancora non ci conosce: vieni, entra in contatto e mostra quello che fai. Se canti all'open mic, puoi far parte del prossimo live. Date presto qui.",
         sl_services: "Servizi e prezzi",
         st_services_html: "Scegli come<br>vuoi iniziare.",
-        services_intro: "Lavoriamo per progetto perché le canzoni hanno bisogno di tempo. Più canzoni facciamo insieme, meno ti costa ciascuna.",
+        services_intro: "Lavoriamo per progetto perché le canzoni hanno bisogno di tempo.",
         pkg_custom_subtitle: "Crea il tuo progetto su misura",
         pkg_custom_cta: "Costruiamo il tuo piano ↗",
         pkg_cta_reserve: "Voglio iniziare ↗",
@@ -5729,11 +5891,17 @@
         pkg_album_save: "Risparmi +40% rispetto a prendere i servizi separatamente.",
         pkg_songs_label: "Numero di brani",
         pkg_epalbum_choose_hint: "Scegli un formato per vedere il prezzo",
+        pkg_range_min: "Un progetto ha almeno 3 brani.",
+        pkg_songs_required: "Dicci quanti brani avrà il tuo progetto: ci serve per preparare il contratto prima di iniziare.",
+        pkg_range_to_ep: "Con meno di 8 brani, il tuo progetto è un EP.",
+        pkg_range_to_album: "Con 8 brani o più, hai il <strong>40% di sconto</strong>.",
+        pkg_range_legend_html: "EP: da 3 a 7 brani<br>Album: 8 o più",
+        video_sound_on: "Attiva audio", video_sound_off: "Disattiva audio",
         pkg_currency: "ARS", pkg_currency_monthly: "ARS / mese",
         pkg_addon_video: "Video", pkg_addon_cover: "Copertina", pkg_addons_once: "pagamento unico", pkg_addon_free: "In omaggio",
         beat_view_catalog: "Vedi il catalogo ↗", beat_pick_btn: "Scegli un beat", beat_search_placeholder: "Cerca il beat per nome…",
         beat_none: "Nessun beat trovato con questo nome.", beat_pick_hint: "Scegli un beat dal catalogo per prenotarlo.", beat_selected: "Beat scelto:", beat_show_all: "Mostra tutti i beat",
-        includes_3: "Distribuzione su tutte le piattaforme (pitch alle playlist editoriali per +$30.000, solo nei pacchetti)",
+        includes_3: "Distribuzione su tutte le piattaforme (pitch alle playlist editoriali incluso solo in PROGETTO)",
         alacarte_title: "Preferisci creare tutto per conto tuo? Scegli i servizi singoli:",
         svc_cta_consult: "Chiedi via WhatsApp ↗", svc_price_quote: "Richiedi un preventivo",
         mezcla_canales_label: "Numero di canali", mezcla_duracion_label: "Durata del brano (min:sec)",
@@ -5742,8 +5910,6 @@
         distro_migrando_label: "Stai passando da un'altra distribuzione?",
         distro_motivo_label: "Perché vuoi cambiare distribuzione?",
         distro_motivo_placeholder: "Raccontaci brevemente...", select_choose: "Scegli...", yes: "Sì", no: "No",
-        distro_pitch_label: "Aggiungi il pitching alle playlist editoriali",
-        distro_pitch_disabled_hint: "Il pitching è disponibile solo per brani distribuiti per la prima volta — non è applicabile se erano già stati pubblicati prima o se stai passando da un'altra distribuzione.",
         lang_aria: "Lingua",
         svc: {
           session: { name: "Ora di sessione di registrazione", desc: "Un'ora di studio con un fonico in sala, uno spazio trattato acusticamente per registrare voci e/o strumenti. Ideale se il brano è già arrangiato e devi solo catturarlo con qualità e assistenza professionale." },
@@ -5756,7 +5922,7 @@
           videolyrics: { name: "VideoLyrics", desc: "Video con testo animato sincronizzato al tuo brano, un'opzione più accessibile per avere contenuti video sui social e su YouTube." },
           session_musicians: { name: "Registrazione chitarra / basso / batteria / cori", desc: "Coinvolgiamo session musician per registrare sul tuo brano, con strumento e sala già pronti." },
           mezcla: { name: "Missaggio", desc: "Missaggio professionale del tuo brano; il prezzo varia in base al numero di canali e alla durata del brano — richiedi il preventivo compilando questi dati." },
-          distro: { name: "Distribuzione su tutte le piattaforme", desc: "Carichiamo la tua musica su Spotify, Apple Music, YouTube Music e tutte le altre piattaforme. Se è una nuova uscita, puoi aggiungere il pitching alle playlist editoriali come opzione extra (+$30.000)." },
+          distro: { name: "Distribuzione su tutte le piattaforme", desc: "Carichiamo la tua musica su Spotify, Apple Music, YouTube Music e tutte le altre piattaforme." },
           playback: { name: "Playback e accordatura", desc: "Non si tratta solo di preparare la traccia di playback: il giorno del live siamo lì con te. Ti consegniamo le tracce pronte e facciamo il tune dal vivo, in tempo reale, seguendo ogni sfumatura della tua performance sul palco. È lo standard ZECHE GRUV per i concerti dal vivo: zero intoppi, zero sorprese, un suono da tour professionale dall'inizio alla fine." },
         },
       },
@@ -5836,7 +6002,6 @@
         camp_press_label: "Presse",
         camp_food_label: "Japanisches Essen, mit freundlicher Unterstützung von",
         camp_hair_label: "Haarschnitte",
-        camp_prod_label: "Produziert und umgesetzt von",
         camp_video_1: "Die Runde",
         camp_video_2: "So fühlt sich das Camp an",
         camp_video_3: "Gut gegessen wird auch",
@@ -5847,7 +6012,7 @@
         events_text: "Das Open Mic ist unsere Art, neue Talente zu entdecken. Es ist der Raum, den ZECHE GRUV den Künstlern gibt, mit denen wir arbeiten, damit sie sich ausdrücken können, und eine offene Tür für alle, die uns noch nicht kennen: Komm vorbei, knüpf Kontakte und zeig, was du machst. Wenn du beim Open Mic singst, kannst du bei der nächsten Show dabei sein. Termine bald hier.",
         sl_services: "Leistungen & Preise",
         st_services_html: "Wähl aus, wie du<br>starten willst.",
-        services_intro: "Wir arbeiten projektweise, weil Songs Zeit brauchen. Je mehr Songs wir zusammen machen, desto weniger kostet dich jeder einzelne.",
+        services_intro: "Wir arbeiten projektweise, weil Songs Zeit brauchen.",
         pkg_custom_subtitle: "Stell dein Projekt nach Maß zusammen",
         pkg_custom_cta: "Bauen wir deinen Plan ↗",
         pkg_cta_reserve: "Ich will loslegen ↗",
@@ -5886,11 +6051,17 @@
         pkg_album_save: "Du sparst +40% gegenüber der Einzelbuchung aller Services.",
         pkg_songs_label: "Anzahl der Songs",
         pkg_epalbum_choose_hint: "Wähl ein Format, um den Preis zu sehen",
+        pkg_range_min: "Ein Projekt hat mindestens 3 Songs.",
+        pkg_songs_required: "Sag uns, wie viele Songs dein Projekt haben wird: Das brauchen wir, um vor dem Start den Vertrag aufzusetzen.",
+        pkg_range_to_ep: "Mit weniger als 8 Songs ist dein Projekt eine EP.",
+        pkg_range_to_album: "Mit 8 Songs oder mehr bekommst du <strong>40 % Rabatt</strong>.",
+        pkg_range_legend_html: "EP: 3 bis 7 Songs<br>Album: 8 oder mehr",
+        video_sound_on: "Ton einschalten", video_sound_off: "Ton ausschalten",
         pkg_currency: "ARS", pkg_currency_monthly: "ARS / Monat",
         pkg_addon_video: "Video", pkg_addon_cover: "Cover", pkg_addons_once: "einmalige Zahlung", pkg_addon_free: "Gratis",
         beat_view_catalog: "Katalog ansehen ↗", beat_pick_btn: "Beat auswählen", beat_search_placeholder: "Beat nach Namen suchen…",
         beat_none: "Kein Beat mit diesem Namen gefunden.", beat_pick_hint: "Wähle einen Beat aus dem Katalog, um ihn zu reservieren.", beat_selected: "Gewählter Beat:", beat_show_all: "Alle Beats anzeigen",
-        includes_3: "Vertrieb auf allen Plattformen (Pitching an redaktionelle Playlists für +$30.000, nur in den Paketen)",
+        includes_3: "Vertrieb auf allen Plattformen (Pitching an redaktionelle Playlists nur in PROJEKT enthalten)",
         alacarte_title: "Lieber alles selbst zusammenstellen? Wähl einzelne Services:",
         svc_cta_consult: "Anfragen per WhatsApp ↗", svc_price_quote: "Angebot anfordern",
         mezcla_canales_label: "Anzahl der Kanäle", mezcla_duracion_label: "Songdauer (Min:Sek)",
@@ -5899,8 +6070,6 @@
         distro_migrando_label: "Wechselst du von einem anderen Vertrieb?",
         distro_motivo_label: "Warum möchtest du den Vertrieb wechseln?",
         distro_motivo_placeholder: "Erzähl uns kurz...", select_choose: "Auswählen...", yes: "Ja", no: "Nein",
-        distro_pitch_label: "Pitching an redaktionelle Playlists dazubuchen",
-        distro_pitch_disabled_hint: "Pitching ist nur für Songs verfügbar, die zum ersten Mal vertrieben werden — es gilt nicht, wenn sie schon einmal veröffentlicht wurden oder du von einem anderen Vertrieb wechselst.",
         lang_aria: "Sprache",
         svc: {
           session: { name: "Aufnahmesession (pro Stunde)", desc: "Eine Stunde Studiozeit mit Toningenieur, ein akustisch behandelter Raum für Gesangs- und/oder Instrumentalaufnahmen. Ideal, wenn dein Song schon fertig arrangiert ist und du ihn nur noch mit professioneller Qualität und Betreuung einfangen musst." },
@@ -5913,7 +6082,7 @@
           videolyrics: { name: "Lyric-Video", desc: "Video mit animiertem Songtext, synchron zu deinem Song — eine zugänglichere Option für Videoinhalte auf Social Media und YouTube." },
           session_musicians: { name: "Aufnahme von Gitarre / Bass / Schlagzeug / Backing Vocals", desc: "Wir holen Sessionmusiker dazu, die auf deinem Track einspielen — Instrument und Raum sind bereits vorbereitet." },
           mezcla: { name: "Mixing", desc: "Professionelles Mixing deines Songs; der Preis hängt von der Anzahl der Kanäle und der Songlänge ab — hol dir ein Angebot, indem du diese Angaben ausfüllst." },
-          distro: { name: "Vertrieb auf allen Plattformen", desc: "Wir laden deine Musik auf Spotify, Apple Music, YouTube Music und alle anderen Plattformen hoch. Bei einer brandneuen Veröffentlichung kannst du das Pitching an redaktionelle Playlists als Extra dazubuchen (+$30.000)." },
+          distro: { name: "Vertrieb auf allen Plattformen", desc: "Wir laden deine Musik auf Spotify, Apple Music, YouTube Music und alle anderen Plattformen hoch." },
           playback: { name: "Playback &amp; Tuning", desc: "Es geht nicht nur darum, den Playback-Track vorzubereiten: Am Tag deiner Show sind wir live dabei. Wir liefern dir die fertigen Tracks und übernehmen das Tuning in Echtzeit, direkt live, und folgen jeder Nuance deiner Performance auf der Bühne. Das ist der ZECHE-GRUV-Standard für Live-Shows: keine Aussetzer, keine Überraschungen, professioneller Tour-Sound von Anfang bis Ende." },
         },
       },
@@ -5993,7 +6162,6 @@
         camp_press_label: "Пресса",
         camp_food_label: "Японская кухня — любезно от",
         camp_hair_label: "Стрижки",
-        camp_prod_label: "Продюсирование и организация",
         camp_video_1: "Все вместе",
         camp_video_2: "Так проходит кэмп",
         camp_video_3: "И вкусно едим",
@@ -6004,7 +6172,7 @@
         events_text: "Open mic — это наш способ находить новые таланты. Это пространство, которое ZECHE GRUV даёт артистам, с которыми мы работаем, чтобы они могли выразить себя, и открытая дверь для тех, кто нас ещё не знает: приходи, знакомься и покажи, что ты делаешь. Если споёшь на open mic, можешь попасть в следующий концерт. Даты скоро здесь.",
         sl_services: "Услуги и цены",
         st_services_html: "Выбери, как<br>хочешь начать.",
-        services_intro: "Мы работаем по проектам, потому что песням нужно время. Чем больше песен мы делаем вместе, тем дешевле обходится каждая.",
+        services_intro: "Мы работаем по проектам, потому что песням нужно время.",
         pkg_custom_subtitle: "Собери проект под себя",
         pkg_custom_cta: "Соберём твой план ↗",
         pkg_cta_reserve: "Хочу начать ↗",
@@ -6043,11 +6211,17 @@
         pkg_album_save: "Экономия +40% по сравнению с отдельной оплатой услуг.",
         pkg_songs_label: "Количество песен",
         pkg_epalbum_choose_hint: "Выбери формат, чтобы увидеть цену",
+        pkg_range_min: "В проекте минимум 3 песни.",
+        pkg_songs_required: "Скажи, сколько песен будет в твоём проекте: это нужно, чтобы составить договор до начала работы.",
+        pkg_range_to_ep: "Если песен меньше 8, твой проект — это EP.",
+        pkg_range_to_album: "Если песен 8 и больше, ты получаешь <strong>скидку 40%</strong>.",
+        pkg_range_legend_html: "EP: от 3 до 7 песен<br>Альбом: 8 и больше",
+        video_sound_on: "Включить звук", video_sound_off: "Выключить звук",
         pkg_currency: "ARS", pkg_currency_monthly: "ARS / мес",
         pkg_addon_video: "Видео", pkg_addon_cover: "Обложка", pkg_addons_once: "разовый платёж", pkg_addon_free: "Бесплатно",
         beat_view_catalog: "Смотреть каталог ↗", beat_pick_btn: "Выбрать бит", beat_search_placeholder: "Найди бит по названию…",
         beat_none: "Бит с таким названием не найден.", beat_pick_hint: "Выбери бит из каталога, чтобы забронировать.", beat_selected: "Выбранный бит:", beat_show_all: "Показать все биты",
-        includes_3: "Дистрибуция на все платформы (питчинг в редакционные плейлисты за +$30 000, только в пакетах)",
+        includes_3: "Дистрибуция на все платформы (питчинг в редакционные плейлисты входит только в ПРОЕКТ)",
         alacarte_title: "Хочешь собрать всё сам? Выбери отдельные услуги:",
         svc_cta_consult: "Спросить в WhatsApp ↗", svc_price_quote: "Узнать стоимость",
         mezcla_canales_label: "Количество каналов", mezcla_duracion_label: "Длительность песни (мин:сек)",
@@ -6056,8 +6230,6 @@
         distro_migrando_label: "Переходишь от другого дистрибьютора?",
         distro_motivo_label: "Почему хочешь сменить дистрибьютора?",
         distro_motivo_placeholder: "Расскажи вкратце...", select_choose: "Выбрать...", yes: "Да", no: "Нет",
-        distro_pitch_label: "Добавить питчинг в редакционные плейлисты",
-        distro_pitch_disabled_hint: "Питчинг доступен только для песен, которые распространяются впервые — не применяется, если они уже выходили раньше или если ты переходишь от другого дистрибьютора.",
         lang_aria: "Язык",
         svc: {
           session: { name: "Час студийной сессии", desc: "Час студийного времени со звукорежиссёром в зале, акустически подготовленное помещение для записи вокала и/или инструментов. Идеально, если песня уже аранжирована и её нужно просто профессионально записать с профессиональным сопровождением." },
@@ -6070,7 +6242,7 @@
           videolyrics: { name: "Лирик-видео", desc: "Видео с анимированным текстом, синхронизированным с песней — более доступный вариант видеоконтента для соцсетей и YouTube." },
           session_musicians: { name: "Запись гитары / баса / барабанов / бэк-вокала", desc: "Приглашаем сессионных музыкантов для записи поверх твоего трека — инструмент и зал уже готовы." },
           mezcla: { name: "Сведение", desc: "Профессиональное сведение твоей песни; цена зависит от количества каналов и длительности трека — узнай стоимость, заполнив эти данные." },
-          distro: { name: "Дистрибуция на все платформы", desc: "Выгружаем твою музыку на Spotify, Apple Music, YouTube Music и другие платформы. Если это совершенно новый релиз, можно дополнительно добавить питчинг в редакционные плейлисты (+$30 000)." },
+          distro: { name: "Дистрибуция на все платформы", desc: "Выгружаем твою музыку на Spotify, Apple Music, YouTube Music и другие платформы." },
           playback: { name: "Плейбэк и подстройка", desc: "Дело не только в подготовке плейбэк-трека: в день шоу мы рядом с тобой. Мы передаём готовые треки и в реальном времени, вживую, делаем тюнинг звука, следуя за каждым нюансом твоего выступления на сцене. Это стандарт ZECHE GRUV для живых выступлений: ноль сбоев, ноль сюрпризов, профессиональный гастрольный звук от начала до конца." },
         },
       },
@@ -6168,6 +6340,7 @@
       renderCustomChecklist();
       renderSingle();
       renderEpAlbum();
+      renderEventVideoSound();
 
       langSelect.value = lang;
     }
@@ -6754,7 +6927,8 @@
 
   <script>
     // Videos del camp: entran en abanico, se mueven apenas con el scroll y
-    // se reproducen (sin audio) solo mientras se ven.
+    // se reproducen solo mientras se ven (sin audio, salvo que se active
+    // a mano en los de shows; al salir de pantalla vuelven a silenciarse).
     (() => {
       const stage = document.querySelector(".camp-videos");
       if (!stage) return;
@@ -6800,7 +6974,7 @@
       const playIO = new IntersectionObserver((entries) => {
         entries.forEach(({ target, isIntersecting }) => {
           if (isIntersecting) { target.play().catch(() => {}); playing.add(target); }
-          else { target.pause(); playing.delete(target); }
+          else { target.pause(); target.muted = true; playing.delete(target); }
         });
         if (playing.size && !raf) raf = requestAnimationFrame(tick);
       }, { threshold: 0.6 });
