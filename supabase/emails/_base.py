@@ -9,6 +9,9 @@ import io, os
 def link(kind):
     return "https://zechegruv.com/portal/?token_hash={{ .TokenHash }}&amp;type=" + kind
 
+# El sol del encabezado va como fondo de una celda y no como <img>: si el
+# programa de correo bloquea las imágenes (por ejemplo en spam), no queda
+# un recuadro vacío en su lugar.
 def mail(kind, title, intro, box, button, after):
     url = link(kind)
     return f'''<!DOCTYPE html>
@@ -23,8 +26,11 @@ def mail(kind, title, intro, box, button, after):
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#241105;">
 <tr><td align="center" style="padding:32px 16px;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#4B2509;border:1px solid #6b4a2c;">
-<tr><td style="padding:28px 32px 0;font-family:'Courier New',Courier,monospace;font-size:12px;letter-spacing:3px;color:#FFF4DC;">
-<img src="https://zechegruv.com/assets/favicon/apple-touch-icon.png" width="28" height="28" alt="" style="vertical-align:middle;border:0;margin-right:10px;">ZECHE GRUV&reg;
+<tr><td style="padding:28px 32px 0;">
+<table role="presentation" cellpadding="0" cellspacing="0"><tr>
+<td width="34" height="34" style="width:34px;height:34px;background-image:url('https://zechegruv.com/assets/mail/sol.png');background-repeat:no-repeat;background-position:center;background-size:34px 34px;font-size:0;line-height:0;">&nbsp;</td>
+<td style="padding-left:10px;font-family:'Courier New',Courier,monospace;font-size:12px;letter-spacing:3px;color:#FFF4DC;">ZECHE GRUV&reg;</td>
+</tr></table>
 </td></tr>
 <tr><td style="padding:28px 32px 0;font-family:'Courier New',Courier,monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#F5A623;">Portal de artistas</td></tr>
 <tr><td style="padding:10px 32px 0;font-family:Helvetica,Arial,sans-serif;font-size:30px;line-height:1.05;font-weight:800;letter-spacing:-1px;color:#FFF4DC;">{title}</td></tr>
