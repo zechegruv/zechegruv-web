@@ -160,7 +160,7 @@ async function sendTickets(orderId, base) {
   if (!order) return false;
   let sent = false;
   try {
-    const ev = (await db(`pass_events?id=eq.${order.event_id}&select=name,starts_at,venue_name,venue_address,important_info,openmic_enabled,openmic_deadline`)).data[0];
+    const ev = (await db(`pass_events?id=eq.${order.event_id}&select=kind,name,starts_at,venue_name,venue_address,important_info,openmic_enabled,openmic_deadline`)).data[0];
     const rows = (await db(`pass_tickets?order_id=eq.${orderId}&status=in.(valid,used)&select=code,token,holder_name,pass_ticket_types(name)&order=code.asc`)).data;
     const tickets = rows.map((t) => ({ code: t.code, token: t.token, holder_name: t.holder_name, type: t.pass_ticket_types.name }));
     const openmicOpen = ev.openmic_enabled && (!ev.openmic_deadline || Date.now() <= Date.parse(ev.openmic_deadline));
