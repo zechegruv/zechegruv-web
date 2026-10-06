@@ -449,7 +449,7 @@ grant execute on function public.pass_checkin(text, uuid, uuid) to service_role;
 with evento as (
   insert into public.pass_events (slug, kind, name, starts_at, venue_name, venue_address, capacity, max_per_buyer, status)
   values ('shows-open-mic-2', 'show', 'ZECHE GRUV Shows & Open Mic #2',
-          '2026-10-24 20:00:00-03', 'Sergio Souza Teatro', 'Ciudad de Buenos Aires', 70, 2, 'draft')
+          '2026-10-24 20:00:00-03', 'Teatro Sergio Souza', 'Ciudad de Buenos Aires', 70, 2, 'draft')
   returning id
 )
 insert into public.pass_ticket_types (event_id, name, price)
