@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Portal de artistas — ZECHE GRUV</title>
+
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/favicon/apple-touch-icon.png">
+  <meta name="theme-color" content="#4B2509">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="portal.css">
+</head>
+
+<body>
+  <nav>
+    <a class="nav-mark" href="../index.html">
+      <img class="nav-sun" src="../assets/zeche-gruv-sol.webp" alt="" aria-hidden="true">
+      ZECHE GRUV®
+    </a>
+    <div class="nav-right">
+      <span class="nav-tag">Portal de artistas</span>
+      <button class="btn" type="button" id="logoutBtn" hidden>Salir</button>
+    </div>
+  </nav>
+
+  <main>
+    <!-- ---------- Cargando ---------- -->
+    <section class="view" id="view-loading">
+      <p class="muted">Cargando…</p>
+    </section>
+
+    <!-- ---------- Login ---------- -->
+    <section class="view view-narrow" id="view-login" hidden>
+      <div class="eyebrow">Portal de artistas</div>
+      <h1 class="title">Entrá a tu<br>espacio.</h1>
+      <form class="card form" id="loginForm" novalidate>
+        <div class="field">
+          <label for="loginEmail">Mail</label>
+          <input type="email" id="loginEmail" autocomplete="username" required>
+        </div>
+        <div class="field">
+          <label for="loginPassword">Contraseña</label>
+          <input type="password" id="loginPassword" autocomplete="current-password" required>
+        </div>
+        <p class="msg" id="loginMsg" role="alert"></p>
+        <button class="btn btn-primary" type="submit" id="loginSubmit">Entrar</button>
+        <button class="link-btn" type="button" id="forgotBtn">Olvidé mi contraseña</button>
+      </form>
+      <p class="muted small">El acceso lo da ZECHE GRUV. Si estás trabajando con nosotros y todavía no tenés cuenta, escribinos.</p>
+    </section>
+
+    <!-- ---------- Nueva contraseña (link del mail de recuperación) ---------- -->
+    <section class="view view-narrow" id="view-recovery" hidden>
+      <div class="eyebrow">Portal de artistas</div>
+      <h1 class="title">Elegí una<br>contraseña nueva.</h1>
+      <form class="card form" id="recoveryForm" novalidate>
+        <div class="field">
+          <label for="recoveryPassword">Contraseña nueva</label>
+          <input type="password" id="recoveryPassword" autocomplete="new-password" minlength="8" required>
+        </div>
+        <p class="msg" id="recoveryMsg" role="alert"></p>
+        <button class="btn btn-primary" type="submit">Guardar contraseña</button>
+      </form>
+    </section>
+
+    <!-- ---------- Portal ---------- -->
+    <section class="view" id="view-app" hidden>
+      <div class="tabs" id="tabs" role="tablist" hidden>
+        <button class="tab is-active" type="button" data-tab="artists" role="tab">Artistas</button>
+        <button class="tab" type="button" data-tab="releases" role="tab">Distribución</button>
+        <button class="tab" type="button" data-tab="me" role="tab">Mi perfil</button>
+      </div>
+
+      <!-- Perfil (propio, o el de un artista cuando lo abre el admin) -->
+      <div id="panel-profile">
+        <button class="link-btn" type="button" id="backToArtists" hidden>← Volver a artistas</button>
+
+        <header class="profile-head">
+          <div class="avatar-wrap">
+            <img class="avatar" id="profileAvatar" alt="" hidden>
+            <div class="avatar avatar-empty" id="profileAvatarEmpty" aria-hidden="true"></div>
+            <!-- Solo en el perfil propio: al pasar el mouse (o tocar) se cambia la foto -->
+            <button class="avatar-change" type="button" id="photoBtn" hidden>
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3 6.5h2.6L7 4.5h6l1.4 2H17a1 1 0 011 1V15a1 1 0 01-1 1H3a1 1 0 01-1-1V7.5a1 1 0 011-1z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><circle cx="10" cy="11" r="3" stroke="currentColor" stroke-width="1.4"/></svg>
+              <span>Cambiar foto</span>
+            </button>
+            <input type="file" id="fPhoto" accept="image/jpeg,image/png,image/webp" hidden>
+          </div>
+          <div>
+            <div class="eyebrow" id="profileRole">Artista ZECHE GRUV</div>
+            <h1 class="title title-sm" id="profileName"></h1>
+            <div class="chips" id="profileChips"></div>
+            <p class="msg" id="photoMsg" role="status"></p>
+          </div>
+        </header>
+
+        <div class="grid-2">
+          <form class="card form" id="profileForm" novalidate>
+            <h2 class="card-title">Perfil</h2>
+            <div class="field">
+              <label for="fDisplayName">Nombre artístico</label>
+              <input type="text" id="fDisplayName" maxlength="80">
+            </div>
+
+            <!-- Solo administrador -->
+            <div id="adminFields" hidden>
+              <div class="field">
+                <label for="fFullName">Nombre completo</label>
+                <input type="text" id="fFullName" maxlength="120">
+              </div>
+              <div class="field">
+                <label for="fEmail">Mail de la cuenta</label>
+                <input type="email" id="fEmail" disabled>
+              </div>
+              <div class="field">
+                <label for="fSpotify">Perfil de Spotify</label>
+                <input type="text" id="fSpotify" placeholder="Link o ID del artista en Spotify">
+              </div>
+              <div class="field">
+                <label for="fApple">Apple ID</label>
+                <input type="text" id="fApple" maxlength="120">
+              </div>
+              <div class="field">
+                <label for="fFormat">Formato</label>
+                <select id="fFormat">
+                  <option value="">Sin definir</option>
+                  <option value="single">Single</option>
+                  <option value="ep">EP</option>
+                  <option value="album">Álbum</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="fFolder">Carpeta en OneDrive</label>
+                <input type="text" id="fFolder" placeholder="Nombre o ruta de la carpeta del artista">
+              </div>
+            </div>
+
+            <p class="msg" id="profileMsg" role="status"></p>
+            <button class="btn btn-primary" type="submit">Guardar cambios</button>
+          </form>
+
+          <div class="stack">
+            <div class="card">
+              <h2 class="card-title">Tu espacio</h2>
+              <ul class="sections" id="sectionsList">
+                <li><span>Referencias</span><em>Próximamente</em></li>
+                <li><span>Letras</span><em>Próximamente</em></li>
+                <li><span>Exports</span><em>Próximamente</em></li>
+                <li><span>Masters</span><em>Próximamente</em></li>
+                <li><span>Membresía</span><em>Próximamente</em></li>
+                <li><span>Distribución</span><button class="btn" type="button" id="openDistribution">Abrir</button></li>
+              </ul>
+            </div>
+
+            <form class="card form" id="passwordForm" novalidate>
+              <h2 class="card-title">Contraseña</h2>
+              <div class="field">
+                <label for="fNewPassword">Contraseña nueva</label>
+                <input type="password" id="fNewPassword" autocomplete="new-password" minlength="8">
+              </div>
+              <p class="msg" id="passwordMsg" role="status"></p>
+              <button class="btn" type="submit">Cambiar contraseña</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Administrador: todos los artistas -->
+      <div id="panel-artists" hidden>
+        <div class="eyebrow">Administrador</div>
+        <h1 class="title title-sm">Artistas</h1>
+        <p class="muted" id="artistsStatus"></p>
+        <div class="table-wrap">
+          <table class="table" id="artistsTable">
+            <thead>
+              <tr><th></th><th>Nombre artístico</th><th>Nombre completo</th><th>Mail</th><th>Formato</th><th>Spotify</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <p class="muted small">Las cuentas nuevas se crean desde Supabase (Authentication → Users → Add user). Apenas se crean aparecen acá para completar sus datos.</p>
+      </div>
+
+      <!-- Distribución: lista de lanzamientos -->
+      <div id="panel-releases" hidden>
+        <button class="link-btn back-link" type="button" id="releasesBack">← Volver al perfil</button>
+        <div class="eyebrow" id="releasesEyebrow">Distribución</div>
+        <h1 class="title title-sm">Lanzamientos</h1>
+        <p class="muted" id="releasesStatus"></p>
+        <button class="btn btn-primary" type="button" id="newReleaseBtn">Nuevo lanzamiento</button>
+        <div class="table-wrap" id="releasesTableWrap">
+          <table class="table" id="releasesTable">
+            <thead><tr><th>Lanzamiento</th><th>Canciones</th><th class="col-artist">Artista</th><th>Formato</th><th>Fecha de salida</th><th>Estado</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <div class="help">
+          <details class="card">
+            <summary>Guía: cómo completar tu lanzamiento</summary>
+            <div class="help-body">
+              <h3>1. Antes de empezar</h3>
+              <p>Tené listo esto antes de abrir el formulario:</p>
+              <ul>
+                <li><b>Audio:</b> el máster final aprobado, en WAV o FLAC. Nunca una demo ni una versión sin masterizar.</li>
+                <li><b>Portada:</b> JPG o PNG, cuadrada, de 3000 x 3000 px y en buena calidad. Sin bordes, marcas de agua, links, logos de plataformas ni textos promocionales como “nuevo single” o “disponible el viernes”.</li>
+                <li><b>Datos:</b> nombre del lanzamiento, fecha de salida, género y subgénero, idioma, la lista de canciones en orden y la letra de cada una.</li>
+                <li><b>Créditos:</b> nombre completo y mail de cada persona que participó, con su rol y su porcentaje.</li>
+                <li><b>Si ya estaba publicado:</b> el ISRC de cada canción y el UPC del lanzamiento.</li>
+              </ul>
+
+              <h3>2. Datos del lanzamiento</h3>
+              <p>Escribí el título exacto del single, EP o álbum. Revisá mayúsculas, tildes, signos y ortografía: tiene que coincidir con la portada. La fecha de salida es la fecha oficial del lanzamiento.</p>
+
+              <h3>3. Canciones</h3>
+              <p>Cargá cada canción en el orden del tracklist, con su título exacto, la versión si corresponde (remix, acústico, en vivo, etc.), el idioma y si tiene lenguaje explícito. Antes de avanzar, revisá que el máster sea la versión correcta, que no tenga silencios o cortes accidentales y que coincida con el título.</p>
+
+              <h3>4. Créditos</h3>
+              <p>Cada canción necesita como mínimo un <b>Main Artist</b> y un <b>Composer</b>. Sumá a todas las personas que participaron y marcá sus roles. Para compositores y autores usá nombres reales: mantiene ordenada la información y evita reclamos más adelante.</p>
+
+              <h3>5. Splits</h3>
+              <p>Los porcentajes tienen que estar acordados entre todas las partes antes de enviar, sobre todo si hay colaboraciones, productores con participación o featurings. No cargues nada “a confirmar”: la distribución no es el momento de ordenar algo que todavía no está definido. En cada canción, los porcentajes tienen que sumar 100.</p>
+
+              <h3>6. Letras</h3>
+              <p>Revisá ortografía, tildes, separación por versos e idioma, y que la letra coincida exactamente con la versión final del audio.</p>
+
+              <h3>7. Guardar y revisar</h3>
+              <p>Podés guardar el lanzamiento como borrador y seguir después. Antes de enviarlo, repasá título, artista, portada, audio, fecha, créditos, splits, género, contenido explícito e ISRC / UPC si corresponde. Una vez enviado, lo recibe ZECHE GRUV y ya no se puede editar: si hay que corregir algo, escribinos.</p>
+
+              <h3>8. Música que ya estaba publicada</h3>
+              <p>Si el lanzamiento ya salió antes, conservá los datos originales: título, fecha original de salida, ISRC de cada canción, UPC, créditos, nombre exacto del artista y el link actual en Spotify. Mantener los ISRC correctos ayuda a conservar reproducciones e historial. No des de baja el catálogo anterior sin coordinarlo antes con nosotros.</p>
+            </div>
+          </details>
+
+          <details class="card">
+            <summary>Errores y preguntas frecuentes</summary>
+            <div class="help-body">
+              <h3>Portada</h3>
+              <dl>
+                <dt>La portada no carga o da error</dt>
+                <dd>Revisá que esté en JPG o PNG y en 3000 x 3000 px. Si sigue el problema, escribinos con una captura.</dd>
+                <dt>¿Puedo cambiar la portada después de enviar el lanzamiento?</dt>
+                <dd>Puede hacerse en algunos casos, pero no es lo ideal. Intentá mandar la portada final desde el principio.</dd>
+              </dl>
+
+              <h3>Fechas</h3>
+              <dl>
+                <dt>¿Cuánto tiempo antes tengo que enviar mi lanzamiento?</dt>
+                <dd>Recomendamos enviarlo con al menos 3 o 4 semanas de anticipación. Si querés hacer pitch editorial, lo ideal es tenerlo listo 30 días antes.</dd>
+                <dt>¿Puedo enviar un lanzamiento de un día para el otro?</dt>
+                <dd>Depende del caso, pero no es recomendable. Con poco margen aumenta el riesgo de errores, demoras, quedarse sin pitch y problemas de procesamiento en las plataformas.</dd>
+                <dt>¿Puedo cambiar la fecha de salida?</dt>
+                <dd>Depende del estado del lanzamiento. Si todavía es un borrador, la cambiás vos. Si ya lo enviaste, escribinos: si ya fue entregado a las plataformas puede requerir una actualización.</dd>
+              </dl>
+
+              <h3>Créditos y datos</h3>
+              <dl>
+                <dt>¿Qué significa Main Artist?</dt>
+                <dd>Es el artista principal del lanzamiento o de la canción.</dd>
+                <dt>¿Qué significa Featured Artist?</dt>
+                <dd>Es un artista invitado. No debe usarse si la persona no aparece como colaboración oficial de la canción.</dd>
+                <dt>¿Qué significa Composer?</dt>
+                <dd>Es quien compuso la música.</dd>
+                <dt>¿Qué significa Lyricist?</dt>
+                <dd>Es quien escribió la letra.</dd>
+                <dt>¿Qué pasa si me equivoqué en un crédito?</dt>
+                <dd>Avisanos lo antes posible. Algunos cambios se corrigen con una actualización, pero lo mejor es revisar todo antes de enviar.</dd>
+                <dt>¿Qué es un ISRC?</dt>
+                <dd>Es el código único que identifica una grabación específica. Si tu música ya estaba publicada, es importante conservar los ISRC originales.</dd>
+                <dt>¿Qué es un UPC?</dt>
+                <dd>Es el código que identifica el lanzamiento completo: single, EP o álbum.</dd>
+              </dl>
+
+              <h3>Audio y letras</h3>
+              <dl>
+                <dt>¿Qué formato tiene que tener el audio?</dt>
+                <dd>WAV o FLAC.</dd>
+                <dt>¿Tengo que cargar las letras?</dt>
+                <dd>No siempre es obligatorio, pero sí recomendable: ayuda a tener el catálogo más completo y ordenado.</dd>
+                <dt>¿Las letras aparecen tipo karaoke en Spotify?</dt>
+                <dd>No necesariamente. Las letras sincronizadas tipo karaoke suelen trabajarse mediante Musixmatch u otros proveedores conectados a las plataformas.</dd>
+              </dl>
+
+              <h3>Casos especiales</h3>
+              <dl>
+                <dt>¿Qué pasa si mi música ya estaba publicada con otra distribuidora?</dt>
+                <dd>Necesitás conservar los datos originales, especialmente ISRC, UPC, fecha original de lanzamiento y links actuales. No des de baja el catálogo anterior sin coordinarlo antes con nosotros.</dd>
+                <dt>¿Puedo subir covers?</dt>
+                <dd>Sí, pero pueden requerir información o licencias adicionales según territorio, plataforma y tipo de uso. Avisanos antes de enviar un cover.</dd>
+                <dt>¿Puedo crear otro lanzamiento igual si algo salió mal?</dt>
+                <dd>No lo recomendamos: los lanzamientos duplicados generan errores de datos y conflictos de entrega en las plataformas. Antes de duplicar, consultanos.</dd>
+                <dt>¿Qué hago si algo me da error?</dt>
+                <dd>Primero revisá esta guía. Si el problema sigue, escribinos con una captura de pantalla y los datos del lanzamiento.</dd>
+              </dl>
+            </div>
+          </details>
+        </div>
+      </div>
+
+      <!-- Distribución: ficha de un lanzamiento -->
+      <div id="panel-release" hidden>
+        <button class="link-btn back-link" type="button" id="releaseBack">← Volver a lanzamientos</button>
+        <div class="eyebrow" id="releaseEyebrow">Distribución</div>
+        <h1 class="title title-sm" id="releaseHeading">Nuevo lanzamiento</h1>
+        <div class="chips" id="releaseChips"></div>
+        <p class="notice" id="releaseNotice" hidden></p>
+
+        <form id="releaseForm" novalidate>
+          <fieldset id="releaseFields">
+            <div class="card form">
+              <h2 class="card-title">Datos del lanzamiento</h2>
+              <div class="field">
+                <label for="rTitle">Título del lanzamiento</label>
+                <input type="text" id="rTitle" maxlength="160">
+                <p class="hint">Exacto, igual que en la portada: mayúsculas, tildes y signos.</p>
+              </div>
+              <div class="row">
+                <div class="field">
+                  <label for="rType">Formato</label>
+                  <select id="rType">
+                    <option value="single">Single</option>
+                    <option value="ep">EP</option>
+                    <option value="album">Álbum</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="rDate">Fecha de salida</label>
+                  <input type="date" id="rDate">
+                </div>
+              </div>
+              <div class="row">
+                <div class="field">
+                  <label for="rGenre">Género</label>
+                  <input type="text" id="rGenre" maxlength="60" list="genreList">
+                </div>
+                <div class="field">
+                  <label for="rSubgenre">Subgénero</label>
+                  <input type="text" id="rSubgenre" maxlength="60">
+                </div>
+              </div>
+              <div class="row">
+                <div class="field">
+                  <label for="rLanguage">Idioma</label>
+                  <input type="text" id="rLanguage" maxlength="40" list="languageList">
+                </div>
+                <div class="field">
+                  <label for="rTerritory">Territorio</label>
+                  <input type="text" id="rTerritory" maxlength="80">
+                  <p class="hint">Dónde se publica. Lo habitual es todo el mundo.</p>
+                </div>
+              </div>
+              <div class="row">
+                <div class="field">
+                  <label for="rUpc">UPC</label>
+                  <input type="text" id="rUpc" maxlength="20" inputmode="numeric">
+                  <p class="hint">Solo si el lanzamiento ya estaba publicado.</p>
+                </div>
+                <div class="field">
+                  <label for="coverBtn">Portada</label>
+                  <div class="cover">
+                    <img class="cover-preview" id="coverPreview" alt="Portada del lanzamiento" hidden>
+                    <div class="cover-preview cover-empty" id="coverEmpty" aria-hidden="true">Sin portada</div>
+                    <div class="cover-side">
+                      <button class="btn" type="button" id="coverBtn">Subir portada</button>
+                      <a class="link-btn" id="coverDownload" target="_blank" rel="noopener" hidden>Descargar</a>
+                      <p class="msg" id="coverMsg" role="status"></p>
+                    </div>
+                  </div>
+                  <input type="file" id="coverFile" accept="image/jpeg,image/png" hidden>
+                  <p class="hint">JPG o PNG de 3000 x 3000 px, sin textos promocionales ni logos.</p>
+                </div>
+              </div>
+              <label class="check" id="rPitchRow">
+                <input type="checkbox" id="rPitch">
+                <span>Quiero pitch a playlists editoriales</span>
+              </label>
+              <p class="hint" id="rPitchHint">Incluido en EP y Álbum. Para llegar a tiempo, el lanzamiento tiene que estar enviado 30 días antes de la fecha de salida.</p>
+              <div class="field">
+                <label for="rNotes">Notas</label>
+                <textarea id="rNotes" rows="3" maxlength="2000"></textarea>
+              </div>
+            </div>
+
+            <div id="tracksList"></div>
+            <button class="btn" type="button" id="addTrackBtn">+ Agregar canción</button>
+          </fieldset>
+
+          <!-- Solo administrador -->
+          <div class="card form" id="releaseAdmin" hidden>
+            <h2 class="card-title">Administrador</h2>
+            <div class="field">
+              <label for="rStatus">Estado</label>
+              <select id="rStatus">
+                <option value="draft">Borrador (el artista puede editar)</option>
+                <option value="submitted">Recibido</option>
+                <option value="loaded">Cargado</option>
+                <option value="published">Publicado</option>
+              </select>
+            </div>
+            <button class="btn" type="button" id="exportBtn">Descargar Excel</button>
+          </div>
+
+          <ul class="msg-list" id="releaseErrors" role="alert"></ul>
+          <p class="msg" id="releaseMsg" role="status"></p>
+          <div class="actions" id="releaseActions">
+            <button class="btn" type="button" id="saveDraftBtn">Guardar borrador</button>
+            <button class="btn btn-primary" type="button" id="submitReleaseBtn">Enviar a ZECHE GRUV</button>
+            <button class="btn btn-primary" type="button" id="adminSaveBtn" hidden>Guardar cambios</button>
+          </div>
+        </form>
+
+        <datalist id="genreList">
+          <option value="Trap"><option value="Rap"><option value="Hip Hop"><option value="Reggaetón"><option value="Pop"><option value="R&amp;B"><option value="Rock"><option value="Indie"><option value="Electrónica"><option value="Cumbia"><option value="RKT"><option value="Folklore"><option value="Alternativo">
+        </datalist>
+        <datalist id="languageList">
+          <option value="Español"><option value="Inglés"><option value="Portugués"><option value="Italiano"><option value="Francés"><option value="Instrumental">
+        </datalist>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../assets/data/artists.js"></script>
+  <script src="portal.js"></script>
+  <script src="distribucion.js"></script>
+</body>
+</html>
