@@ -262,8 +262,11 @@
       $("fFormat").value = p.format || "";
       // El link de la carpeta vive en una tabla aparte, solo del administrador.
       $("fFolder").value = "";
-      db.from("artist_private").select("onedrive_link").eq("profile_id", p.id).maybeSingle().then(({ data }) => {
-        if (viewing && viewing.id === p.id) $("fFolder").value = (data && data.onedrive_link) || "";
+      $("fFolderEdit").value = "";
+      db.from("artist_private").select("onedrive_link, onedrive_edit_link").eq("profile_id", p.id).maybeSingle().then(({ data }) => {
+        if (!viewing || viewing.id !== p.id) return;
+        $("fFolder").value = (data && data.onedrive_link) || "";
+        $("fFolderEdit").value = (data && data.onedrive_edit_link) || "";
       });
     }
     $("passwordForm").hidden = !own;
@@ -302,8 +305,13 @@
       });
     }
     const folderLink = $("fFolder").value.trim();
-    if (admin && folderLink && !/^https:\/\/(1drv\.ms|onedrive\.live\.com)\//.test(folderLink)) {
-      setMsg(msg, "La carpeta tiene que ser un link compartido de OneDrive (empieza con https://1drv.ms/).", true);
+    const folderEditLink = $("fFolderEdit").value.trim();
+    if (admin && [folderLink, folderEditLink].some((l) => l && !/^https:\/\/(1drv\.ms|onedrive\.live\.com)\//.test(l))) {
+      setMsg(msg, "Los links de carpeta tienen que ser links compartidos de OneDrive (empiezan con https://1drv.ms/).", true);
+      return;
+    }
+    if (admin && folderLink && folderLink === folderEditLink) {
+      setMsg(msg, "Pusiste el mismo link en los dos campos. El primero tiene que ser de solo ver y el segundo de edición.", true);
       return;
     }
 
@@ -314,7 +322,7 @@
       const { data, error } = await db.from("profiles").update(changes).eq("id", viewing.id).select().single();
       if (error) throw new Error("No pudimos guardar los cambios. Probá de nuevo.");
       if (admin) {
-        const saved = await db.from("artist_private").upsert({ profile_id: viewing.id, onedrive_link: folderLink || null, updated_at: new Date().toISOString() });
+        const saved = await db.from("artist_private").upsert({ profile_id: viewing.id, onedrive_link: folderLink || null, onedrive_edit_link: folderEditLink || null, updated_at: new Date().toISOString() });
         if (saved.error) throw new Error("Se guardó el perfil, pero no la carpeta de OneDrive. Probá de nuevo.");
       }
       if (data.id === me.id) me = data;
@@ -428,6 +436,17 @@
     const display_name = $("inviteName").value.trim();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setMsg(msg, "Escribí el mail del artista.", true); return; }
     if (!display_name) { setMsg(msg, "Escribí el nombre artístico: es como lo saludamos en el mail.", true); return; }
+    // Datos que quedan asociados al perfil apenas se crea la cuenta.
+    const folder = $("inviteFolder").value.trim();
+    const folderEdit = $("inviteFolderEdit").value.trim();
+    if ([folder, folderEdit].some((l) => l && !/^https:\/\/(1drv\.ms|onedrive\.live\.com)\//.test(l))) {
+      setMsg(msg, "Los links de carpeta tienen que ser links compartidos de OneDrive (empiezan con https://1drv.ms/).", true);
+      return;
+    }
+    if (folder && folder === folderEdit) { setMsg(msg, "Pusiste el mismo link en los dos campos. El primero es de solo ver y el segundo de edición.", true); return; }
+    const spotifyId = parseSpotifyId($("inviteSpotify").value);
+    if (spotifyId === undefined) { setMsg(msg, "No reconocemos ese perfil de Spotify. Pegá el link del artista.", true); return; }
+    const format = $("inviteFormat").value || null;
     $("inviteSubmit").disabled = true;
     setMsg(msg, "Enviando invitación…");
     try {
@@ -439,10 +458,21 @@
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "No pudimos enviar la invitación. Probá de nuevo.");
-      $("inviteEmail").value = "";
-      $("inviteName").value = "";
+      // La cuenta ya existe: se le asocian la carpeta y los datos cargados.
+      let linked = true;
+      if (folder || folderEdit) {
+        const saved = await db.from("artist_private").upsert({ profile_id: data.id, onedrive_link: folder || null, onedrive_edit_link: folderEdit || null, updated_at: new Date().toISOString() });
+        if (saved.error) linked = false;
+      }
+      if (spotifyId || format) {
+        const saved = await db.from("profiles").update({ spotify_artist_id: spotifyId, format }).eq("id", data.id);
+        if (saved.error) linked = false;
+      }
+      ["inviteEmail", "inviteName", "inviteFolder", "inviteFolderEdit", "inviteSpotify", "inviteFormat"].forEach((id) => { $(id).value = ""; });
       await showArtists();
-      setMsg(msg, `Invitación enviada a ${data.email}. Abrí su fila para completarle Spotify, formato y carpeta.`);
+      setMsg(msg, linked
+        ? `Invitación enviada a ${data.email}. Su perfil ya quedó con los datos que cargaste.`
+        : `Invitación enviada a ${data.email}, pero no pudimos guardar todos sus datos. Abrí su fila y completalos.`, !linked);
     } catch (err) {
       setMsg(msg, err.message, true);
     } finally {

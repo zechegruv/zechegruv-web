@@ -23,6 +23,9 @@ const SECTIONS = {
   membresia: "Membresía",
 };
 
+// Secciones donde el portal deja subir archivos (ver portal-upload.js).
+const UPLOAD_SECTIONS = ["referencias", "letras"];
+
 // Acceso de visitante al link compartido, igual que cuando alguien abre el
 // link en el navegador sin iniciar sesión en Microsoft.
 const ONEDRIVE_API = "https://my.microsoftpersonalcontent.com/_api/v2.0";
@@ -151,13 +154,15 @@ exports.handler = async (event) => {
     artistId = q.artist;
   }
 
-  const rows = await supabase(`/rest/v1/artist_private?profile_id=eq.${artistId}&select=onedrive_link`, serviceKey);
+  const rows = await supabase(`/rest/v1/artist_private?profile_id=eq.${artistId}&select=onedrive_link,onedrive_edit_link`, serviceKey);
   if (!rows) return json(500, { error: BAD_KEY });
   const link = rows && rows[0] && rows[0].onedrive_link;
   if (!link) return json(200, { configured: false, exists: false, files: [], groups: [] });
 
   try {
-    return json(200, { configured: true, ...(await listSection(link, folderName)) });
+    // Se puede subir desde el portal si la sección lo admite y hay link de edición cargado.
+    const canUpload = UPLOAD_SECTIONS.includes(q.section) && !!rows[0].onedrive_edit_link;
+    return json(200, { configured: true, canUpload, ...(await listSection(link, folderName)) });
   } catch (err) {
     return json(502, { error: "No pudimos leer la carpeta de OneDrive. Probá de nuevo en un momento." });
   }

@@ -160,9 +160,14 @@
                 </select>
               </div>
               <div class="field">
-                <label for="fFolder">Carpeta en OneDrive</label>
+                <label for="fFolder">Carpeta en OneDrive · link de solo ver</label>
                 <input type="url" id="fFolder" placeholder="https://1drv.ms/f/…">
-                <p class="hint">El link compartido de la carpeta del artista. El artista no ve este link: solo las secciones del portal.</p>
+                <p class="hint">Con este link el portal muestra y deja descargar los archivos.</p>
+              </div>
+              <div class="field">
+                <label for="fFolderEdit">Carpeta en OneDrive · link de edición</label>
+                <input type="url" id="fFolderEdit" placeholder="https://1drv.ms/f/…">
+                <p class="hint">Con este link el portal deja subir a Referencias y Letras. El artista no ve ninguno de los dos links.</p>
               </div>
             </div>
 
@@ -221,7 +226,7 @@
 
         <form class="card form invite-form" id="inviteForm" novalidate>
           <h2 class="card-title">Invitar a un artista</h2>
-          <p class="hint">Le creamos la cuenta y le llega un mail de ZECHE GRUV con el link para su primer ingreso, donde elige su contraseña. Después completás sus datos acá.</p>
+          <p class="hint">Le creamos la cuenta y le llega un mail de ZECHE GRUV con el link para su primer ingreso, donde elige su contraseña. Lo que cargues acá queda asociado a su perfil desde el primer momento: cuando entre, ya va a ver sus carpetas.</p>
           <div class="row">
             <div class="field">
               <label for="inviteEmail">Mail del artista</label>
@@ -232,6 +237,32 @@
               <input type="text" id="inviteName" maxlength="80" autocomplete="off">
             </div>
           </div>
+          <div class="row">
+            <div class="field">
+              <label for="inviteFolder">Carpeta en OneDrive · link de solo ver</label>
+              <input type="url" id="inviteFolder" placeholder="https://1drv.ms/f/…" autocomplete="off">
+            </div>
+            <div class="field">
+              <label for="inviteFolderEdit">Carpeta en OneDrive · link de edición</label>
+              <input type="url" id="inviteFolderEdit" placeholder="https://1drv.ms/f/…" autocomplete="off">
+            </div>
+          </div>
+          <div class="row">
+            <div class="field">
+              <label for="inviteSpotify">Perfil de Spotify (opcional)</label>
+              <input type="text" id="inviteSpotify" placeholder="Link del artista en Spotify" autocomplete="off">
+            </div>
+            <div class="field">
+              <label for="inviteFormat">Formato (opcional)</label>
+              <select id="inviteFormat">
+                <option value="">Sin definir</option>
+                <option value="single">Single</option>
+                <option value="ep">EP</option>
+                <option value="album">Álbum</option>
+              </select>
+            </div>
+          </div>
+          <p class="hint">Los links de carpeta solo los ves vos: el artista nunca los recibe, ni en el mail ni en el portal.</p>
           <p class="msg" id="inviteMsg" role="status"></p>
           <button class="btn btn-primary" type="submit" id="inviteSubmit">Enviar invitación</button>
         </form>
@@ -244,6 +275,20 @@
         <h1 class="title title-sm" id="filesTitle"></h1>
         <div class="chips" id="filesChips"></div>
         <p class="muted" id="filesStatus"></p>
+        <!-- Subir archivos (solo Referencias y Letras) -->
+        <div class="card upload" id="uploadBox" hidden>
+          <h2 class="card-title">Subir archivo</h2>
+          <div class="field" id="uploadGroupField">
+            <label for="uploadGroup">Canción</label>
+            <select id="uploadGroup"></select>
+          </div>
+          <input type="file" id="uploadFile" hidden>
+          <button class="btn btn-primary" type="button" id="uploadBtn">Elegir archivo</button>
+          <div class="upload-progress" id="uploadProgress" hidden><i id="uploadBar"></i></div>
+          <p class="msg" id="uploadMsg" role="status"></p>
+          <p class="hint" id="uploadHint"></p>
+        </div>
+
         <div class="actions" id="filesTools" hidden>
           <button class="btn" type="button" id="filesToggleAll">Desplegar todo</button>
         </div>

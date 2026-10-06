@@ -18,6 +18,7 @@
   };
 
   let profile = null;
+  let section = null;
   let current = 0; // para descartar respuestas viejas si se cambia de sección rápido
 
   const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
@@ -55,7 +56,8 @@
 
   const countLabel = (n) => (n === 1 ? "1 archivo" : `${n} archivos`);
 
-  async function open(section, who) {
+  async function open(sectionKey, who) {
+    section = sectionKey;
     profile = who;
     const ticket = ++current;
     P.showPanel("files");
@@ -76,6 +78,7 @@
     status.textContent = "Cargando…";
     list.replaceChildren();
     $("filesTools").hidden = true;
+    $("uploadBox").hidden = true;
 
     let data = null;
     try {
@@ -97,6 +100,7 @@
         : "Tu carpeta todavía no está conectada. Escribinos y lo resolvemos.";
       return;
     }
+    setupUpload(data);
     const total = data.files.length + data.groups.reduce((n, g) => n + g.files.length, 0);
     if (!total) { status.textContent = EMPTY[section]; return; }
     status.textContent = "";
@@ -111,6 +115,122 @@
     $("filesTools").hidden = data.groups.length < 2;
     syncToggle();
   }
+
+  // ---------- Subir archivos (Referencias y Letras) ----------
+  // El archivo se manda en partes a OneDrive (netlify/functions/portal-upload.js).
+  // Acá no existe borrar, mover ni renombrar: solo agregar.
+  const UPLOAD = {
+    referencias: { max: 300, accept: ".mp3,.wav,.m4a,.aac,.flac,.ogg,.aif,.aiff,.mp4,.mov,.pdf,.txt,.jpg,.jpeg,.png", hint: "Audios (MP3, WAV, M4A, FLAC…), videos, imágenes, PDF o texto. Hasta 300 MB." },
+    letras: { max: 25, accept: ".txt,.doc,.docx,.pdf,.rtf,.md,.pages,.odt", hint: "Texto, Word o PDF. Hasta 25 MB." },
+  };
+  const CHUNK = 10 * 320 * 1024; // 3,2 MB: múltiplo de 320 KB, como pide OneDrive
+  let uploading = false;
+
+  function setupUpload(data) {
+    const cfg = UPLOAD[section];
+    $("uploadBox").hidden = !(cfg && data.canUpload);
+    if (!cfg || !data.canUpload) return;
+    $("uploadFile").accept = cfg.accept;
+    $("uploadHint").textContent = `${cfg.hint} Los archivos no se pueden borrar desde acá: si subís algo por error, avisanos.`;
+    // Se puede subir suelto o a una canción (subcarpeta) que ya exista.
+    $("uploadGroup").innerHTML = '<option value="">Sin canción (suelto en la sección)</option>'
+      + data.groups.map((g) => `<option value="${esc(g.name)}">${esc(g.name)}</option>`).join("");
+    $("uploadGroupField").hidden = !data.groups.length;
+    $("uploadProgress").hidden = true;
+    P.setMsg($("uploadMsg"), "");
+  }
+
+  async function uploadCall(body) {
+    const { data: { session } } = await db.auth.getSession();
+    const res = await fetch("/.netlify/functions/portal-upload", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+      body: JSON.stringify(body),
+    });
+    const out = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error((out.error || "No pudimos subir el archivo.") + (out.detail ? ` (${out.detail})` : ""));
+    return out;
+  }
+
+  const toBase64 = (blob) => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result).split(",")[1] || "");
+    reader.onerror = () => reject(new Error("No pudimos leer el archivo."));
+    reader.readAsDataURL(blob);
+  });
+
+  async function uploadFile(file) {
+    const cfg = UPLOAD[section];
+    const ext = (file.name.match(/\.[^.]+$/) || [""])[0].toLowerCase();
+    if (!cfg.accept.split(",").includes(ext)) throw new Error("Ese tipo de archivo no se puede subir a esta sección.");
+    if (!file.size) throw new Error("El archivo está vacío.");
+    if (file.size > cfg.max * 1024 * 1024) throw new Error(`El archivo pesa más de ${cfg.max} MB.`);
+
+    const base = { section, name: file.name, group: $("uploadGroup").value || undefined };
+    if (profile.id !== P.me.id) base.artist = profile.id;
+    const progress = (done) => { $("uploadBar").style.width = `${Math.round((done / file.size) * 100)}%`; };
+
+    const started = await uploadCall({ action: "start", size: file.size, ...base });
+    if (started.mode === "simple") {
+      await uploadCall({ action: "simple", data: await toBase64(file), ...base });
+      progress(file.size);
+      return;
+    }
+
+    // Partes directo a OneDrive; si el navegador no puede, a través del servidor.
+    let direct = true;
+    let offset = 0;
+    while (offset < file.size) {
+      const end = Math.min(offset + CHUNK, file.size) - 1;
+      const part = file.slice(offset, end + 1);
+      if (direct) {
+        try {
+          const res = await fetch(started.uploadUrl, { method: "PUT", headers: { "Content-Range": `bytes ${offset}-${end}/${file.size}` }, body: part });
+          if (!res.ok) throw new Error(`OneDrive respondió ${res.status}`);
+          offset = end + 1;
+          progress(offset);
+          continue;
+        } catch (err) {
+          // Puede que la parte haya llegado igual: se pregunta desde dónde seguir.
+          direct = false;
+          const state = await uploadCall({ action: "status", uploadUrl: started.uploadUrl }).catch(() => null);
+          const next = state && state.nextExpectedRanges && parseInt(state.nextExpectedRanges[0], 10);
+          if (Number.isFinite(next)) { offset = next; progress(offset); }
+          if (offset >= file.size) break;
+          continue;
+        }
+      }
+      await uploadCall({ action: "chunk", uploadUrl: started.uploadUrl, start: offset, end, total: file.size, data: await toBase64(part) });
+      offset = end + 1;
+      progress(offset);
+    }
+  }
+
+  $("uploadBtn").addEventListener("click", () => { if (!uploading) $("uploadFile").click(); });
+  $("uploadFile").addEventListener("change", async () => {
+    const file = $("uploadFile").files[0];
+    $("uploadFile").value = "";
+    if (!file || uploading) return;
+    uploading = true;
+    $("uploadBtn").disabled = true;
+    $("uploadProgress").hidden = false;
+    $("uploadBar").style.width = "0";
+    P.setMsg($("uploadMsg"), `Subiendo ${file.name}… No cierres esta página.`);
+    const where = section, who = profile;
+    try {
+      await uploadFile(file);
+      if (section === where && profile === who) {
+        await open(where, who); // vuelve a listar para que aparezca el archivo nuevo
+        P.setMsg($("uploadMsg"), `Listo: se subió ${file.name}.`);
+      }
+    } catch (err) {
+      P.setMsg($("uploadMsg"), err.message, true);
+    } finally {
+      uploading = false;
+      $("uploadBtn").disabled = false;
+      $("uploadProgress").hidden = true;
+    }
+  });
 
   // ---------- Escucha previa ----------
   // Un solo reproductor para toda la sección: al darle play a otro archivo
