@@ -19,7 +19,7 @@
   let recovering = false;
 
   // ---------- Utilidades ----------
-  const PANELS = ["profile", "artists", "releases", "release"];
+  const PANELS = ["profile", "artists", "releases", "release", "files"];
   function showPanel(name) {
     PANELS.forEach((p) => { $(`panel-${p}`).hidden = p !== name; });
     window.scrollTo(0, 0);
@@ -177,13 +177,13 @@
       $("fSpotify").value = p.spotify_artist_id || "";
       $("fApple").value = p.apple_id || "";
       $("fFormat").value = p.format || "";
-      $("fFolder").value = p.onedrive_folder || "";
+      // El link de la carpeta vive en una tabla aparte, solo del administrador.
+      $("fFolder").value = "";
+      db.from("artist_private").select("onedrive_link").eq("profile_id", p.id).maybeSingle().then(({ data }) => {
+        if (viewing && viewing.id === p.id) $("fFolder").value = (data && data.onedrive_link) || "";
+      });
     }
     $("passwordForm").hidden = !own;
-
-    const membership = $("sectionsList").children[4].querySelector("em");
-    membership.textContent = p.format ? FORMAT_LABEL[p.format] : "Próximamente";
-    membership.classList.toggle("is-set", !!p.format);
 
     setMsg($("profileMsg"), "");
     setMsg($("passwordMsg"), "");
@@ -214,8 +214,12 @@
         spotify_artist_id: spotifyId,
         apple_id: $("fApple").value.trim() || null,
         format: $("fFormat").value || null,
-        onedrive_folder: $("fFolder").value.trim() || null,
       });
+    }
+    const folderLink = $("fFolder").value.trim();
+    if (admin && folderLink && !/^https:\/\/(1drv\.ms|onedrive\.live\.com)\//.test(folderLink)) {
+      setMsg(msg, "La carpeta tiene que ser un link compartido de OneDrive (empieza con https://1drv.ms/).", true);
+      return;
     }
 
     const submit = event.submitter || $("profileForm").querySelector('[type="submit"]');
@@ -224,6 +228,10 @@
     try {
       const { data, error } = await db.from("profiles").update(changes).eq("id", viewing.id).select().single();
       if (error) throw new Error("No pudimos guardar los cambios. Probá de nuevo.");
+      if (admin) {
+        const saved = await db.from("artist_private").upsert({ profile_id: viewing.id, onedrive_link: folderLink || null, updated_at: new Date().toISOString() });
+        if (saved.error) throw new Error("Se guardó el perfil, pero no la carpeta de OneDrive. Probá de nuevo.");
+      }
       if (data.id === me.id) me = data;
       showProfile(data);
       setMsg(msg, "Cambios guardados.");
@@ -280,6 +288,11 @@
   // Distribución del perfil que se está viendo (el propio, o el de un
   // artista si lo abrió el administrador).
   $("openDistribution").addEventListener("click", () => window.ZGDistribution.openList(viewing));
+  // Carpetas de OneDrive (archivos.js).
+  $("sectionsList").addEventListener("click", (event) => {
+    const btn = event.target.closest("[data-section]");
+    if (btn) window.ZGFiles.open(btn.dataset.section, viewing);
+  });
 
   $("tabs").addEventListener("click", (event) => {
     const btn = event.target.closest(".tab");
@@ -333,7 +346,7 @@
     }));
   }
 
-  // Lo que necesita el módulo de distribución (distribucion.js).
+  // Lo que necesitan los módulos de distribución y de archivos.
   window.ZGPortal = {
     db, $, setMsg, showPanel, nameOf, FORMAT_LABEL,
     get me() { return me; },

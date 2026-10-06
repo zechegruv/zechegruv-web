@@ -138,7 +138,8 @@
               </div>
               <div class="field">
                 <label for="fFolder">Carpeta en OneDrive</label>
-                <input type="text" id="fFolder" placeholder="Nombre o ruta de la carpeta del artista">
+                <input type="url" id="fFolder" placeholder="https://1drv.ms/f/…">
+                <p class="hint">El link compartido de la carpeta del artista. El artista no ve este link: solo las secciones del portal.</p>
               </div>
             </div>
 
@@ -150,11 +151,11 @@
             <div class="card">
               <h2 class="card-title">Tu espacio</h2>
               <ul class="sections" id="sectionsList">
-                <li><span>Referencias</span><em>Próximamente</em></li>
-                <li><span>Letras</span><em>Próximamente</em></li>
-                <li><span>Exports</span><em>Próximamente</em></li>
-                <li><span>Masters</span><em>Próximamente</em></li>
-                <li><span>Membresía</span><em>Próximamente</em></li>
+                <li><span>Referencias</span><button class="btn" type="button" data-section="referencias">Abrir</button></li>
+                <li><span>Letras</span><button class="btn" type="button" data-section="letras">Abrir</button></li>
+                <li><span>Exports</span><button class="btn" type="button" data-section="exports">Abrir</button></li>
+                <li><span>Masters</span><button class="btn" type="button" data-section="masters">Abrir</button></li>
+                <li><span>Membresía</span><button class="btn" type="button" data-section="membresia">Abrir</button></li>
                 <li><span>Distribución</span><button class="btn" type="button" id="openDistribution">Abrir</button></li>
               </ul>
             </div>
@@ -186,6 +187,19 @@
           </table>
         </div>
         <p class="muted small">Las cuentas nuevas se crean desde Supabase (Authentication → Users → Add user). Apenas se crean aparecen acá para completar sus datos.</p>
+      </div>
+
+      <!-- Archivos de una sección (Referencias, Letras, Exports, Masters, Membresía) -->
+      <div id="panel-files" hidden>
+        <button class="link-btn back-link" type="button" id="filesBack">← Volver al perfil</button>
+        <div class="eyebrow" id="filesEyebrow"></div>
+        <h1 class="title title-sm" id="filesTitle"></h1>
+        <div class="chips" id="filesChips"></div>
+        <p class="muted" id="filesStatus"></p>
+        <div class="actions" id="filesTools" hidden>
+          <button class="btn" type="button" id="filesToggleAll">Desplegar todo</button>
+        </div>
+        <div id="filesList"></div>
       </div>
 
       <!-- Distribución: lista de lanzamientos -->
@@ -430,5 +444,6 @@
   <script src="../assets/data/artists.js"></script>
   <script src="portal.js"></script>
   <script src="distribucion.js"></script>
+  <script src="archivos.js"></script>
 </body>
 </html>

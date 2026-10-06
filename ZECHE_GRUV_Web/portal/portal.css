@@ -723,6 +723,75 @@ fieldset:disabled .add-credit { display: none; }
 .msg-list:empty { display: none; }
 .msg-list .is-warning { color: var(--orange-soft); }
 
+/* ---------- Archivos de OneDrive ---------- */
+
+#filesTools { margin-top: 20px; }
+
+#filesList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.file-group {
+  border: 1px solid var(--border);
+  background: var(--brown-dark);
+}
+
+.file-group > summary {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 16px 18px;
+  font-weight: 700;
+  cursor: pointer;
+  list-style: none;
+}
+
+.file-group > summary::-webkit-details-marker { display: none; }
+
+.file-group > summary::before {
+  content: "+";
+  color: var(--orange-soft);
+  font-family: "DM Mono", monospace;
+  margin-right: 12px;
+}
+
+.file-group[open] > summary::before { content: "–"; }
+
+.file-group > summary:focus-visible {
+  outline: 2px solid var(--orange-soft);
+  outline-offset: -2px;
+}
+
+.file-group .group-name { flex: 1; overflow-wrap: anywhere; }
+
+.file-group .group-count {
+  font-family: "DM Mono", monospace;
+  font-size: 9px;
+  font-weight: 400;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.file-group .table-wrap {
+  margin-top: 0;
+  border: 0;
+  border-top: 1px solid var(--border);
+}
+
+.files-table tbody tr { cursor: default; }
+.files-table tbody tr:hover { background: none; }
+.files-table td:first-child { white-space: normal; overflow-wrap: anywhere; min-width: 200px; }
+.files-table td { color: var(--beige); }
+.files-table td:first-child { color: var(--cream); font-weight: 600; }
+.files-table .btn { padding: 8px 12px; display: inline-block; }
+.files-table td:last-child { text-align: right; }
+
 /* Guía y preguntas frecuentes */
 
 .help {
