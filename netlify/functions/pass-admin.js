@@ -13,8 +13,9 @@
 //   status   { event_id, status }            → publicar / cerrar la venta / volver a borrador
 //   peek     { event_id, token | code }      → ¿esta entrada es válida? (no la marca)
 //   checkin  { event_id, token | code }      → marcar como ingresada
-//   issue    { event_id, ticket_type_id, quantity, first_name, last_name, email?, method, unit_price? }
+//   issue    { event_id, ticket_type_id, quantity, first_name, last_name, email?, method, unit_price?, checkin? }
 //            method: cash | transfer | mercadopago (cobrado por fuera) | comp (bonificada)
+//            checkin: true registra el ingreso en el mismo momento
 const { SUPABASE_URL, UUID, json, db, rpc, audit, sendTickets, siteUrl, testMode, serviceKey } = require("./_lib/pass");
 
 const PUBLISHABLE_KEY = "sb_publishable_9M2gY0XZr7xIrV-1s9AiUA_XA1uNm0V";
@@ -195,6 +196,12 @@ exports.handler = async (event) => {
       number: order.number, quantity, holder: `${firstName} ${lastName}`, method: body.method, total: Number(order.total),
     }, adminId);
     const emailed = email ? await sendTickets(order.order_id, siteUrl(event)) : false;
+    // La persona está entrando en este momento: se registra el ingreso sin
+    // tener que escanear la entrada recién emitida.
+    if (body.checkin === true) {
+      const fresh = await db(`pass_tickets?order_id=eq.${order.order_id}&select=token`);
+      for (const t of fresh.ok ? fresh.data : []) await rpc("pass_checkin", { p_token: t.token, p_event: eventId, p_admin: adminId });
+    }
     const tk = await db(`pass_tickets?order_id=eq.${order.order_id}&select=code,token,status,holder_name,pass_ticket_types(name)&order=code.asc`);
     return json(200, {
       number: order.number,

@@ -239,6 +239,7 @@
       email: $("zgpEmail").value.trim(),
       method: $("zgpMethod").value,
       unit_price: $("zgpPrice").value,
+      checkin: $("zgpEnter").checked,
     };
     if (!body.first_name || !body.last_name) return setMsg($("zgpIssueMsg"), "Completá nombre y apellido.", true);
     if (!(body.quantity >= 1)) return setMsg($("zgpIssueMsg"), "Revisá la cantidad.", true);
@@ -247,7 +248,8 @@
     try {
       const out = await call(body);
       const mail = body.email ? (out.emailed ? ` Se la mandamos a ${body.email}.` : " No pudimos mandar el mail: mostrale el QR de la pantalla.") : "";
-      setMsg($("zgpIssueMsg"), `Listo: orden ${out.number}, ${out.tickets.length} ${out.tickets.length > 1 ? "entradas" : "entrada"}, total ${fmtMoney(out.total)}.${mail}`);
+      const entered = body.checkin ? " Ingreso registrado." : "";
+      setMsg($("zgpIssueMsg"), `Listo: orden ${out.number}, ${out.tickets.length} ${out.tickets.length > 1 ? "entradas" : "entrada"}, total ${fmtMoney(out.total)}.${entered}${mail}`);
       const eventView = { kind: current.kind, name: current.name, starts_at: current.starts_at, venue_name: current.venue_name };
       $("zgpIssued").replaceChildren(...out.tickets.map((t, i) => renderTicket(eventView, t, i + 1, out.tickets.length)));
       ["zgpFirst", "zgpLast", "zgpEmail"].forEach((id) => { $(id).value = ""; });
