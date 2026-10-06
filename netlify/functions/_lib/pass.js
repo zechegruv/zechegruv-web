@@ -49,6 +49,10 @@ async function db(path, { method = "GET", body, prefer } = {}) {
   return { ok: res.ok, status: res.status, data };
 }
 
+// Detalle técnico corto de un fallo de la base, para poder diagnosticar
+// desde una captura (código y mensaje, sin datos de nadie).
+const dbDetail = (res) => `${res.status} ${(res.data && (res.data.code || "")) || ""} ${String((res.data && res.data.message) || "").slice(0, 140)}`.trim();
+
 const rpc = (name, args) => db(`rpc/${name}`, { method: "POST", body: args });
 
 const audit = (action, entity, entityId, detail, actorId) =>
@@ -145,4 +149,4 @@ async function sendMail({ to, subject, html, replyTo }) {
 // A dónde llegan los avisos internos (inscripciones al open mic, etc.).
 const notifyEmail = () => clean(process.env.PASS_NOTIFY_EMAIL) || "zechegruv@gmail.com";
 
-module.exports = { SUPABASE_URL, PUBLIC_URL, UUID, json, siteUrl, testMode, serviceKey, mpToken, db, rpc, audit, mp, validWebhookSignature, settlePayment, esc, sendMail, notifyEmail };
+module.exports = { SUPABASE_URL, PUBLIC_URL, UUID, json, siteUrl, testMode, serviceKey, mpToken, db, dbDetail, rpc, audit, mp, validWebhookSignature, settlePayment, esc, sendMail, notifyEmail };

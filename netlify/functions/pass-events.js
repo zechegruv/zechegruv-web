@@ -3,7 +3,7 @@
 // Datos públicos de los eventos de ZG PASS, con sus tipos de entrada y los
 // lugares que quedan. En el sitio de pruebas devuelve solo los eventos de
 // prueba; en el real, nunca.
-const { json, db, rpc, testMode, serviceKey } = require("./_lib/pass");
+const { json, db, dbDetail, rpc, testMode, serviceKey } = require("./_lib/pass");
 
 const FIELDS = "id,slug,kind,name,description,image_url,starts_at,ends_at,venue_name,venue_address,important_info,capacity,max_per_buyer,status,sales_start,sales_end,openmic_enabled,openmic_deadline,pass_ticket_types(id,name,description,price,quota,active,sort)";
 
@@ -18,7 +18,7 @@ exports.handler = async (event) => {
   if (slug) filters.push(`slug=eq.${slug}`);
   else filters.push(`starts_at=gte.${new Date(Date.now() - 6 * 3600 * 1000).toISOString()}`);
   const res = await db(`pass_events?${filters.join("&")}`);
-  if (!res.ok) return json(502, { error: "No pudimos cargar los eventos. Probá de nuevo en un rato." });
+  if (!res.ok) return json(502, { error: "No pudimos cargar los eventos. Probá de nuevo en un rato.", detail: dbDetail(res) });
 
   const now = Date.now();
   const events = await Promise.all(res.data.map(async (e) => {

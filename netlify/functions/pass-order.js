@@ -6,7 +6,7 @@
 // Si vuelve de Mercado Pago con el número de pago y el aviso todavía no
 // llegó, se confirma acá mismo (consultándole el pago a Mercado Pago), así
 // la entrada aparece al instante.
-const { json, db, settlePayment, serviceKey } = require("./_lib/pass");
+const { json, db, dbDetail, settlePayment, serviceKey } = require("./_lib/pass");
 
 const SELECT = "id,number,status,total,expires_at,buyer_first_name,buyer_last_name,buyer_email,"
   + "pass_events(slug,kind,name,starts_at,venue_name,venue_address,important_info,openmic_enabled,openmic_deadline),"
@@ -23,7 +23,7 @@ exports.handler = async (event) => {
   if (!/^[0-9a-f]{64}$/.test(token)) return json(404, { error: "No encontramos esa orden." });
 
   let res = await load(token);
-  if (!res.ok) return json(502, { error: "No pudimos cargar tu orden. Probá de nuevo en un rato." });
+  if (!res.ok) return json(502, { error: "No pudimos cargar tu orden. Probá de nuevo en un rato.", detail: dbDetail(res) });
   let order = res.data[0];
   if (!order) return json(404, { error: "No encontramos esa orden." });
 
