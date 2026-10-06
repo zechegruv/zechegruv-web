@@ -33,13 +33,44 @@
   const PLAYABLE = /\.(mp3|wav|m4a|aac|flac|ogg|oga)$/i;
   const PLAY_ICONS = '<svg class="icon-play" width="12" height="12" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 1.5v11l9-5.5z" fill="currentColor"/></svg><svg class="icon-pause" width="12" height="12" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 1.5h3v11H3zM8 1.5h3v11H8z" fill="currentColor"/></svg>';
 
+  // Orden de los archivos: se elige tocando el título de una columna y vale
+  // para todas las tablas de la sección (y se recuerda entre secciones).
+  const SORT_KEY = "zg-portal-orden";
+  const COLUMNS = [["name", "Archivo"], ["created", "Creado"], ["modified", "Modificado"], ["size", "Tamaño"]];
+  let sort = { key: "modified", dir: "desc" };
+  try {
+    const saved = JSON.parse(localStorage.getItem(SORT_KEY));
+    if (saved && COLUMNS.some(([k]) => k === saved.key) && ["asc", "desc"].includes(saved.dir)) sort = saved;
+  } catch (e) {}
+  let listing = null; // lo último que devolvió la carpeta, para reordenar sin volver a pedirlo
+
+  function sorted(files) {
+    const sign = sort.dir === "asc" ? 1 : -1;
+    const byName = (a, b) => a.name.localeCompare(b.name, "es", { numeric: true, sensitivity: "base" });
+    return [...files].sort((a, b) => {
+      let diff;
+      if (sort.key === "name") diff = byName(a, b);
+      else if (sort.key === "size") diff = (a.size || 0) - (b.size || 0);
+      else diff = String(a[sort.key] || "").localeCompare(String(b[sort.key] || ""));
+      return (diff || byName(a, b) * sign) * sign;
+    });
+  }
+
+  function headHtml() {
+    return COLUMNS.map(([key, label]) => {
+      const active = sort.key === key;
+      const aria = active ? (sort.dir === "asc" ? "ascending" : "descending") : "none";
+      return `<th aria-sort="${aria}"><button class="sort-btn${active ? " is-active" : ""}" type="button" data-sort="${key}">${label}<span aria-hidden="true">${active ? (sort.dir === "asc" ? "↑" : "↓") : "↕"}</span></button></th>`;
+    }).join("");
+  }
+
   function tableHtml(files) {
     return `
       <div class="table-wrap">
         <table class="table files-table">
-          <thead><tr><th>Archivo</th><th>Creado</th><th>Modificado</th><th>Tamaño</th><th></th></tr></thead>
+          <thead><tr>${headHtml()}<th></th></tr></thead>
           <tbody>
-            ${files.map((f) => `
+            ${sorted(files).map((f) => `
               <tr>
                 <td><div class="file-name">${f.url && PLAYABLE.test(f.name)
                   ? `<button class="play-btn" type="button" data-play="${esc(f.url)}" data-name="${esc(f.name)}" aria-label="Escuchar ${esc(f.name)}">${PLAY_ICONS}</button>`
@@ -74,6 +105,7 @@
     }
     const status = $("filesStatus");
     const list = $("filesList");
+    listing = null;
     closePlayer();
     status.textContent = "Cargando…";
     list.replaceChildren();
@@ -105,16 +137,37 @@
     if (!total) { status.textContent = EMPTY[section]; return; }
     status.textContent = "";
 
-    const loose = data.files.length ? tableHtml(data.files) : "";
-    const groups = data.groups.map((g) => `
-      <details class="file-group">
+    listing = data;
+    renderList();
+    $("filesTools").hidden = data.groups.length < 2;
+  }
+
+  // Dibuja la sección con el orden elegido. Los grupos que estaban
+  // desplegados siguen desplegados.
+  function renderList() {
+    const openGroups = new Set(groupsEls().filter((d) => d.open).map((d) => d.dataset.group));
+    const loose = listing.files.length ? tableHtml(listing.files) : "";
+    const groups = listing.groups.map((g) => `
+      <details class="file-group" data-group="${esc(g.name)}"${openGroups.has(g.name) ? " open" : ""}>
         <summary><span class="group-name">${esc(g.name)}</span><span class="group-count">${countLabel(g.files.length)}</span></summary>
         ${g.files.length ? tableHtml(g.files) : ""}
       </details>`).join("");
-    list.innerHTML = loose + groups;
-    $("filesTools").hidden = data.groups.length < 2;
+    $("filesList").innerHTML = loose + groups;
     syncToggle();
+    syncPlayer();
   }
+
+  // Tocar una columna ordena por ella; tocarla de nuevo invierte el orden.
+  $("filesList").addEventListener("click", (event) => {
+    const btn = event.target.closest("[data-sort]");
+    if (!btn || !listing) return;
+    const key = btn.dataset.sort;
+    // Nombre arranca de la A a la Z; fechas y tamaño, de mayor a menor.
+    sort = sort.key === key ? { key, dir: sort.dir === "asc" ? "desc" : "asc" } : { key, dir: key === "name" ? "asc" : "desc" };
+    try { localStorage.setItem(SORT_KEY, JSON.stringify(sort)); } catch (e) {}
+    renderList();
+    $("filesList").querySelector(`[data-sort="${key}"]`)?.focus();
+  });
 
   // ---------- Subir archivos (Referencias y Letras) ----------
   // El archivo se manda en partes a OneDrive (netlify/functions/portal-upload.js).
