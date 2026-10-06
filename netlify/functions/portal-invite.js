@@ -11,6 +11,10 @@
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://zdstltihskdcartkmgii.supabase.co";
 const PORTAL_URL = process.env.PORTAL_URL || "https://zechegruv.com/portal/";
 
+// La clave tal como está cargada en Netlify, sin espacios ni comillas que
+// se hayan colado al pegarla (rompen los encabezados de las consultas).
+const serviceRoleKey = () => (process.env.SUPABASE_SERVICE_ROLE_KEY || "").replace(/[\s"'\u201C\u201D\u2018\u2019]/g, "");
+
 const json = (statusCode, body) => ({
   statusCode,
   headers: { "Content-Type": "application/json", "Cache-Control": "private, no-store" },
@@ -19,7 +23,7 @@ const json = (statusCode, body) => ({
 
 exports.handler = async (event) => {
   if (event.httpMethod !== "POST") return json(405, { error: "Método no permitido." });
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const serviceKey = serviceRoleKey();
   if (!serviceKey) return json(500, { error: "Falta SUPABASE_SERVICE_ROLE_KEY en las variables de entorno de Netlify." });
   const service = { apikey: serviceKey, Authorization: `Bearer ${serviceKey}` };
 
