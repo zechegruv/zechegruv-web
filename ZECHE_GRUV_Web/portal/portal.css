@@ -204,6 +204,32 @@ main {
   outline-offset: 2px;
 }
 
+.password-wrap { position: relative; }
+.password-wrap input { padding-right: 58px; }
+
+.password-toggle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  padding: 0 13px;
+  border: 0;
+  background: none;
+  font-family: "DM Mono", monospace;
+  font-size: 9px;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.password-toggle:hover { color: var(--orange-soft); }
+
+.password-toggle:focus-visible {
+  outline: 2px solid var(--orange-soft);
+  outline-offset: -3px;
+}
+
 .hint {
   font-size: 11px;
   line-height: 1.5;

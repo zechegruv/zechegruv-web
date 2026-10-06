@@ -47,11 +47,18 @@
         </div>
         <div class="field">
           <label for="loginPassword">Contraseña</label>
-          <input type="password" id="loginPassword" autocomplete="current-password" required>
+          <div class="password-wrap">
+            <input type="password" id="loginPassword" autocomplete="current-password" required>
+            <button class="password-toggle" type="button" id="showPasswordBtn" aria-pressed="false">Ver</button>
+          </div>
         </div>
+        <label class="check">
+          <input type="checkbox" id="rememberMe" checked>
+          <span>Recordarme en este dispositivo</span>
+        </label>
         <p class="msg" id="loginMsg" role="alert"></p>
         <button class="btn btn-primary" type="submit" id="loginSubmit">Entrar</button>
-        <button class="link-btn" type="button" id="forgotBtn">Olvidé mi contraseña</button>
+        <button class="link-btn" type="button" id="forgotBtn">¿Olvidaste tu contraseña? Te mandamos un mail para cambiarla</button>
       </form>
       <p class="muted small">El acceso lo da ZECHE GRUV. Si estás trabajando con nosotros y todavía no tenés cuenta, escribinos.</p>
     </section>

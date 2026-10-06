@@ -6,7 +6,21 @@
   // Clave pública (publishable): puede estar en el navegador.
   const SUPABASE_URL = "https://zdstltihskdcartkmgii.supabase.co";
   const SUPABASE_KEY = "sb_publishable_9M2gY0XZr7xIrV-1s9AiUA_XA1uNm0V";
-  const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  // "Recordarme": con la casilla marcada la sesión queda guardada en el
+  // dispositivo; sin marcar, dura solo hasta que se cierra el navegador.
+  const REMEMBER_KEY = "zg-portal-recordar";
+  const remembered = () => localStorage.getItem(REMEMBER_KEY) !== "0";
+  const sessionStore = {
+    getItem: (key) => sessionStorage.getItem(key) ?? localStorage.getItem(key),
+    setItem: (key, value) => {
+      const [keep, drop] = remembered() ? [localStorage, sessionStorage] : [sessionStorage, localStorage];
+      keep.setItem(key, value);
+      drop.removeItem(key);
+    },
+    removeItem: (key) => { localStorage.removeItem(key); sessionStorage.removeItem(key); },
+  };
+  const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { storage: sessionStore } });
 
   const $ = (id) => document.getElementById(id);
   const ROSTER = window.ZG_ARTISTS || [];
@@ -102,6 +116,7 @@
     if (!email || !password) { setMsg($("loginMsg"), "Completá tu mail y tu contraseña.", true); return; }
     $("loginSubmit").disabled = true;
     setMsg($("loginMsg"), "");
+    localStorage.setItem(REMEMBER_KEY, $("rememberMe").checked ? "1" : "0");
     const { data, error } = await db.auth.signInWithPassword({ email, password });
     $("loginSubmit").disabled = false;
     if (error) {
@@ -114,9 +129,17 @@
     await enter(data.user.id);
   });
 
+  $("rememberMe").checked = remembered();
+  $("showPasswordBtn").addEventListener("click", () => {
+    const show = $("loginPassword").type === "password";
+    $("loginPassword").type = show ? "text" : "password";
+    $("showPasswordBtn").textContent = show ? "Ocultar" : "Ver";
+    $("showPasswordBtn").setAttribute("aria-pressed", show);
+  });
+
   $("forgotBtn").addEventListener("click", async () => {
     const email = $("loginEmail").value.trim();
-    if (!email) { setMsg($("loginMsg"), "Escribí tu mail arriba y volvé a tocar este link.", true); return; }
+    if (!email) { $("loginEmail").focus(); setMsg($("loginMsg"), "Escribí tu mail arriba y volvé a tocar este link.", true); return; }
     const { error } = await db.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
     setMsg($("loginMsg"), error
       ? "No pudimos enviar el mail. Probá de nuevo en un momento."
