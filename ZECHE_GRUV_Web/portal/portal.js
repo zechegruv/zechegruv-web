@@ -267,6 +267,8 @@
       });
     }
     $("passwordForm").hidden = !own;
+    // Borrar: solo el administrador, y nunca su cuenta ni la de otro administrador.
+    $("dangerZone").hidden = !(admin && !own && p.role !== "admin");
 
     setMsg($("profileMsg"), "");
     setMsg($("passwordMsg"), "");
@@ -382,6 +384,40 @@
     if (btn) openTab(btn.dataset.tab);
   });
   $("backToArtists").addEventListener("click", () => openTab("artists"));
+
+  // Borrar el perfil de un artista: siempre pide confirmación antes
+  // (netlify/functions/portal-delete-artist.js).
+  $("deleteArtistBtn").addEventListener("click", () => {
+    $("deleteDialogTitle").textContent = `¿Seguro que querés borrar el perfil de ${nameOf(viewing)}?`;
+    setMsg($("deleteDialogMsg"), "");
+    $("deleteDialog").showModal();
+    $("deleteCancelBtn").focus(); // lo que queda a mano es cancelar
+  });
+  $("deleteCancelBtn").addEventListener("click", () => $("deleteDialog").close());
+  $("deleteConfirmBtn").addEventListener("click", async () => {
+    const target = viewing;
+    $("deleteConfirmBtn").disabled = true;
+    $("deleteCancelBtn").disabled = true;
+    setMsg($("deleteDialogMsg"), "Borrando…");
+    try {
+      const { data: { session } } = await db.auth.getSession();
+      const res = await fetch("/.netlify/functions/portal-delete-artist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify({ id: target.id }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "No pudimos borrar el perfil. Probá de nuevo.");
+      $("deleteDialog").close();
+      await showArtists();
+      $("artistsStatus").textContent = `Se borró el perfil de ${nameOf(target)}. ${$("artistsStatus").textContent}`;
+    } catch (err) {
+      setMsg($("deleteDialogMsg"), err.message, true);
+    } finally {
+      $("deleteConfirmBtn").disabled = false;
+      $("deleteCancelBtn").disabled = false;
+    }
+  });
 
   // Alta de artistas: crea la cuenta y manda el mail de invitación
   // (netlify/functions/portal-invite.js).

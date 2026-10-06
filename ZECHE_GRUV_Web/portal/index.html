@@ -194,6 +194,15 @@
             </form>
           </div>
         </div>
+
+        <!-- Solo administrador, en el perfil de un artista -->
+        <div class="danger-zone" id="dangerZone" hidden>
+          <div>
+            <h2 class="card-title">Borrar perfil</h2>
+            <p class="hint">Borra la cuenta del artista, sus datos y sus fichas de distribución. No se puede deshacer. No toca nada de OneDrive.</p>
+          </div>
+          <button class="btn btn-danger" type="button" id="deleteArtistBtn">Borrar perfil</button>
+        </div>
       </div>
 
       <!-- Administrador: todos los artistas -->
@@ -478,6 +487,18 @@
       </div>
     </section>
   </main>
+
+  <!-- Confirmación antes de borrar un perfil -->
+  <dialog class="dialog" id="deleteDialog" aria-labelledby="deleteDialogTitle">
+    <div class="eyebrow">Borrar perfil</div>
+    <h2 class="dialog-title" id="deleteDialogTitle"></h2>
+    <p class="dialog-text">Se van a borrar su cuenta, sus datos y sus fichas de distribución. No se puede deshacer. Sus archivos de OneDrive no se tocan.</p>
+    <p class="msg" id="deleteDialogMsg" role="alert"></p>
+    <div class="actions">
+      <button class="btn" type="button" id="deleteCancelBtn">No, cancelar</button>
+      <button class="btn btn-danger" type="button" id="deleteConfirmBtn">Sí, borrar perfil</button>
+    </div>
+  </dialog>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="../assets/data/artists.js"></script>
