@@ -1165,3 +1165,86 @@ fieldset:disabled .add-credit { display: none; }
   .avatar { width: 84px; height: 84px; }
   .nav-tag { display: none; }
 }
+
+/* ---------- ZG PASS (administrador): recuento, scanner, puerta ---------- */
+
+.zgp-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  margin-top: 18px;
+}
+.zgp-bar .field { flex: 1 1 280px; max-width: 520px; }
+.zgp-bar .pill { margin-bottom: 9px; }
+
+.zgp-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1px;
+  margin-top: 22px;
+  background: var(--border);
+  border: 1px solid var(--border);
+}
+.zgp-stats-sm { margin-top: 12px; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+.zgp-stat { background: var(--brown-dark); padding: 16px 14px; }
+.zgp-stat strong { display: block; font-size: 28px; font-weight: 800; letter-spacing: -.04em; line-height: 1; }
+.zgp-stats-sm .zgp-stat strong { font-size: 19px; }
+.zgp-stat.is-strong strong { color: var(--orange-soft); }
+.zgp-stat span {
+  display: block;
+  margin-top: 8px;
+  font-family: "DM Mono", monospace;
+  font-size: 9px;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.zgp-tabs { margin: 34px 0 26px; overflow-x: auto; }
+.zgp-tabs .tab { white-space: nowrap; }
+
+.zgp-scan { max-width: 460px; display: flex; flex-direction: column; gap: 16px; }
+.zgp-big { width: 100%; padding: 20px; font-size: 12px; }
+
+.zgp-camera { position: relative; background: #000; aspect-ratio: 1; overflow: hidden; }
+.zgp-camera video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.zgp-frame {
+  position: absolute;
+  inset: 14%;
+  border: 3px solid var(--orange-soft);
+  border-radius: 18px;
+  box-shadow: 0 0 0 100vmax rgba(0, 0, 0, .35);
+}
+
+/* Resultado bien grande y de un solo color: se tiene que entender de un
+   vistazo, de noche y con el celular en la mano. */
+.zgp-result { padding: 26px 22px; text-align: center; color: #fff; }
+.zgp-result.is-ok { background: #1f7a3d; }
+.zgp-result.is-bad { background: #b3261e; }
+.zgp-result-title {
+  font-family: "DM Mono", monospace;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+.zgp-result-name { font-size: 30px; font-weight: 800; letter-spacing: -.04em; line-height: 1.05; margin-top: 12px; overflow-wrap: anywhere; }
+.zgp-result-name:empty { display: none; }
+.zgp-result-meta { font-size: 14px; line-height: 1.5; margin-top: 10px; white-space: pre-line; }
+.zgp-result .btn { margin-top: 20px; background: #fff; border-color: #fff; color: #14532b; font-weight: 500; }
+.zgp-result .btn:hover { background: var(--cream); border-color: var(--cream); }
+
+.zgp-manual { display: flex; align-items: flex-end; gap: 10px; margin-top: 10px; }
+.zgp-manual .field { flex: 1; }
+
+#zgpIssueForm { max-width: 620px; }
+.zgp-issued { margin-top: 28px; }
+
+.zgp-search { max-width: 420px; margin-bottom: 14px; }
+.zgp-table tbody tr { cursor: default; }
+.zgp-table td small { display: block; color: var(--muted); font-size: 11px; margin-top: 2px; }
+.zgp-table .btn { padding: 9px 12px; white-space: nowrap; }
+.zgp-code { font-family: "DM Mono", monospace; font-size: 12px; white-space: nowrap; }
+.zgp-in { color: #7fd89b; font-weight: 700; }
+.zgp-missing { color: #ff9a8a; }

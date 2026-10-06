@@ -44,7 +44,7 @@
   let recovering = linkType === "invite" || linkType === "recovery";
 
   // ---------- Utilidades ----------
-  const PANELS = ["profile", "artists", "releases", "release", "files"];
+  const PANELS = ["profile", "artists", "releases", "release", "files", "pass"];
   function showPanel(name) {
     PANELS.forEach((p) => { $(`panel-${p}`).hidden = p !== name; });
     window.scrollTo(0, 0);
@@ -375,6 +375,7 @@
     document.querySelectorAll("#tabs .tab").forEach((b) => b.classList.toggle("is-active", b.dataset.tab === tab));
     if (tab === "me") showProfile(me);
     else if (tab === "releases") window.ZGDistribution.openList(null);
+    else if (tab === "pass") window.ZGPassAdmin.open();
     else showArtists();
   }
 

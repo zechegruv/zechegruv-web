@@ -16,6 +16,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="portal.css">
+  <link rel="stylesheet" href="/pass/pass.css">
 </head>
 
 <body>
@@ -98,6 +99,7 @@
       <div class="tabs" id="tabs" role="tablist" hidden>
         <button class="tab is-active" type="button" data-tab="artists" role="tab">Artistas</button>
         <button class="tab" type="button" data-tab="releases" role="tab">Distribución</button>
+        <button class="tab" type="button" data-tab="pass" role="tab">ZG PASS</button>
         <button class="tab" type="button" data-tab="me" role="tab">Mi perfil</button>
       </div>
 
@@ -310,6 +312,139 @@
           </div>
           <button class="player-btn player-close" type="button" id="playerClose" aria-label="Cerrar reproductor">✕</button>
           <audio id="playerAudio" preload="none"></audio>
+        </div>
+      </div>
+
+      <!-- ZG PASS: entradas, control de acceso y venta en puerta (solo administrador) -->
+      <div id="panel-pass" hidden>
+        <div class="eyebrow">ZG PASS</div>
+        <h1 class="title title-sm">Entradas</h1>
+        <p class="muted" id="zgpStatus"></p>
+
+        <div id="zgpBody" hidden>
+          <div class="zgp-bar">
+            <div class="field">
+              <label for="zgpEvent">Evento</label>
+              <select id="zgpEvent"></select>
+            </div>
+            <span class="pill" id="zgpState"></span>
+            <button class="btn" type="button" id="zgpPublish"></button>
+            <button class="btn" type="button" id="zgpRefresh">Actualizar</button>
+          </div>
+          <p class="msg" id="zgpBarMsg" role="status"></p>
+
+          <!-- Recuento -->
+          <div class="zgp-stats" id="zgpStats"></div>
+          <div class="zgp-stats zgp-stats-sm" id="zgpMoney"></div>
+
+          <div class="tabs zgp-tabs" id="zgpTabs" role="tablist">
+            <button class="tab is-active" type="button" data-view="scan" role="tab">Escanear QR</button>
+            <button class="tab" type="button" data-view="issue" role="tab">Venta en puerta</button>
+            <button class="tab" type="button" data-view="list" role="tab">Entradas</button>
+            <button class="tab" type="button" data-view="mic" role="tab">Open mic</button>
+          </div>
+
+          <!-- Escanear -->
+          <div id="zgp-scan">
+            <div class="zgp-scan">
+              <div class="zgp-camera" id="zgpCamera" hidden>
+                <video id="zgpVideo" playsinline muted></video>
+                <div class="zgp-frame" aria-hidden="true"></div>
+              </div>
+              <div class="zgp-result" id="zgpResult" hidden role="status" aria-live="assertive">
+                <div class="zgp-result-title" id="zgpResultTitle"></div>
+                <div class="zgp-result-name" id="zgpResultName"></div>
+                <div class="zgp-result-meta" id="zgpResultMeta"></div>
+                <button class="btn zgp-big" type="button" id="zgpMark" hidden>Marcar como ingresado</button>
+              </div>
+              <button class="btn btn-primary zgp-big" type="button" id="zgpScanBtn">Abrir cámara</button>
+              <p class="msg" id="zgpScanMsg" role="alert"></p>
+              <form class="zgp-manual" id="zgpManual" novalidate>
+                <div class="field">
+                  <label for="zgpCode">¿No lee el QR? Escribí el código de la entrada</label>
+                  <input type="text" id="zgpCode" placeholder="ZG-26-000001" autocapitalize="characters" autocomplete="off" maxlength="12">
+                </div>
+                <button class="btn" type="submit">Buscar</button>
+              </form>
+            </div>
+          </div>
+
+          <!-- Venta en puerta / bonificadas -->
+          <div id="zgp-issue" hidden>
+            <form class="card form" id="zgpIssueForm" novalidate>
+              <h2 class="card-title">Venta en puerta</h2>
+              <div class="grid-2">
+                <div class="field">
+                  <label for="zgpType">Tipo de entrada</label>
+                  <select id="zgpType"></select>
+                </div>
+                <div class="field">
+                  <label for="zgpQty">Cantidad</label>
+                  <input type="number" id="zgpQty" min="1" max="20" value="1" inputmode="numeric">
+                </div>
+              </div>
+              <div class="grid-2">
+                <div class="field">
+                  <label for="zgpFirst">Nombre</label>
+                  <input type="text" id="zgpFirst" maxlength="60" autocomplete="off">
+                </div>
+                <div class="field">
+                  <label for="zgpLast">Apellido</label>
+                  <input type="text" id="zgpLast" maxlength="60" autocomplete="off">
+                </div>
+              </div>
+              <div class="field">
+                <label for="zgpEmail">Mail (opcional)</label>
+                <input type="email" id="zgpEmail" maxlength="160" autocomplete="off" inputmode="email">
+                <p class="hint">Si lo cargás, le llega la entrada por mail. Si no, mostrale el QR de la pantalla.</p>
+              </div>
+              <div class="grid-2">
+                <div class="field">
+                  <label for="zgpMethod">Medio de pago</label>
+                  <select id="zgpMethod">
+                    <option value="cash">Efectivo</option>
+                    <option value="transfer">Transferencia</option>
+                    <option value="mercadopago">Mercado Pago (cobrado aparte)</option>
+                    <option value="comp">Bonificada (sin cargo)</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="zgpPrice">Precio por entrada ($)</label>
+                  <input type="number" id="zgpPrice" min="0" step="1" inputmode="numeric">
+                </div>
+              </div>
+              <p class="hint">Las bonificadas ocupan un lugar igual que las pagas.</p>
+              <p class="msg" id="zgpIssueMsg" role="alert"></p>
+              <button class="btn btn-primary" type="submit" id="zgpIssueSubmit">Emitir entrada</button>
+            </form>
+            <div class="tickets zgp-issued" id="zgpIssued"></div>
+          </div>
+
+          <!-- Entradas emitidas -->
+          <div id="zgp-list" hidden>
+            <div class="field zgp-search">
+              <label for="zgpSearch">Buscar por nombre, mail o código</label>
+              <input type="search" id="zgpSearch" autocomplete="off">
+            </div>
+            <p class="muted" id="zgpListStatus"></p>
+            <div class="table-wrap">
+              <table class="table zgp-table" id="zgpTable">
+                <thead><tr><th>Código</th><th>Titular</th><th>Tipo</th><th>Origen</th><th>Pagó</th><th>Ingreso</th><th></th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Inscriptos al open mic -->
+          <div id="zgp-mic" hidden>
+            <p class="muted" id="zgpMicStatus"></p>
+            <div class="table-wrap">
+              <table class="table zgp-table" id="zgpMicTable">
+                <thead><tr><th>AKA</th><th>Canción</th><th>Nota</th><th>Nombre</th><th>Instagram</th><th>Mail</th><th>Archivo</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -568,5 +703,8 @@
   <script src="portal.js"></script>
   <script src="distribucion.js"></script>
   <script src="archivos.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+  <script src="/pass/ticket.js"></script>
+  <script src="zgpass.js"></script>
 </body>
 </html>
