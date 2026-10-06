@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="referrer" content="no-referrer" />
+  <title>Open mic — ZG PASS</title>
+
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/favicon/apple-touch-icon.png">
+  <meta name="theme-color" content="#4B2509">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/portal/portal.css">
+  <link rel="stylesheet" href="/pass/pass.css">
+</head>
+
+<body>
+  <nav>
+    <a class="nav-mark" href="/">
+      <img class="nav-sun" src="/assets/zeche-gruv-sol.webp" alt="" aria-hidden="true">
+      ZECHE GRUV®
+    </a>
+    <div class="nav-right">
+      <a class="pass-wordmark" href="/pass/">ZG PASS</a>
+    </div>
+  </nav>
+
+  <main>
+    <section id="view-loading">
+      <div class="spinner" role="status" aria-label="Cargando"></div>
+    </section>
+
+    <!-- ---------- Aviso (cerrado, sin compra, ya inscripto) ---------- -->
+    <section id="view-state" hidden>
+      <div class="state">
+        <div class="eyebrow">ZG PASS / Open mic</div>
+        <h1 class="title title-sm" id="stateTitle"></h1>
+        <p class="lead" id="stateText"></p>
+        <div class="actions"><a class="btn" href="/pass/" id="stateBtn">Ver mi entrada</a></div>
+      </div>
+    </section>
+
+    <!-- ---------- Mail con el que se compró la entrada ---------- -->
+    <section class="view-narrow" id="view-email" hidden style="max-width:560px">
+      <div class="eyebrow">ZG PASS / Open mic</div>
+      <h1 class="title title-sm">Anotate al<br>open mic.</h1>
+      <p class="lead" id="emailIntro">Para anotarte necesitás tu entrada. Poné el mail con el que la compraste.</p>
+      <form class="card form" id="emailForm" novalidate style="margin-top:28px">
+        <div class="field">
+          <label for="buyerEmail">Mail con el que compraste tu entrada</label>
+          <input type="email" id="buyerEmail" autocomplete="email" maxlength="160" inputmode="email" required>
+        </div>
+        <p class="msg" id="emailMsg" role="alert"></p>
+        <button class="btn btn-primary" type="submit" id="emailSubmit">Continuar</button>
+        <a class="link-btn" id="buyLink" href="/pass/">Todavía no tengo mi entrada</a>
+      </form>
+    </section>
+
+    <!-- ---------- Formulario ---------- -->
+    <section class="view-narrow" id="view-form" hidden style="max-width:560px">
+      <div class="eyebrow">ZG PASS / Open mic</div>
+      <h1 class="title title-sm">Anotate al<br>open mic.</h1>
+      <p class="lead" id="formIntro"></p>
+
+      <form class="card form" id="micForm" novalidate style="margin-top:28px">
+        <div class="field" id="ticketField" hidden>
+          <label for="ticketSelect">Entrada con la que te anotás</label>
+          <select id="ticketSelect"></select>
+          <p class="hint">Cada entrada permite anotar una canción.</p>
+        </div>
+
+        <div class="field">
+          <label for="fullName">Nombre completo</label>
+          <input type="text" id="fullName" autocomplete="name" maxlength="120" required>
+        </div>
+        <div class="field">
+          <label for="aka">AKA (nombre artístico)</label>
+          <input type="text" id="aka" maxlength="80" required>
+          <p class="hint">Así te vamos a presentar.</p>
+        </div>
+        <div class="field">
+          <label for="instagram">Instagram</label>
+          <input type="text" id="instagram" maxlength="60" placeholder="@tuusuario" autocapitalize="none" autocomplete="off" required>
+        </div>
+        <div class="field">
+          <label for="email">Mail</label>
+          <input type="email" id="email" autocomplete="email" maxlength="160" inputmode="email" required>
+        </div>
+
+        <div class="field">
+          <label for="songTitle">Nombre de la canción</label>
+          <input type="text" id="songTitle" maxlength="120" required>
+        </div>
+        <div class="field">
+          <label for="tuneNote">Nota del tune</label>
+          <div class="grid-2">
+            <select id="tuneNote" aria-label="Nota"></select>
+            <select id="tuneMode" aria-label="Escala">
+              <option value="mayor">Mayor</option>
+              <option value="menor">Menor</option>
+            </select>
+          </div>
+          <p class="hint">La tonalidad en la que está tu canción, para configurar el autotune. Si cantás sin tune, elegí “Sin tune”.</p>
+        </div>
+
+        <div class="field">
+          <label for="songFile">Tu canción</label>
+          <input type="file" id="songFile" accept=".mp3,.wav,audio/mpeg,audio/wav" required>
+          <p class="hint">Solo <strong>MP3</strong> o <strong>WAV</strong>, hasta 150 MB. Subí la pista sobre la que vas a cantar, tal como querés que suene esa noche. Una canción por persona.</p>
+        </div>
+
+        <div class="upload-progress" id="uploadProgress" hidden><i id="uploadBar"></i></div>
+        <p class="msg" id="micMsg" role="alert"></p>
+        <button class="btn btn-primary" type="submit" id="micSubmit">Anotarme y subir mi canción</button>
+      </form>
+    </section>
+  </main>
+
+  <script src="/pass/ticket.js"></script>
+  <script src="/pass/openmic/openmic.js"></script>
+</body>
+</html>

@@ -9,7 +9,7 @@
 const { json, db, settlePayment, serviceKey } = require("./_lib/pass");
 
 const SELECT = "id,number,status,total,expires_at,buyer_first_name,buyer_last_name,buyer_email,"
-  + "pass_events(slug,kind,name,starts_at,venue_name,venue_address,important_info),"
+  + "pass_events(slug,kind,name,starts_at,venue_name,venue_address,important_info,openmic_enabled,openmic_deadline),"
   + "pass_tickets(code,token,status,holder_name,price_paid,pass_ticket_types(name))";
 
 const load = (token) => db(`pass_orders?access_token=eq.${token}&select=${SELECT}`);
@@ -49,6 +49,7 @@ exports.handler = async (event) => {
     buyer_name: `${order.buyer_first_name} ${order.buyer_last_name}`,
     buyer_email: order.buyer_email,
     event: order.pass_events,
+    openmic_open: order.pass_events.openmic_enabled && (!order.pass_events.openmic_deadline || Date.now() <= Date.parse(order.pass_events.openmic_deadline)),
     // Las entradas (y sus QR) solo se entregan con la orden paga.
     tickets: paid
       ? order.pass_tickets

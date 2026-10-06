@@ -37,6 +37,8 @@
 .state .actions { margin-top: 22px; display: flex; gap: 10px; flex-wrap: wrap; }
 
 a.btn { display: inline-block; }
+.order-head .actions { margin-top: 22px; }
+.notice .link-btn { font-size: inherit; color: var(--orange-soft); }
 
 /* ---------- Listado de eventos ---------- */
 

@@ -9,6 +9,8 @@
 //   MP_WEBHOOK_SECRET          clave con la que Mercado Pago firma sus avisos
 //   PASS_TEST_MODE             "1" solo en el sitio de pruebas: ahí se venden
 //                              únicamente los eventos marcados como prueba
+//   RESEND_API_KEY             para mandar los mails
+//   PASS_NOTIFY_EMAIL          (opcional) a dónde llegan los avisos internos
 const crypto = require("crypto");
 
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://zdstltihskdcartkmgii.supabase.co";
@@ -125,4 +127,22 @@ async function settlePayment(paymentId) {
   return { result, orderId };
 }
 
-module.exports = { SUPABASE_URL, PUBLIC_URL, UUID, json, siteUrl, testMode, serviceKey, mpToken, db, rpc, audit, mp, validWebhookSignature, settlePayment };
+// ---------- Mails (Resend, con el dominio zechegruv.com ya verificado) ----------
+const esc = (text) => String(text == null ? "" : text).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+async function sendMail({ to, subject, html, replyTo }) {
+  const key = clean(process.env.RESEND_API_KEY);
+  if (!key) { console.error("ZG PASS: falta RESEND_API_KEY, no se mandó el mail", subject); return false; }
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ from: "ZG PASS <pass@zechegruv.com>", to: [to], subject, html, reply_to: replyTo || undefined }),
+  });
+  if (!res.ok) console.error("ZG PASS: Resend rechazó el mail", res.status, await res.text().catch(() => ""));
+  return res.ok;
+}
+
+// A dónde llegan los avisos internos (inscripciones al open mic, etc.).
+const notifyEmail = () => clean(process.env.PASS_NOTIFY_EMAIL) || "zechegruv@gmail.com";
+
+module.exports = { SUPABASE_URL, PUBLIC_URL, UUID, json, siteUrl, testMode, serviceKey, mpToken, db, rpc, audit, mp, validWebhookSignature, settlePayment, esc, sendMail, notifyEmail };

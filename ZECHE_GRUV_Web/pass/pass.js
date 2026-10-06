@@ -107,6 +107,8 @@
         ? "No quedan entradas para esta fecha."
         : "La venta online de este evento no está abierta.";
     }
+    $("micNotice").hidden = !e.openmic_open;
+    $("micLink").href = `/pass/openmic/?e=${encodeURIComponent(e.slug)}`;
     showResume();
     showView("event");
   }

@@ -35,6 +35,8 @@
     $("paidNumber").textContent = `Orden ${order.number}`;
     $("paidTitle").textContent = many ? "¡Tus entradas están confirmadas!" : "¡Tu entrada está confirmada!";
     $("paidText").textContent = `${many ? "Te las mandamos" : "Te la mandamos"} también a ${order.buyer_email}. Podés sacarle una captura de pantalla: el QR es lo que se muestra en la puerta.`;
+    $("micBox").hidden = !order.openmic_open;
+    $("micBtn").href = `/pass/openmic/?t=${token}`;
     $("tickets").replaceChildren(...order.tickets.map((t, i) => renderTicket(order.event, t, i + 1, order.tickets.length)));
     showView("paid");
   }

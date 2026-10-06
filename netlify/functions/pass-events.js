@@ -5,7 +5,7 @@
 // prueba; en el real, nunca.
 const { json, db, rpc, testMode, serviceKey } = require("./_lib/pass");
 
-const FIELDS = "id,slug,kind,name,description,image_url,starts_at,ends_at,venue_name,venue_address,important_info,capacity,max_per_buyer,status,sales_start,sales_end,pass_ticket_types(id,name,description,price,quota,active,sort)";
+const FIELDS = "id,slug,kind,name,description,image_url,starts_at,ends_at,venue_name,venue_address,important_info,capacity,max_per_buyer,status,sales_start,sales_end,openmic_enabled,openmic_deadline,pass_ticket_types(id,name,description,price,quota,active,sort)";
 
 exports.handler = async (event) => {
   if (event.httpMethod !== "GET") return json(405, { error: "Método no permitido." });
@@ -43,6 +43,7 @@ exports.handler = async (event) => {
       sold_out: remaining === 0,
       // No se publica el número exacto salvo cuando quedan pocas.
       few_left: remaining > 0 && remaining <= 10 ? remaining : null,
+      openmic_open: e.openmic_enabled && (!e.openmic_deadline || now <= Date.parse(e.openmic_deadline)),
       ticket_types: (e.pass_ticket_types || [])
         .filter((t) => t.active)
         .sort((a, b) => a.sort - b.sort)
