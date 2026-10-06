@@ -3354,15 +3354,6 @@
       .ambient { transition: none; }
     }
 
-    .label-director-age {
-      font-family: "DM Mono", monospace;
-      font-size: 11px;
-      font-weight: 400;
-      letter-spacing: .1em;
-      color: var(--muted);
-      margin-left: 8px;
-      white-space: nowrap;
-    }
 
     /* ---------- Visor de fotos (camp) ----------
        Tocar o hacer clic en una foto la abre grande; en el celular se pasa
@@ -3884,7 +3875,7 @@
     <div class="label-director">
       <img class="label-director-photo" src="assets/team/yaco-santana.webp" alt="Yaco Santana" width="160" height="160" loading="lazy" decoding="async">
       <div>
-        <div class="label-director-name">Yaco Santana <span class="label-director-age" id="yacoAge"></span></div>
+        <div class="label-director-name">Yaco Santana</div>
         <div class="label-director-role" data-i18n="label_director_role">Fundador y director</div>
         <div class="label-director-bio" data-i18n-html="label_director_bio">
           <p>Yaco Santana nació en Brasil y creció viajando por Latinoamérica, entre tambores y las canciones que le cantaba su madre. Se formó en el conservatorio, estudió Producción Musical en la Escuela de Música de Buenos Aires y profundizó su aprendizaje de manera autodidacta. Tras varios años en otros trabajos, decidió dedicarse por completo a la música, y hoy vive de ella.</p>
@@ -6319,32 +6310,6 @@
       return savedLang() || browserLang();
     }
 
-    // ---------- Edad de Yaco ----------
-    // Se calcula sola con la fecha de nacimiento: suma un año cada 11 de abril.
-    const YACO_BIRTH = { year: 2001, month: 4, day: 11 };
-    function yacoAge(now = new Date()) {
-      let age = now.getFullYear() - YACO_BIRTH.year;
-      const m = now.getMonth() + 1, d = now.getDate();
-      if (m < YACO_BIRTH.month || (m === YACO_BIRTH.month && d < YACO_BIRTH.day)) age--;
-      return age;
-    }
-    function renderYacoAge(lang) {
-      const el = document.getElementById("yacoAge");
-      if (!el) return;
-      const n = yacoAge();
-      const WORDS = {
-        es: "años", en: "years old", pt: "anos", fr: "ans", it: "anni", de: "Jahre",
-        ru: { one: "год", few: "года", many: "лет", other: "лет" },
-      };
-      let w = WORDS[lang] || WORDS.es;
-      if (typeof w === "object") {
-        let cat = "other";
-        try { cat = new Intl.PluralRules("ru").select(n); } catch (e) {}
-        w = w[cat] || w.other;
-      }
-      el.textContent = `· ${n} ${w}`;
-    }
-
     function applyLanguage(lang) {
       if (!I18N[lang]) lang = "es";
       currentLang = lang;
@@ -6362,8 +6327,6 @@
         const val = I18N[lang][el.getAttribute("data-i18n-html")];
         if (val !== undefined) el.innerHTML = val;
       });
-
-      renderYacoAge(lang);
 
       // Contenido armado por JS: hay que volver a generarlo para que
       // tome el texto del nuevo idioma.
