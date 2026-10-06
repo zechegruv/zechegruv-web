@@ -20,6 +20,13 @@
     },
     removeItem: (key) => { localStorage.removeItem(key); sessionStorage.removeItem(key); },
   };
+
+  // Si se llega desde el link de un mail (invitación o recuperación), la
+  // dirección trae el tipo de link; hay que leerlo antes de crear el
+  // cliente, que limpia la dirección al tomar la sesión.
+  const linkParams = new URLSearchParams(location.hash.slice(1));
+  const linkType = linkParams.get("type");               // "invite" | "recovery" | null
+  const linkError = linkParams.get("error_description"); // p. ej. link vencido
   const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { storage: sessionStore } });
 
   const $ = (id) => document.getElementById(id);
@@ -30,7 +37,7 @@
 
   let me = null;       // perfil de la cuenta que inició sesión
   let viewing = null;  // perfil que se está mostrando (el propio, o el de un artista si es admin)
-  let recovering = false;
+  let recovering = linkType === "invite" || linkType === "recovery";
 
   // ---------- Utilidades ----------
   const PANELS = ["profile", "artists", "releases", "release", "files"];
@@ -76,10 +83,19 @@
   }
 
   // ---------- Sesión ----------
+  // Primer ingreso (invitación) o cambio de contraseña (recuperación).
+  function showSetPassword() {
+    const first = linkType === "invite";
+    $("recoveryTitle").innerHTML = first ? "Creá tu<br>contraseña." : "Elegí una<br>contraseña nueva.";
+    $("recoveryLabel").textContent = first ? "Contraseña" : "Contraseña nueva";
+    $("recoveryIntro").hidden = !first;
+    showView("recovery");
+  }
+
   db.auth.onAuthStateChange((event) => {
     if (event === "PASSWORD_RECOVERY") {
       recovering = true;
-      showView("recovery");
+      showSetPassword();
     } else if (event === "SIGNED_OUT") {
       me = viewing = null;
       showView("login");
@@ -88,7 +104,12 @@
 
   async function start() {
     const { data: { session } } = await db.auth.getSession();
-    if (recovering) return;
+    if (linkError) {
+      showView("login");
+      setMsg($("loginMsg"), "Ese link ya se usó o venció. Escribí tu mail y tocá “¿Olvidaste tu contraseña?” para recibir uno nuevo.", true);
+      return;
+    }
+    if (recovering && session) { showSetPassword(); return; }
     if (!session) { showView("login"); return; }
     await enter(session.user.id);
   }
@@ -322,6 +343,37 @@
     if (btn) openTab(btn.dataset.tab);
   });
   $("backToArtists").addEventListener("click", () => openTab("artists"));
+
+  // Alta de artistas: crea la cuenta y manda el mail de invitación
+  // (netlify/functions/portal-invite.js).
+  $("inviteForm").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const msg = $("inviteMsg");
+    const email = $("inviteEmail").value.trim();
+    const display_name = $("inviteName").value.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setMsg(msg, "Escribí el mail del artista.", true); return; }
+    if (!display_name) { setMsg(msg, "Escribí el nombre artístico: es como lo saludamos en el mail.", true); return; }
+    $("inviteSubmit").disabled = true;
+    setMsg(msg, "Enviando invitación…");
+    try {
+      const { data: { session } } = await db.auth.getSession();
+      const res = await fetch("/.netlify/functions/portal-invite", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify({ email, display_name }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "No pudimos enviar la invitación. Probá de nuevo.");
+      $("inviteEmail").value = "";
+      $("inviteName").value = "";
+      await showArtists();
+      setMsg(msg, `Invitación enviada a ${data.email}. Abrí su fila para completarle Spotify, formato y carpeta.`);
+    } catch (err) {
+      setMsg(msg, err.message, true);
+    } finally {
+      $("inviteSubmit").disabled = false;
+    }
+  });
 
   async function showArtists() {
     showPanel("artists");

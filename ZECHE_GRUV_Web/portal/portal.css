@@ -532,6 +532,55 @@ a.chip:hover { border-color: var(--orange-soft); color: var(--orange-soft); }
   line-height: 1.5;
 }
 
+.notice-login {
+  margin: 0 0 16px;
+  border-color: var(--border);
+  color: var(--beige);
+}
+
+/* Login: el acceso a la izquierda y, al lado, la invitación a empezar
+   para quien llega sin tener cuenta. En celular va debajo. */
+.view-login {
+  max-width: 920px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 440px) minmax(0, 1fr);
+  gap: 40px;
+  align-items: start;
+}
+
+.cta-card {
+  margin-top: 124px;
+  border-color: rgba(245, 166, 35, .45);
+}
+
+.cta-title {
+  font-size: clamp(24px, 3vw, 32px);
+  font-weight: 800;
+  letter-spacing: -.04em;
+  line-height: 1.02;
+  margin-bottom: 14px;
+}
+
+.cta-card .eyebrow { margin-bottom: 10px; }
+
+.cta-text {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--beige);
+  margin-bottom: 18px;
+}
+
+.btn-cta {
+  display: block;
+  text-align: center;
+  font-size: 10px;
+  line-height: 1.5;
+  padding: 16px 14px;
+}
+
+.invite-form { margin-top: 28px; }
+
 #releaseForm {
   display: flex;
   flex-direction: column;
@@ -858,6 +907,8 @@ fieldset:disabled .add-credit { display: none; }
 .help-body dd { margin-top: 3px; }
 
 @media (max-width: 800px) {
+  .view-login { grid-template-columns: 1fr; gap: 0; max-width: 440px; }
+  .cta-card { margin-top: 28px; }
   .row { grid-template-columns: 1fr; }
   .credit-grid { grid-template-columns: 1fr; }
   main { padding-top: 44px; }

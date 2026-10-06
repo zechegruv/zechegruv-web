@@ -37,9 +37,11 @@
     </section>
 
     <!-- ---------- Login ---------- -->
-    <section class="view view-narrow" id="view-login" hidden>
+    <section class="view view-login" id="view-login" hidden>
+      <div class="login-col">
       <div class="eyebrow">Portal de artistas</div>
       <h1 class="title">Entrá a tu<br>espacio.</h1>
+      <p class="notice notice-login">Este portal es para artistas con un proyecto activo en ZECHE GRUV. Solo vas a poder ingresar si estás trabajando con nosotros en un single, un EP o un álbum.</p>
       <form class="card form" id="loginForm" novalidate>
         <div class="field">
           <label for="loginEmail">Mail</label>
@@ -60,16 +62,25 @@
         <button class="btn btn-primary" type="submit" id="loginSubmit">Entrar</button>
         <button class="link-btn" type="button" id="forgotBtn">¿Olvidaste tu contraseña? Te mandamos un mail para cambiarla</button>
       </form>
-      <p class="muted small">El acceso lo da ZECHE GRUV. Si estás trabajando con nosotros y todavía no tenés cuenta, escribinos.</p>
+      <p class="muted small">¿Tenés un proyecto activo y todavía no recibiste tu acceso? Escribinos y te lo mandamos.</p>
+      </div>
+
+      <div class="card cta-card">
+        <div class="eyebrow">¿Todavía no trabajamos juntos?</div>
+        <h2 class="cta-title">Tu música<br>puede empezar acá.</h2>
+        <p class="cta-text">Si nunca hiciste música con nosotros, este es el momento. Mirá cómo podemos trabajar tu próxima canción, tu EP o tu álbum.</p>
+        <a class="btn btn-primary btn-cta" href="../index.html#memberships">Empecemos con tu desarrollo artístico ↗</a>
+      </div>
     </section>
 
-    <!-- ---------- Nueva contraseña (link del mail de recuperación) ---------- -->
+    <!-- ---------- Elegir contraseña (link del mail de invitación o de recuperación) ---------- -->
     <section class="view view-narrow" id="view-recovery" hidden>
       <div class="eyebrow">Portal de artistas</div>
-      <h1 class="title">Elegí una<br>contraseña nueva.</h1>
+      <h1 class="title" id="recoveryTitle">Elegí una<br>contraseña nueva.</h1>
+      <p class="notice notice-login" id="recoveryIntro" hidden>Es tu primer ingreso. Elegí la contraseña con la que vas a entrar de ahora en más; tu usuario es tu mail.</p>
       <form class="card form" id="recoveryForm" novalidate>
         <div class="field">
-          <label for="recoveryPassword">Contraseña nueva</label>
+          <label for="recoveryPassword" id="recoveryLabel">Contraseña nueva</label>
           <input type="password" id="recoveryPassword" autocomplete="new-password" minlength="8" required>
         </div>
         <p class="msg" id="recoveryMsg" role="alert"></p>
@@ -193,7 +204,23 @@
             <tbody></tbody>
           </table>
         </div>
-        <p class="muted small">Las cuentas nuevas se crean desde Supabase (Authentication → Users → Add user). Apenas se crean aparecen acá para completar sus datos.</p>
+
+        <form class="card form invite-form" id="inviteForm" novalidate>
+          <h2 class="card-title">Invitar a un artista</h2>
+          <p class="hint">Le creamos la cuenta y le llega un mail de ZECHE GRUV con el link para su primer ingreso, donde elige su contraseña. Después completás sus datos acá.</p>
+          <div class="row">
+            <div class="field">
+              <label for="inviteEmail">Mail del artista</label>
+              <input type="email" id="inviteEmail" maxlength="160" autocomplete="off">
+            </div>
+            <div class="field">
+              <label for="inviteName">Nombre artístico</label>
+              <input type="text" id="inviteName" maxlength="80" autocomplete="off">
+            </div>
+          </div>
+          <p class="msg" id="inviteMsg" role="status"></p>
+          <button class="btn btn-primary" type="submit" id="inviteSubmit">Enviar invitación</button>
+        </form>
       </div>
 
       <!-- Archivos de una sección (Referencias, Letras, Exports, Masters, Membresía) -->
