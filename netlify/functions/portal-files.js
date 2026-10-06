@@ -109,6 +109,10 @@ async function listSection(shareLink, folderName) {
 }
 
 // ---------- Supabase ----------
+// Clave pública del proyecto (la misma que usa el navegador): alcanza para
+// comprobar de quién es una sesión. La secreta se usa solo para leer datos.
+const PUBLISHABLE_KEY = "sb_publishable_9M2gY0XZr7xIrV-1s9AiUA_XA1uNm0V";
+const BAD_KEY = "La clave secreta de Supabase cargada en Netlify (SUPABASE_SERVICE_ROLE_KEY) no es válida. Volvé a copiarla completa desde Supabase.";
 async function supabase(path, key, bearer) {
   const res = await fetch(`${SUPABASE_URL}${path}`, { headers: { apikey: key, Authorization: `Bearer ${bearer || key}` } });
   return res.ok ? res.json() : null;
@@ -134,7 +138,7 @@ exports.handler = async (event) => {
 
   const auth = (event.headers && (event.headers.authorization || event.headers.Authorization)) || "";
   const token = auth.replace(/^Bearer\s+/i, "");
-  const user = token ? await supabase("/auth/v1/user", serviceKey, token) : null;
+  const user = token ? await supabase("/auth/v1/user", PUBLISHABLE_KEY, token) : null;
   if (!user || !user.id) return json(401, { error: "Iniciá sesión de nuevo." });
 
   // Un artista siempre ve lo suyo; solo el administrador puede pedir otro perfil.
@@ -142,11 +146,13 @@ exports.handler = async (event) => {
   if (q.artist && q.artist !== user.id) {
     if (!/^[0-9a-f-]{36}$/i.test(q.artist)) return json(400, { error: "Artista inválido." });
     const me = await supabase(`/rest/v1/profiles?id=eq.${user.id}&select=role`, serviceKey);
-    if (!me || !me[0] || me[0].role !== "admin") return json(403, { error: "No tenés permiso para ver esa carpeta." });
+    if (!me) return json(500, { error: BAD_KEY });
+    if (!me[0] || me[0].role !== "admin") return json(403, { error: "No tenés permiso para ver esa carpeta." });
     artistId = q.artist;
   }
 
   const rows = await supabase(`/rest/v1/artist_private?profile_id=eq.${artistId}&select=onedrive_link`, serviceKey);
+  if (!rows) return json(500, { error: BAD_KEY });
   const link = rows && rows[0] && rows[0].onedrive_link;
   if (!link) return json(200, { configured: false, exists: false, files: [], groups: [] });
 

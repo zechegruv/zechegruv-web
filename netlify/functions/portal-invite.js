@@ -11,6 +11,11 @@
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://zdstltihskdcartkmgii.supabase.co";
 const PORTAL_URL = process.env.PORTAL_URL || "https://zechegruv.com/portal/";
 
+// Clave pública del proyecto (la misma que usa el navegador): alcanza para
+// comprobar de quién es una sesión. La secreta se usa solo para leer datos.
+const PUBLISHABLE_KEY = "sb_publishable_9M2gY0XZr7xIrV-1s9AiUA_XA1uNm0V";
+const BAD_KEY = "La clave secreta de Supabase cargada en Netlify (SUPABASE_SERVICE_ROLE_KEY) no es válida. Volvé a copiarla completa desde Supabase.";
+
 // La clave tal como está cargada en Netlify, sin espacios ni comillas que
 // se hayan colado al pegarla (rompen los encabezados de las consultas).
 const serviceRoleKey = () => (process.env.SUPABASE_SERVICE_ROLE_KEY || "").replace(/[\s"'\u201C\u201D\u2018\u2019]/g, "");
@@ -30,11 +35,12 @@ exports.handler = async (event) => {
   // Quién llama: tiene que ser una sesión válida de un administrador.
   const auth = (event.headers && (event.headers.authorization || event.headers.Authorization)) || "";
   const token = auth.replace(/^Bearer\s+/i, "");
-  const userRes = token ? await fetch(`${SUPABASE_URL}/auth/v1/user`, { headers: { apikey: serviceKey, Authorization: `Bearer ${token}` } }) : null;
+  const userRes = token ? await fetch(`${SUPABASE_URL}/auth/v1/user`, { headers: { apikey: PUBLISHABLE_KEY, Authorization: `Bearer ${token}` } }) : null;
   const user = userRes && userRes.ok ? await userRes.json() : null;
   if (!user || !user.id) return json(401, { error: "Iniciá sesión de nuevo." });
   const roleRes = await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${user.id}&select=role`, { headers: service });
-  const role = roleRes.ok ? await roleRes.json() : [];
+  if (!roleRes.ok) return json(500, { error: BAD_KEY });
+  const role = await roleRes.json();
   if (!role[0] || role[0].role !== "admin") return json(403, { error: "Solo el administrador puede invitar artistas." });
 
   let body;
