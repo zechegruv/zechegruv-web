@@ -25,8 +25,12 @@
   // dirección trae el tipo de link; hay que leerlo antes de crear el
   // cliente, que limpia la dirección al tomar la sesión.
   const linkParams = new URLSearchParams(location.hash.slice(1));
-  const linkType = linkParams.get("type");               // "invite" | "recovery" | null
-  const linkError = linkParams.get("error_description"); // p. ej. link vencido
+  const linkQuery = new URLSearchParams(location.search);
+  // Los mails del portal traen un link a esta misma página con un código
+  // de un solo uso (?token_hash=…&type=invite|recovery), que se canjea acá.
+  const linkToken = linkQuery.get("token_hash");
+  const linkType = linkQuery.get("type") || linkParams.get("type"); // "invite" | "recovery" | null
+  let linkError = linkParams.get("error_description");              // p. ej. link vencido
   const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { storage: sessionStore } });
 
   const $ = (id) => document.getElementById(id);
@@ -103,6 +107,11 @@
   });
 
   async function start() {
+    if (linkToken) {
+      const { error } = await db.auth.verifyOtp({ token_hash: linkToken, type: linkType === "invite" ? "invite" : "recovery" });
+      history.replaceState(null, "", location.pathname); // el código no queda en la dirección
+      if (error) linkError = error.message;
+    }
     const { data: { session } } = await db.auth.getSession();
     if (linkError) {
       showView("login");

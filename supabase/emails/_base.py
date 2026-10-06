@@ -3,7 +3,14 @@
 # El HTML resultante se pega en Supabase → Authentication → Emails.
 import io, os
 
-def mail(preheader, title, intro, box, button, after):
+# El link lleva a la página del portal (mismo dominio que el sitio) con un
+# código de un solo uso; el portal lo canjea. Que el link sea del propio
+# dominio, y no de supabase.co, ayuda a que el mail no caiga en spam.
+def link(kind):
+    return "https://zechegruv.com/portal/?token_hash={{ .TokenHash }}&amp;type=" + kind
+
+def mail(kind, title, intro, box, button, after):
+    url = link(kind)
     return f'''<!DOCTYPE html>
 <html lang="es">
 <head>
@@ -13,7 +20,6 @@ def mail(preheader, title, intro, box, button, after):
 <title>ZECHE GRUV</title>
 </head>
 <body style="margin:0;padding:0;background:#241105;">
-<div style="display:none;max-height:0;overflow:hidden;opacity:0;">{preheader}</div>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#241105;">
 <tr><td align="center" style="padding:32px 16px;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#4B2509;border:1px solid #6b4a2c;">
@@ -26,11 +32,11 @@ def mail(preheader, title, intro, box, button, after):
 {box}
 <tr><td style="padding:26px 32px 0;">
 <table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="background:#F07800;">
-<a href="{{{{ .ConfirmationURL }}}}" style="display:inline-block;padding:15px 22px;font-family:'Courier New',Courier,monospace;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#FFF4DC;text-decoration:none;">{button} &rarr;</a>
+<a href="{url}" style="display:inline-block;padding:15px 22px;font-family:'Courier New',Courier,monospace;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#FFF4DC;text-decoration:none;">{button} &rarr;</a>
 </td></tr></table>
 </td></tr>
 <tr><td style="padding:22px 32px 0;font-family:Helvetica,Arial,sans-serif;font-size:13px;line-height:1.6;color:#C9A980;">{after}</td></tr>
-<tr><td style="padding:14px 32px 0;font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:1.6;color:#C9A980;">Si el botón no funciona, copiá y pegá este link en tu navegador:<br><a href="{{{{ .ConfirmationURL }}}}" style="color:#F5A623;word-break:break-all;">{{{{ .ConfirmationURL }}}}</a></td></tr>
+<tr><td style="padding:14px 32px 0;font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:1.6;color:#C9A980;">Si el botón no funciona, copiá y pegá este link en tu navegador:<br><a href="{url}" style="color:#F5A623;word-break:break-all;">{url}</a></td></tr>
 <tr><td style="padding:30px 32px 30px;font-family:'Courier New',Courier,monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#C9A980;border-top:0;">ZECHE GRUV&reg; &mdash; Buenos Aires &middot; <a href="https://zechegruv.com" style="color:#C9A980;">zechegruv.com</a></td></tr>
 </table>
 </td></tr>
@@ -55,7 +61,7 @@ def box(rows):
 here = os.path.dirname(os.path.abspath(__file__))
 
 invite = mail(
-    "Ya tenés tu espacio en el portal de artistas de ZECHE GRUV.",
+    "invite",
     "Tu espacio ya<br>está listo.",
     "Hola{{ if .Data.display_name }}, <b>{{ .Data.display_name }}</b>{{ end }}. Te creamos tu cuenta en el portal de artistas de ZECHE GRUV. Ahí vas a encontrar todo lo de tu proyecto en un solo lugar: tus referencias y letras, los exports y masters de cada canción, tu membresía y el formulario para distribuir tu música.",
     box(row("Usuario", "{{ .Email }}") + "\n" + row("Contraseña", "La elegís vos en tu primer ingreso") + "\n" + row("Dirección del portal", '<a href="https://zechegruv.com/portal/" style="color:#F5A623;text-decoration:none;">zechegruv.com/portal</a>')),
@@ -65,7 +71,7 @@ invite = mail(
 io.open(os.path.join(here, "invitacion.html"), "w", encoding="utf-8").write(invite)
 
 recovery = mail(
-    "Link para elegir una contraseña nueva en el portal de ZECHE GRUV.",
+    "recovery",
     "Elegí una<br>contraseña nueva.",
     "Recibimos un pedido para cambiar la contraseña de tu cuenta en el portal de artistas de ZECHE GRUV. Tocá el botón y elegí una nueva.",
     box(row("Usuario", "{{ .Email }}")),

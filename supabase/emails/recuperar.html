@@ -7,7 +7,6 @@
 <title>ZECHE GRUV</title>
 </head>
 <body style="margin:0;padding:0;background:#241105;">
-<div style="display:none;max-height:0;overflow:hidden;opacity:0;">Link para elegir una contraseña nueva en el portal de ZECHE GRUV.</div>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#241105;">
 <tr><td align="center" style="padding:32px 16px;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#4B2509;border:1px solid #6b4a2c;">
@@ -27,11 +26,11 @@
 </td></tr>
 <tr><td style="padding:26px 32px 0;">
 <table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="background:#F07800;">
-<a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:15px 22px;font-family:'Courier New',Courier,monospace;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#FFF4DC;text-decoration:none;">Cambiar mi contraseña &rarr;</a>
+<a href="https://zechegruv.com/portal/?token_hash={{ .TokenHash }}&amp;type=recovery" style="display:inline-block;padding:15px 22px;font-family:'Courier New',Courier,monospace;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#FFF4DC;text-decoration:none;">Cambiar mi contraseña &rarr;</a>
 </td></tr></table>
 </td></tr>
 <tr><td style="padding:22px 32px 0;font-family:Helvetica,Arial,sans-serif;font-size:13px;line-height:1.6;color:#C9A980;">El link sirve una sola vez y vence en 24 horas. Si no pediste este cambio, ignorá este mail: tu contraseña sigue siendo la misma.</td></tr>
-<tr><td style="padding:14px 32px 0;font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:1.6;color:#C9A980;">Si el botón no funciona, copiá y pegá este link en tu navegador:<br><a href="{{ .ConfirmationURL }}" style="color:#F5A623;word-break:break-all;">{{ .ConfirmationURL }}</a></td></tr>
+<tr><td style="padding:14px 32px 0;font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:1.6;color:#C9A980;">Si el botón no funciona, copiá y pegá este link en tu navegador:<br><a href="https://zechegruv.com/portal/?token_hash={{ .TokenHash }}&amp;type=recovery" style="color:#F5A623;word-break:break-all;">https://zechegruv.com/portal/?token_hash={{ .TokenHash }}&amp;type=recovery</a></td></tr>
 <tr><td style="padding:30px 32px 30px;font-family:'Courier New',Courier,monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#C9A980;border-top:0;">ZECHE GRUV&reg; &mdash; Buenos Aires &middot; <a href="https://zechegruv.com" style="color:#C9A980;">zechegruv.com</a></td></tr>
 </table>
 </td></tr>
