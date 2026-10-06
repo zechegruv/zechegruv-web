@@ -12,6 +12,7 @@
 //   RESEND_API_KEY             para mandar los mails
 //   PASS_NOTIFY_EMAIL          (opcional) a dónde llegan los avisos internos
 const crypto = require("crypto");
+const { ticketEmail } = require("./pass-mail");
 
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://zdstltihskdcartkmgii.supabase.co";
 const PUBLIC_URL = "https://www.zechegruv.com";
@@ -92,8 +93,9 @@ async function refund(paymentId, orderId, reason) {
 // Confirma un pago: se lo consulta directamente a Mercado Pago (nunca se
 // confía en lo que diga el aviso ni el navegador) y, si está aprobado y por
 // el monto de la orden, la base emite las entradas. Se puede llamar varias
-// veces con el mismo pago. Devuelve { result, orderId }.
-async function settlePayment(paymentId) {
+// veces con el mismo pago. Devuelve { result, orderId }. "base" es la
+// dirección del sitio, para los links del mail.
+async function settlePayment(paymentId, base) {
   if (!/^\d+$/.test(String(paymentId || ""))) return { result: "ignored" };
   const pay = await mp(`/v1/payments/${paymentId}`);
   if (!pay.ok || !pay.data) return { result: "payment_not_found" };
@@ -128,6 +130,7 @@ async function settlePayment(paymentId) {
   if (result === "no_capacity" || result === "amount_mismatch" || result === "not_payable") {
     await refund(p.id, orderId, result);
   }
+  if (result === "paid") await sendTickets(orderId, base);
   return { result, orderId };
 }
 
@@ -146,7 +149,31 @@ async function sendMail({ to, subject, html, replyTo }) {
   return res.ok;
 }
 
+// Manda el mail con las entradas de una orden paga, una sola vez: primero
+// se marca la orden como "mail enviado" (solo una llamada lo logra) y, si
+// el envío falla, se desmarca para poder reintentar.
+async function sendTickets(orderId, base) {
+  const claim = await db(`pass_orders?id=eq.${orderId}&status=eq.paid&email_sent_at=is.null&buyer_email=not.is.null`, {
+    method: "PATCH", prefer: "return=representation", body: { email_sent_at: new Date().toISOString() },
+  });
+  const order = claim.ok && claim.data[0];
+  if (!order) return false;
+  let sent = false;
+  try {
+    const ev = (await db(`pass_events?id=eq.${order.event_id}&select=name,starts_at,venue_name,venue_address,important_info,openmic_enabled,openmic_deadline`)).data[0];
+    const rows = (await db(`pass_tickets?order_id=eq.${orderId}&status=in.(valid,used)&select=code,token,holder_name,pass_ticket_types(name)&order=code.asc`)).data;
+    const tickets = rows.map((t) => ({ code: t.code, token: t.token, holder_name: t.holder_name, type: t.pass_ticket_types.name }));
+    const openmicOpen = ev.openmic_enabled && (!ev.openmic_deadline || Date.now() <= Date.parse(ev.openmic_deadline));
+    const mail = ticketEmail({ order, ev, tickets, base: base || PUBLIC_URL, openmicOpen });
+    sent = tickets.length > 0 && await sendMail({ to: order.buyer_email, subject: mail.subject, html: mail.html, replyTo: notifyEmail() });
+  } catch (e) {
+    console.error("ZG PASS: fallo al armar el mail de la orden", orderId, e);
+  }
+  if (!sent) await db(`pass_orders?id=eq.${orderId}`, { method: "PATCH", body: { email_sent_at: null } });
+  return sent;
+}
+
 // A dónde llegan los avisos internos (inscripciones al open mic, etc.).
 const notifyEmail = () => clean(process.env.PASS_NOTIFY_EMAIL) || "zechegruv@gmail.com";
 
-module.exports = { SUPABASE_URL, PUBLIC_URL, UUID, json, siteUrl, testMode, serviceKey, mpToken, db, dbDetail, rpc, audit, mp, validWebhookSignature, settlePayment, esc, sendMail, notifyEmail };
+module.exports = { SUPABASE_URL, PUBLIC_URL, UUID, json, siteUrl, testMode, serviceKey, mpToken, db, dbDetail, rpc, audit, mp, validWebhookSignature, settlePayment, esc, sendMail, sendTickets, notifyEmail };

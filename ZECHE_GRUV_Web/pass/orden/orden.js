@@ -15,6 +15,8 @@
   // confirmación; el servidor igual los comprueba con Mercado Pago.
   const paymentId = params.get("payment_id") || params.get("collection_id") || "";
   const mpStatus = params.get("status") || params.get("collection_status") || "";
+  let wantsPdf = params.get("pdf") === "1";  // se llega desde el botón "Descargar PDF" del mail
+  let pdfName = "ZG-PASS.pdf";
   let tries = 0;
 
   function showView(name) {
@@ -35,10 +37,57 @@
     $("paidNumber").textContent = `Orden ${order.number}`;
     $("paidTitle").textContent = many ? "¡Tus entradas están confirmadas!" : "¡Tu entrada está confirmada!";
     $("paidText").textContent = `${many ? "Te las mandamos" : "Te la mandamos"} también a ${order.buyer_email}. Podés sacarle una captura de pantalla: el QR es lo que se muestra en la puerta.`;
-    $("micBox").hidden = !order.openmic_open;
+    $("micBtn").hidden = !order.openmic_open;
     $("micBtn").href = `/pass/openmic/?t=${token}`;
+    pdfName = `ZG-PASS-${order.tickets.length > 1 ? order.number : order.tickets[0].code}.pdf`;
     $("tickets").replaceChildren(...order.tickets.map((t, i) => renderTicket(order.event, t, i + 1, order.tickets.length)));
     showView("paid");
+    if (wantsPdf) { wantsPdf = false; downloadPdf(); }
+  }
+
+  // ---------- Descarga en PDF ----------
+  // Cada entrada se "fotografía" tal como se ve y va a una página del PDF.
+  // Las dos herramientas que lo hacen se cargan recién cuando se piden.
+  const PDF_LIBS = [
+    ["html2canvas", "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"],
+    ["jspdf", "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"],
+  ];
+  const loadScript = (src) => new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = src;
+    s.onload = resolve;
+    s.onerror = () => reject(new Error("sin conexión"));
+    document.head.append(s);
+  });
+
+  async function downloadPdf() {
+    const button = $("pdfBtn");
+    if (button.disabled) return;
+    button.disabled = true;
+    button.textContent = "Preparando PDF…";
+    $("pdfMsg").textContent = "";
+    try {
+      await Promise.all(PDF_LIBS.filter(([name]) => !window[name]).map(([, src]) => loadScript(src)));
+      if (document.fonts && document.fonts.ready) await document.fonts.ready;
+      const MARGIN = 24;
+      let pdf = null;
+      for (const card of document.querySelectorAll("#tickets .pass")) {
+        const canvas = await window.html2canvas(card, { scale: 3, backgroundColor: "#4B2509", logging: false });
+        const w = card.offsetWidth, h = card.offsetHeight;
+        const page = [w + MARGIN * 2, h + MARGIN * 2];
+        if (!pdf) pdf = new window.jspdf.jsPDF({ unit: "pt", format: page, orientation: "portrait" });
+        else pdf.addPage(page, "portrait");
+        pdf.setFillColor(75, 37, 9);
+        pdf.rect(0, 0, page[0], page[1], "F");
+        pdf.addImage(canvas.toDataURL("image/jpeg", 0.92), "JPEG", MARGIN, MARGIN, w, h);
+      }
+      pdf.save(pdfName);
+    } catch (e) {
+      $("pdfMsg").textContent = "No pudimos armar el PDF. Probá de nuevo o sacale una captura de pantalla a la entrada: sirve igual.";
+      $("pdfMsg").classList.add("is-error");
+    }
+    button.disabled = false;
+    button.textContent = "Descargar PDF";
   }
 
   async function check() {
@@ -69,6 +118,7 @@
     setTimeout(check, POLL_MS);
   }
 
+  $("pdfBtn").addEventListener("click", downloadPdf);
   if (!/^[0-9a-f]{64}$/.test(token)) {
     showState("", "No encontramos esa orden.", "Revisá que el link esté completo.", "");
   } else {

@@ -6,9 +6,9 @@
 // Si vuelve de Mercado Pago con el número de pago y el aviso todavía no
 // llegó, se confirma acá mismo (consultándole el pago a Mercado Pago), así
 // la entrada aparece al instante.
-const { json, db, dbDetail, settlePayment, serviceKey } = require("./_lib/pass");
+const { json, db, dbDetail, settlePayment, sendTickets, siteUrl, serviceKey } = require("./_lib/pass");
 
-const SELECT = "id,number,status,total,expires_at,buyer_first_name,buyer_last_name,buyer_email,"
+const SELECT = "id,number,status,total,expires_at,email_sent_at,buyer_first_name,buyer_last_name,buyer_email,"
   + "pass_events(slug,kind,name,starts_at,venue_name,venue_address,important_info,openmic_enabled,openmic_deadline),"
   + "pass_tickets(code,token,status,holder_name,price_paid,pass_ticket_types(name))";
 
@@ -29,7 +29,7 @@ exports.handler = async (event) => {
 
   if (order.status !== "paid" && q.payment_id) {
     try {
-      const done = await settlePayment(q.payment_id);
+      const done = await settlePayment(q.payment_id, siteUrl(event));
       if (done.orderId === order.id) {
         res = await load(token);
         if (res.ok && res.data[0]) order = res.data[0];
@@ -40,6 +40,8 @@ exports.handler = async (event) => {
   }
 
   const paid = order.status === "paid";
+  // Si el mail no salió cuando se confirmó el pago, se reintenta acá.
+  if (paid && !order.email_sent_at && order.buyer_email) await sendTickets(order.id, siteUrl(event)).catch(() => false);
   const expired = order.status === "expired" || (order.status === "pending" && Date.parse(order.expires_at) <= Date.now());
   return json(200, {
     number: order.number,

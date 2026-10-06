@@ -58,9 +58,11 @@
         <div class="eyebrow" id="paidNumber"></div>
         <h1 class="title" id="paidTitle">¡Tu entrada está confirmada!</h1>
         <p class="lead" id="paidText"></p>
-        <div class="actions" id="micBox" hidden>
-          <a class="btn btn-primary" id="micBtn" href="/pass/openmic/">¿Vas a cantar? Anotate al open mic</a>
+        <div class="actions">
+          <button class="btn btn-primary" type="button" id="pdfBtn">Descargar PDF</button>
+          <a class="btn" id="micBtn" href="/pass/openmic/" hidden>¿Vas a cantar? Anotate al open mic</a>
         </div>
+        <p class="msg" id="pdfMsg" role="status"></p>
       </div>
       <div class="tickets" id="tickets"></div>
     </section>
