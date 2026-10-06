@@ -176,6 +176,29 @@
       transform: scale(1) rotate(0deg);
     }
 
+    /* El sol chico lleva al portal de artistas, pero solo mientras se ve. */
+    .nav-sun-link {
+      display: inline-flex;
+      pointer-events: none;
+      visibility: hidden;
+      transition: transform .3s cubic-bezier(.16,1,.3,1), visibility 0s .4s;
+    }
+
+    .nav-sun-link:has(.nav-sun.is-visible) {
+      pointer-events: auto;
+      visibility: visible;
+      transition-delay: 0s;
+    }
+
+    .nav-sun-link:hover { transform: scale(1.25) rotate(20deg); }
+
+    .nav-sun-link:focus-visible,
+    a.zg-sun:focus-visible {
+      outline: 2px solid var(--orange-soft);
+      outline-offset: 4px;
+      border-radius: 50%;
+    }
+
     .nav-links {
       display: flex;
       gap: 30px;
@@ -3685,10 +3708,11 @@
 
   <!-- ================= NAV ================= -->
   <nav id="nav">
-    <a class="nav-mark" href="#">
-      <img class="nav-sun" id="navSun" src="assets/zeche-gruv-sol.webp" alt="" aria-hidden="true">
-      ZECHE GRUV®
-    </a>
+    <div class="nav-mark">
+      <!-- El sol es la entrada al portal de artistas; el nombre vuelve arriba. -->
+      <a class="nav-sun-link" href="portal/" aria-label="Portal de artistas" title="Portal de artistas"><img class="nav-sun" id="navSun" src="assets/zeche-gruv-sol.webp" alt=""></a>
+      <a href="#">ZECHE GRUV®</a>
+    </div>
 
     <div class="nav-right">
       <div class="nav-links">
@@ -3802,12 +3826,13 @@
            al final del body. -->
       <div class="zeche-gruv-logo-wrapper" id="zgLogo">
 
-        <div class="zg-sun">
-          <div class="zg-sun-glow"></div>
-          <div class="zg-sun-rotor">
+        <!-- El sol es la entrada al portal de artistas. -->
+        <a class="zg-sun" href="portal/" aria-label="Portal de artistas" title="Portal de artistas">
+          <span class="zg-sun-glow"></span>
+          <span class="zg-sun-rotor">
             <img src="assets/zeche-gruv-sol.webp" alt="ZECHE GRUV">
-          </div>
-        </div>
+          </span>
+        </a>
 
         <div class="zg-text">
           <span>ZECHE</span>
