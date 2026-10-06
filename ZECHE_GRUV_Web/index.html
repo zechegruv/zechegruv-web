@@ -191,6 +191,9 @@
       transition: .25s ease;
     }
 
+    /* Links del menú ocultos a propósito (gana sobre el display del menú en celular). */
+    .nav-links a[hidden] { display: none !important; }
+
     .nav-links a:hover {
       color: var(--orange-soft);
       opacity: 1;
@@ -3690,7 +3693,7 @@
     <div class="nav-right">
       <div class="nav-links">
         <a href="#label" data-i18n="nav_about">Nosotros</a>
-        <a href="#session" data-i18n="nav_session">La sesión</a>
+        <a href="#session" data-i18n="nav_session" hidden>La sesión</a>
         <a href="#artists" data-i18n="nav_artists">Artistas</a>
         <a href="#releases" data-i18n="nav_releases">Lanzamientos</a>
         <div class="nav-drop">
@@ -3880,7 +3883,10 @@
   </section>
 
   <!-- ================= CÓMO ES UNA SESIÓN ================= -->
-  <section id="session">
+  <!-- Sección oculta hasta tener las fotos de las sesiones. Para volver a
+       mostrarla: sacar "hidden" de acá y del link "La sesión" del menú, y
+       sumar 1 a los números de las secciones que siguen (hoy 02 a 07). -->
+  <section id="session" hidden>
     <div class="section-label">02 / <span data-i18n="sl_session">Cómo es una sesión</span></div>
     <h2 class="section-title" data-i18n-html="st_session_html">Tu canción,<br>sesión a sesión.</h2>
     <p class="section-intro session-intro" data-i18n="session_intro">Una vez por semana, dos horas, un tema por mes. Sin apuro, con dirección.</p>
@@ -3940,7 +3946,7 @@
 
   <!-- ================= TESTIMONIALS ================= -->
   <section id="testimonials">
-    <div class="section-label">03 / <span data-i18n="sl_testimonials">Lo que dicen los artistas</span></div>
+    <div class="section-label">02 / <span data-i18n="sl_testimonials">Lo que dicen los artistas</span></div>
     <h2 class="section-title" data-i18n-html="st_testimonials_html">Lo que dicen<br>los artistas.</h2>
     <p class="section-intro" data-i18n="testimonials_intro">Reseñas reales de Google. Pronto, las historias completas.</p>
 
@@ -4016,7 +4022,7 @@
 
   <!-- ================= ARTISTS ================= -->
   <section id="artists">
-    <div class="section-label">04 / <span data-i18n="sl_artists">Artistas</span></div>
+    <div class="section-label">03 / <span data-i18n="sl_artists">Artistas</span></div>
     <h2 class="section-title" data-i18n-html="st_artists_html">Los<br>artistas.</h2>
 
     <div class="artists-grid" id="artists-grid"></div>
@@ -4024,7 +4030,7 @@
 
   <!-- ================= LANZAMIENTOS: último + elegidos + catálogo ================= -->
   <section id="releases">
-    <div class="section-label">05 / <span data-i18n="sl_releases">Lanzamientos</span></div>
+    <div class="section-label">04 / <span data-i18n="sl_releases">Lanzamientos</span></div>
     <h2 class="section-title" data-i18n-html="st_releases_html">Lo último<br>que salió.</h2>
 
     <div class="release">
@@ -4110,7 +4116,7 @@
   <!-- ================= CAMPS Y EVENTOS ================= -->
   <section id="camps" class="camps-section">
     <div class="camps-head">
-      <div class="section-label">06 / <span data-i18n="sl_camps">Camps y eventos</span></div>
+      <div class="section-label">05 / <span data-i18n="sl_camps">Camps y eventos</span></div>
       <h2 class="section-title" data-i18n-html="st_camps_html">Nos juntamos<br>a crear.</h2>
       <img class="camp-logo" src="assets/camps/zeche-gruv-camp-logo.webp" alt="Logo de ZECHE GRUV Camp: una carpa entre pinos con un sol detrás" width="900" height="750" loading="lazy" decoding="async">
     </div>
@@ -4249,7 +4255,7 @@
 
   <!-- ================= MUSICAL SERVICES ================= -->
   <section id="services">
-    <div class="section-label">07 / <span data-i18n="sl_services">Servicios y valores</span></div>
+    <div class="section-label">06 / <span data-i18n="sl_services">Servicios y valores</span></div>
     <h2 class="section-title" data-i18n-html="st_services_html">Elegí cómo<br>querés arrancar.</h2>
     <p class="section-intro" data-i18n="services_intro">Trabajamos por proyecto porque las canciones necesitan tiempo.</p>
 
@@ -4341,7 +4347,7 @@
 
   <!-- ================= CONTACTO ================= -->
   <section id="contact" class="contact">
-    <div class="section-label">08 / <span data-i18n="sl_contact">Contacto</span></div>
+    <div class="section-label">07 / <span data-i18n="sl_contact">Contacto</span></div>
 
     <h2 class="contact-title" data-i18n-html="contact_title_html">
       MAKE
