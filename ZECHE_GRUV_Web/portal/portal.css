@@ -1549,3 +1549,227 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 .zgp-code { font-family: "DM Mono", monospace; font-size: 12px; white-space: nowrap; }
 .zgp-in { color: #7fd89b; font-weight: 700; }
 .zgp-missing { color: #ff9a8a; }
+
+/* ---------- Tus canciones (canciones.js) ---------- */
+
+.songs-card { margin-bottom: 16px; }
+
+.songs-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 4px;
+}
+
+.songs-count {
+  font-family: "DM Mono", monospace;
+  font-size: 9px;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.songs { list-style: none; }
+
+.song {
+  padding: 20px 0;
+  border-top: 1px solid var(--border);
+}
+.songs > .song:first-child { border-top: 0; }
+
+.song-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.song-name { min-width: 0; overflow-wrap: anywhere; }
+.song-title { font-weight: 700; font-size: 16px; letter-spacing: -.01em; }
+.song-feat { color: var(--muted); font-size: 13px; margin-left: 8px; }
+
+.song-stage {
+  font-family: "DM Mono", monospace;
+  font-size: 10px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--orange-soft);
+  white-space: nowrap;
+}
+
+/* Recorrido de etapas: un tramo por etapa; las hechas en naranja, la
+   actual encendida, las que faltan apagadas. */
+.stages {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.stages li {
+  font-family: "DM Mono", monospace;
+  font-size: 9px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: rgba(240, 224, 192, .38);
+  min-width: 0;
+}
+
+.stages li::before {
+  content: "";
+  display: block;
+  height: 4px;
+  margin-bottom: 9px;
+  background: rgba(240, 224, 192, .12);
+}
+
+.stages li span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.stages li.is-done { color: var(--beige); }
+.stages li.is-done::before { background: var(--orange); }
+
+.stages li.is-current { color: var(--orange-soft); }
+.stages li.is-current::before {
+  background: linear-gradient(90deg, var(--orange) 0%, var(--orange-soft) 100%);
+  box-shadow: 0 0 12px rgba(245, 166, 35, .55);
+  animation: song-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes song-pulse {
+  50% { box-shadow: 0 0 4px rgba(245, 166, 35, .25); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stages li.is-current::before { animation: none; }
+}
+
+.song-when {
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* Terminadas: plegada debajo de las que están en proceso. */
+.songs-done {
+  margin-top: 8px;
+  border-top: 1px solid var(--border);
+}
+
+.songs-done > summary {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 18px 0 4px;
+  font-weight: 700;
+  cursor: pointer;
+  list-style: none;
+}
+.songs-done > summary::-webkit-details-marker { display: none; }
+.songs-done > summary::before {
+  content: "+";
+  color: var(--orange-soft);
+  font-family: "DM Mono", monospace;
+}
+.songs-done[open] > summary::before { content: "–"; }
+.songs-done > summary:focus-visible { outline: 2px solid var(--orange-soft); outline-offset: 4px; }
+.songs-done > summary .songs-count { margin-left: auto; }
+
+.songs-done .songs { margin-top: 8px; }
+
+.song-finished {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 0;
+}
+.songs-done .song-finished:first-child { border-top: 0; }
+.song-finished .song-title { font-size: 15px; }
+
+.song-meta {
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.song-ok { color: var(--orange-soft); }
+
+@media (max-width: 640px) {
+  .songs-head { flex-direction: column; gap: 2px; margin-bottom: 8px; }
+  /* En celular queda solo la barra: la etapa actual ya se lee arriba. */
+  .stages li span { display: none; }
+  .stages li::before { margin-bottom: 0; }
+  .song-finished { flex-direction: column; gap: 4px; }
+  .song-meta { white-space: normal; }
+}
+
+/* ---------- Bienvenida: la próxima sesión (canciones.js) ---------- */
+
+.welcome-card {
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 16px;
+  padding: 30px 30px 26px;
+  background:
+    radial-gradient(120% 140% at 100% 0%, rgba(240, 120, 0, .22) 0%, rgba(240, 120, 0, 0) 55%),
+    var(--brown-dark);
+  border-color: rgba(245, 166, 35, .35);
+}
+
+.welcome-sun {
+  position: absolute;
+  top: -38px;
+  right: -38px;
+  width: 150px;
+  height: 150px;
+  object-fit: contain;
+  opacity: .16;
+  pointer-events: none;
+}
+
+.welcome-card .eyebrow { margin-bottom: 10px; position: relative; }
+
+.welcome-title {
+  position: relative;
+  font-size: clamp(26px, 3.4vw, 34px);
+  font-weight: 800;
+  letter-spacing: -.04em;
+  line-height: 1.05;
+  margin-bottom: 14px;
+}
+
+.welcome-body {
+  position: relative;
+  max-width: 62ch;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--beige);
+}
+
+.welcome-body .welcome-when {
+  font-weight: 700;
+  color: var(--cream);
+}
+
+.welcome-body .welcome-help {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.welcome-body a {
+  color: var(--orange-soft);
+  border-bottom: 1px solid rgba(245, 166, 35, .4);
+}
+.welcome-body a:hover { border-color: var(--orange-soft); }
+
+@media (max-width: 640px) {
+  .welcome-card { padding: 24px 20px 20px; }
+  .welcome-sun { width: 110px; height: 110px; top: -28px; right: -28px; }
+  .welcome-body { font-size: 14px; }
+}

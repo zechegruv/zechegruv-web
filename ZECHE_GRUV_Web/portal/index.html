@@ -136,6 +136,28 @@
           </div>
         </header>
 
+        <!-- Bienvenida: qué hacemos en la próxima sesión, leído de Notion (canciones.js) -->
+        <div class="card welcome-card" id="welcomeCard" hidden>
+          <img class="welcome-sun" src="../assets/zeche-gruv-sol.webp" alt="" aria-hidden="true">
+          <div class="eyebrow" id="welcomeEyebrow">Tu próxima sesión</div>
+          <h2 class="welcome-title" id="welcomeTitle"></h2>
+          <div class="welcome-body" id="welcomeBody"></div>
+        </div>
+
+        <!-- Tus canciones: etapa de cada canción, leída de Notion (canciones.js) -->
+        <div class="card songs-card" id="songsCard" hidden>
+          <div class="songs-head">
+            <h2 class="card-title" id="songsTitle">Tus canciones</h2>
+            <span class="songs-count" id="songsCount"></span>
+          </div>
+          <p class="muted" id="songsStatus"></p>
+          <ul class="songs" id="songsList"></ul>
+          <details class="songs-done" id="songsDone" hidden>
+            <summary><span>Terminadas</span><span class="songs-count" id="songsDoneCount"></span></summary>
+            <ul class="songs" id="songsDoneList"></ul>
+          </details>
+        </div>
+
         <div class="card space-card">
           <h2 class="card-title" id="spaceTitle">Tu espacio</h2>
           <ul class="sections" id="sectionsList">
@@ -217,6 +239,11 @@
                 <input type="url" id="fFolderEdit" placeholder="https://1drv.ms/f/…">
                 <p class="hint">Con este link el portal deja subir a Referencias y Letras. El artista no ve ninguno de los dos links.</p>
               </div>
+              <div class="field">
+                <label for="fNotion">Ficha en Notion (opcional)</label>
+                <input type="url" id="fNotion" placeholder="https://www.notion.so/…">
+                <p class="hint">El portal encuentra solo su ficha en Clientes Zeche Gruv, por el mail o por el nombre artístico. Pegá un link acá únicamente si no coinciden. El artista no lo ve.</p>
+              </div>
             </div>
 
             <p class="msg" id="profileMsg" role="status"></p>
@@ -296,7 +323,13 @@
               </select>
             </div>
           </div>
-          <p class="hint">Los links de carpeta solo los ves vos: el artista nunca los recibe, ni en el mail ni en el portal.</p>
+          <div class="row">
+            <div class="field">
+              <label for="inviteNotion">Ficha en Notion (opcional)</label>
+              <input type="url" id="inviteNotion" placeholder="https://www.notion.so/…" autocomplete="off">
+            </div>
+          </div>
+          <p class="hint">Los links de carpeta y de Notion solo los ves vos: el artista nunca los recibe, ni en el mail ni en el portal.</p>
           <p class="msg" id="inviteMsg" role="status"></p>
           <button class="btn btn-primary" type="submit" id="inviteSubmit">Enviar invitación</button>
         </form>
@@ -749,6 +782,7 @@
   <script src="portal.js"></script>
   <script src="distribucion.js"></script>
   <script src="archivos.js"></script>
+  <script src="canciones.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
   <script src="/pass/ticket.js"></script>
   <script src="zgpass.js"></script>

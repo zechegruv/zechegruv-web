@@ -68,6 +68,16 @@
     return m ? m[1] : undefined; // undefined = no se pudo leer
   }
 
+  // Ficha de Notion del artista: acepta el link (con o sin el nombre de la
+  // página adelante) o el ID suelto, y guarda solo el ID.
+  function parseNotionId(value) {
+    const v = String(value || "").trim();
+    if (!v) return null;
+    const m = v.replace(/-/g, "").match(/([0-9a-f]{32})(?![0-9a-f])/i);
+    return m ? m[1].toLowerCase() : undefined; // undefined = no se pudo leer
+  }
+  const NOTION_BAD = "No reconocemos ese link de Notion. Abrí la ficha del artista en Clientes Zeche Gruv y copiá su link (Compartir → Copiar link).";
+
   // Foto: la que subió el artista o, si no hay, la de su perfil de Spotify
   // (sale del roster del sitio, que ya la tiene guardada).
   function photoUrl(p) {
@@ -271,6 +281,13 @@
         $("fFolder").value = (data && data.onedrive_link) || "";
         $("fFolderEdit").value = (data && data.onedrive_edit_link) || "";
       });
+      // La ficha de Notion se pide aparte: si falta la columna (009_notion.sql),
+      // las carpetas se siguen cargando igual.
+      $("fNotion").value = "";
+      db.from("artist_private").select("notion_page_id").eq("profile_id", p.id).maybeSingle().then(({ data }) => {
+        if (!viewing || viewing.id !== p.id) return;
+        $("fNotion").value = data && data.notion_page_id ? `https://www.notion.so/${data.notion_page_id}` : "";
+      });
     }
     $("passwordForm").hidden = !own;
     // Borrar: solo el administrador, y nunca su cuenta ni la de otro administrador.
@@ -278,6 +295,9 @@
 
     setMsg($("profileMsg"), "");
     setMsg($("passwordMsg"), "");
+
+    // Tus canciones (canciones.js).
+    if (window.ZGSongs) window.ZGSongs.load(p);
   }
 
   async function uploadPhoto(file) {
@@ -318,6 +338,9 @@
       return;
     }
 
+    const notionId = parseNotionId($("fNotion").value);
+    if (admin && notionId === undefined) { setMsg(msg, NOTION_BAD, true); return; }
+
     const submit = event.submitter || $("profileForm").querySelector('[type="submit"]');
     submit.disabled = true;
     setMsg(msg, "Guardando…");
@@ -327,6 +350,8 @@
       if (admin) {
         const saved = await db.from("artist_private").upsert({ profile_id: viewing.id, onedrive_link: folderLink || null, onedrive_edit_link: folderEditLink || null, updated_at: new Date().toISOString() });
         if (saved.error) throw new Error("Se guardó el perfil, pero no la carpeta de OneDrive. Probá de nuevo.");
+        const notion = await db.from("artist_private").update({ notion_page_id: notionId }).eq("profile_id", viewing.id);
+        if (notion.error) throw new Error("Se guardó el perfil, pero no la ficha de Notion. ¿Ya corriste supabase/009_notion.sql?");
       }
       if (data.id === me.id) me = data;
       showProfile(data);
@@ -451,6 +476,8 @@
     const spotifyId = parseSpotifyId($("inviteSpotify").value);
     if (spotifyId === undefined) { setMsg(msg, "No reconocemos ese perfil de Spotify. Pegá el link del artista.", true); return; }
     const format = $("inviteFormat").value || null;
+    const notionId = parseNotionId($("inviteNotion").value);
+    if (notionId === undefined) { setMsg(msg, NOTION_BAD, true); return; }
     $("inviteSubmit").disabled = true;
     setMsg(msg, "Enviando invitación…");
     try {
@@ -468,11 +495,15 @@
         const saved = await db.from("artist_private").upsert({ profile_id: data.id, onedrive_link: folder || null, onedrive_edit_link: folderEdit || null, updated_at: new Date().toISOString() });
         if (saved.error) linked = false;
       }
+      if (notionId) {
+        const saved = await db.from("artist_private").upsert({ profile_id: data.id, notion_page_id: notionId, updated_at: new Date().toISOString() });
+        if (saved.error) linked = false;
+      }
       if (spotifyId || format) {
         const saved = await db.from("profiles").update({ spotify_artist_id: spotifyId, format }).eq("id", data.id);
         if (saved.error) linked = false;
       }
-      ["inviteEmail", "inviteName", "inviteFolder", "inviteFolderEdit", "inviteSpotify", "inviteFormat"].forEach((id) => { $(id).value = ""; });
+      ["inviteEmail", "inviteName", "inviteFolder", "inviteFolderEdit", "inviteSpotify", "inviteFormat", "inviteNotion"].forEach((id) => { $(id).value = ""; });
       await showArtists();
       setMsg(msg, linked
         ? `Invitación enviada a ${data.email}. Su perfil ya quedó con los datos que cargaste.`
