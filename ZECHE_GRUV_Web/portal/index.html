@@ -20,6 +20,16 @@
 </head>
 
 <body>
+  <!-- Íconos de las secciones del espacio del artista (se usan con <use href="#ic-…">) -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="ic-referencias" viewBox="0 0 24 24"><path d="M4.5 14.5V12a7.5 7.5 0 0115 0v2.5"/><rect x="3" y="14" width="4.5" height="6.5" rx="1.6"/><rect x="16.5" y="14" width="4.5" height="6.5" rx="1.6"/></symbol>
+    <symbol id="ic-letras" viewBox="0 0 24 24"><path d="M7 3h7l4 4v13a1 1 0 01-1 1H7a1 1 0 01-1-1V4a1 1 0 011-1z"/><path d="M14 3v4h4M9 11.5h6M9 14.5h6M9 17.5h3.5"/></symbol>
+    <symbol id="ic-exports" viewBox="0 0 24 24"><path d="M3.5 10.5v3M7.75 7.5v9M12 4v16M16.25 8v8M20.5 10.5v3"/></symbol>
+    <symbol id="ic-masters" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.6"/><path d="M12 6.2A5.8 5.8 0 0117.8 12M6.2 12A5.8 5.8 0 0012 17.8"/></symbol>
+    <symbol id="ic-membresia" viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2"/><circle cx="8.5" cy="12" r="2.4"/><path d="M14 10.5h4M14 13.5h2.5"/></symbol>
+    <symbol id="ic-distribucion" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18"/></symbol>
+  </svg>
+
   <nav>
     <a class="nav-mark" href="../index.html">
       <img class="nav-sun" src="../assets/zeche-gruv-sol.webp" alt="" aria-hidden="true">
@@ -126,9 +136,45 @@
           </div>
         </header>
 
+        <div class="card space-card">
+          <h2 class="card-title" id="spaceTitle">Tu espacio</h2>
+          <ul class="sections" id="sectionsList">
+            <li><button class="section-btn" type="button" data-section="referencias">
+              <span class="section-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#ic-referencias"/></svg></span>
+              <span class="section-text"><b>Referencias</b><small>Maquetas e ideas para tus canciones</small></span>
+              <span class="section-arrow" aria-hidden="true">→</span>
+            </button></li>
+            <li><button class="section-btn" type="button" data-section="letras">
+              <span class="section-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#ic-letras"/></svg></span>
+              <span class="section-text"><b>Letras</b><small>La letra de cada canción</small></span>
+              <span class="section-arrow" aria-hidden="true">→</span>
+            </button></li>
+            <li><button class="section-btn" type="button" data-section="exports">
+              <span class="section-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#ic-exports"/></svg></span>
+              <span class="section-text"><b>Exports</b><small>Versiones de trabajo para escuchar</small></span>
+              <span class="section-arrow" aria-hidden="true">→</span>
+            </button></li>
+            <li><button class="section-btn" type="button" data-section="masters">
+              <span class="section-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#ic-masters"/></svg></span>
+              <span class="section-text"><b>Masters</b><small>Versiones finales, listas para salir</small></span>
+              <span class="section-arrow" aria-hidden="true">→</span>
+            </button></li>
+            <li><button class="section-btn" type="button" data-section="membresia">
+              <span class="section-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#ic-membresia"/></svg></span>
+              <span class="section-text"><b>Membresía</b><small>Los documentos de tu membresía</small></span>
+              <span class="section-arrow" aria-hidden="true">→</span>
+            </button></li>
+            <li><button class="section-btn" type="button" id="openDistribution">
+              <span class="section-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#ic-distribucion"/></svg></span>
+              <span class="section-text"><b>Distribución</b><small>Cargá y seguí tus lanzamientos</small></span>
+              <span class="section-arrow" aria-hidden="true">→</span>
+            </button></li>
+          </ul>
+        </div>
+
         <div class="grid-2">
           <form class="card form" id="profileForm" novalidate>
-            <h2 class="card-title">Perfil</h2>
+            <h2 class="card-title" id="profileFormTitle">Perfil</h2>
             <div class="field">
               <label for="fDisplayName">Nombre artístico</label>
               <input type="text" id="fDisplayName" maxlength="80">
@@ -177,19 +223,6 @@
             <button class="btn btn-primary" type="submit">Guardar cambios</button>
           </form>
 
-          <div class="stack">
-            <div class="card">
-              <h2 class="card-title">Tu espacio</h2>
-              <ul class="sections" id="sectionsList">
-                <li><span>Referencias</span><button class="btn" type="button" data-section="referencias">Abrir</button></li>
-                <li><span>Letras</span><button class="btn" type="button" data-section="letras">Abrir</button></li>
-                <li><span>Exports</span><button class="btn" type="button" data-section="exports">Abrir</button></li>
-                <li><span>Masters</span><button class="btn" type="button" data-section="masters">Abrir</button></li>
-                <li><span>Membresía</span><button class="btn" type="button" data-section="membresia">Abrir</button></li>
-                <li><span>Distribución</span><button class="btn" type="button" id="openDistribution">Abrir</button></li>
-              </ul>
-            </div>
-
             <form class="card form" id="passwordForm" novalidate>
               <h2 class="card-title">Contraseña</h2>
               <div class="field">
@@ -199,7 +232,6 @@
               <p class="msg" id="passwordMsg" role="status"></p>
               <button class="btn" type="submit">Cambiar contraseña</button>
             </form>
-          </div>
         </div>
 
         <!-- Solo administrador, en el perfil de un artista -->
@@ -273,8 +305,13 @@
       <!-- Archivos de una sección (Referencias, Letras, Exports, Masters, Membresía) -->
       <div id="panel-files" hidden>
         <button class="link-btn back-link" type="button" id="filesBack">← Volver al perfil</button>
-        <div class="eyebrow" id="filesEyebrow"></div>
-        <h1 class="title title-sm" id="filesTitle"></h1>
+        <header class="section-head">
+          <span class="section-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><use id="filesIcon"/></svg></span>
+          <div>
+            <div class="eyebrow" id="filesEyebrow"></div>
+            <h1 class="title title-sm" id="filesTitle"></h1>
+          </div>
+        </header>
         <div class="chips" id="filesChips"></div>
         <p class="muted" id="filesStatus"></p>
         <!-- Subir archivos (solo Referencias y Letras) -->
@@ -455,8 +492,13 @@
       <!-- Distribución: lista de lanzamientos -->
       <div id="panel-releases" hidden>
         <button class="link-btn back-link" type="button" id="releasesBack">← Volver al perfil</button>
-        <div class="eyebrow" id="releasesEyebrow">Distribución</div>
-        <h1 class="title title-sm">Lanzamientos</h1>
+        <header class="section-head">
+          <span class="section-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#ic-distribucion"/></svg></span>
+          <div>
+            <div class="eyebrow" id="releasesEyebrow">Distribución</div>
+            <h1 class="title title-sm">Lanzamientos</h1>
+          </div>
+        </header>
         <p class="muted" id="releasesStatus"></p>
         <button class="btn btn-primary" type="button" id="newReleaseBtn">Nuevo lanzamiento</button>
         <div class="table-wrap" id="releasesTableWrap">

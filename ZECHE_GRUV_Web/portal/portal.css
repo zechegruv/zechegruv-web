@@ -485,18 +485,131 @@ a.chip:hover { border-color: var(--orange-soft); color: var(--orange-soft); }
 
 .sections { list-style: none; }
 
-.sections li {
+.sections li { border-top: 1px solid var(--border); }
+.sections li:first-child { border-top: 0; }
+
+/* Cada sección es un botón a todo el ancho: ícono, nombre, para qué sirve. */
+.section-btn {
   display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 12px;
-  padding: 13px 0;
-  border-top: 1px solid var(--border);
-  font-weight: 600;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 12px 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
 }
 
-.sections li:first-child { border-top: 0; padding-top: 0; }
-.sections li:last-child { padding-bottom: 0; }
+.sections li:first-child .section-btn { padding-top: 0; }
+.sections li:last-child .section-btn { padding-bottom: 0; }
+
+.section-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  color: var(--orange-soft);
+  transition: color .2s ease, transform .2s ease;
+}
+
+.section-icon svg {
+  width: 30px;
+  height: 30px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.section-text { flex: 1; min-width: 0; }
+.section-text b { display: block; font-size: 15px; font-weight: 700; letter-spacing: -.01em; }
+.section-text small { display: block; margin-top: 3px; font-size: 12px; line-height: 1.4; color: var(--muted); }
+
+.section-arrow {
+  flex: none;
+  font-family: "DM Mono", monospace;
+  font-size: 14px;
+  color: var(--muted);
+  transition: transform .2s ease, color .2s ease;
+}
+
+.section-btn:hover .section-icon,
+.section-btn:active .section-icon { color: var(--cream); transform: scale(1.08); }
+
+.section-btn:hover .section-arrow,
+.section-btn:active .section-arrow { transform: translateX(4px); color: var(--orange-soft); }
+
+.section-btn:focus-visible {
+  outline: 2px solid var(--orange-soft);
+  outline-offset: 4px;
+}
+
+/* En computadora "Tu espacio" ocupa todo el ancho y las secciones se
+   reparten en tres columnas, con el ícono arriba. En celular quedan en lista. */
+.space-card { margin-bottom: 16px; }
+
+@media (min-width: 801px) {
+  .sections {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .sections li,
+  .sections li:first-child { border: 1px solid var(--border); transition: border-color .2s ease, background .2s ease; }
+  .sections li:hover { border-color: rgba(245, 166, 35, .55); background: rgba(245, 166, 35, .06); }
+
+  .sections .section-btn,
+  .sections li:first-child .section-btn,
+  .sections li:last-child .section-btn {
+    position: relative;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    height: 100%;
+    padding: 20px;
+  }
+
+  .sections .section-icon { width: 40px; height: 40px; }
+  .sections .section-icon svg { width: 36px; height: 36px; stroke-width: 1.4; }
+  .sections .section-text b { font-size: 17px; }
+  .sections .section-text small { font-size: 13px; margin-top: 5px; }
+  .sections .section-arrow { position: absolute; top: 20px; right: 20px; }
+}
+
+/* El administrador mirando a un artista no ve "Contraseña": los datos del
+   artista ocupan todo el ancho y se reparten en dos columnas. */
+@media (min-width: 801px) {
+  .grid-2 > #profileForm:has(+ [hidden]) { grid-column: 1 / -1; }
+
+  #profileForm:has(+ [hidden]) > .field,
+  #profileForm:has(+ [hidden]) #adminFields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    align-items: start;
+  }
+  #profileForm:has(+ [hidden]) > .field { row-gap: 7px; }
+  #profileForm:has(+ [hidden]) > .field > * { grid-column: 1; }
+}
+
+/* Encabezado de una sección abierta: el mismo ícono, más grande. */
+.section-head {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 14px;
+}
+
+.section-head .section-icon { width: 48px; height: 48px; }
+.section-head .section-icon svg { width: 44px; height: 44px; stroke-width: 1.3; }
+.section-head .eyebrow { margin-bottom: 8px; }
+.section-head .title-sm { margin-bottom: 0; }
 
 .sections em {
   font-family: "DM Mono", monospace;
@@ -1043,6 +1156,9 @@ fieldset:disabled .add-credit { display: none; }
 .play-btn.is-playing .icon-pause,
 .player.is-playing .icon-pause { display: block; }
 
+.play-btn { flex: none; }
+.files-table .download-btn { display: inline-flex; align-items: center; gap: 8px; }
+
 .files-table .file-name { display: flex; align-items: center; }
 .files-table .file-name span { min-width: 0; overflow-wrap: anywhere; }
 
@@ -1164,6 +1280,191 @@ fieldset:disabled .add-credit { display: none; }
   .profile-head { gap: 18px; }
   .avatar { width: 84px; height: 84px; }
   .nav-tag { display: none; }
+}
+
+/* ---------- Celular ----------
+   Las tablas dejan de desplazarse de costado: cada fila pasa a ser una
+   tarjeta con el título de la columna al lado de cada dato (el título lo
+   pone portal.js en data-label). */
+
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+
+@media (max-width: 640px) {
+  nav { padding: 12px 16px; }
+  main { padding: 28px 16px 96px; }
+
+  .title { font-size: 34px; margin-bottom: 24px; }
+  .title-sm { font-size: 28px; margin-bottom: 12px; }
+  .card { padding: 20px 18px; }
+  .profile-head { gap: 16px; margin-bottom: 28px; }
+  .section-head { gap: 14px; }
+  .section-head .section-icon { width: 40px; height: 40px; }
+  .section-head .section-icon svg { width: 36px; height: 36px; }
+  .avatar { width: 72px; height: 72px; }
+
+  /* Con menos de 16px, el iPhone hace zoom solo al tocar un campo. */
+  .field input,
+  .field select,
+  .field textarea { font-size: 16px; }
+  .field input[type="file"] { font-size: 13px; }
+  .field label { font-size: 10px; }
+
+  /* Botones cómodos para el dedo. */
+  .btn { min-height: 44px; font-size: 10px; }
+  .form > .btn,
+  #releaseForm .actions .btn,
+  .upload > .btn { align-self: stretch; width: 100%; }
+  .actions .btn { flex: 1 1 auto; }
+  .link-btn { font-size: 13px; text-align: left; padding: 6px 0; }
+
+  .tabs {
+    margin: 0 -16px 28px;
+    padding: 0 16px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab { white-space: nowrap; padding: 14px 12px; }
+  .zgp-tabs { margin: 30px -16px 22px; }
+
+  .danger-zone { padding: 20px 18px; }
+  .danger-zone .btn { width: 100%; }
+  .dialog { padding: 22px 18px; }
+
+  /* Tablas como tarjetas */
+  .table-wrap { overflow: visible; border: 0; background: none; margin-top: 16px; }
+  .table,
+  .table tbody,
+  .table tr,
+  .table td { display: block; }
+  .table thead { display: none; }
+
+  .table tbody tr {
+    border: 1px solid var(--border);
+    background: var(--brown-dark);
+    padding: 14px 16px;
+  }
+  .table tbody tr + tr { margin-top: 10px; }
+
+  .table td {
+    padding: 0;
+    border: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  .table td:empty { display: none; }
+
+  .table td[data-label] {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 16px;
+    padding: 5px 0;
+    text-align: right;
+  }
+  .table td[data-label]::before {
+    content: attr(data-label);
+    flex: none;
+    font-family: "DM Mono", monospace;
+    font-size: 9px;
+    font-weight: 400;
+    letter-spacing: .13em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: left;
+  }
+
+  /* La primera columna con título es el nombre de la tarjeta. */
+  .table:not(.files-table) td[data-label]:first-child,
+  #artistsTable td:nth-child(2) {
+    display: block;
+    padding: 0 0 8px;
+    font-size: 16px;
+    font-weight: 700;
+    text-align: left;
+  }
+  .table:not(.files-table) td[data-label]:first-child::before,
+  #artistsTable td:nth-child(2)::before { content: none; }
+
+  .table:not(.show-artist) .col-artist { display: none; }
+  .table td.col-songs { display: block; min-width: 0; text-align: left; }
+  .table td.col-songs::before { display: block; margin-bottom: 4px; }
+
+  /* Artistas: la foto a la izquierda y los datos al lado. */
+  #artistsTable tbody tr {
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr);
+    column-gap: 14px;
+  }
+  #artistsTable td:first-child { grid-row: 1 / span 5; }
+  #artistsTable td:not(:first-child) { grid-column: 2; }
+  .table .avatar { width: 44px; height: 44px; }
+
+  .zgp-table td small { text-align: right; }
+  .zgp-table td:last-child { padding-top: 10px; }
+  .zgp-table td:last-child .btn { width: 100%; }
+
+  /* Archivos: nombre y descarga arriba; fechas y tamaño abajo, en tres columnas. */
+  .file-group > summary { padding: 16px; }
+  .file-group .table-wrap { border-top: 1px solid var(--border); }
+  #filesList > .table-wrap { border: 1px solid var(--border); background: var(--brown-dark); margin-top: 0; }
+
+  .files-table thead { display: block; padding: 4px 16px; border-bottom: 1px solid var(--border); }
+  .files-table thead tr { display: flex; flex-wrap: wrap; gap: 0 16px; }
+  .files-table th { display: block; padding: 0; }
+  .files-table th:empty { display: none; }
+  .files-table .sort-btn { min-height: 40px; }
+
+  .files-table tbody tr {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+    gap: 12px 10px;
+    align-items: center;
+    border: 0;
+    background: none;
+    padding: 14px 16px;
+  }
+  .files-table tbody tr + tr { margin-top: 0; border-top: 1px solid var(--border); }
+
+  .files-table td:first-child { grid-column: 1 / 4; min-width: 0; font-size: 14px; line-height: 1.35; }
+  .files-table td:last-child { grid-column: 4; grid-row: 1; }
+  .files-table td[data-label] {
+    display: block;
+    padding: 0;
+    font-size: 12px;
+    text-align: left;
+    white-space: nowrap;
+  }
+  .files-table td[data-label]::before { display: block; margin-bottom: 3px; }
+  .files-table td[data-label="Tamaño"] { grid-column: 3 / -1; }
+
+  .play-btn { width: 40px; height: 40px; }
+  .files-table .download-btn {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+  }
+  .download-btn span { display: none; }
+
+  .upload .field,
+  .upload-progress { max-width: none; }
+
+  .player {
+    bottom: calc(10px + env(safe-area-inset-bottom));
+    gap: 12px;
+    padding: 12px;
+  }
+  .player-btn { width: 44px; height: 44px; }
+  .player-close { width: 36px; height: 36px; }
+  .player-seek input { height: 28px; }
+}
+
+/* Celulares angostos: las tres columnas de fechas y tamaño entran justas. */
+@media (max-width: 360px) {
+  .files-table td[data-label] { font-size: 11px; }
+  .files-table td[data-label]::before { font-size: 8px; letter-spacing: .08em; }
 }
 
 /* ---------- ZG PASS (administrador): recuento, scanner, puerta ---------- */

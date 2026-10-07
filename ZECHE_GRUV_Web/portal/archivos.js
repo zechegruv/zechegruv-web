@@ -33,6 +33,9 @@
   const PLAYABLE = /\.(mp3|wav|m4a|aac|flac|ogg|oga)$/i;
   const PLAY_ICONS = '<svg class="icon-play" width="12" height="12" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 1.5v11l9-5.5z" fill="currentColor"/></svg><svg class="icon-pause" width="12" height="12" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 1.5h3v11H3zM8 1.5h3v11H8z" fill="currentColor"/></svg>';
 
+  // En celular el botón de descarga muestra solo este ícono.
+  const DOWNLOAD_ICON = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 2v8.5m0 0L4.5 7M8 10.5 11.5 7M2.5 13.5h11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
   // Orden de los archivos: se elige tocando el título de una columna y vale
   // para todas las tablas de la sección (y se recuerda entre secciones).
   const SORT_KEY = "zg-portal-orden";
@@ -75,10 +78,10 @@
                 <td><div class="file-name">${f.url && PLAYABLE.test(f.name)
                   ? `<button class="play-btn" type="button" data-play="${esc(f.url)}" data-name="${esc(f.name)}" aria-label="Escuchar ${esc(f.name)}">${PLAY_ICONS}</button>`
                   : ""}<span>${esc(f.name)}</span></div></td>
-                <td>${fmtDate(f.created)}</td>
-                <td>${fmtDate(f.modified)}</td>
-                <td>${fmtSize(f.size)}</td>
-                <td>${f.url ? `<a class="btn" href="${esc(f.url)}" download="${esc(f.name)}">Descargar</a>` : ""}</td>
+                <td data-label="Creado">${fmtDate(f.created)}</td>
+                <td data-label="Modificado">${fmtDate(f.modified)}</td>
+                <td data-label="Tamaño">${fmtSize(f.size)}</td>
+                <td>${f.url ? `<a class="btn download-btn" href="${esc(f.url)}" download="${esc(f.name)}" aria-label="Descargar ${esc(f.name)}">${DOWNLOAD_ICON}<span>Descargar</span></a>` : ""}</td>
               </tr>`).join("")}
           </tbody>
         </table>
@@ -95,6 +98,7 @@
 
     $("filesEyebrow").textContent = P.nameOf(who);
     $("filesTitle").textContent = TITLES[section];
+    $("filesIcon").setAttribute("href", `#ic-${section}`);
     const chips = $("filesChips");
     chips.replaceChildren();
     if (section === "membresia" && who.format) {

@@ -249,6 +249,9 @@
       chips.append(link);
     }
 
+    // El administrador mirando a un artista: los títulos dicen de quién es.
+    $("spaceTitle").textContent = own ? "Tu espacio" : `Espacio de ${nameOf(p)}`;
+    $("profileFormTitle").textContent = own ? "Perfil" : "Datos del artista";
     $("fDisplayName").value = p.display_name || "";
     // La foto la cambia cada artista desde su propia cuenta.
     $("photoBtn").hidden = !own;
@@ -526,6 +529,18 @@
       return tr;
     }));
   }
+
+  // En celular las tablas se ven como tarjetas (portal.css): cada celda
+  // lleva el título de su columna para poder mostrarlo al lado del dato.
+  document.querySelectorAll("table.table").forEach((table) => {
+    const tbody = table.querySelector("tbody");
+    const label = () => {
+      const heads = [...table.querySelectorAll("thead th")].map((th) => th.textContent.trim());
+      tbody.querySelectorAll("tr").forEach((tr) => [...tr.children].forEach((td, i) => { if (heads[i]) td.dataset.label = heads[i]; }));
+    };
+    new MutationObserver(label).observe(tbody, { childList: true });
+    label();
+  });
 
   // Lo que necesitan los módulos de distribución y de archivos.
   window.ZGPortal = {
