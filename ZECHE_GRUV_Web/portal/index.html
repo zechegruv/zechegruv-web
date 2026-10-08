@@ -297,18 +297,27 @@
 
         <form class="card form invite-form" id="inviteForm" novalidate>
           <h2 class="card-title">Invitar a un artista</h2>
+          <div class="row">
+            <div class="field">
+              <label for="inviteRole">Tipo de cuenta</label>
+              <select id="inviteRole">
+                <option value="artist">Artista</option>
+                <option value="distribution">Equipo de distribución (solo ve y edita los lanzamientos)</option>
+              </select>
+            </div>
+          </div>
           <p class="hint">Le creamos la cuenta y le llega un mail de ZECHE GRUV con el link para su primer ingreso, donde elige su contraseña. Lo que cargues acá queda asociado a su perfil desde el primer momento: cuando entre, ya va a ver sus carpetas.</p>
           <div class="row">
             <div class="field">
-              <label for="inviteEmail">Mail del artista</label>
+              <label for="inviteEmail" id="inviteEmailLabel">Mail del artista</label>
               <input type="email" id="inviteEmail" maxlength="160" autocomplete="off">
             </div>
             <div class="field">
-              <label for="inviteName">Nombre artístico</label>
+              <label for="inviteName" id="inviteNameLabel">Nombre artístico</label>
               <input type="text" id="inviteName" maxlength="80" autocomplete="off">
             </div>
           </div>
-          <div class="row">
+          <div class="row artist-only">
             <div class="field">
               <label for="inviteFolder">Carpeta en OneDrive · link de solo ver</label>
               <input type="url" id="inviteFolder" placeholder="https://1drv.ms/f/…" autocomplete="off">
@@ -318,7 +327,7 @@
               <input type="url" id="inviteFolderEdit" placeholder="https://1drv.ms/f/…" autocomplete="off">
             </div>
           </div>
-          <div class="row">
+          <div class="row artist-only">
             <div class="field">
               <label for="inviteSpotify">Perfil de Spotify (opcional)</label>
               <input type="text" id="inviteSpotify" placeholder="Link del artista en Spotify" autocomplete="off">
@@ -333,13 +342,13 @@
               </select>
             </div>
           </div>
-          <div class="row">
+          <div class="row artist-only">
             <div class="field">
               <label for="inviteNotion">Ficha en Notion (opcional)</label>
               <input type="url" id="inviteNotion" placeholder="https://www.notion.so/…" autocomplete="off">
             </div>
           </div>
-          <p class="hint">Los links de carpeta y de Notion solo los ves vos: el artista nunca los recibe, ni en el mail ni en el portal.</p>
+          <p class="hint artist-only">Los links de carpeta y de Notion solo los ves vos: el artista nunca los recibe, ni en el mail ni en el portal.</p>
           <p class="msg" id="inviteMsg" role="status"></p>
           <button class="btn btn-primary" type="submit" id="inviteSubmit">Enviar invitación</button>
         </form>

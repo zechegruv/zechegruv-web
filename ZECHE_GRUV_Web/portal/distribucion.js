@@ -23,6 +23,8 @@
 
   const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
   const isAdmin = () => P.me.role === "admin";
+  // Administrador o equipo de distribución: ven y editan todos los lanzamientos.
+  const isStaff = () => isAdmin() || P.me.role === "distribution";
   const fmtDate = (iso) => (iso ? iso.slice(0, 10).split("-").reverse().join("/") : "—");
   const newCredit = () => ({ artist_name: "", full_name: "", email: "", roles: [], split: "" });
   const newTrack = () => ({ title: "", version: "", language: "", explicit: false, is_cover: false, isrc: "", master: "", spotify_link: "", credits: [newCredit()] });
@@ -35,7 +37,7 @@
     P.showPanel("releases");
 
     $("releasesBack").hidden = all;
-    $("releasesEyebrow").textContent = all ? "Administrador" : `Distribución · ${P.nameOf(profile)}`;
+    $("releasesEyebrow").textContent = all ? (isAdmin() ? "Administrador" : "Equipo de distribución") : `Distribución · ${P.nameOf(profile)}`;
     $("newReleaseBtn").hidden = !own;
     $("releasesTable").classList.toggle("show-artist", all);
     const status = $("releasesStatus");
@@ -102,7 +104,7 @@
 
   // ---------- Ficha ----------
   function renderRelease() {
-    const admin = isAdmin();
+    const admin = isStaff();
     const editable = admin || release.status === "draft";
     P.showPanel("release");
 

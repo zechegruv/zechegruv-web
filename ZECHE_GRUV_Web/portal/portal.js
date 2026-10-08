@@ -185,6 +185,8 @@
     $("tabs").hidden = !admin;
     showView("app");
     if (admin) openTab("artists");
+    // Equipo de distribución: entra directo a los lanzamientos de todos.
+    else if (me.role === "distribution") window.ZGDistribution.openList(null);
     else showProfile(me);
   }
 
@@ -278,7 +280,7 @@
     showPanel("profile");
     $("backToArtists").hidden = !(admin && !own);
 
-    $("profileRole").textContent = p.role === "admin" ? "Administrador" : "Artista ZECHE GRUV";
+    $("profileRole").textContent = p.role === "admin" ? "Administrador" : p.role === "distribution" ? "Equipo de distribución" : "Artista ZECHE GRUV";
     $("profileName").textContent = nameOf(p);
     paintAvatar($("profileAvatar"), $("profileAvatarEmpty"), p);
 
@@ -572,6 +574,46 @@
     }
   });
 
+  // Tipo de cuenta en la invitación: para el equipo de distribución no van
+  // carpetas, Spotify, formato ni Notion.
+  function syncInviteRole() {
+    const team = $("inviteRole").value === "distribution";
+    document.querySelectorAll("#inviteForm .artist-only").forEach((el) => { el.hidden = team; });
+    $("inviteEmailLabel").textContent = team ? "Mail" : "Mail del artista";
+    $("inviteNameLabel").textContent = team ? "Nombre" : "Nombre artístico";
+  }
+  $("inviteRole").addEventListener("change", syncInviteRole);
+
+  // Alta de una cuenta del equipo de distribución: misma invitación que un
+  // artista y, apenas existe la cuenta, se le pone el rol (014_distribucion_equipo.sql).
+  async function inviteTeam(email, display_name) {
+    const msg = $("inviteMsg");
+    $("inviteSubmit").disabled = true;
+    setMsg(msg, "Enviando invitación…");
+    try {
+      const { data: { session } } = await db.auth.getSession();
+      const res = await fetch("/.netlify/functions/portal-invite", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify({ email, display_name }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "No pudimos enviar la invitación. Probá de nuevo.");
+      const saved = await db.from("profiles").update({ role: "distribution" }).eq("id", data.id);
+      ["inviteEmail", "inviteName"].forEach((id) => { $(id).value = ""; });
+      $("inviteRole").value = "artist";
+      syncInviteRole();
+      await showArtists();
+      setMsg(msg, saved.error
+        ? `Invitación enviada a ${data.email}, pero no pudimos darle el acceso de distribución. ¿Ya corriste 014_distribucion_equipo.sql en Supabase?`
+        : `Invitación enviada a ${data.email}. Cuando entre, va a ver solo los lanzamientos de los artistas.`, !!saved.error);
+    } catch (err) {
+      setMsg(msg, err.message, true);
+    } finally {
+      $("inviteSubmit").disabled = false;
+    }
+  }
+
   // Alta de artistas: crea la cuenta y manda el mail de invitación
   // (netlify/functions/portal-invite.js).
   $("inviteForm").addEventListener("submit", async (event) => {
@@ -579,8 +621,10 @@
     const msg = $("inviteMsg");
     const email = $("inviteEmail").value.trim();
     const display_name = $("inviteName").value.trim();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setMsg(msg, "Escribí el mail del artista.", true); return; }
-    if (!display_name) { setMsg(msg, "Escribí el nombre artístico: es como lo saludamos en el mail.", true); return; }
+    const team = $("inviteRole").value === "distribution";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setMsg(msg, team ? "Escribí su mail." : "Escribí el mail del artista.", true); return; }
+    if (!display_name) { setMsg(msg, team ? "Escribí su nombre: es como la saludamos en el mail." : "Escribí el nombre artístico: es como lo saludamos en el mail.", true); return; }
+    if (team) { await inviteTeam(email, display_name); return; }
     // Datos que quedan asociados al perfil apenas se crea la cuenta.
     const folder = $("inviteFolder").value.trim();
     const folderEdit = $("inviteFolderEdit").value.trim();
@@ -640,7 +684,7 @@
     const { data, error } = await db.from("profiles").select("*").order("display_name", { nullsFirst: false });
     if (error) { status.textContent = "No pudimos cargar la lista. Recargá la página."; return; }
 
-    const artists = data.filter((p) => p.role !== "admin");
+    const artists = data.filter((p) => p.role === "artist");
     const inactive = artists.filter((p) => !isActive(p)).length;
     status.textContent = (artists.length === 1 ? "1 artista con cuenta" : `${artists.length} artistas con cuenta`)
       + (inactive ? ` (${inactive} ${inactive === 1 ? "inactivo" : "inactivos"}).` : ".");
@@ -669,7 +713,9 @@
         cell(p.display_name),
         cell(p.full_name),
         cell(p.email),
-        p.role === "admin" ? cell("Administrador", "tag-admin") : cell(FORMAT_LABEL[p.format]),
+        p.role === "admin" ? cell("Administrador", "tag-admin")
+          : p.role === "distribution" ? cell("Distribución", "tag-admin")
+          : cell(FORMAT_LABEL[p.format]),
         cell(p.spotify_artist_id ? "Vinculado" : "Sin vincular"),
         p.role === "admin" ? cell("—") : cell(isActive(p) ? "Activo" : "Inactivo", isActive(p) ? "tag-on" : "tag-off"),
       );
