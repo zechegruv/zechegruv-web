@@ -595,11 +595,11 @@
       const res = await fetch("/.netlify/functions/portal-invite", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
-        body: JSON.stringify({ email, display_name }),
+        body: JSON.stringify({ email, display_name, role: "distribution" }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "No pudimos enviar la invitación. Probá de nuevo.");
-      const saved = await db.from("profiles").update({ role: "distribution" }).eq("id", data.id);
+      const saved = { error: data.roleError };
       ["inviteEmail", "inviteName"].forEach((id) => { $(id).value = ""; });
       $("inviteRole").value = "artist";
       syncInviteRole();

@@ -12,7 +12,7 @@ def link(kind):
 # El sol del encabezado va como fondo de una celda y no como <img>: si el
 # programa de correo bloquea las imágenes (por ejemplo en spam), no queda
 # un recuadro vacío en su lugar.
-def mail(kind, title, intro, box, button, after):
+def mail(kind, title, intro, box, button, after, eyebrow="Portal de artistas"):
     url = link(kind)
     return f'''<!DOCTYPE html>
 <html lang="es">
@@ -32,7 +32,7 @@ def mail(kind, title, intro, box, button, after):
 <td style="padding-left:10px;font-family:'Courier New',Courier,monospace;font-size:12px;letter-spacing:3px;color:#FFF4DC;">ZECHE GRUV&reg;</td>
 </tr></table>
 </td></tr>
-<tr><td style="padding:28px 32px 0;font-family:'Courier New',Courier,monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#F5A623;">Portal de artistas</td></tr>
+<tr><td style="padding:28px 32px 0;font-family:'Courier New',Courier,monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#F5A623;">{eyebrow}</td></tr>
 <tr><td style="padding:10px 32px 0;font-family:Helvetica,Arial,sans-serif;font-size:30px;line-height:1.05;font-weight:800;letter-spacing:-1px;color:#FFF4DC;">{title}</td></tr>
 <tr><td style="padding:20px 32px 0;font-family:Helvetica,Arial,sans-serif;font-size:15px;line-height:1.6;color:#F0E0C0;">{intro}</td></tr>
 {box}
@@ -66,13 +66,27 @@ def box(rows):
 
 here = os.path.dirname(os.path.abspath(__file__))
 
+# Supabase tiene una sola plantilla de invitación: adentro van dos versiones.
+# La del equipo de distribución sale cuando la invitación lleva "team"
+# (portal-invite.js lo manda al elegir Tipo de cuenta: Equipo de
+# distribución); si no, la de artistas. Se usa "if .Data.team" y no una
+# comparación, para que una invitación sin ese dato no rompa el mail.
+def team_or_artist(team, artist):
+    return "{{ if .Data.team }}" + team + "{{ else }}" + artist + "{{ end }}"
+
+HELLO = "Hola{{ if .Data.display_name }}, <b>{{ .Data.display_name }}</b>{{ end }}."
+
 invite = mail(
     "invite",
-    "Tu espacio ya<br>está listo.",
-    "Hola{{ if .Data.display_name }}, <b>{{ .Data.display_name }}</b>{{ end }}. Bienvenid@ al portal de artistas de ZECHE GRUV, donde vas a encontrar toda la data de tu proyecto en un solo lugar: tus referencias y letras, los exports y masters de cada canción, tu membresía y el formulario para distribuir tu música.",
+    team_or_artist("Bienvenida<br>al equipo.", "Tu espacio ya<br>está listo."),
+    HELLO + " " + team_or_artist(
+        "Cada canción que sale de ZECHE GRUV pasa por tus manos antes de llegar a Spotify. En tu cuenta vas a ver los lanzamientos que envían los artistas: títulos, fechas, créditos, splits y portada, con el Excel listo para cargar en la distribuidora. Cuando lo cargues, lo marcás y el artista sabe que su música ya está en camino.",
+        "Bienvenid@ al portal de artistas de ZECHE GRUV, donde vas a encontrar toda la data de tu proyecto en un solo lugar: tus referencias y letras, los exports y masters de cada canción, tu membresía y el formulario para distribuir tu música.",
+    ),
     box(row("Usuario", "{{ .Email }}") + "\n" + row("Contraseña", "La elegís vos en tu primer ingreso") + "\n" + row("Dirección del portal", '<a href="https://zechegruv.com/portal/" style="color:#F5A623;text-decoration:none;">zechegruv.com/portal</a>')),
     "Entrar por primera vez",
     "Este link es personal y sirve una sola vez: vence en 24 horas. Si se venció, entrá a zechegruv.com/portal, tocá “¿Olvidaste tu contraseña?” y te mandamos uno nuevo.",
+    team_or_artist("Equipo de distribución", "Portal de artistas"),
 )
 io.open(os.path.join(here, "invitacion.html"), "w", encoding="utf-8").write(invite)
 

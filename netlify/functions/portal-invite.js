@@ -47,12 +47,15 @@ exports.handler = async (event) => {
   try { body = JSON.parse(event.body || "{}"); } catch (e) { return json(400, { error: "Datos inválidos." }); }
   const email = String(body.email || "").trim().toLowerCase();
   const displayName = String(body.display_name || "").trim().slice(0, 80);
+  // Equipo de distribución (014_distribucion_equipo.sql): otro mail de
+  // invitación ("team" en la plantilla) y su rol apenas se crea la cuenta.
+  const team = body.role === "distribution";
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json(400, { error: "Ese mail no parece válido." });
 
   const res = await fetch(`${SUPABASE_URL}/auth/v1/invite?redirect_to=${encodeURIComponent(PORTAL_URL)}`, {
     method: "POST",
     headers: { ...service, "Content-Type": "application/json" },
-    body: JSON.stringify({ email, data: { display_name: displayName } }),
+    body: JSON.stringify({ email, data: team ? { display_name: displayName, team: true } : { display_name: displayName } }),
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
@@ -60,6 +63,14 @@ exports.handler = async (event) => {
     if (code === "email_exists" || res.status === 422) return json(409, { error: "Ya existe una cuenta con ese mail." });
     if (res.status === 429 || code === "over_email_send_rate_limit") return json(429, { error: "Se enviaron muchos mails seguidos. Esperá unos minutos y probá de nuevo." });
     return json(502, { error: "No pudimos enviar la invitación. Revisá la configuración de mail en Supabase." });
+  }
+  if (team) {
+    const roleSet = await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${data.id}`, {
+      method: "PATCH",
+      headers: { ...service, "Content-Type": "application/json" },
+      body: JSON.stringify({ role: "distribution" }),
+    });
+    if (!roleSet.ok) return json(200, { id: data.id, email, roleError: true });
   }
   return json(200, { id: data.id, email });
 };
