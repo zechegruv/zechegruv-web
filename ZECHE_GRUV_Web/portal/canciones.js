@@ -76,19 +76,19 @@
   // ---------- Bienvenida: la próxima sesión ----------
   // Lo primero que ve el artista al entrar. Si la próxima sesión está
   // agendada en Notion (una tarea con horario), le cuenta cuándo es y qué
-  // vamos a hacer, con detalles concretos de esa etapa; si no, lo despide
+  // vamos a hacer, en una o dos frases simples; si no, lo despide
   // hasta la próxima y le deja el WhatsApp a mano.
   const WHATSAPP = "https://wa.me/5491133287422?text=" + encodeURIComponent("Hola Zeche! Te escribo desde el portal: ");
   const TZ = "America/Argentina/Buenos_Aires";
 
   const PLAN = {
-    estructura: (s) => `Arrancamos ${s}: armamos juntos el esqueleto de la canción, para que lo que querés contar tenga dónde vivir. Si te quedó una idea dando vueltas, una frase o una melodía en una nota de voz, traela: de ahí suelen salir las mejores partes.`,
-    produccion: (s) => `Seguimos produciendo ${s}: sonidos, capas y ese groove que la hace sonar a vos. No venimos a cambiar tu idea, venimos a traducirla.`,
-    grabacion: (s) => `Grabamos tu voz en ${s}. Llegá con la letra fresca y la voz descansada (agua, nada de gritar la noche anterior): es el momento en que la canción empieza a sonar a vos de verdad.`,
-    mezcla: (s) => `Escuchamos juntos la mezcla de ${s} y la ajustamos hasta que suene como la imaginaste. Si tenés una canción de referencia, traela.`,
-    master: (s) => `Le damos el toque final a ${s} para que esté lista para salir al mundo.`,
+    estructura: (s) => `Arrancamos ${s}. Si tenés alguna idea grabada en el celu, traela.`,
+    produccion: (s) => `Seguimos con la producción de ${s}.`,
+    grabacion: (s) => `Grabamos voces de ${s}. Vení con la letra a mano.`,
+    mezcla: (s) => `Escuchamos la mezcla de ${s} y vemos qué ajustar.`,
+    master: (s) => `Cerramos el master de ${s}.`,
     distribucion: (s) => `Dejamos todo listo para lanzar ${s}.`,
-    publicada: (s) => `Hablamos de lo que sigue después de ${s}.`,
+    publicada: (s) => `Charlamos qué sigue después de ${s}.`,
   };
 
   const firstName = (p) => (P.nameOf(p).split(/\s+/)[0] || "").trim();
@@ -120,11 +120,11 @@
       const lines = next.plan.map(({ stage, song }) => {
         const name = song ? `«${esc(song)}»` : "tu canción";
         if (stage && PLAN[stage]) return `<p>${PLAN[stage](name)}</p>`;
-        return `<p>${song ? `Seguimos con ${name} donde la dejamos.` : "Seguimos con tu proyecto donde lo dejamos."}</p>`;
+        return `<p>${song ? `Seguimos con ${name}.` : "Seguimos con tu proyecto."}</p>`;
       }).join("");
       html = `<p class="welcome-when">Nos vemos en el estudio ${esc(whenLabel(next.start, next.end))}.</p>${lines}`;
     } else {
-      html = "<p>Nos vemos en la próxima sesión. Mientras tanto, acá podés escuchar los exports y ver cómo avanza cada una de tus canciones.</p>";
+      html = "<p>Nos vemos en la próxima sesión. Acá vas a ir viendo cómo avanzan tus canciones.</p>";
     }
     html += `<p class="welcome-help">¿Alguna duda antes? <a href="${WHATSAPP}" target="_blank" rel="noopener">Escribinos por WhatsApp ↗</a></p>`;
     $("welcomeBody").innerHTML = html;
