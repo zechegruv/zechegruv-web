@@ -7,9 +7,9 @@ alter table public.pass_events add column if not exists lineup text[];
 -- para que no se repita en la página.
 update public.pass_events
 set lineup = array['Pazz', 'Maki', 'Bastian & Kaino', 'Rouse Bby'],
-    description = 'Una noche con dos protagonistas: cuatro artistas del sello en vivo '
-               || 'y tu canción en el open mic. Si cantás esta noche, '
-               || 'podés ser parte del próximo show.'
+    description = 'Una noche con dos protagonistas: tres artistas del sello en vivo '
+               || 'y tu canción en el open mic. Bastian & Kaino cantaron en el primer '
+               || 'open mic y hoy son parte del show. El próximo podés ser vos.'
 where slug = 'shows-open-mic-2';
 
 select name, lineup, description from public.pass_events where slug = 'shows-open-mic-2';
