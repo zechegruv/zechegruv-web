@@ -16,6 +16,13 @@
   to = "/pass/"
   status = 302
 
+# Inscripción al open mic, para quien ya compró: pide el mail de la compra
+# (no hace falta tener a mano el link del mail ni de la orden).
+[[redirects]]
+  from = "/openmic"
+  to = "/pass/openmic/"
+  status = 302
+
 # Tipografías: el nombre lleva versión (-v1), así que el navegador las
 # guarda un año sin volver a pedirlas. Si se cambia la fuente, subir a -v2.
 [[headers]]

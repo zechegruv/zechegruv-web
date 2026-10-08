@@ -743,6 +743,9 @@ body.has-promo nav { top: var(--promo-h); }
 .next-event-btn { font-size: 11px; padding: 18px 26px; white-space: nowrap; }
 .next-event-note { font-family: "DM Mono", monospace; font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
 .next-event-note:empty { display: none; }
+.next-event-mic { font-size: 14px; font-weight: 600; color: #B98AC9; text-align: center; text-decoration: underline; text-underline-offset: 3px; max-width: 260px; line-height: 1.4; align-self: center; }
+.next-event-mic:hover { color: var(--cream); }
+.next-event-mic[hidden] { display: none; }
 @media (max-width: 800px) {
   .next-event { grid-template-columns: minmax(0, 1fr); padding: 24px 20px; }
   .next-event-buy { align-items: stretch; }

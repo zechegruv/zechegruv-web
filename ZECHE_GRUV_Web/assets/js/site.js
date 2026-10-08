@@ -752,6 +752,7 @@ const I18N = {
     nav_events: "Shows y open mic",
     nav_pass: "ZG PASS · Conseguí tu entrada",
     nav_tickets: "Entradas",
+    mic_signup_cta: "¿Ya tenés tu entrada? Anotate al open mic →",
     next_event_label: "Próxima fecha",
     tickets_cta: "Conseguí tu entrada",
     nav_services: "Servicios",
@@ -1693,6 +1694,7 @@ window.addEventListener("load", () => {
       const note = document.getElementById("nextEventNote");
       if (ev.sold_out) note.textContent = "Agotado";
       else if (ev.few_left) note.textContent = `¡Últimas ${ev.few_left}!`;
+      document.getElementById("nextEventMic").hidden = !ev.openmic_open;
       card.hidden = false;
 
       if (ev.sold_out) return;
