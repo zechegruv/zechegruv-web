@@ -1,6 +1,10 @@
 [build]
   publish = "ZECHE_GRUV_Web"
   functions = "netlify/functions"
+  # En cada publicación, los estilos, el código y los idiomas del inicio se
+  # piden con el número de esa versión (?v=…): el navegador los guarda un año
+  # y, cuando hay cambios, baja los nuevos solo. En la compu queda "__BUILD__".
+  command = "sed -i \"s/__BUILD__/${COMMIT_REF:-local}/g\" ZECHE_GRUV_Web/index.html ZECHE_GRUV_Web/assets/js/site.js"
 
 [functions]
   node_bundler = "esbuild"
@@ -18,3 +22,64 @@
   for = "/assets/fonts/*.woff"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
+
+# Estilos, código e idiomas del inicio: llevan ?v=<versión>, se guardan un año.
+[[headers]]
+  for = "/assets/css/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+[[headers]]
+  for = "/assets/js/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+[[headers]]
+  for = "/assets/i18n/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+[[headers]]
+  for = "/assets/grain-v1.webp"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Fotos, portadas y videos: un día. Si se reemplaza una imagen con el mismo
+# nombre, a más tardar al día siguiente todos ven la nueva.
+[[headers]]
+  for = "/assets/camps/*"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"
+[[headers]]
+  for = "/assets/events/*"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"
+[[headers]]
+  for = "/assets/covers/*"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"
+[[headers]]
+  for = "/assets/studio/*"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"
+[[headers]]
+  for = "/assets/hero/*"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"
+[[headers]]
+  for = "/assets/og/*"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"
+[[headers]]
+  for = "/assets/team/*"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"
+[[headers]]
+  for = "/assets/mail/*"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"
+[[headers]]
+  for = "/assets/favicon/*"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"
+[[headers]]
+  for = "/assets/artists/*"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"

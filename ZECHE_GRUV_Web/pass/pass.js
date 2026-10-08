@@ -5,7 +5,7 @@
 // Acá solo se muestra y se pide: si hay lugar, cuánto cuesta y si el pago
 // entró lo decide siempre el servidor.
 (() => {
-  const { kindOf, fmtDate, fmtTime, fmtMoney, el, metaItem, lineupItem, api } = window.ZGPass;
+  const { kindOf, fmtDate, fmtTime, fmtMoney, el, metaItem, lineupItem, eventSchema, api } = window.ZGPass;
   const $ = (id) => document.getElementById(id);
   const ORDER_KEY = "zg-pass-orden";  // compra en curso: { url, expires_at }
 
@@ -70,6 +70,7 @@
 
   function renderEvent(e) {
     current = e;
+    eventSchema(e);
     const kind = kindOf(e.kind);
     document.title = `${e.name} — ZG PASS`;
     $("eventArt").src = e.image_url || kind.logo;

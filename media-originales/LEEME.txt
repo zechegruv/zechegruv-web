@@ -1,0 +1,7 @@
+Archivos originales y versiones que la web no usa. Están fuera de
+ZECHE_GRUV_Web para que no se publiquen en zechegruv.com (Netlify publica
+solo esa carpeta). Si alguno se vuelve a necesitar en la web, moverlo de
+nuevo a ZECHE_GRUV_Web/assets/.
+- covers/originals: portadas en máxima resolución (PNG/JPG).
+- covers, studio: versiones viejas o alternativas sin uso.
+- videos: los videos originales antes de comprimirlos para la web.

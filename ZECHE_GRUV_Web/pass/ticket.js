@@ -114,11 +114,49 @@ window.ZGPass = (() => {
     return card;
   }
 
+  // Datos del evento en el formato que leen Google y otros buscadores
+  // (schema.org/MusicEvent). Se agrega una sola vez por evento.
+  function eventSchema(e) {
+    if (!e || document.getElementById(`ld-${e.slug}`)) return;
+    const types = e.ticket_types || [];
+    const data = {
+      "@context": "https://schema.org",
+      "@type": "MusicEvent",
+      name: e.name,
+      startDate: e.starts_at,
+      ...(e.ends_at ? { endDate: e.ends_at } : {}),
+      eventStatus: "https://schema.org/EventScheduled",
+      eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+      description: e.description || undefined,
+      image: ["https://www.zechegruv.com/assets/og/proximo-evento.jpg"],
+      location: {
+        "@type": "Place",
+        name: e.venue_name || "",
+        address: { "@type": "PostalAddress", addressLocality: e.venue_address || "Ciudad de Buenos Aires", addressCountry: "AR" },
+      },
+      performer: (e.lineup || []).map((name) => ({ "@type": "PerformingGroup", name })),
+      organizer: { "@type": "Organization", name: "ZECHE GRUV", url: "https://www.zechegruv.com/" },
+      offers: types.map((t) => ({
+        "@type": "Offer",
+        name: t.name,
+        price: t.price,
+        priceCurrency: "ARS",
+        availability: e.sold_out ? "https://schema.org/SoldOut" : "https://schema.org/InStock",
+        url: `https://www.zechegruv.com/pass/?e=${encodeURIComponent(e.slug)}`,
+      })),
+    };
+    const tag = document.createElement("script");
+    tag.type = "application/ld+json";
+    tag.id = `ld-${e.slug}`;
+    tag.textContent = JSON.stringify(data);
+    document.head.append(tag);
+  }
+
   async function api(path, options) {
     const res = await fetch(`/.netlify/functions/${path}`, options);
     const data = await res.json().catch(() => ({}));
     return { ok: res.ok, status: res.status, data };
   }
 
-  return { kindOf, fmtDate, fmtTime, fmtMoney, el, metaItem, lineupItem, renderTicket, api };
+  return { kindOf, fmtDate, fmtTime, fmtMoney, el, metaItem, lineupItem, renderTicket, eventSchema, api };
 })();
