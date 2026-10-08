@@ -6,10 +6,11 @@
 
 @font-face {
   font-family: 'TAN Nimbus';
-  src: url('/assets/fonts/TANNIMBUS.otf') format('opentype');
+  src: url('/assets/fonts/TANNIMBUS-latin-v1.woff') format('woff'),
+       url('/assets/fonts/TANNIMBUS.otf') format('opentype');
   font-weight: 400;
   font-style: normal;
-  font-display: swap;
+  font-display: block;
 }
 
 .pass-wordmark {

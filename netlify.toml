@@ -11,3 +11,10 @@
   from = "/entradas"
   to = "/pass/"
   status = 302
+
+# Tipografías: el nombre lleva versión (-v1), así que el navegador las
+# guarda un año sin volver a pedirlas. Si se cambia la fuente, subir a -v2.
+[[headers]]
+  for = "/assets/fonts/*.woff"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

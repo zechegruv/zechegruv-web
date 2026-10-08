@@ -32,10 +32,24 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-  <!-- Precarga de la tipografía del logo: evita el salto/demora visible
-       al pasar de la fuente de reserva a "TAN Nimbus" (FOUT). -->
+  <!-- Tipografía del logo: versión liviana (41 KB, solo los caracteres que
+       se usan) precargada. El título "ZECHE GRUV" espera a que esté lista y
+       aparece con un fundido, así nunca se ve el cambio desde otra letra. -->
   <link rel="preload" href="assets/hero/hero-provisoria.webp" as="image" type="image/webp" media="(min-width: 801px)">
-  <link rel="preload" href="assets/fonts/TANNIMBUS.otf" as="font" type="font/otf" crossorigin>
+  <link rel="preload" href="assets/fonts/TANNIMBUS-latin-v1.woff" as="font" type="font/woff" crossorigin>
+  <script>
+    (function () {
+      var root = document.documentElement;
+      if (!document.fonts || !document.fonts.load) return;
+      root.classList.add("zg-font-wait");
+      var show = function () { root.classList.remove("zg-font-wait"); };
+      // Se pide la fuente cuando ya se leyeron los estilos (antes no existe).
+      document.addEventListener("DOMContentLoaded", function () {
+        document.fonts.load('1em "TAN Nimbus"').then(show, show);
+      });
+      setTimeout(show, 2500);  // con conexión muy lenta, no esperar más
+    })();
+  </script>
 
   <style>
     /* =========================================================
@@ -335,10 +349,11 @@
 
     @font-face {
       font-family: 'TAN Nimbus';
-      src: url('assets/fonts/TANNIMBUS.otf') format('opentype');
+      src: url('assets/fonts/TANNIMBUS-latin-v1.woff') format('woff'),
+           url('assets/fonts/TANNIMBUS.otf') format('opentype');
       font-weight: 400;
       font-style: normal;
-      font-display: swap;
+      font-display: block;
     }
 
     .hero-logo-wrap {
@@ -472,6 +487,8 @@
       filter: drop-shadow(0 .06em .16em rgba(0, 0, 0, .55));
     }
     .zg-text span + span { margin-top: .04em; }
+    .zg-text { transition: opacity .45s ease; }
+    .zg-font-wait .zg-text { opacity: 0; }
 
     @keyframes zg-enter {
       from { opacity: 0; transform: scale(.9); }
