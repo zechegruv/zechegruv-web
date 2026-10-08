@@ -49,6 +49,7 @@
     { name: "Ekiss", id: "20mwpOinpbsbDIgnqUpFBe", img: "ab676161000051743b923eed0abd5ccb9e01ef0c" },
     { name: "Lowkey Santo", id: "31xbC0RlsTJT1NOLviy6lD", img: "ab676161000051744014c930fa3816a9ec333669" },
     { name: "ENY B", id: "2TY5OSmjJjYkctYzqxhZe1", img: "ab67616100005174fade386a79098f1fc4c92656" },
+    { name: "Dosis", id: "3PhscZFnz4MlgNsRPqcs87", img: "ab67616100005174a68632fa8ba4766bbbb6970c" },
   ];
 
   const ARTISTS = RAW_ARTISTS.map((a) => ({

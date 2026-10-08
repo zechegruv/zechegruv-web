@@ -303,6 +303,27 @@ main {
 
 #backToArtists { margin-bottom: 26px; }
 
+/* ---------- Activo / inactivo (administrador) ---------- */
+
+.access-zone {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-top: 40px;
+  padding: 22px 26px;
+  border: 1px solid rgba(245, 166, 35, .35);
+}
+.access-zone .card-title { margin-bottom: 6px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.access-zone .btn { white-space: nowrap; }
+.access-zone .msg:empty { display: none; }
+.chip.chip-on { color: #9fe0a8; border-color: rgba(159, 224, 168, .5); }
+.chip.chip-off { color: #ffb4a8; border-color: rgba(214, 40, 40, .5); }
+.table .tag-on { color: #9fe0a8; }
+.table .tag-off { color: #ffb4a8; }
+.table .row-inactive td { opacity: .55; }
+.access-zone + .danger-zone { margin-top: 16px; }
+
 /* ---------- Borrar perfil (administrador) ---------- */
 
 .danger-zone {
@@ -1272,7 +1293,7 @@ fieldset:disabled .add-credit { display: none; }
 .help-body dd { margin-top: 3px; }
 
 @media (max-width: 800px) {
-  .danger-zone { flex-direction: column; align-items: flex-start; }
+  .danger-zone, .access-zone { flex-direction: column; align-items: flex-start; }
   .login-grid { grid-template-columns: 1fr; }
   .row { grid-template-columns: 1fr; }
   .credit-grid { grid-template-columns: 1fr; }
@@ -1328,8 +1349,8 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   .tab { white-space: nowrap; padding: 14px 12px; }
   .zgp-tabs { margin: 30px -16px 22px; }
 
-  .danger-zone { padding: 20px 18px; }
-  .danger-zone .btn { width: 100%; }
+  .danger-zone, .access-zone { padding: 20px 18px; }
+  .danger-zone .btn, .access-zone .btn { width: 100%; }
   .dialog { padding: 22px 18px; }
 
   /* Tablas como tarjetas */

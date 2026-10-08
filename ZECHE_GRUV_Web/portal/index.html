@@ -263,10 +263,19 @@
         </div>
 
         <!-- Solo administrador, en el perfil de un artista -->
+        <div class="access-zone" id="accessZone" hidden>
+          <div>
+            <h2 class="card-title">Acceso al portal <span class="chip" id="accessState"></span></h2>
+            <p class="hint" id="accessHint"></p>
+            <p class="msg" id="accessMsg" role="status"></p>
+          </div>
+          <button class="btn" type="button" id="accessBtn"></button>
+        </div>
+
         <div class="danger-zone" id="dangerZone" hidden>
           <div>
             <h2 class="card-title">Borrar perfil</h2>
-            <p class="hint">Borra la cuenta del artista, sus datos y sus fichas de distribución. No se puede deshacer. No toca nada de OneDrive.</p>
+            <p class="hint">Borra la cuenta del artista, sus datos y sus fichas de distribución. No se puede deshacer. No toca nada de OneDrive. Solo vuelve si lo invitás de nuevo. Si es una pausa, mejor pasalo a inactivo.</p>
           </div>
           <button class="btn btn-danger" type="button" id="deleteArtistBtn">Borrar perfil</button>
         </div>
@@ -280,7 +289,7 @@
         <div class="table-wrap">
           <table class="table" id="artistsTable">
             <thead>
-              <tr><th></th><th>Nombre artístico</th><th>Nombre completo</th><th>Mail</th><th>Formato</th><th>Spotify</th></tr>
+              <tr><th></th><th>Nombre artístico</th><th>Nombre completo</th><th>Mail</th><th>Formato</th><th>Spotify</th><th>Estado</th></tr>
             </thead>
             <tbody></tbody>
           </table>
@@ -799,6 +808,17 @@
   </main>
 
   <!-- Confirmación antes de borrar un perfil -->
+  <dialog class="dialog" id="accessDialog" aria-labelledby="accessDialogTitle">
+    <div class="eyebrow">Acceso al portal</div>
+    <h2 class="dialog-title" id="accessDialogTitle"></h2>
+    <p class="dialog-text">No va a poder entrar al portal hasta que lo reactives. No se borra nada: su perfil, sus letras, sus lanzamientos y sus carpetas quedan guardados. Avisale antes, así descarga lo que necesite.</p>
+    <p class="msg" id="accessDialogMsg" role="alert"></p>
+    <div class="actions">
+      <button class="btn" type="button" id="accessCancelBtn">No, cancelar</button>
+      <button class="btn btn-danger" type="button" id="accessConfirmBtn">Sí, pasar a inactivo</button>
+    </div>
+  </dialog>
+
   <dialog class="dialog" id="deleteDialog" aria-labelledby="deleteDialogTitle">
     <div class="eyebrow">Borrar perfil</div>
     <h2 class="dialog-title" id="deleteDialogTitle"></h2>

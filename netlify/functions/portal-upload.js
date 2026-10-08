@@ -40,6 +40,7 @@ const ONEDRIVE_TOKEN_URL = "https://api-badgerp.svc.ms/v1.0/token";
 const ONEDRIVE_APP_ID = "5cbed6ac-a083-4e14-b191-b4ba07653de2";
 const UPLOAD_HOST = /^https:\/\/([a-z0-9-]+\.)*microsoftpersonalcontent\.com\//i;
 
+const INACTIVE = "Tu acceso al portal está pausado. Si querés retomar, escribinos por WhatsApp.";
 const json = (statusCode, body) => ({
   statusCode,
   headers: { "Content-Type": "application/json", "Cache-Control": "private, no-store" },
@@ -128,6 +129,13 @@ exports.handler = async (event) => {
     if (!section) return json(400, { error: "En esta sección no se pueden subir archivos." });
     const name = cleanName(body.name);
     if (!name || !section.types.test(name)) return json(400, { error: "Ese tipo de archivo no se puede subir a esta sección." });
+
+    // Artista inactivo (013_activos.sql): sin acceso, aunque su sesión
+    // todavía no haya vencido. Se pide "*" para que ande también antes de
+    // correr ese SQL.
+    const caller = await supabase(`/rest/v1/profiles?id=eq.${user.id}&select=*`, serviceKey);
+    if (!caller) return json(500, { error: BAD_KEY });
+    if (caller[0] && caller[0].role !== "admin" && caller[0].active === false) return json(403, { error: INACTIVE });
 
     // Un artista siempre sube a lo suyo; solo el administrador puede elegir otro perfil.
     let artistId = user.id;

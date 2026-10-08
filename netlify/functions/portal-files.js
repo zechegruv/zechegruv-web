@@ -125,6 +125,7 @@ async function supabase(path, key, bearer) {
 // se hayan colado al pegarla (rompen los encabezados de las consultas).
 const serviceRoleKey = () => (process.env.SUPABASE_SERVICE_ROLE_KEY || "").replace(/[\s"'\u201C\u201D\u2018\u2019]/g, "");
 
+const INACTIVE = "Tu acceso al portal está pausado. Si querés retomar, escribinos por WhatsApp.";
 const json = (statusCode, body) => ({
   statusCode,
   headers: { "Content-Type": "application/json", "Cache-Control": "private, no-store" },
@@ -143,6 +144,13 @@ exports.handler = async (event) => {
   const token = auth.replace(/^Bearer\s+/i, "");
   const user = token ? await supabase("/auth/v1/user", PUBLISHABLE_KEY, token) : null;
   if (!user || !user.id) return json(401, { error: "Iniciá sesión de nuevo." });
+
+  // Artista inactivo (013_activos.sql): sin acceso, aunque su sesión
+  // todavía no haya vencido. Se pide "*" para que ande también antes de
+  // correr ese SQL.
+  const caller = await supabase(`/rest/v1/profiles?id=eq.${user.id}&select=*`, serviceKey);
+  if (!caller) return json(500, { error: BAD_KEY });
+  if (caller[0] && caller[0].role !== "admin" && caller[0].active === false) return json(403, { error: INACTIVE });
 
   // Un artista siempre ve lo suyo; solo el administrador puede pedir otro perfil.
   let artistId = user.id;

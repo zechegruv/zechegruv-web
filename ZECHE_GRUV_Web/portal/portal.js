@@ -92,14 +92,39 @@
     return inRoster.photo ? `/${inRoster.photo}` : `https://i.scdn.co/image/${inRoster.img}`;
   }
 
+  const INACTIVE_MSG = "Tu acceso al portal está pausado. Si querés retomar, escribinos por WhatsApp.";
+
   const nameOf = (p) => p.display_name || p.full_name || p.email || "";
 
+  // Artistas con Spotify vinculado que no están en el roster: la foto se
+  // pide a Spotify (netlify/functions/spotify-artist-photo.js) una sola vez
+  // por artista mientras la página siga abierta.
+  const spotifyPhotos = new Map(); // id de Spotify -> Promise<url | null>
+  function spotifyPhoto(id) {
+    if (!spotifyPhotos.has(id)) {
+      spotifyPhotos.set(id, fetch(`/.netlify/functions/spotify-artist-photo?id=${encodeURIComponent(id)}`)
+        .then((r) => (r.ok ? r.json() : {}))
+        .then((d) => d.url || null)
+        .catch(() => null));
+    }
+    return spotifyPhotos.get(id);
+  }
+
   function paintAvatar(img, empty, p) {
+    img.dataset.for = p.id;
     const url = photoUrl(p);
     img.hidden = !url;
     empty.hidden = !!url;
-    if (url) { img.src = url; img.alt = nameOf(p); }
-    else empty.textContent = (nameOf(p).trim()[0] || "?").toUpperCase();
+    if (url) { img.src = url; img.alt = nameOf(p); return; }
+    empty.textContent = (nameOf(p).trim()[0] || "?").toUpperCase();
+    if (!p.spotify_artist_id) return;
+    // Mientras llega se ve la inicial; si en el medio se pintó otro perfil
+    // en el mismo lugar, no se pisa.
+    spotifyPhoto(p.spotify_artist_id).then((found) => {
+      if (!found || img.dataset.for !== p.id) return;
+      img.src = found; img.alt = nameOf(p);
+      img.hidden = false; empty.hidden = true;
+    });
   }
 
   // ---------- Sesión ----------
@@ -147,6 +172,14 @@
       setMsg($("loginMsg"), "No pudimos cargar tu perfil. Escribinos para revisarlo.", true);
       return;
     }
+    // Artista inactivo: no entra (normalmente ni llega acá, porque su cuenta
+    // está bloqueada; esto cubre una sesión que quedó abierta).
+    if (data.role !== "admin" && data.active === false) {
+      await db.auth.signOut();
+      showView("login");
+      setMsg($("loginMsg"), INACTIVE_MSG, true);
+      return;
+    }
     me = data;
     const admin = me.role === "admin";
     $("tabs").hidden = !admin;
@@ -166,8 +199,10 @@
     const { data, error } = await db.auth.signInWithPassword({ email, password });
     $("loginSubmit").disabled = false;
     if (error) {
+      const banned = error.code === "user_banned" || /banned/i.test(error.message || "");
       setMsg($("loginMsg"), error.message === "Invalid login credentials"
         ? "El mail o la contraseña no coinciden."
+        : banned ? INACTIVE_MSG
         : "No pudimos iniciar sesión. Probá de nuevo en un momento.", true);
       return;
     }
@@ -298,6 +333,9 @@
     $("passwordForm").hidden = !own;
     // Borrar: solo el administrador, y nunca su cuenta ni la de otro administrador.
     $("dangerZone").hidden = !(admin && !own && p.role !== "admin");
+    // Activo / inactivo: también solo el administrador, sobre artistas.
+    $("accessZone").hidden = !(admin && !own && p.role !== "admin");
+    paintAccess(p);
 
     setMsg($("profileMsg"), "");
     setMsg($("passwordMsg"), "");
@@ -431,6 +469,75 @@
   });
   $("backToArtists").addEventListener("click", () => openTab("artists"));
 
+  // ---------- Activo / inactivo ----------
+  // Inactivo: la cuenta queda bloqueada y no entra al portal, pero no se
+  // borra nada (netlify/functions/portal-artist-access.js).
+  const isActive = (p) => p.active !== false;
+  function paintAccess(p) {
+    const on = isActive(p);
+    $("accessState").textContent = on ? "Activo" : "Inactivo";
+    $("accessState").className = `chip ${on ? "chip-on" : "chip-off"}`;
+    $("accessHint").textContent = on
+      ? "Puede entrar al portal. Si lo pasás a inactivo, no va a poder entrar, pero no se borra nada: cuando vuelva, lo reactivás y entra con su misma contraseña."
+      : "No puede entrar al portal. Sus datos, letras, lanzamientos y carpetas siguen guardados. Reactivalo cuando vuelva a trabajar con ZECHE GRUV.";
+    $("accessBtn").textContent = on ? "Pasar a inactivo" : "Reactivar";
+    $("accessBtn").className = on ? "btn btn-danger" : "btn btn-primary";
+    setMsg($("accessMsg"), "");
+  }
+
+  async function setAccess(target, active) {
+    const { data: { session } } = await db.auth.getSession();
+    const res = await fetch("/.netlify/functions/portal-artist-access", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+      body: JSON.stringify({ id: target.id, active }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || "No pudimos cambiar el estado. Probá de nuevo.");
+    return data.profile || { ...target, active };
+  }
+
+  $("accessBtn").addEventListener("click", async () => {
+    const target = viewing;
+    if (isActive(target)) {
+      // Pasar a inactivo siempre pide confirmación.
+      $("accessDialogTitle").textContent = `¿Pasar a ${nameOf(target)} a inactivo?`;
+      setMsg($("accessDialogMsg"), "");
+      $("accessDialog").showModal();
+      $("accessCancelBtn").focus();
+      return;
+    }
+    $("accessBtn").disabled = true;
+    setMsg($("accessMsg"), "Reactivando…");
+    try {
+      const updated = await setAccess(target, true);
+      if (viewing && viewing.id === target.id) { viewing = updated; paintAccess(updated); }
+      setMsg($("accessMsg"), `${nameOf(target)} ya puede volver a entrar con su misma contraseña.`);
+    } catch (err) {
+      setMsg($("accessMsg"), err.message, true);
+    } finally {
+      $("accessBtn").disabled = false;
+    }
+  });
+  $("accessCancelBtn").addEventListener("click", () => $("accessDialog").close());
+  $("accessConfirmBtn").addEventListener("click", async () => {
+    const target = viewing;
+    $("accessConfirmBtn").disabled = true;
+    $("accessCancelBtn").disabled = true;
+    setMsg($("accessDialogMsg"), "Guardando…");
+    try {
+      const updated = await setAccess(target, false);
+      $("accessDialog").close();
+      if (viewing && viewing.id === target.id) { viewing = updated; paintAccess(updated); }
+      setMsg($("accessMsg"), `${nameOf(target)} quedó inactivo. Ya no puede entrar al portal.`);
+    } catch (err) {
+      setMsg($("accessDialogMsg"), err.message, true);
+    } finally {
+      $("accessConfirmBtn").disabled = false;
+      $("accessCancelBtn").disabled = false;
+    }
+  });
+
   // Borrar el perfil de un artista: siempre pide confirmación antes
   // (netlify/functions/portal-delete-artist.js).
   $("deleteArtistBtn").addEventListener("click", () => {
@@ -533,12 +640,15 @@
     const { data, error } = await db.from("profiles").select("*").order("display_name", { nullsFirst: false });
     if (error) { status.textContent = "No pudimos cargar la lista. Recargá la página."; return; }
 
-    const artists = data.filter((p) => p.role !== "admin").length;
-    status.textContent = artists === 1 ? "1 artista con cuenta." : `${artists} artistas con cuenta.`;
+    const artists = data.filter((p) => p.role !== "admin");
+    const inactive = artists.filter((p) => !isActive(p)).length;
+    status.textContent = (artists.length === 1 ? "1 artista con cuenta" : `${artists.length} artistas con cuenta`)
+      + (inactive ? ` (${inactive} ${inactive === 1 ? "inactivo" : "inactivos"}).` : ".");
 
     tbody.replaceChildren(...data.map((p) => {
       const tr = document.createElement("tr");
       tr.tabIndex = 0;
+      if (p.role !== "admin" && !isActive(p)) tr.classList.add("row-inactive");
 
       const photoCell = document.createElement("td");
       const img = document.createElement("img");
@@ -561,6 +671,7 @@
         cell(p.email),
         p.role === "admin" ? cell("Administrador", "tag-admin") : cell(FORMAT_LABEL[p.format]),
         cell(p.spotify_artist_id ? "Vinculado" : "Sin vincular"),
+        p.role === "admin" ? cell("—") : cell(isActive(p) ? "Activo" : "Inactivo", isActive(p) ? "tag-on" : "tag-off"),
       );
 
       const open = () => { if (p.id === me.id) openTab("me"); else showProfile(p); };
