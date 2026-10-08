@@ -692,31 +692,52 @@
     .nav-links a.nav-tickets { color: var(--orange-soft); opacity: 1; }
     .nav-links a.nav-tickets:hover { color: var(--cream); }
 
-    .ticket-float {
+    :root { --promo-h: 0px; }
+    body.has-promo { --promo-h: calc(46px + env(safe-area-inset-top, 0px)); padding-top: var(--promo-h); }
+    body.has-promo nav { top: var(--promo-h); }
+
+    .promo-bar {
       position: fixed;
-      right: 20px;
-      bottom: calc(20px + env(safe-area-inset-bottom, 0px));
-      z-index: 45;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 60;
+      height: var(--promo-h);
+      padding: env(safe-area-inset-top, 0px) 4vw 0;
       display: flex;
       align-items: center;
-      gap: 12px;
-      padding: 9px 18px 9px 10px;
+      justify-content: center;
+      gap: 14px;
       background: var(--orange);
+      color: var(--brown-dark);
+      white-space: nowrap;
+      overflow: hidden;
+      transition: background .25s ease;
+    }
+    .promo-bar[hidden] { display: none; }
+    .promo-bar:hover { background: var(--orange-soft); }
+    .promo-bar:focus-visible { outline: 2px solid var(--cream); outline-offset: -4px; }
+    .promo-when { font-family: "DM Mono", monospace; font-size: 11px; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; }
+    .promo-venue { font-family: "DM Mono", monospace; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; }
+    .promo-venue:empty { display: none; }
+    .promo-name { font-size: 14px; font-weight: 800; letter-spacing: -.02em; color: var(--cream); }
+    .promo-lineup { font-family: "DM Mono", monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+    .promo-cta {
+      flex: none;
+      padding: 7px 14px;
+      background: var(--brown-dark);
       color: var(--cream);
       border-radius: 999px;
-      box-shadow: 0 14px 34px -10px rgba(0, 0, 0, .7);
-      transition: transform .35s cubic-bezier(.16,1,.3,1), opacity .3s ease, background .25s ease;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: -.01em;
     }
-    .ticket-float[hidden] { display: none; }
-    .ticket-float:hover { background: var(--orange-soft); transform: translateY(-3px); }
-    .ticket-float:focus-visible { outline: 2px solid var(--cream); outline-offset: 3px; }
-    .ticket-float.is-away { opacity: 0; transform: translateY(16px); pointer-events: none; }
-    .ticket-float img { width: 38px; height: 42px; object-fit: contain; }
-    .ticket-float-text { display: flex; flex-direction: column; gap: 3px; line-height: 1.1; }
-    .ticket-float-date { font-family: "DM Mono", monospace; font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--brown-dark); }
-    .ticket-float-cta { font-size: 15px; font-weight: 800; letter-spacing: -.02em; }
-    @media (max-width: 800px) {
-      .ticket-float { left: 16px; right: 16px; justify-content: center; }
+    @media (max-width: 1180px) { .promo-lineup { display: none; } }
+    @media (max-width: 640px) {
+      .promo-name, .promo-venue { display: none; }
+      .promo-bar { justify-content: space-between; gap: 10px; padding-left: 16px; padding-right: 10px; }
+      .promo-when { font-size: 10px; letter-spacing: .1em; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+      .promo-cta { font-size: 12.5px; padding: 7px 12px; }
     }
 
     .next-event {
@@ -3859,14 +3880,15 @@
     </button>
   </nav>
 
-  <!-- ================= ZG PASS: botón flotante de entradas =================
-       Aparece solo mientras haya un evento a la venta (ver script al final). -->
-  <a class="ticket-float" id="ticketFloat" href="/entradas" hidden>
-    <img src="assets/camps/zeche-gruv-shows-logo-mini.webp" alt="" width="87" height="96" decoding="async">
-    <span class="ticket-float-text">
-      <span class="ticket-float-date" id="ticketFloatDate"></span>
-      <span class="ticket-float-cta"><span data-i18n="tickets_cta">Conseguí tu entrada</span> →</span>
-    </span>
+  <!-- ================= ZG PASS: franja de entradas =================
+       Fija arriba de todo, se ve apenas se entra a la página. Aparece solo
+       mientras haya un evento a la venta (ver script al final). -->
+  <a class="promo-bar" id="promoBar" href="/entradas" hidden>
+    <span class="promo-when" id="promoWhen"></span>
+    <span class="promo-venue" id="promoVenue"></span>
+    <span class="promo-name" id="promoName"></span>
+    <span class="promo-lineup" id="promoLineup"></span>
+    <span class="promo-cta"><span data-i18n="tickets_cta">Conseguí tu entrada</span> →</span>
   </a>
 
   <!-- ================= VISITA AL ESTUDIO: formulario previo a la agenda ================= -->
@@ -4372,7 +4394,7 @@
       </article>
       <div class="events-lineup">
         <div>
-          <div class="camp-eyebrow" data-i18n="events_shows_label">Shows</div>
+          <div class="camp-eyebrow" data-i18n="events_shows_label">Shows anteriores</div>
           <ul class="camp-lineup-list">
             <li><a href="artistas/kires.html">Kires</a></li>
             <li><a href="artistas/bhae.html">Bhae</a></li>
@@ -5377,7 +5399,7 @@
         camp_video_3: "Se come rico",
         events_eyebrow: "Eventos",
         events_title: "Shows y open mics",
-        events_shows_label: "Shows",
+        events_shows_label: "Shows anteriores",
         events_openmic_label: "Open mic · algunos de los que se presentaron",
         events_text: "El open mic es nuestra forma de escuchar nuevos talentos. Es el espacio que desde ZECHE GRUV les damos a los artistas que trabajan con nosotros para que se expresen, y una puerta abierta para los que todavía no nos conocen: vení, conectate y mostrá lo que hacés. Si cantás en el open mic, podés ser parte del próximo show.",
         sl_services: "Servicios y valores",
@@ -5541,7 +5563,7 @@
         camp_video_3: "Good food too",
         events_eyebrow: "Events",
         events_title: "Shows & open mics",
-        events_shows_label: "Shows",
+        events_shows_label: "Past shows",
         events_openmic_label: "Open mic · some of the artists who performed",
         events_text: "The open mic is how we discover new talent. It's the space ZECHE GRUV gives the artists we work with to express themselves, and an open door for those who don't know us yet: come by, connect and show what you do. If you sing at the open mic, you could be part of the next show.",
         sl_services: "Services & rates",
@@ -5705,7 +5727,7 @@
         camp_video_3: "Come-se bem",
         events_eyebrow: "Eventos",
         events_title: "Shows e open mics",
-        events_shows_label: "Shows",
+        events_shows_label: "Shows anteriores",
         events_openmic_label: "Open mic · alguns dos que se apresentaram",
         events_text: "O open mic é o nosso jeito de ouvir novos talentos. É o espaço que a ZECHE GRUV oferece aos artistas que trabalham com a gente para se expressarem, e uma porta aberta para quem ainda não nos conhece: vem, se conecta e mostra o que você faz. Se você cantar no open mic, pode fazer parte do próximo show.",
         sl_services: "Serviços e valores",
@@ -5869,7 +5891,7 @@
         camp_video_3: "On mange bien",
         events_eyebrow: "Événements",
         events_title: "Concerts et open mics",
-        events_shows_label: "Concerts",
+        events_shows_label: "Concerts précédents",
         events_openmic_label: "Open mic · quelques artistes qui sont montés sur scène",
         events_text: "L'open mic, c'est notre façon de découvrir de nouveaux talents. C'est l'espace que ZECHE GRUV offre aux artistes avec qui on travaille pour s'exprimer, et une porte ouverte pour ceux qui ne nous connaissent pas encore : viens, rencontre du monde et montre ce que tu fais. Si tu chantes à l'open mic, tu peux faire partie du prochain concert.",
         sl_services: "Services et tarifs",
@@ -6033,7 +6055,7 @@
         camp_video_3: "Si mangia bene",
         events_eyebrow: "Eventi",
         events_title: "Live e open mic",
-        events_shows_label: "Live",
+        events_shows_label: "Live precedenti",
         events_openmic_label: "Open mic · alcuni degli artisti che si sono esibiti",
         events_text: "L'open mic è il nostro modo di scoprire nuovi talenti. È lo spazio che ZECHE GRUV offre agli artisti con cui lavoriamo per esprimersi, e una porta aperta per chi ancora non ci conosce: vieni, entra in contatto e mostra quello che fai. Se canti all'open mic, puoi far parte del prossimo live.",
         sl_services: "Servizi e prezzi",
@@ -6197,7 +6219,7 @@
         camp_video_3: "Gut gegessen wird auch",
         events_eyebrow: "Events",
         events_title: "Shows & Open Mics",
-        events_shows_label: "Shows",
+        events_shows_label: "Frühere Shows",
         events_openmic_label: "Open Mic · einige der Artists, die aufgetreten sind",
         events_text: "Das Open Mic ist unsere Art, neue Talente zu entdecken. Es ist der Raum, den ZECHE GRUV den Künstlern gibt, mit denen wir arbeiten, damit sie sich ausdrücken können, und eine offene Tür für alle, die uns noch nicht kennen: Komm vorbei, knüpf Kontakte und zeig, was du machst. Wenn du beim Open Mic singst, kannst du bei der nächsten Show dabei sein.",
         sl_services: "Leistungen & Preise",
@@ -6361,7 +6383,7 @@
         camp_video_3: "И вкусно едим",
         events_eyebrow: "События",
         events_title: "Концерты и open mic",
-        events_shows_label: "Концерты",
+        events_shows_label: "Прошедшие концерты",
         events_openmic_label: "Open mic · некоторые из выступавших",
         events_text: "Open mic — это наш способ находить новые таланты. Это пространство, которое ZECHE GRUV даёт артистам, с которыми мы работаем, чтобы они могли выразить себя, и открытая дверь для тех, кто нас ещё не знает: приходи, знакомься и покажи, что ты делаешь. Если споёшь на open mic, можешь попасть в следующий концерт.",
         sl_services: "Услуги и цены",
@@ -7221,7 +7243,7 @@
           card.hidden = false;
 
           if (ev.sold_out) return;
-          const cta = document.querySelector(".ticket-float-cta [data-i18n]").textContent;
+          const cta = document.querySelector(".promo-cta [data-i18n]").textContent;
 
           // En la portada, un botón más al lado de los otros dos.
           const heroButtons = document.querySelector(".hero-buttons");
@@ -7233,20 +7255,15 @@
             heroButtons.append(heroBtn);
           }
 
-          // Botón flotante: se corre mientras se ven los botones de la portada
-          // o la tarjeta de la próxima fecha, para no taparlos ni repetirlos.
-          const float = document.getElementById("ticketFloat");
-          float.href = url;
-          document.getElementById("ticketFloatDate").textContent = `${fmtDate(ev.starts_at)} · ${ev.venue_name || ""}`;
-          float.hidden = false;
-          if ("IntersectionObserver" in window) {
-            const inView = new Set();
-            const io = new IntersectionObserver((entries) => {
-              entries.forEach((e) => (e.isIntersecting ? inView.add(e.target) : inView.delete(e.target)));
-              float.classList.toggle("is-away", inView.size > 0);
-            }, { threshold: .2 });
-            [heroButtons, card].filter(Boolean).forEach((el) => io.observe(el));
-          }
+          // Franja fija arriba de todo.
+          const bar = document.getElementById("promoBar");
+          bar.href = url;
+          document.getElementById("promoWhen").textContent = when;
+          document.getElementById("promoVenue").textContent = ev.venue_name || "";
+          document.getElementById("promoName").textContent = ev.name;
+          document.getElementById("promoLineup").textContent = (ev.lineup || []).join(" · ");
+          bar.hidden = false;
+          document.body.classList.add("has-promo");
         })
         .catch(() => {});
     })();
