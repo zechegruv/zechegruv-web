@@ -2,3 +2,7 @@
 .netlify/
 node_modules/
 .DS_Store
+
+# Archivos de trabajo que no van a la web
+Claude outputs/
+diseno/manuales/
