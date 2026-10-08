@@ -11,7 +11,7 @@
   const TITLES = { referencias: "Referencias", letras: "Letras", exports: "Exports", masters: "Masters", membresia: "Membresía" };
   const EMPTY = {
     referencias: "Todavía no hay referencias ni maquetas cargadas.",
-    letras: "Todavía no hay letras cargadas.",
+    letras: "Todavía no hay archivos de letras subidos.",
     exports: "Todavía no hay exports cargados.",
     masters: "Todavía no hay masters cargados.",
     membresia: "Todavía no hay documentos cargados.",
@@ -158,6 +158,12 @@
     list.replaceChildren();
     $("filesTools").hidden = true;
     $("uploadBox").hidden = true;
+
+    // Letras: arriba, el cuaderno para escribir en el portal (letras.js).
+    const lyricsHere = section === "letras" && !!window.ZGLyrics;
+    $("lyricsCard").hidden = !lyricsHere;
+    $("filesSubhead").hidden = !lyricsHere;
+    if (lyricsHere) window.ZGLyrics.load(who);
 
     // Si la sección ya se trajo (al iniciar sesión o en una visita anterior),
     // se muestra al instante; si tiene unos minutos, se actualiza por detrás

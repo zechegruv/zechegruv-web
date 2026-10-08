@@ -1785,3 +1785,264 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 @media (max-width: 640px) {
   .songs-sub { margin-top: 0; }
 }
+
+/* ---------- Cuaderno de letras ---------- */
+
+.lyrics-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 6px;
+}
+
+.lyrics-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.lyrics-head .card-title { margin-bottom: 0; }
+.lyrics-sub { margin-top: -4px; max-width: 560px; }
+.lyrics-card .muted:empty { display: none; }
+
+.lyrics-list {
+  list-style: none;
+  border: 1px solid var(--border);
+}
+
+.lyrics-list:empty { display: none; }
+.lyrics-list li + li { border-top: 1px solid var(--border); }
+
+.lyric-item {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 5px 18px;
+  padding: 15px 18px;
+  border: 0;
+  background: none;
+  color: var(--cream);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background .2s ease;
+}
+
+.lyric-item:hover { background: rgba(255, 244, 220, .05); }
+.lyric-item:hover b { color: var(--orange-soft); }
+
+.lyric-item:focus-visible {
+  outline: 2px solid var(--orange-soft);
+  outline-offset: -2px;
+}
+
+.lyric-item b {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -.01em;
+  overflow-wrap: anywhere;
+  transition: color .2s ease;
+}
+
+.lyric-preview {
+  grid-column: 1;
+  font-size: 13px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lyric-date {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: center;
+  font-family: "DM Mono", monospace;
+  font-size: 9px;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.files-subhead { margin: 34px 0 10px; }
+
+/* Editor */
+
+.lyric-editor { max-width: 780px; }
+.lyric-editor .eyebrow { margin-bottom: 10px; }
+
+.lyric-title {
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+  background: none;
+  color: var(--cream);
+  font-family: inherit;
+  font-size: clamp(28px, 4.4vw, 44px);
+  font-weight: 800;
+  letter-spacing: -.045em;
+  line-height: 1.1;
+  padding: 4px 0 14px;
+}
+
+.lyric-title::placeholder { color: rgba(201, 169, 128, .45); }
+.lyric-title:focus-visible { outline: none; border-bottom-color: var(--orange-soft); }
+
+.lyric-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 14px 0 24px;
+}
+
+.lyric-bar .btn { padding: 10px 14px; }
+
+.lyric-save {
+  font-family: "DM Mono", monospace;
+  font-size: 9px;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.lyric-save.is-error {
+  font-family: inherit;
+  font-size: 12px;
+  letter-spacing: 0;
+  text-transform: none;
+  color: #ff9a8a;
+}
+
+.lyric-parts {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.lyric-part {
+  border: 1px solid var(--border);
+  background: var(--brown-dark);
+  transition: border-color .2s ease;
+}
+
+.lyric-part:focus-within { border-color: rgba(245, 166, 35, .55); }
+
+.lyric-part-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 6px 6px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.lyric-kind-wrap { position: relative; display: inline-flex; align-items: center; }
+
+.lyric-kind-wrap::after {
+  content: "▾";
+  position: absolute;
+  right: 0;
+  font-size: 10px;
+  color: var(--orange-soft);
+  pointer-events: none;
+}
+
+.lyric-kind {
+  appearance: none;
+  -webkit-appearance: none;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  padding: 8px 18px 8px 0;
+  font-family: "DM Mono", monospace;
+  font-size: 10px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--orange-soft);
+  cursor: pointer;
+  field-sizing: content;
+}
+
+.lyric-kind option { color: #241105; text-transform: none; letter-spacing: 0; }
+
+.lyric-kind:focus-visible,
+.lyric-tool:focus-visible {
+  outline: 2px solid var(--orange-soft);
+  outline-offset: 2px;
+}
+
+.lyric-tools { display: flex; gap: 2px; }
+
+.lyric-tool {
+  min-width: 34px;
+  height: 34px;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font-size: 14px;
+  cursor: pointer;
+  transition: color .2s ease, background .2s ease;
+}
+
+.lyric-tool:hover:not(:disabled) { color: var(--cream); background: rgba(255, 244, 220, .07); }
+.lyric-tool:disabled { opacity: .25; cursor: default; }
+
+.lyric-tool.is-armed {
+  padding: 0 10px;
+  font-family: "DM Mono", monospace;
+  font-size: 9px;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: #ff9a8a;
+}
+
+.lyric-text {
+  display: block;
+  width: 100%;
+  min-height: 96px;
+  border: 0;
+  background: none;
+  color: var(--cream);
+  font-family: inherit;
+  font-size: 16px;
+  line-height: 1.75;
+  padding: 14px 16px 18px;
+  resize: none;
+  overflow: hidden;
+}
+
+.lyric-text:focus-visible { outline: none; }
+.lyric-text::placeholder { color: rgba(201, 169, 128, .45); }
+
+.lyric-add-label {
+  margin: 22px 0 10px;
+  font-family: "DM Mono", monospace;
+  font-size: 9px;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.lyric-add { display: flex; flex-wrap: wrap; gap: 8px; }
+.lyric-add .btn { padding: 10px 13px; }
+
+.lyric-foot {
+  margin-top: 36px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+
+.lyric-delete.is-armed { color: #ff9a8a; }
+
+@media (max-width: 640px) {
+  .lyric-item { grid-template-columns: minmax(0, 1fr); }
+  .lyric-date { grid-column: 1; grid-row: auto; }
+  .lyric-part-head { padding-left: 12px; }
+  .lyric-text { padding: 12px 13px 16px; }
+}

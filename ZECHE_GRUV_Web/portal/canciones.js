@@ -234,5 +234,13 @@
     $("songsDoneList").innerHTML = done.map(doneSong).join("");
   }
 
-  window.ZGSongs = { load };
+  // Títulos de sus canciones (para sugerirlos al escribir una letra).
+  function titles(profileId) {
+    const hit = cache.get(profileId);
+    const data = hit && hit.data;
+    if (!data || !data.configured) return [];
+    return [...(data.active || []), ...(data.done || [])].map((s) => s.title).filter(Boolean);
+  }
+
+  window.ZGSongs = { load, titles };
 })();

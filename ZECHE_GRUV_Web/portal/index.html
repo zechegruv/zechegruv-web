@@ -347,6 +347,20 @@
           </div>
         </header>
         <div class="chips" id="filesChips"></div>
+
+        <!-- Cuaderno de letras (solo en Letras, letras.js) -->
+        <div class="card lyrics-card" id="lyricsCard" hidden>
+          <div class="lyrics-head">
+            <h2 class="card-title">Cuaderno de letras</h2>
+            <button class="btn btn-primary" type="button" id="lyricsNew">+ Nueva letra</button>
+          </div>
+          <p class="hint lyrics-sub" id="lyricsSub"></p>
+          <p class="msg" id="lyricsMsg" role="status"></p>
+          <p class="muted" id="lyricsStatus"></p>
+          <ul class="lyrics-list" id="lyricsList"></ul>
+        </div>
+        <h2 class="card-title files-subhead" id="filesSubhead" hidden>Archivos de letras</h2>
+
         <p class="muted" id="filesStatus"></p>
         <!-- Subir archivos (solo Referencias y Letras) -->
         <div class="card upload" id="uploadBox" hidden>
@@ -383,6 +397,24 @@
           </div>
           <button class="player-btn player-close" type="button" id="playerClose" aria-label="Cerrar reproductor">✕</button>
           <audio id="playerAudio" preload="none"></audio>
+        </div>
+      </div>
+
+      <!-- Editor de una letra del cuaderno (letras.js) -->
+      <div id="panel-lyric" class="lyric-editor" hidden>
+        <button class="link-btn back-link" type="button" id="lyricBack">← Volver a Letras</button>
+        <div class="eyebrow" id="lyricEyebrow"></div>
+        <input class="lyric-title" type="text" id="lyricTitle" maxlength="120" placeholder="Título de la canción" aria-label="Título de la canción" list="lyricSongs" autocomplete="off">
+        <datalist id="lyricSongs"></datalist>
+        <div class="lyric-bar">
+          <span class="lyric-save" id="lyricSave" role="status"></span>
+          <button class="btn" type="button" id="lyricCopy">Copiar letra</button>
+        </div>
+        <div class="lyric-parts" id="lyricSections"></div>
+        <div class="lyric-add-label">Agregar parte</div>
+        <div class="lyric-add" id="lyricAdd"></div>
+        <div class="lyric-foot">
+          <button class="link-btn lyric-delete" type="button" id="lyricDelete">Borrar esta letra</button>
         </div>
       </div>
 
@@ -784,6 +816,7 @@
   <script src="distribucion.js"></script>
   <script src="archivos.js"></script>
   <script src="canciones.js"></script>
+  <script src="letras.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
   <script src="/pass/ticket.js"></script>
   <script src="zgpass.js"></script>

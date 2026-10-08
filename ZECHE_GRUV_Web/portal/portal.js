@@ -44,7 +44,7 @@
   let recovering = linkType === "invite" || linkType === "recovery";
 
   // ---------- Utilidades ----------
-  const PANELS = ["profile", "artists", "releases", "release", "files", "pass"];
+  const PANELS = ["profile", "artists", "releases", "release", "files", "lyric", "pass"];
   function showPanel(name) {
     PANELS.forEach((p) => { $(`panel-${p}`).hidden = p !== name; });
     window.scrollTo(0, 0);
