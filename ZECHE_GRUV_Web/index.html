@@ -3694,6 +3694,50 @@
 
       .camp-media-4 img:nth-child(even) { --ty: 40px; }
     }
+    /* ---------- Portada en el celular: primero el sol, el logo y el estudio ----------
+       En pantallas chicas, la primera vista es solo el logo sobre la foto
+       del estudio. El título, el texto y los botones quedan debajo y se
+       encienden al scrollear. En la compu .hero-stage no cambia nada. */
+    .hero-stage { display: contents; }
+    .hero-cue { display: none; }
+
+    @media (max-width: 800px) {
+      .hero { min-height: 0; justify-content: flex-start; }
+      .hero-stage {
+        display: flex;
+        flex-direction: column;
+        min-height: calc(100svh - 105px);
+      }
+      .hero-stage .hero-logo-wrap { margin-top: auto; margin-bottom: auto; }
+      .hero-bg {
+        bottom: auto;
+        height: 100svh;
+        -webkit-mask-image: linear-gradient(180deg, #000 72%, transparent 100%);
+        mask-image: linear-gradient(180deg, #000 72%, transparent 100%);
+      }
+      .hero-bg img { opacity: calc(.45 * (1 - var(--hero-p, 0))); }
+      .hero-cue {
+        display: block;
+        text-align: center;
+        color: var(--orange-soft);
+        font-size: 18px;
+        padding-bottom: 14px;
+        opacity: calc(1 - var(--hero-p, 0) * 6);
+        animation: zgCue 2.2s ease-in-out infinite;
+      }
+      .hero-bottom { padding-top: 48px; }
+      .js-motion .hero-copy {
+        opacity: clamp(0, calc(var(--hero-p, 0) * 5 - .15), 1);
+        transform: translateY(calc((1 - min(1, var(--hero-p, 0) * 5)) * 24px));
+      }
+    }
+
+    @keyframes zgCue { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(6px); } }
+
+    @media (prefers-reduced-motion: reduce) {
+      .js-motion .hero-copy { opacity: 1; transform: none; }
+      .hero-cue { animation: none; }
+    }
   </style>
 </head>
 
@@ -3806,6 +3850,9 @@
            srcset="assets/hero/hero-provisoria-960.webp 960w, assets/hero/hero-provisoria.webp 1920w"
            sizes="100vw" alt="" fetchpriority="high" decoding="async">
     </div>
+    <!-- En el celular, el sol, el logo y el estudio ocupan la primera pantalla;
+         el texto aparece recién al scrollear. En la compu no cambia nada. -->
+    <div class="hero-stage">
     <div class="hero-top">
       <div class="eyebrow" data-i18n="hero_eyebrow">Sello Discográfico Independiente</div>
 
@@ -3836,6 +3883,8 @@
         </div>
 
       </div>
+    </div>
+    <div class="hero-cue" aria-hidden="true">↓</div>
     </div>
 
     <div class="hero-bottom">
