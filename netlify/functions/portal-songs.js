@@ -139,7 +139,19 @@ function nextSession(tasks, songs, now = new Date()) {
 const norm = (s) => String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/\s+/g, " ").trim();
 
 // Busca la ficha en Clientes Zeche Gruv: primero por mail, después por nombre.
+// Lo encontrado se recuerda unos minutos (mientras la function siga activa)
+// para no recorrer la base de clientes en cada visita.
+const clientCache = new Map(); // "mail|nombre" -> { id, at }
 async function findClient(profile) {
+  const key = [profile.email, profile.display_name, profile.full_name].join("|");
+  const hit = clientCache.get(key);
+  if (hit && Date.now() - hit.at < 10 * 60 * 1000) return hit.id;
+  const id = await searchClient(profile);
+  clientCache.set(key, { id, at: Date.now() });
+  return id;
+}
+
+async function searchClient(profile) {
   const clients = await notionQuery(CLIENTS_DS, undefined);
   const email = norm(profile.email);
   const names = [profile.display_name, profile.full_name].map(norm).filter(Boolean);
@@ -199,8 +211,10 @@ exports.handler = async (event) => {
   }
 
   if (!notionToken()) return json(500, { error: "Falta NOTION_TOKEN en las variables de entorno de Netlify." });
-  const rows = await supabase(`/rest/v1/artist_private?profile_id=eq.${artistId}&select=notion_page_id`, serviceKey);
-  const profile = await supabase(`/rest/v1/profiles?id=eq.${artistId}&select=email,display_name,full_name`, serviceKey);
+  const [rows, profile] = await Promise.all([
+    supabase(`/rest/v1/artist_private?profile_id=eq.${artistId}&select=notion_page_id`, serviceKey),
+    supabase(`/rest/v1/profiles?id=eq.${artistId}&select=email,display_name,full_name`, serviceKey),
+  ]);
   if (!profile || !profile[0]) return json(500, { error: BAD_KEY });
 
   try {

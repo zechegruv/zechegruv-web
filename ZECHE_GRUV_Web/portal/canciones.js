@@ -130,6 +130,32 @@
     $("welcomeBody").innerHTML = html;
   }
 
+  // ---------- Caché ----------
+  // Notion tarda, así que lo de cada perfil se guarda mientras dure la sesión
+  // en esta pestaña: se pide al iniciar sesión y la próxima vez que se abre el
+  // perfil se muestra al instante (y se actualiza por detrás si pasaron unos
+  // minutos).
+  const FRESH_FOR = 2 * 60 * 1000;
+  const cache = new Map(); // id del perfil -> { data, at, promise }
+
+  function fetchSongs(profile) {
+    const hit = cache.get(profile.id);
+    if (hit && hit.promise) return hit.promise;
+    const own = profile.id === P.me.id;
+    const promise = (async () => {
+      const { data: { session } } = await db.auth.getSession();
+      const query = own ? "" : `?artist=${encodeURIComponent(profile.id)}`;
+      const res = await fetch(`/.netlify/functions/portal-songs${query}`, { headers: { Authorization: `Bearer ${session.access_token}` } });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "error");
+      cache.set(profile.id, { data, at: Date.now(), promise: null });
+      return data;
+    })();
+    cache.set(profile.id, { ...(hit || {}), promise });
+    promise.catch(() => { const h = cache.get(profile.id); if (h && h.promise === promise) cache.set(profile.id, { ...h, promise: null }); });
+    return promise;
+  }
+
   const countLabel = (n) => (n === 1 ? "1 canción" : `${n} canciones`);
 
   async function load(profile) {
@@ -151,13 +177,22 @@
     $("songsCount").textContent = "";
     status.textContent = "Cargando…";
 
+    // Lo ya traído se muestra al instante y se actualiza por detrás.
+    const hit = cache.get(profile.id);
+    if (hit && hit.data) {
+      paint(profile, hit.data);
+      if (Date.now() - hit.at > FRESH_FOR) {
+        const shown = JSON.stringify(hit.data);
+        fetchSongs(profile).then((newer) => {
+          if (ticket === current && JSON.stringify(newer) !== shown) paint(profile, newer);
+        }).catch(() => {});
+      }
+      return;
+    }
+
     let data;
     try {
-      const { data: { session } } = await db.auth.getSession();
-      const query = own ? "" : `?artist=${encodeURIComponent(profile.id)}`;
-      const res = await fetch(`/.netlify/functions/portal-songs${query}`, { headers: { Authorization: `Bearer ${session.access_token}` } });
-      data = await res.json();
-      if (!res.ok) throw new Error(data.error || "error");
+      data = await fetchSongs(profile);
     } catch (err) {
       if (ticket !== current) return;
       renderWelcome(profile, null);
@@ -167,6 +202,15 @@
       return;
     }
     if (ticket !== current) return;
+    paint(profile, data);
+  }
+
+  function paint(profile, data) {
+    const admin = P.me.role === "admin";
+    const own = profile.id === P.me.id;
+    const card = $("songsCard");
+    const status = $("songsStatus");
+    card.hidden = false;
     renderWelcome(profile, data.next || null);
 
     if (!data.configured) {

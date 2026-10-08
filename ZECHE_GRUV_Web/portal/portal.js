@@ -298,6 +298,9 @@
 
     // Tus canciones (canciones.js).
     if (window.ZGSongs) window.ZGSongs.load(p);
+    // Las carpetas de OneDrive se empiezan a traer ya, en segundo plano, para
+    // que Referencias, Exports, etc. abran al instante (archivos.js).
+    if (window.ZGFiles && !(p.id === me.id && admin)) window.ZGFiles.prefetch(p);
   }
 
   async function uploadPhoto(file) {
@@ -580,5 +583,9 @@
     backToProfile(profile) { if (profile && profile.id !== me.id) showProfile(profile); else if (me.role === "admin") openTab("me"); else showProfile(me); },
   };
 
-  start();
+  // Arranca cuando ya cargaron todos los módulos (canciones, archivos, etc.):
+  // si hay una sesión guardada, el perfil se abre enseguida y necesita que
+  // estén listos para empezar a traer las canciones y las carpetas.
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start);
+  else start();
 })();

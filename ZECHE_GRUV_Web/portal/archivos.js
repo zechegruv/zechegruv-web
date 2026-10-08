@@ -90,7 +90,50 @@
 
   const countLabel = (n) => (n === 1 ? "1 archivo" : `${n} archivos`);
 
-  async function open(sectionKey, who) {
+  // ---------- Caché de las carpetas ----------
+  // OneDrive tarda en responder, así que cada sección se pide una sola vez y
+  // queda guardada mientras dure la sesión en esta pestaña. Al iniciar sesión
+  // (o al abrir el perfil de un artista) se piden las 5 en segundo plano.
+  // Los links de descarga de OneDrive vencen, por eso lo guardado se usa
+  // como mucho 40 minutos.
+  const FRESH_FOR = 2 * 60 * 1000;
+  const MAX_AGE = 40 * 60 * 1000;
+  const cache = new Map(); // "perfil:sección" -> { data, at, promise }
+  const cacheKey = (sec, who) => `${who.id}:${sec}`;
+  const signature = (d) => JSON.stringify([d.configured, d.canUpload,
+    (d.files || []).map((f) => [f.name, f.modified, f.size]),
+    (d.groups || []).map((g) => [g.name, g.files.map((f) => [f.name, f.modified, f.size])])]);
+
+  function fetchSection(sec, who, force) {
+    const key = cacheKey(sec, who);
+    const hit = cache.get(key);
+    if (!force && hit && hit.promise) return hit.promise; // ya se está pidiendo
+    const promise = (async () => {
+      const { data: { session } } = await db.auth.getSession();
+      const params = new URLSearchParams({ section: sec });
+      if (who.id !== P.me.id) params.set("artist", who.id);
+      const res = await fetch(`/.netlify/functions/portal-files?${params}`, { headers: { Authorization: `Bearer ${session.access_token}` } });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "error");
+      cache.set(key, { data, at: Date.now(), promise: null });
+      return data;
+    })();
+    cache.set(key, { ...(hit || {}), promise });
+    // Si falla, queda lo que hubiera guardado antes.
+    promise.catch(() => { const h = cache.get(key); if (h && h.promise === promise) cache.set(key, { ...h, promise: null }); });
+    return promise;
+  }
+
+  function prefetch(who) {
+    if (!who) return;
+    Object.keys(TITLES).forEach((sec) => {
+      const hit = cache.get(cacheKey(sec, who));
+      if (hit && (hit.promise || (hit.data && Date.now() - hit.at < FRESH_FOR))) return;
+      fetchSection(sec, who).catch(() => {});
+    });
+  }
+
+  async function open(sectionKey, who, opts = {}) {
     section = sectionKey;
     profile = who;
     const ticket = ++current;
@@ -116,20 +159,34 @@
     $("filesTools").hidden = true;
     $("uploadBox").hidden = true;
 
+    // Si la sección ya se trajo (al iniciar sesión o en una visita anterior),
+    // se muestra al instante; si tiene unos minutos, se actualiza por detrás
+    // y se vuelve a dibujar solo si cambió algo.
+    const hit = cache.get(cacheKey(section, who));
     let data = null;
-    try {
-      const { data: { session } } = await db.auth.getSession();
-      const params = new URLSearchParams({ section });
-      if (who.id !== P.me.id) params.set("artist", who.id);
-      const res = await fetch(`/.netlify/functions/portal-files?${params}`, { headers: { Authorization: `Bearer ${session.access_token}` } });
-      data = await res.json();
-      if (!res.ok) throw new Error(data.error || "error");
-    } catch (err) {
-      if (ticket === current) status.textContent = "No pudimos cargar los archivos. Probá de nuevo en un momento.";
-      return;
+    if (!opts.fresh && hit && hit.data && Date.now() - hit.at < MAX_AGE) {
+      data = hit.data;
+      if (Date.now() - hit.at > FRESH_FOR) {
+        const shown = signature(data);
+        fetchSection(section, who, true).then((newer) => {
+          if (ticket === current && signature(newer) !== shown) paint(newer);
+        }).catch(() => {});
+      }
+    } else {
+      try {
+        data = await fetchSection(section, who, !!opts.fresh);
+      } catch (err) {
+        if (ticket === current) status.textContent = "No pudimos cargar los archivos. Probá de nuevo en un momento.";
+        return;
+      }
     }
     if (ticket !== current) return;
+    paint(data);
+  }
 
+  // Dibuja lo que devolvió la carpeta (o el aviso que corresponda).
+  function paint(data) {
+    const status = $("filesStatus");
     if (!data.configured) {
       status.textContent = P.me.role === "admin"
         ? "Este artista todavía no tiene cargada su carpeta de OneDrive. Pegá el link en su perfil."
@@ -277,7 +334,7 @@
     try {
       await uploadFile(file);
       if (section === where && profile === who) {
-        await open(where, who); // vuelve a listar para que aparezca el archivo nuevo
+        await open(where, who, { fresh: true }); // vuelve a listar (sin caché) para que aparezca el archivo nuevo
         P.setMsg($("uploadMsg"), `Listo: se subió ${file.name}.`);
       }
     } catch (err) {
@@ -373,5 +430,5 @@
 
   $("filesBack").addEventListener("click", () => P.backToProfile(profile));
 
-  window.ZGFiles = { open };
+  window.ZGFiles = { open, prefetch };
 })();
