@@ -168,6 +168,11 @@ function detectInitialLang() {
   }
 
   async function loadStats() {
+    // Sin perfil de Spotify todavía: no hay oyentes ni top canciones.
+    if (!artistId) {
+      tracksList?.closest(".artist-section")?.setAttribute("hidden", "");
+      return;
+    }
     const [liveStats, topTracks] = await Promise.all([loadLiveStats(), loadTopTracks()]);
 
     if (listenersBlock && listenersCount && typeof liveStats?.monthlyListeners === "number") {

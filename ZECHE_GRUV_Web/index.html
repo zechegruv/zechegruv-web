@@ -4425,7 +4425,7 @@
     grid.innerHTML = ARTISTS.map(a => `
       <a class="artist-card" href="artistas/${a.slug}.html">
         <div class="artist-photo-wrap">
-          <img class="artist-photo" src="https://i.scdn.co/image/${a.img}" alt="${a.name}" loading="lazy">
+          <img class="artist-photo" src="${a.photo || `https://i.scdn.co/image/${a.img}`}" alt="${a.name}" loading="lazy">
         </div>
         <div class="artist-name">${a.name}</div>
       </a>

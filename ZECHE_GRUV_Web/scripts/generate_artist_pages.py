@@ -26,8 +26,9 @@ BIOS_JSON = ROOT / "assets" / "data" / "artist-bios.json"
 TEMPLATE = ROOT / "scripts" / "artist-page-template.html"
 OUT_DIR = ROOT / "artistas"
 
+# photo (opcional): foto propia para artistas sin perfil de Spotify.
 ENTRY_RE = re.compile(
-    r'\{\s*name:\s*"([^"]+)",\s*id:\s*"([^"]+)",\s*img:\s*"([^"]+)"\s*\}'
+    r'\{\s*name:\s*"([^"]+)",\s*id:\s*"([^"]*)",\s*img:\s*"([^"]*)"(?:,\s*photo:\s*"([^"]*)")?\s*\}'
 )
 
 
@@ -41,11 +42,12 @@ def slugify(name: str) -> str:
 def load_artists():
     text = ARTISTS_JS.read_text(encoding="utf-8")
     artists = []
-    for name, spotify_id, img in ENTRY_RE.findall(text):
+    for name, spotify_id, img, photo in ENTRY_RE.findall(text):
         artists.append({
             "name": name,
             "id": spotify_id,
             "img": img,
+            "photo": photo,
             "slug": slugify(name),
         })
     return artists
@@ -72,7 +74,10 @@ def main():
             template
             .replace("{{NAME}}", a["name"])
             .replace("{{ID}}", a["id"])
-            .replace("{{IMG}}", a["img"])
+            .replace("{{PHOTO_URL}}", f'../{a["photo"]}' if a["photo"] else f'https://i.scdn.co/image/{a["img"]}')
+            .replace("{{SPOTIFY_BUTTON}}", (
+                f'        <a class="btn" href="https://open.spotify.com/artist/{a["id"]}" target="_blank" rel="noopener" data-i18n="btn_spotify">Escuchar en Spotify ↗</a>\n'
+                if a["id"] else ""))
             .replace("{{SLUG}}", a["slug"])
             .replace("{{BIO_JSON}}", bio_json)
         )

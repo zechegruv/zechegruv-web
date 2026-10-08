@@ -80,10 +80,16 @@
 
   // Foto: la que subió el artista o, si no hay, la de su perfil de Spotify
   // (sale del roster del sitio, que ya la tiene guardada).
+  // Si no tiene Spotify vinculado, se busca en el roster por nombre (artistas
+  // con foto propia, como Ailo).
+  const sameName = (x, y) => String(x || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim()
+    === String(y || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
   function photoUrl(p) {
     if (p.avatar_url) return p.avatar_url;
-    const inRoster = ROSTER.find((a) => a.id === p.spotify_artist_id);
-    return inRoster ? `https://i.scdn.co/image/${inRoster.img}` : null;
+    const inRoster = ROSTER.find((a) => a.id && a.id === p.spotify_artist_id)
+      || ROSTER.find((a) => a.photo && sameName(a.name, p.display_name));
+    if (!inRoster) return null;
+    return inRoster.photo ? `/${inRoster.photo}` : `https://i.scdn.co/image/${inRoster.img}`;
   }
 
   const nameOf = (p) => p.display_name || p.full_name || p.email || "";

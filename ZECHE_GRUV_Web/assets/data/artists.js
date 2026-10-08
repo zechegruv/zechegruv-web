@@ -4,6 +4,10 @@
 // Editá este array para agregar, sacar o reordenar artistas — el slug
 // (para la URL de su página) y la bio se completan/recalculan solos.
 //
+// Artistas sin perfil de Spotify todavía: id e img vacíos y "photo" con la
+// ruta de una foto propia (relativa a la raíz del sitio). Su página no
+// muestra oyentes, top canciones ni el botón de Spotify.
+//
 // "bio": null hasta tener texto real confirmado para ese artista — la
 // página del artista muestra "Biografía próximamente" mientras tanto.
 (function (root) {
@@ -36,6 +40,7 @@
     { name: "Bhae", id: "3rpv3PztUChhUTcNhHHRku", img: "ab67616100005174eb042c34dfcb55cba82fb4ea" },
     { name: "Anita Pau", id: "1KMisYLHu9wM1dsT4gTwZz", img: "ab67616100005174b7f942eba8a4c91ca8300378" },
     { name: "Layla Mar", id: "0FFp6MN2W3zcJdWAkCxcg6", img: "ab67616100005174dc1219d7f375fd39ce3bcdc9" },
+    { name: "Ailo", id: "", img: "", photo: "assets/artists/ailo.webp" }, // foto provisoria
     { name: "Maki", id: "4q0qAJSJMhF3n8nq9n2gJX", img: "ab67616d00001e02c8c1cd702aae848113ab6d14" },
     { name: "Yaco Santana", id: "0qyQT0AI2Qz2PnOP49ZBtA", img: "ab676161000051746665734a01adfe495ea805cb" },
     { name: "Bianca Biondi", id: "4AhBUp7hKgyNz915uFsmCc", img: "ab67616100005174f738fb7c0cd6b181f348bae0" },
