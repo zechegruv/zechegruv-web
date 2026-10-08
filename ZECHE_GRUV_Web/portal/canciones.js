@@ -124,7 +124,7 @@
       }).join("");
       html = `<p class="welcome-when">Nos vemos en el estudio ${esc(whenLabel(next.start, next.end))}.</p>${lines}`;
     } else {
-      html = "<p>Nos vemos en la próxima sesión. Acá vas a ir viendo cómo avanzan tus canciones.</p>";
+      html = "<p>Nos vemos en la próxima sesión.</p>";
     }
     html += `<p class="welcome-help">¿Alguna duda antes? <a href="${WHATSAPP}" target="_blank" rel="noopener">Escribinos por WhatsApp ↗</a></p>`;
     $("welcomeBody").innerHTML = html;
@@ -144,6 +144,7 @@
     if (own && admin) { card.hidden = true; return; }
     card.hidden = false;
     $("songsTitle").textContent = own ? "Tus canciones" : `Canciones de ${P.nameOf(profile)}`;
+    $("songsSub").textContent = own ? "Acá vas a ir viendo cómo avanzan tus canciones." : "Lo que ve el artista: la etapa de cada canción, sin fechas de entrega.";
     $("songsList").replaceChildren();
     $("songsDone").hidden = true;
     $("songsDone").open = false; // "Terminadas" arranca siempre plegada

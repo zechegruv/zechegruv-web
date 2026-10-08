@@ -1773,3 +1773,13 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   .welcome-sun { width: 110px; height: 110px; top: -28px; right: -28px; }
   .welcome-body { font-size: 14px; }
 }
+
+.songs-sub {
+  margin: -10px 0 8px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+@media (max-width: 640px) {
+  .songs-sub { margin-top: 0; }
+}
