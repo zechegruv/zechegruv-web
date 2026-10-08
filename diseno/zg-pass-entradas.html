@@ -151,6 +151,11 @@
     .pass-meta dd { font-size: 16px; font-weight: 700; letter-spacing: -.02em; line-height: 1.2; }
     .pass-meta dd span { display: block; font-size: 12.5px; font-weight: 500; color: var(--soft); letter-spacing: 0; margin-top: 2px; }
 
+    /* Line up: nombres separados por un punto naranja; cortan línea entre artistas, nunca en el medio de un nombre. */
+    .pass-lineup { display: flex; flex-wrap: wrap; gap: 2px 0; font-size: 17px; text-transform: uppercase; letter-spacing: .01em; }
+    .pass-lineup b { font-weight: 800; white-space: nowrap; }
+    .pass-lineup b:not(:last-child)::after { content: "·"; color: var(--accent); margin: 0 .4em; }
+
     /* Troquel: línea punteada con dos muescas, como una entrada cortable. */
     .pass-cut { position: relative; height: 26px; }
     .pass-cut::before {
@@ -232,6 +237,7 @@
             <div><dt>Fecha</dt><dd data-f="fecha">Sáb 24 oct 2026</dd></div>
             <div><dt>Hora</dt><dd data-f="hora">20:00 h</dd></div>
             <div class="wide"><dt>Lugar</dt><dd data-f="lugar">Teatro Sergio Souza<span>Ciudad de Buenos Aires</span></dd></div>
+            <div class="wide"><dt>Line up</dt><dd class="pass-lineup" data-f="lineup"><b>Pazz</b><b>Maki</b><b>Bastian &amp; Kaino</b><b>Rouse Bby</b></dd></div>
           </dl>
         </div>
         <div class="pass-cut"><i></i><i></i></div>

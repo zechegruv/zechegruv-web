@@ -54,6 +54,15 @@ async function db(path, { method = "GET", body, prefer } = {}) {
 // desde una captura (código y mensaje, sin datos de nadie).
 const dbDetail = (res) => `${res.status} ${(res.data && (res.data.code || "")) || ""} ${String((res.data && res.data.message) || "").slice(0, 140)}`.trim();
 
+// Consulta de eventos que pide el line up. Si la base todavía no tiene esa
+// columna (falta correr supabase/012_lineup.sql), repite la consulta sin
+// ella: la venta sigue andando y el line up aparece apenas se corre.
+async function dbWithLineup(path) {
+  const res = await db(path);
+  if (res.ok || !/lineup/.test(dbDetail(res))) return res;
+  return db(path.replace(/,lineup\b/g, ""));
+}
+
 const rpc = (name, args) => db(`rpc/${name}`, { method: "POST", body: args });
 
 const audit = (action, entity, entityId, detail, actorId) =>
@@ -160,7 +169,7 @@ async function sendTickets(orderId, base) {
   if (!order) return false;
   let sent = false;
   try {
-    const ev = (await db(`pass_events?id=eq.${order.event_id}&select=kind,name,starts_at,venue_name,venue_address,important_info,openmic_enabled,openmic_deadline`)).data[0];
+    const ev = (await dbWithLineup(`pass_events?id=eq.${order.event_id}&select=kind,name,starts_at,venue_name,venue_address,important_info,openmic_enabled,openmic_deadline,lineup`)).data[0];
     const rows = (await db(`pass_tickets?order_id=eq.${orderId}&status=in.(valid,used)&select=code,token,holder_name,pass_ticket_types(name)&order=code.asc`)).data;
     const tickets = rows.map((t) => ({ code: t.code, token: t.token, holder_name: t.holder_name, type: t.pass_ticket_types.name }));
     const openmicOpen = ev.openmic_enabled && (!ev.openmic_deadline || Date.now() <= Date.parse(ev.openmic_deadline));
@@ -176,4 +185,4 @@ async function sendTickets(orderId, base) {
 // A dónde llegan los avisos internos (inscripciones al open mic, etc.).
 const notifyEmail = () => clean(process.env.PASS_NOTIFY_EMAIL) || "zechegruv@gmail.com";
 
-module.exports = { SUPABASE_URL, PUBLIC_URL, UUID, json, siteUrl, testMode, serviceKey, mpToken, db, dbDetail, rpc, audit, mp, validWebhookSignature, settlePayment, esc, sendMail, sendTickets, notifyEmail };
+module.exports = { SUPABASE_URL, PUBLIC_URL, UUID, json, siteUrl, testMode, serviceKey, mpToken, db, dbWithLineup, dbDetail, rpc, audit, mp, validWebhookSignature, settlePayment, esc, sendMail, sendTickets, notifyEmail };

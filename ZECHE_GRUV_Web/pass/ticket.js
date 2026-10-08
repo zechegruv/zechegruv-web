@@ -3,8 +3,8 @@
 window.ZGPass = (() => {
   const TZ = "America/Argentina/Buenos_Aires";
   const KINDS = {
-    show: { cls: "pass-show", logo: "/assets/camps/zeche-gruv-shows-logo.webp", alt: "ZECHE GRUV Shows & Open Mic", kicker: "Show + Open mic", note: "Mostrá este QR en la puerta. Cada entrada sirve para un solo ingreso." },
-    camp: { cls: "pass-camp", logo: "/assets/camps/zeche-gruv-camp-logo.webp", alt: "ZECHE GRUV Camp", kicker: "Campamento creativo", note: "Mostrá este QR al llegar. Cada entrada sirve para un solo ingreso." },
+    show: { cls: "pass-show", time: "Hora", logo: "/assets/camps/zeche-gruv-shows-logo.webp", alt: "ZECHE GRUV Shows & Open Mic", kicker: "Show + Open mic", note: "Mostrá este QR en la puerta. Cada entrada sirve para un solo ingreso." },
+    camp: { cls: "pass-camp", time: "Ingreso", logo: "/assets/camps/zeche-gruv-camp-logo.webp", alt: "ZECHE GRUV Camp", kicker: "Campamento creativo", note: "Mostrá este QR al llegar. Cada entrada sirve para un solo ingreso." },
   };
   const kindOf = (kind) => KINDS[kind] || KINDS.show;
 
@@ -27,6 +27,19 @@ window.ZGPass = (() => {
     wrap.append(el("dt", "", label));
     const dd = el("dd", "", value);
     if (sub) dd.append(el("span", "", sub));
+    wrap.append(dd);
+    return wrap;
+  }
+
+  // Line up: un nombre al lado del otro, separados por un punto naranja.
+  // Corta línea entre artistas, nunca en el medio de un nombre.
+  function lineupItem(names) {
+    const list = (names || []).filter(Boolean);
+    if (!list.length) return null;
+    const wrap = el("div", "wide");
+    wrap.append(el("dt", "", "Line up"));
+    const dd = el("dd", "lineup");
+    dd.append(...list.map((name) => el("b", "", name)));
     wrap.append(dd);
     return wrap;
   }
@@ -73,9 +86,11 @@ window.ZGPass = (() => {
     const meta = el("dl", "pass-meta");
     meta.append(
       metaItem("Fecha", fmtDate(event.starts_at)),
-      metaItem("Hora", fmtTime(event.starts_at)),
+      metaItem(kind.time, fmtTime(event.starts_at)),
       metaItem("Lugar", event.venue_name || "", event.venue_address, true),
     );
+    const lineup = lineupItem(event.lineup);
+    if (lineup) meta.append(lineup);
     main.append(el("div", "pass-kicker", kind.kicker), el("h2", "pass-title", event.name), meta);
 
     const cut = el("div", "pass-cut");
@@ -105,5 +120,5 @@ window.ZGPass = (() => {
     return { ok: res.ok, status: res.status, data };
   }
 
-  return { kindOf, fmtDate, fmtTime, fmtMoney, el, metaItem, renderTicket, api };
+  return { kindOf, fmtDate, fmtTime, fmtMoney, el, metaItem, lineupItem, renderTicket, api };
 })();

@@ -3,9 +3,9 @@
 // Datos públicos de los eventos de ZG PASS, con sus tipos de entrada y los
 // lugares que quedan. En el sitio de pruebas devuelve solo los eventos de
 // prueba; en el real, nunca.
-const { json, db, dbDetail, rpc, testMode, serviceKey } = require("./_lib/pass");
+const { json, db, dbWithLineup, dbDetail, rpc, testMode, serviceKey } = require("./_lib/pass");
 
-const FIELDS = "id,slug,kind,name,description,image_url,starts_at,ends_at,venue_name,venue_address,important_info,capacity,max_per_buyer,status,sales_start,sales_end,openmic_enabled,openmic_deadline,pass_ticket_types(id,name,description,price,quota,active,sort)";
+const FIELDS = "id,slug,kind,name,description,image_url,starts_at,ends_at,venue_name,venue_address,important_info,capacity,max_per_buyer,status,sales_start,sales_end,openmic_enabled,openmic_deadline,lineup,pass_ticket_types(id,name,description,price,quota,active,sort)";
 
 exports.handler = async (event) => {
   if (event.httpMethod !== "GET") return json(405, { error: "Método no permitido." });
@@ -17,7 +17,7 @@ exports.handler = async (event) => {
   const filters = [`is_test=eq.${testMode()}`, "status=in.(published,closed)", `select=${FIELDS}`, "order=starts_at.asc"];
   if (slug) filters.push(`slug=eq.${slug}`);
   else filters.push(`starts_at=gte.${new Date(Date.now() - 6 * 3600 * 1000).toISOString()}`);
-  const res = await db(`pass_events?${filters.join("&")}`);
+  const res = await dbWithLineup(`pass_events?${filters.join("&")}`);
   if (!res.ok) return json(502, { error: "No pudimos cargar los eventos. Probá de nuevo en un rato.", detail: dbDetail(res) });
 
   const now = Date.now();
@@ -38,6 +38,7 @@ exports.handler = async (event) => {
       venue_name: e.venue_name,
       venue_address: e.venue_address,
       important_info: e.important_info,
+      lineup: (e.lineup || []).filter(Boolean),
       max_per_buyer: e.max_per_buyer,
       on_sale: open && remaining > 0,
       sold_out: remaining === 0,

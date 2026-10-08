@@ -318,6 +318,13 @@ a.btn { display: inline-block; }
 .pass-meta dd { font-size: 16px; font-weight: 700; letter-spacing: -.02em; line-height: 1.2; }
 .pass-meta dd span { display: block; font-size: 12.5px; font-weight: 500; color: var(--soft); letter-spacing: 0; margin-top: 2px; }
 
+/* Line up (en la página del evento y en la entrada). */
+dd.lineup { display: flex; flex-wrap: wrap; row-gap: 2px; text-transform: uppercase; letter-spacing: .01em; }
+dd.lineup b { font-weight: 800; white-space: nowrap; }
+dd.lineup b:not(:last-child)::after { content: "·"; color: var(--orange-soft); margin: 0 .4em; }
+.pass dd.lineup { font-size: 17px; }
+.pass dd.lineup b:not(:last-child)::after { color: var(--accent); }
+
 /* Troquel: línea punteada con dos muescas, como una entrada cortable. */
 .pass-cut { position: relative; height: 26px; }
 .pass-cut::before {

@@ -5,7 +5,7 @@
 // Acá solo se muestra y se pide: si hay lugar, cuánto cuesta y si el pago
 // entró lo decide siempre el servidor.
 (() => {
-  const { kindOf, fmtDate, fmtTime, fmtMoney, el, metaItem, api } = window.ZGPass;
+  const { kindOf, fmtDate, fmtTime, fmtMoney, el, metaItem, lineupItem, api } = window.ZGPass;
   const $ = (id) => document.getElementById(id);
   const ORDER_KEY = "zg-pass-orden";  // compra en curso: { url, expires_at }
 
@@ -78,9 +78,11 @@
     $("eventName").textContent = e.name;
     $("eventMeta").replaceChildren(
       metaItem("Fecha", fmtDate(e.starts_at)),
-      metaItem("Hora", fmtTime(e.starts_at)),
+      metaItem(kind.time, fmtTime(e.starts_at)),
       metaItem("Lugar", e.venue_name || "", e.venue_address, true),
     );
+    const lineup = lineupItem(e.lineup);
+    if (lineup) $("eventMeta").append(lineup);
     $("eventDescription").textContent = e.description || "";
     $("eventDescription").hidden = !e.description;
     $("eventInfo").textContent = e.important_info || "";

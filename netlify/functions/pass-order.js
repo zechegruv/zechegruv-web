@@ -6,13 +6,13 @@
 // Si vuelve de Mercado Pago con el número de pago y el aviso todavía no
 // llegó, se confirma acá mismo (consultándole el pago a Mercado Pago), así
 // la entrada aparece al instante.
-const { json, db, dbDetail, settlePayment, sendTickets, siteUrl, serviceKey } = require("./_lib/pass");
+const { json, db, dbWithLineup, dbDetail, settlePayment, sendTickets, siteUrl, serviceKey } = require("./_lib/pass");
 
 const SELECT = "id,number,status,total,expires_at,email_sent_at,buyer_first_name,buyer_last_name,buyer_email,"
-  + "pass_events(slug,kind,name,starts_at,venue_name,venue_address,important_info,openmic_enabled,openmic_deadline),"
+  + "pass_events(slug,kind,name,starts_at,venue_name,venue_address,important_info,openmic_enabled,openmic_deadline,lineup),"
   + "pass_tickets(code,token,status,holder_name,price_paid,pass_ticket_types(name))";
 
-const load = (token) => db(`pass_orders?access_token=eq.${token}&select=${SELECT}`);
+const load = (token) => dbWithLineup(`pass_orders?access_token=eq.${token}&select=${SELECT}`);
 
 exports.handler = async (event) => {
   if (event.httpMethod !== "GET") return json(405, { error: "Método no permitido." });

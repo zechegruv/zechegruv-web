@@ -14,8 +14,8 @@ const fmtMoney = (value) => `$${new Intl.NumberFormat("es-AR", { maximumFraction
 
 // Colores y logo según el tipo de experiencia, como en la entrada de la web.
 const KINDS = {
-  show: { bg: "#241105", line: "#5a4632", dim: "#C9A980", accent2: "#B98AC9", logo: "pass-shows.png", alt: "ZECHE GRUV Shows &amp; Open Mic", kicker: "Show + Open mic", note: "Mostrá este QR en la puerta. Cada entrada sirve para un solo ingreso." },
-  camp: { bg: "#232c16", line: "#5c6344", dim: "#B9BE94", accent2: "#A9B77A", logo: "pass-camp.png", alt: "ZECHE GRUV Camp", kicker: "Campamento creativo", note: "Mostrá este QR al llegar. Cada entrada sirve para un solo ingreso." },
+  show: { time: "Hora", bg: "#241105", line: "#5a4632", dim: "#C9A980", accent2: "#B98AC9", logo: "pass-shows.png", alt: "ZECHE GRUV Shows &amp; Open Mic", kicker: "Show + Open mic", note: "Mostrá este QR en la puerta. Cada entrada sirve para un solo ingreso." },
+  camp: { time: "Ingreso", bg: "#232c16", line: "#5c6344", dim: "#B9BE94", accent2: "#A9B77A", logo: "pass-camp.png", alt: "ZECHE GRUV Camp", kicker: "Campamento creativo", note: "Mostrá este QR al llegar. Cada entrada sirve para un solo ingreso." },
 };
 
 const button = (href, text, primary) => `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 10px;"><tr><td style="background:${primary ? "#F07800" : "#241105"};border:1px solid ${primary ? "#F07800" : "#6b4a2c"};">
@@ -28,6 +28,7 @@ function ticketEmail({ order, ev, tickets, base, openmicOpen }) {
   const many = tickets.length > 1;
   const orderUrl = `${base}/pass/orden/?t=${order.access_token}`;
   const kind = KINDS[ev.kind] || KINDS.show;
+  const lineup = (ev.lineup || []).filter(Boolean);
   const cell = (text, sub) => `<div style="${MONO}font-size:10px;letter-spacing:2px;text-transform:uppercase;color:${kind.dim};padding:0 0 4px;">${text}</div><div style="${SANS}font-size:16px;font-weight:700;color:#FFF4DC;line-height:1.2;">${sub}</div>`;
   // Cada entrada, con el mismo armado que la entrada digital de la web.
   const cards = tickets.map((t, i) => `
@@ -45,10 +46,11 @@ function ticketEmail({ order, ev, tickets, base, openmicOpen }) {
 <tr><td style="padding:20px 22px 0;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
 <td width="56%" valign="top">${cell("Fecha", fmtDate(ev.starts_at))}</td>
-<td valign="top">${cell("Hora", fmtTime(ev.starts_at))}</td>
+<td valign="top">${cell(kind.time, fmtTime(ev.starts_at))}</td>
 </tr></table>
 </td></tr>
 <tr><td style="padding:16px 22px 0;">${cell("Lugar", `${esc(ev.venue_name || "")}${ev.venue_address ? `<br><span style="font-weight:400;font-size:13px;color:#F0E0C0;">${esc(ev.venue_address)}</span>` : ""}`)}</td></tr>
+${lineup.length ? `<tr><td style="padding:16px 22px 0;">${cell("Line up", `<span style="text-transform:uppercase;font-weight:800;font-size:16px;">${lineup.map(esc).join(' <span style="color:#F5A623;">&middot;</span> ')}</span>`)}</td></tr>` : ""}
 <tr><td style="padding:22px 22px 0;"><div style="border-top:2px dashed ${kind.line};font-size:0;line-height:0;">&nbsp;</div></td></tr>
 <tr><td align="center" style="padding:18px 22px 0;${MONO}font-size:10px;letter-spacing:2px;text-transform:uppercase;color:${kind.dim};">Titular</td></tr>
 <tr><td align="center" style="padding:4px 22px 0;${SANS}font-size:19px;font-weight:800;color:#FFF4DC;">${esc(t.holder_name)}</td></tr>
