@@ -162,8 +162,15 @@
     // Letras: arriba, el cuaderno para escribir en el portal (letras.js).
     const lyricsHere = section === "letras" && !!window.ZGLyrics;
     $("lyricsCard").hidden = !lyricsHere;
-    $("filesSubhead").hidden = !lyricsHere;
     if (lyricsHere) window.ZGLyrics.load(who);
+
+    // Referencias: arriba, los links de YouTube (referencias-youtube.js).
+    const linksHere = section === "referencias" && !!window.ZGRefLinks;
+    $("refLinksCard").hidden = !linksHere;
+    if (linksHere) window.ZGRefLinks.load(who);
+
+    $("filesSubhead").textContent = lyricsHere ? "Archivos de letras" : "Archivos";
+    $("filesSubhead").hidden = !(lyricsHere || linksHere);
 
     // Si la sección ya se trajo (al iniciar sesión o en una visita anterior),
     // se muestra al instante; si tiene unos minutos, se actualiza por detrás
@@ -200,6 +207,8 @@
       return;
     }
     setupUpload(data);
+    // Las canciones (subcarpetas) también sirven para ordenar los links.
+    if (section === "referencias" && window.ZGRefLinks) window.ZGRefLinks.setSongs(profile, data.groups.map((g) => g.name));
     const total = data.files.length + data.groups.reduce((n, g) => n + g.files.length, 0);
     if (!total) { status.textContent = EMPTY[section]; return; }
     status.textContent = "";

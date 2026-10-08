@@ -377,6 +377,27 @@
           <p class="muted" id="lyricsStatus"></p>
           <ul class="lyrics-list" id="lyricsList"></ul>
         </div>
+
+        <!-- Links de YouTube (solo en Referencias, referencias-youtube.js) -->
+        <div class="card ref-links-card" id="refLinksCard" hidden>
+          <h2 class="card-title">Links de YouTube</h2>
+          <p class="hint lyrics-sub" id="refLinksSub"></p>
+          <form class="ref-link-form" id="refLinkForm" novalidate>
+            <div class="field ref-link-url">
+              <label for="refLinkUrl">Link del video</label>
+              <input type="url" id="refLinkUrl" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://youtu.be/…">
+            </div>
+            <div class="field ref-link-song" id="refLinkSongField" hidden>
+              <label for="refLinkSong">Canción</label>
+              <select id="refLinkSong"></select>
+            </div>
+            <button class="btn btn-primary" type="submit" id="refLinkAdd" disabled>Agregar</button>
+          </form>
+          <div class="ref-preview" id="refLinkPreview" hidden></div>
+          <p class="msg" id="refLinkMsg" role="status"></p>
+          <p class="muted" id="refLinksStatus"></p>
+          <ul class="ref-links" id="refLinksList"></ul>
+        </div>
         <h2 class="card-title files-subhead" id="filesSubhead" hidden>Archivos de letras</h2>
 
         <p class="muted" id="filesStatus"></p>
@@ -846,6 +867,7 @@
   <script src="archivos.js"></script>
   <script src="canciones.js"></script>
   <script src="letras.js"></script>
+  <script src="referencias-youtube.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
   <script src="/pass/ticket.js"></script>
   <script src="zgpass.js"></script>
