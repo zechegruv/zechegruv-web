@@ -165,8 +165,17 @@
       if (res.status === 404) return showState("No encontramos ese evento.", "Puede que el link esté mal escrito o que el evento ya haya pasado.", true);
       return showState("No pudimos cargar los eventos.", "Revisá tu conexión y volvé a intentar en un momento.", false);
     }
-    if (slug) renderEvent(res.data);
-    else renderList(res.data.events || []);
+    if (slug) return renderEvent(res.data);
+    // Con un solo evento a la venta se va directo a su compra: así el link
+    // corto zechegruv.com/entradas lleva al formulario sin pasos de más.
+    const events = res.data.events || [];
+    const onSale = events.filter((e) => e.on_sale);
+    if (events.length === 1 || onSale.length === 1) {
+      const ev = onSale[0] || events[0];
+      history.replaceState(null, "", `/pass/?e=${encodeURIComponent(ev.slug)}`);
+      return renderEvent(ev);
+    }
+    renderList(events);
   }
 
   $("qtyLess").addEventListener("click", () => { qty -= 1; refreshTotals(); });

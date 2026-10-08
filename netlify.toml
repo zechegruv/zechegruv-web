@@ -4,3 +4,10 @@
 
 [functions]
   node_bundler = "esbuild"
+
+# Link corto para compartir: lleva a la venta de entradas de ZG PASS
+# (si hay un solo evento a la venta, abre directo su compra).
+[[redirects]]
+  from = "/entradas"
+  to = "/pass/"
+  status = 302

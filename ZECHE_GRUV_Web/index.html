@@ -688,6 +688,70 @@
       transform: translateY(-3px);
     }
 
+    /* ---------- ZG PASS en el inicio: menú, botón flotante y próxima fecha ---------- */
+    .nav-links a.nav-tickets { color: var(--orange-soft); opacity: 1; }
+    .nav-links a.nav-tickets:hover { color: var(--cream); }
+
+    .ticket-float {
+      position: fixed;
+      right: 20px;
+      bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+      z-index: 45;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 9px 18px 9px 10px;
+      background: var(--orange);
+      color: var(--cream);
+      border-radius: 999px;
+      box-shadow: 0 14px 34px -10px rgba(0, 0, 0, .7);
+      transition: transform .35s cubic-bezier(.16,1,.3,1), opacity .3s ease, background .25s ease;
+    }
+    .ticket-float[hidden] { display: none; }
+    .ticket-float:hover { background: var(--orange-soft); transform: translateY(-3px); }
+    .ticket-float:focus-visible { outline: 2px solid var(--cream); outline-offset: 3px; }
+    .ticket-float.is-away { opacity: 0; transform: translateY(16px); pointer-events: none; }
+    .ticket-float img { width: 38px; height: 42px; object-fit: contain; }
+    .ticket-float-text { display: flex; flex-direction: column; gap: 3px; line-height: 1.1; }
+    .ticket-float-date { font-family: "DM Mono", monospace; font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--brown-dark); }
+    .ticket-float-cta { font-size: 15px; font-weight: 800; letter-spacing: -.02em; }
+    @media (max-width: 800px) {
+      .ticket-float { left: 16px; right: 16px; justify-content: center; }
+    }
+
+    .next-event {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 24px 40px;
+      align-items: center;
+      grid-column: 1 / -1;
+      margin-top: 8px;
+      padding: 30px 32px;
+      background: var(--brown-dark);
+      border: 1px solid rgba(245, 166, 35, .45);
+      position: relative;
+      z-index: 1;
+    }
+    .next-event[hidden] { display: none; }
+    .hero-buttons .hero-ticket { border-color: var(--orange-soft); color: var(--orange-soft); }
+    .hero-buttons .hero-ticket:hover { color: var(--cream); }
+    .next-event-name { font-size: clamp(26px, 3.4vw, 44px); font-weight: 800; letter-spacing: -.045em; line-height: 1.02; margin: 10px 0 12px; text-wrap: balance; }
+    .next-event-meta { font-family: "DM Mono", monospace; font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--orange-soft); }
+    .next-event-lineup { display: flex; flex-wrap: wrap; row-gap: 4px; margin-top: 16px; font-size: clamp(17px, 1.8vw, 22px); font-weight: 800; text-transform: uppercase; letter-spacing: .01em; color: var(--cream); }
+    .next-event-lineup b { font-weight: 800; white-space: nowrap; }
+    .next-event-lineup b:not(:last-child)::after { content: "·"; color: var(--orange-soft); margin: 0 .45em; }
+    .next-event-text { margin-top: 14px; max-width: 62ch; color: var(--beige); font-size: 15px; line-height: 1.6; }
+    .next-event-text:empty { display: none; }
+    .next-event-buy { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+    .next-event-btn { font-size: 11px; padding: 18px 26px; white-space: nowrap; }
+    .next-event-note { font-family: "DM Mono", monospace; font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+    .next-event-note:empty { display: none; }
+    @media (max-width: 800px) {
+      .next-event { grid-template-columns: minmax(0, 1fr); padding: 24px 20px; }
+      .next-event-buy { align-items: stretch; }
+      .next-event-btn { text-align: center; }
+    }
+
     /* ---------- Catalogue ---------- */
 
     .catalogue {
@@ -3776,6 +3840,7 @@
           </div>
         </div>
         <a href="#contact" data-i18n="nav_contact">Contacto</a>
+        <a class="nav-tickets" href="/entradas" data-i18n="nav_tickets">Entradas</a>
       </div>
 
       <select class="lang-select" id="langSelect" aria-label="Language / Idioma">
@@ -3793,6 +3858,16 @@
       <span></span><span></span><span></span>
     </button>
   </nav>
+
+  <!-- ================= ZG PASS: botón flotante de entradas =================
+       Aparece solo mientras haya un evento a la venta (ver script al final). -->
+  <a class="ticket-float" id="ticketFloat" href="/entradas" hidden>
+    <img src="assets/camps/zeche-gruv-shows-logo-mini.webp" alt="" width="87" height="96" decoding="async">
+    <span class="ticket-float-text">
+      <span class="ticket-float-date" id="ticketFloatDate"></span>
+      <span class="ticket-float-cta"><span data-i18n="tickets_cta">Conseguí tu entrada</span> →</span>
+    </span>
+  </a>
 
   <!-- ================= VISITA AL ESTUDIO: formulario previo a la agenda ================= -->
   <!-- Los datos se guardan con Netlify Forms (form "visita-estudio") y después
@@ -4278,8 +4353,23 @@
         <h3 class="camp-title" data-i18n="events_title">Shows y open mics</h3>
       </div>
       <div class="events-copy">
-        <p class="camp-text" data-i18n="events_text">El open mic es nuestra forma de escuchar nuevos talentos. Es el espacio que desde ZECHE GRUV les damos a los artistas que trabajan con nosotros para que se expresen, y una puerta abierta para los que todavía no nos conocen: vení, conectate y mostrá lo que hacés. Si cantás en el open mic, podés ser parte del próximo show. Fechas pronto acá.</p>
+        <p class="camp-text" data-i18n="events_text">El open mic es nuestra forma de escuchar nuevos talentos. Es el espacio que desde ZECHE GRUV les damos a los artistas que trabajan con nosotros para que se expresen, y una puerta abierta para los que todavía no nos conocen: vení, conectate y mostrá lo que hacés. Si cantás en el open mic, podés ser parte del próximo show.</p>
       </div>
+      <!-- Próxima fecha: la completa el script de ZG PASS al final del body.
+           Si no hay ningún evento a la venta, queda oculta. -->
+      <article class="next-event" id="nextEvent" hidden>
+        <div class="next-event-info">
+          <div class="camp-eyebrow" data-i18n="next_event_label">Próxima fecha</div>
+          <h3 class="next-event-name" id="nextEventName"></h3>
+          <p class="next-event-meta" id="nextEventMeta"></p>
+          <p class="next-event-lineup" id="nextEventLineup"></p>
+          <p class="next-event-text" id="nextEventText"></p>
+        </div>
+        <div class="next-event-buy">
+          <a class="btn btn-primary next-event-btn" id="nextEventBtn" href="/entradas" data-i18n="tickets_cta">Conseguí tu entrada</a>
+          <span class="next-event-note" id="nextEventNote"></span>
+        </div>
+      </article>
       <div class="events-lineup">
         <div>
           <div class="camp-eyebrow" data-i18n="events_shows_label">Shows</div>
@@ -5214,6 +5304,9 @@
         nav_opps: "Oportunidades",
         nav_events: "Shows y open mic",
         nav_pass: "ZG PASS · Conseguí tu entrada",
+        nav_tickets: "Entradas",
+        next_event_label: "Próxima fecha",
+        tickets_cta: "Conseguí tu entrada",
         nav_services: "Servicios",
         nav_memberships: "Desarrollo artístico",
         nav_individual: "Servicios individuales",
@@ -5286,7 +5379,7 @@
         events_title: "Shows y open mics",
         events_shows_label: "Shows",
         events_openmic_label: "Open mic · algunos de los que se presentaron",
-        events_text: "El open mic es nuestra forma de escuchar nuevos talentos. Es el espacio que desde ZECHE GRUV les damos a los artistas que trabajan con nosotros para que se expresen, y una puerta abierta para los que todavía no nos conocen: vení, conectate y mostrá lo que hacés. Si cantás en el open mic, podés ser parte del próximo show. Fechas pronto acá.",
+        events_text: "El open mic es nuestra forma de escuchar nuevos talentos. Es el espacio que desde ZECHE GRUV les damos a los artistas que trabajan con nosotros para que se expresen, y una puerta abierta para los que todavía no nos conocen: vení, conectate y mostrá lo que hacés. Si cantás en el open mic, podés ser parte del próximo show.",
         sl_services: "Servicios y valores",
         st_services_html: "Elegí cómo<br>querés arrancar.",
         services_intro: "Trabajamos por proyecto porque las canciones necesitan tiempo.",
@@ -5375,6 +5468,9 @@
         nav_opps: "Opportunities",
         nav_events: "Shows & open mic",
         nav_pass: "ZG PASS · Get your ticket",
+        nav_tickets: "Tickets",
+        next_event_label: "Next date",
+        tickets_cta: "Get your ticket",
         nav_services: "Services",
         nav_memberships: "Artist development",
         nav_individual: "Individual services",
@@ -5447,7 +5543,7 @@
         events_title: "Shows & open mics",
         events_shows_label: "Shows",
         events_openmic_label: "Open mic · some of the artists who performed",
-        events_text: "The open mic is how we discover new talent. It's the space ZECHE GRUV gives the artists we work with to express themselves, and an open door for those who don't know us yet: come by, connect and show what you do. If you sing at the open mic, you could be part of the next show. Dates coming soon.",
+        events_text: "The open mic is how we discover new talent. It's the space ZECHE GRUV gives the artists we work with to express themselves, and an open door for those who don't know us yet: come by, connect and show what you do. If you sing at the open mic, you could be part of the next show.",
         sl_services: "Services & rates",
         st_services_html: "Choose how<br>you want to start.",
         services_intro: "We work by project because songs need time.",
@@ -5536,6 +5632,9 @@
         nav_opps: "Oportunidades",
         nav_events: "Shows e open mic",
         nav_pass: "ZG PASS · Garanta seu ingresso",
+        nav_tickets: "Ingressos",
+        next_event_label: "Próxima data",
+        tickets_cta: "Garanta seu ingresso",
         nav_services: "Serviços",
         nav_memberships: "Desenvolvimento artístico",
         nav_individual: "Serviços avulsos",
@@ -5608,7 +5707,7 @@
         events_title: "Shows e open mics",
         events_shows_label: "Shows",
         events_openmic_label: "Open mic · alguns dos que se apresentaram",
-        events_text: "O open mic é o nosso jeito de ouvir novos talentos. É o espaço que a ZECHE GRUV oferece aos artistas que trabalham com a gente para se expressarem, e uma porta aberta para quem ainda não nos conhece: vem, se conecta e mostra o que você faz. Se você cantar no open mic, pode fazer parte do próximo show. Datas em breve aqui.",
+        events_text: "O open mic é o nosso jeito de ouvir novos talentos. É o espaço que a ZECHE GRUV oferece aos artistas que trabalham com a gente para se expressarem, e uma porta aberta para quem ainda não nos conhece: vem, se conecta e mostra o que você faz. Se você cantar no open mic, pode fazer parte do próximo show.",
         sl_services: "Serviços e valores",
         st_services_html: "Escolha como<br>quer começar.",
         services_intro: "Trabalhamos por projeto porque as músicas precisam de tempo.",
@@ -5697,6 +5796,9 @@
         nav_opps: "Opportunités",
         nav_events: "Concerts et open mic",
         nav_pass: "ZG PASS · Prends ta place",
+        nav_tickets: "Billets",
+        next_event_label: "Prochaine date",
+        tickets_cta: "Prends ta place",
         nav_services: "Services",
         nav_memberships: "Développement artistique",
         nav_individual: "Services à l'unité",
@@ -5769,7 +5871,7 @@
         events_title: "Concerts et open mics",
         events_shows_label: "Concerts",
         events_openmic_label: "Open mic · quelques artistes qui sont montés sur scène",
-        events_text: "L'open mic, c'est notre façon de découvrir de nouveaux talents. C'est l'espace que ZECHE GRUV offre aux artistes avec qui on travaille pour s'exprimer, et une porte ouverte pour ceux qui ne nous connaissent pas encore : viens, rencontre du monde et montre ce que tu fais. Si tu chantes à l'open mic, tu peux faire partie du prochain concert. Dates bientôt ici.",
+        events_text: "L'open mic, c'est notre façon de découvrir de nouveaux talents. C'est l'espace que ZECHE GRUV offre aux artistes avec qui on travaille pour s'exprimer, et une porte ouverte pour ceux qui ne nous connaissent pas encore : viens, rencontre du monde et montre ce que tu fais. Si tu chantes à l'open mic, tu peux faire partie du prochain concert.",
         sl_services: "Services et tarifs",
         st_services_html: "Choisis comment<br>tu veux commencer.",
         services_intro: "On travaille par projet parce que les chansons ont besoin de temps.",
@@ -5858,6 +5960,9 @@
         nav_opps: "Opportunità",
         nav_events: "Live e open mic",
         nav_pass: "ZG PASS · Prendi il tuo biglietto",
+        nav_tickets: "Biglietti",
+        next_event_label: "Prossima data",
+        tickets_cta: "Prendi il tuo biglietto",
         nav_services: "Servizi",
         nav_memberships: "Sviluppo artistico",
         nav_individual: "Servizi singoli",
@@ -5930,7 +6035,7 @@
         events_title: "Live e open mic",
         events_shows_label: "Live",
         events_openmic_label: "Open mic · alcuni degli artisti che si sono esibiti",
-        events_text: "L'open mic è il nostro modo di scoprire nuovi talenti. È lo spazio che ZECHE GRUV offre agli artisti con cui lavoriamo per esprimersi, e una porta aperta per chi ancora non ci conosce: vieni, entra in contatto e mostra quello che fai. Se canti all'open mic, puoi far parte del prossimo live. Date presto qui.",
+        events_text: "L'open mic è il nostro modo di scoprire nuovi talenti. È lo spazio che ZECHE GRUV offre agli artisti con cui lavoriamo per esprimersi, e una porta aperta per chi ancora non ci conosce: vieni, entra in contatto e mostra quello che fai. Se canti all'open mic, puoi far parte del prossimo live.",
         sl_services: "Servizi e prezzi",
         st_services_html: "Scegli come<br>vuoi iniziare.",
         services_intro: "Lavoriamo per progetto perché le canzoni hanno bisogno di tempo.",
@@ -6019,6 +6124,9 @@
         nav_opps: "Möglichkeiten",
         nav_events: "Shows & Open Mic",
         nav_pass: "ZG PASS · Hol dir dein Ticket",
+        nav_tickets: "Tickets",
+        next_event_label: "Nächster Termin",
+        tickets_cta: "Hol dir dein Ticket",
         nav_services: "Leistungen",
         nav_memberships: "Künstlerentwicklung",
         nav_individual: "Einzelne Services",
@@ -6091,7 +6199,7 @@
         events_title: "Shows & Open Mics",
         events_shows_label: "Shows",
         events_openmic_label: "Open Mic · einige der Artists, die aufgetreten sind",
-        events_text: "Das Open Mic ist unsere Art, neue Talente zu entdecken. Es ist der Raum, den ZECHE GRUV den Künstlern gibt, mit denen wir arbeiten, damit sie sich ausdrücken können, und eine offene Tür für alle, die uns noch nicht kennen: Komm vorbei, knüpf Kontakte und zeig, was du machst. Wenn du beim Open Mic singst, kannst du bei der nächsten Show dabei sein. Termine bald hier.",
+        events_text: "Das Open Mic ist unsere Art, neue Talente zu entdecken. Es ist der Raum, den ZECHE GRUV den Künstlern gibt, mit denen wir arbeiten, damit sie sich ausdrücken können, und eine offene Tür für alle, die uns noch nicht kennen: Komm vorbei, knüpf Kontakte und zeig, was du machst. Wenn du beim Open Mic singst, kannst du bei der nächsten Show dabei sein.",
         sl_services: "Leistungen & Preise",
         st_services_html: "Wähl aus, wie du<br>starten willst.",
         services_intro: "Wir arbeiten projektweise, weil Songs Zeit brauchen.",
@@ -6180,6 +6288,9 @@
         nav_opps: "Возможности",
         nav_events: "Концерты и open mic",
         nav_pass: "ZG PASS · Купить билет",
+        nav_tickets: "Билеты",
+        next_event_label: "Ближайшая дата",
+        tickets_cta: "Купить билет",
         nav_services: "Услуги",
         nav_memberships: "Развитие артиста",
         nav_individual: "Отдельные услуги",
@@ -6252,7 +6363,7 @@
         events_title: "Концерты и open mic",
         events_shows_label: "Концерты",
         events_openmic_label: "Open mic · некоторые из выступавших",
-        events_text: "Open mic — это наш способ находить новые таланты. Это пространство, которое ZECHE GRUV даёт артистам, с которыми мы работаем, чтобы они могли выразить себя, и открытая дверь для тех, кто нас ещё не знает: приходи, знакомься и покажи, что ты делаешь. Если споёшь на open mic, можешь попасть в следующий концерт. Даты скоро здесь.",
+        events_text: "Open mic — это наш способ находить новые таланты. Это пространство, которое ZECHE GRUV даёт артистам, с которыми мы работаем, чтобы они могли выразить себя, и открытая дверь для тех, кто нас ещё не знает: приходи, знакомься и покажи, что ты делаешь. Если споёшь на open mic, можешь попасть в следующий концерт.",
         sl_services: "Услуги и цены",
         st_services_html: "Выбери, как<br>хочешь начать.",
         services_intro: "Мы работаем по проектам, потому что песням нужно время.",
@@ -7074,5 +7185,71 @@
     })();
   </script>
 
+
+  <!-- ================= ZG PASS en el inicio =================
+       Busca el próximo evento a la venta y completa el botón flotante y la
+       tarjeta "Próxima fecha". Sin eventos (o si falla), todo queda oculto. -->
+  <script>
+    (() => {
+      const TZ = "America/Argentina/Buenos_Aires";
+      const clean = (t) => t.replace(/[.,]/g, "");
+      const cap = (t) => t.charAt(0).toUpperCase() + t.slice(1);
+      const fmtDate = (iso) => cap(clean(new Intl.DateTimeFormat("es-AR", { timeZone: TZ, weekday: "short", day: "numeric", month: "short" }).format(new Date(iso))));
+      const fmtTime = (iso) => new Intl.DateTimeFormat("es-AR", { timeZone: TZ, hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date(iso)) + " h";
+
+      fetch("/.netlify/functions/pass-events")
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data) => {
+          const ev = data && (data.events || []).find((e) => e.on_sale || e.sold_out);
+          if (!ev) return;
+          const url = `/pass/?e=${encodeURIComponent(ev.slug)}`;
+          const when = `${fmtDate(ev.starts_at)} · ${fmtTime(ev.starts_at)}`;
+
+          // Tarjeta "Próxima fecha"
+          const card = document.getElementById("nextEvent");
+          document.getElementById("nextEventName").textContent = ev.name;
+          document.getElementById("nextEventMeta").textContent = [when, ev.venue_name].filter(Boolean).join(" · ");
+          const lineup = document.getElementById("nextEventLineup");
+          lineup.replaceChildren(...(ev.lineup || []).map((n) => { const b = document.createElement("b"); b.textContent = n; return b; }));
+          lineup.hidden = !(ev.lineup || []).length;
+          document.getElementById("nextEventText").textContent = ev.description || "";
+          const btn = document.getElementById("nextEventBtn");
+          btn.href = url;
+          const note = document.getElementById("nextEventNote");
+          if (ev.sold_out) note.textContent = "Agotado";
+          else if (ev.few_left) note.textContent = `¡Últimas ${ev.few_left}!`;
+          card.hidden = false;
+
+          if (ev.sold_out) return;
+          const cta = document.querySelector(".ticket-float-cta [data-i18n]").textContent;
+
+          // En la portada, un botón más al lado de los otros dos.
+          const heroButtons = document.querySelector(".hero-buttons");
+          if (heroButtons) {
+            const heroBtn = document.createElement("a");
+            heroBtn.className = "btn hero-ticket";
+            heroBtn.href = url;
+            heroBtn.textContent = `${cta} · ${fmtDate(ev.starts_at)}`;
+            heroButtons.append(heroBtn);
+          }
+
+          // Botón flotante: se corre mientras se ven los botones de la portada
+          // o la tarjeta de la próxima fecha, para no taparlos ni repetirlos.
+          const float = document.getElementById("ticketFloat");
+          float.href = url;
+          document.getElementById("ticketFloatDate").textContent = `${fmtDate(ev.starts_at)} · ${ev.venue_name || ""}`;
+          float.hidden = false;
+          if ("IntersectionObserver" in window) {
+            const inView = new Set();
+            const io = new IntersectionObserver((entries) => {
+              entries.forEach((e) => (e.isIntersecting ? inView.add(e.target) : inView.delete(e.target)));
+              float.classList.toggle("is-away", inView.size > 0);
+            }, { threshold: .2 });
+            [heroButtons, card].filter(Boolean).forEach((el) => io.observe(el));
+          }
+        })
+        .catch(() => {});
+    })();
+  </script>
 </body>
 </html>
