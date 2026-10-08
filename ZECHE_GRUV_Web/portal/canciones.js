@@ -84,7 +84,7 @@
   const PLAN = {
     estructura: (s) => `Arrancamos ${s}. Si tenés alguna idea grabada en el celu, traela.`,
     produccion: (s) => `Seguimos con la producción de ${s}.`,
-    grabacion: (s) => `Grabamos voces de ${s}. Vení con la letra a mano.`,
+    grabacion: (s) => `Grabamos voces de ${s}. Vení con la canción bien estudiada, así aprovechamos la sesión para la toma final.`,
     mezcla: (s) => `Escuchamos la mezcla de ${s} y vemos qué ajustar.`,
     master: (s) => `Cerramos el master de ${s}.`,
     distribucion: (s) => `Dejamos todo listo para lanzar ${s}.`,
