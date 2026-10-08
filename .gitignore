@@ -6,3 +6,7 @@ node_modules/
 # Archivos de trabajo que no van a la web
 Claude outputs/
 diseno/manuales/
+
+# Archivos temporales de pruebas
+.zg-tmp/
+*.new.mp4
