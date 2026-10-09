@@ -423,16 +423,48 @@
     return row;
   }
 
+  // Eventos a los que se puede invitar: a la venta y que todavía no pasaron.
+  let glEventId = null;
+  const glEventsList = () => (A.events || [])
+    .filter((e) => e.status === "published" && Date.parse(e.starts_at) > Date.now() - 6 * 3600 * 1000)
+    .sort((a, b) => Date.parse(a.starts_at) - Date.parse(b.starts_at));
+  const glEvent = () => (A.events || []).find((e) => e.id === glEventId) || null;
+
+  function paintGlEvents() {
+    const list = glEventsList();
+    if (!list.some((e) => e.id === glEventId)) {
+      const cur = A.current && list.find((e) => e.id === A.current.id);
+      glEventId = (cur || list[0] || {}).id || null;
+    }
+    $("glNoEvents").hidden = !!list.length;
+    $("glEvents").hidden = !list.length;
+    // Sin eventos a la venta no hay a qué invitar: se oculta el formulario.
+    [$("glType").closest(".gl-type"), $("glRows"), $("glAdd"), $("glSend")].forEach((node) => { node.hidden = !list.length; });
+    $("glEvents").replaceChildren(...list.map((e) => {
+      const b = el("button", `zgp-event${e.id === glEventId ? " is-active" : ""}`);
+      b.type = "button";
+      const top = el("span", "zgp-event-top");
+      top.append(el("span", "zgp-event-kind", e.kind === "camp" ? "Campamento Creativo" : "Shows & Open Mic"), el("span", "zgp-event-state is-published", "A la venta"));
+      b.append(top, el("b", "", e.name), el("small", "", `${fmtDate(e.starts_at)} · ${fmtTime(e.starts_at)}`));
+      b.addEventListener("click", () => { if (glEventId !== e.id) { glEventId = e.id; loadGuestlist(); } });
+      return b;
+    }));
+    const ev = glEvent();
+    $("glType").replaceChildren(...(ev ? ev.ticket_types.filter((t) => t.active !== false) : []).map((t) => { const o = el("option", "", t.name); o.value = t.id; return o; }));
+    $("glSend").textContent = ev ? `Enviar entradas para ${ev.kind === "camp" ? "el campamento" : "el show"}` : "Enviar entradas";
+  }
+
   async function loadGuestlist() {
-    const ev = A.current;
-    if (!ev) return;
-    $("glType").replaceChildren(...ev.ticket_types.filter((t) => t.active !== false).map((t) => { const o = el("option", "", t.name); o.value = t.id; return o; }));
+    paintGlEvents();
+    const ev = glEvent();
     if (!$("glRows").children.length) $("glRows").append(glRow());
+    if (!ev) { $("glTable").querySelector("tbody").replaceChildren(); return setMsg($("glStatus"), ""); }
     setMsg($("glStatus"), "Cargando…");
     try {
       const { tickets } = await A.call({ action: "tickets", event_id: ev.id });
+      if (glEventId !== ev.id) return;
       const comps = tickets.filter((t) => t.comp);
-      setMsg($("glStatus"), comps.length ? `${comps.length} ${comps.length > 1 ? "entradas" : "entrada"} sin cargo.` : "Todavía no hay invitados con entrada.");
+      setMsg($("glStatus"), comps.length ? `${ev.name}: ${comps.length} ${comps.length > 1 ? "entradas" : "entrada"} sin cargo.` : `${ev.name}: todavía no hay invitados con entrada.`);
       $("glTable").querySelector("tbody").replaceChildren(...comps.map((t) => {
         const tr = el("tr");
         tr.append(el("td", "", t.holder_name), el("td", "", t.holder_email || "—"), el("td", "", t.code), el("td", t.status === "used" ? "" : "zgp-missing", t.status === "used" ? `Ingresó ${fmtTime(t.used_at)}` : "Todavía no"));
@@ -456,11 +488,13 @@
     if (!guests.length) return setMsg($("glMsg"), "Completá al menos un invitado.", true);
     if (guests.some((g) => !g.first_name || !g.last_name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(g.email))) return setMsg($("glMsg"), "Cada invitado necesita nombre, apellido y un mail válido (ahí le llega la entrada).", true);
     const total = guests.reduce((t, g) => t + g.quantity, 0);
-    if (!window.confirm(`¿Enviar ${total} ${total > 1 ? "entradas" : "entrada"} sin cargo a ${guests.length} ${guests.length > 1 ? "invitados" : "invitado"}? Les llegan por mail en el momento.`)) return;
+    const ev = glEvent();
+    if (!ev) return setMsg($("glMsg"), "Elegí el evento.", true);
+    if (!window.confirm(`¿Enviar ${total} ${total > 1 ? "entradas" : "entrada"} sin cargo para “${ev.name}” (${fmtDate(ev.starts_at)}) a ${guests.length} ${guests.length > 1 ? "invitados" : "invitado"}? Les llegan por mail en el momento.`)) return;
     $("glSend").disabled = true;
     setMsg($("glMsg"), "Enviando entradas…");
     try {
-      const { results } = await A.call({ action: "guestlist_send", event_id: A.current.id, ticket_type_id: $("glType").value, guests });
+      const { results } = await A.call({ action: "guestlist_send", event_id: ev.id, ticket_type_id: $("glType").value, guests });
       const okList = results.filter((r) => r.ok);
       const failed = results.filter((r) => !r.ok);
       const noMail = okList.filter((r) => !r.emailed);
@@ -472,8 +506,7 @@
       const failedEmails = new Set(failed.map((r) => r.email));
       rows.forEach((r) => { if (!failedEmails.has(r.querySelector(".gl-email").value.trim())) r.remove(); });
       if (!$("glRows").children.length) $("glRows").append(glRow());
-      await loadGuestlist();
-      A.reload(A.current.id);
+      await A.reload(A.current.id); // actualiza los números (y vuelve a cargar la lista)
     } catch (err) {
       setMsg($("glMsg"), err.message, true);
     } finally {
