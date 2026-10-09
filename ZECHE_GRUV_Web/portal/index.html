@@ -447,17 +447,15 @@
       <!-- ZG PASS: entradas, control de acceso y venta en puerta (solo administrador) -->
       <div id="panel-pass" hidden>
         <div class="zgp-head">
-          <div>
-            <div class="eyebrow">ZG PASS</div>
-            <h1 class="title title-sm">Entradas</h1>
-          </div>
+          <h1 class="title title-sm">ZG PASS</h1>
           <button class="btn btn-primary" type="button" id="zgpNew">+ Crear evento</button>
         </div>
         <p class="muted" id="zgpStatus"></p>
 
         <div id="zgpBody" hidden>
           <div class="tabs zgp-tabs zgp-menu" id="zgpTabs" role="tablist">
-            <button class="tab is-active" type="button" data-view="scan" role="tab">Escanear QR</button>
+            <button class="tab is-active" type="button" data-view="summary" role="tab">Resumen</button>
+            <button class="tab" type="button" data-view="scan" role="tab">Escanear QR</button>
             <button class="tab" type="button" data-view="issue" role="tab">Venta en puerta</button>
             <button class="tab" type="button" data-view="list" role="tab">Entradas</button>
             <button class="tab" type="button" data-view="mic" role="tab">Open mic</button>
@@ -476,13 +474,15 @@
           </div>
           <p class="msg" id="zgpBarMsg" role="status"></p>
 
-          <!-- Recuento -->
-          <div class="zgp-stats" id="zgpStats"></div>
-          <div class="zgp-stats zgp-stats-sm" id="zgpMoney"></div>
+          <!-- Resumen: recuento de entradas y plata -->
+          <div id="zgp-summary" class="zgp-view">
+            <div class="zgp-stats" id="zgpStats"></div>
+            <div class="zgp-stats zgp-stats-sm" id="zgpMoney"></div>
+          </div>
 
 
           <!-- Escanear -->
-          <div id="zgp-scan">
+          <div id="zgp-scan" class="zgp-view">
             <div class="zgp-scan">
               <div class="zgp-camera" id="zgpCamera" hidden>
                 <video id="zgpVideo" playsinline muted></video>
@@ -507,7 +507,7 @@
           </div>
 
           <!-- Venta en puerta / bonificadas -->
-          <div id="zgp-issue" hidden>
+          <div id="zgp-issue" hidden class="zgp-view">
             <form class="card form" id="zgpIssueForm" novalidate>
               <h2 class="card-title">Venta en puerta</h2>
               <div class="grid-2">
@@ -562,7 +562,7 @@
           </div>
 
           <!-- Entradas emitidas -->
-          <div id="zgp-list" hidden>
+          <div id="zgp-list" hidden class="zgp-view">
             <div class="field zgp-search">
               <label for="zgpSearch">Buscar por nombre, mail o código</label>
               <input type="search" id="zgpSearch" autocomplete="off">
@@ -577,7 +577,7 @@
           </div>
 
           <!-- Inscriptos al open mic -->
-          <div id="zgp-mic" hidden>
+          <div id="zgp-mic" hidden class="zgp-view">
             <p class="muted" id="zgpMicStatus"></p>
             <div class="table-wrap">
               <table class="table zgp-table" id="zgpMicTable">
@@ -588,7 +588,7 @@
           </div>
 
           <!-- Lista de invitados: entradas sin cargo por mail (zgpass-eventos.js) -->
-          <div id="zgp-guestlist" hidden>
+          <div id="zgp-guestlist" hidden class="zgp-view">
             <form class="card form gl-form" id="glForm" novalidate>
               <h2 class="card-title">Lista de invitados</h2>
               <p class="hint">A cada invitado le llega su entrada por mail, sin pagar. Ocupa un lugar igual que una entrada vendida.</p>
@@ -618,7 +618,7 @@
           </div>
 
           <!-- Carpetas: links de OneDrive del evento, line up (artistas del sello e invitados) y pistas recibidas -->
-          <div id="zgp-shows" class="zgp-shows-grid" hidden>
+          <div id="zgp-shows" class="zgp-view zgp-shows-grid" hidden>
             <form id="zgpShowsForm" class="zgp-shows-form" novalidate>
               <!-- Solo si falta conectar la carpeta madre de los shows -->
               <p class="zgp-noroot zgp-folders" id="zgpNoRoot" hidden>Falta conectar la carpeta de Shows &amp; Open Mic. <button class="link-btn" type="button" data-open-config>Configurar carpetas de eventos</button></p>

@@ -2618,3 +2618,21 @@ a.ref-title:hover { color: var(--orange-soft); }
 .zg-select-opt.is-selected::before { content: ""; position: absolute; left: 11px; top: 50%; width: 7px; height: 7px; margin-top: -3.5px; border-radius: 50%; background: var(--orange); box-shadow: 0 0 8px rgba(240, 120, 0, .7); }
 .zg-select-opt.is-disabled { opacity: .4; cursor: default; }
 .zg-select-list { right: auto; min-width: 100%; width: max-content; max-width: min(380px, calc(100vw - 32px)); }
+
+/* ZG PASS: una sola pantalla; al cambiar de sección, la nueva aparece difuminándose */
+#panel-pass > .zgp-head { margin-bottom: 18px; }
+.zgp-view.is-in { animation: zgp-view-in .35s ease both; }
+@keyframes zgp-view-in { from { opacity: 0; filter: blur(6px); transform: translateY(8px); } to { opacity: 1; filter: none; transform: none; } }
+#zgp-summary .zgp-stats { margin-top: 0; }
+#zgpMoney { margin-bottom: 0; }
+#zgp-summary #zgpMoney { margin-top: 12px; }
+.zgp-bar { margin-bottom: 18px; }
+@media (max-width: 640px) {
+  .zgp-event { width: 220px; padding: 12px 14px; }
+  .zgp-bar { gap: 8px; }
+  .zgp-bar .btn { padding: 11px 12px; flex: 1 1 auto; }
+  .zgp-menu .tab { padding: 12px 12px; }
+}
+@media (max-width: 900px) {
+  .zgp-menu { -webkit-mask-image: linear-gradient(90deg, #000 85%, transparent); mask-image: linear-gradient(90deg, #000 85%, transparent); }
+}

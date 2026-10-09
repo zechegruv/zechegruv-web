@@ -14,7 +14,7 @@
   let events = [];
   let current = null;   // evento elegido
   let tickets = [];     // entradas del evento (pestaña "Entradas")
-  let view = "scan";
+  let view = "summary";
   let stream = null;    // cámara abierta
   let scanning = false;
   let pending = null;   // lo último que se leyó: { token } o { code }
@@ -44,7 +44,7 @@
     // Open mic y Carpetas son solo de los shows.
     const isShow = current.kind === "show";
     document.querySelectorAll('#zgpTabs [data-view="mic"], #zgpTabs [data-view="shows"]').forEach((b) => { b.hidden = !isShow; });
-    if (!isShow && (view === "mic" || view === "shows")) view = "scan";
+    if (!isShow && (view === "mic" || view === "shows")) view = "summary";
     $("zgpPublish").hidden = current.status === "cancelled";
     $("zgpPublish").textContent = current.status === "published" ? "Cerrar la venta" : "Publicar y abrir la venta";
     $("zgpStats").replaceChildren(
@@ -125,8 +125,14 @@
   }
 
   function showView(name) {
+    // Una sola pantalla: la vista anterior se difumina y entra la nueva.
+    const changed = name !== view || !$(`zgp-${name}`).classList.contains("is-in");
     view = name;
-    ["scan", "issue", "list", "mic", "shows", "guestlist"].forEach((v) => { $(`zgp-${v}`).hidden = v !== name; });
+    ["summary", "scan", "issue", "list", "mic", "shows", "guestlist"].forEach((v) => {
+      const node = $(`zgp-${v}`);
+      node.hidden = v !== name;
+      if (v === name && changed) { node.classList.remove("is-in"); void node.offsetWidth; node.classList.add("is-in"); }
+    });
     document.querySelectorAll("#zgpTabs .tab").forEach((b) => b.classList.toggle("is-active", b.dataset.view === name));
     if (name !== "scan") stopCamera();
     if (name === "list") loadTickets();
@@ -572,12 +578,9 @@
   $("zgpTabs").addEventListener("click", (event) => {
     const btn = event.target.closest(".tab");
     if (btn) showView(btn.dataset.view);
-    // Si el contenido de la sección quedó fuera de la pantalla, se baja hasta él.
-    const target = btn && $(`zgp-${btn.dataset.view}`);
-    if (target) {
-      const top = target.getBoundingClientRect().top;
-      if (top > window.innerHeight * 0.6 || top < 0) window.scrollTo({ top: window.scrollY + top - $("zgpTabs").getBoundingClientRect().bottom - 16, behavior: "smooth" });
-    }
+    // La pantalla nueva arranca arriba, debajo del menú.
+    const menu = $("zgpTabs").getBoundingClientRect();
+    if (menu.top < 60) window.scrollTo({ top: window.scrollY + $("zgpEventPicker").getBoundingClientRect().top - menu.height - 70, behavior: "smooth" });
   });
   $("zgpScanBtn").addEventListener("click", () => { if (scanning) stopCamera(); else startCamera(); });
   $("zgpMark").addEventListener("click", mark);
