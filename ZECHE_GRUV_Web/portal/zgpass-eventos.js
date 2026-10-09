@@ -98,6 +98,7 @@
     $("zgpBody").hidden = true;
     $("zgpStatus").hidden = true;
     document.querySelector(".zgp-head").hidden = true;
+    document.querySelector(".zgp-config").hidden = true;
     $("zgpEditor").hidden = false;
     window.scrollTo(0, 0);
   }
@@ -106,6 +107,7 @@
     $("zgpEditor").hidden = true;
     $("zgpStatus").hidden = false;
     document.querySelector(".zgp-head").hidden = false;
+    document.querySelector(".zgp-config").hidden = false;
     if (A.current) $("zgpBody").hidden = false;
   }
 
@@ -363,5 +365,121 @@
     }
   });
 
-  window.ZGEventos = { review, openEditor };
+  // ---------- Configurar carpetas de eventos (una carpeta madre por tipo) ----------
+  async function openConfig() {
+    $("zgpConfig").showModal();
+    const blocks = [...document.querySelectorAll("#zgpConfig .cfg-block")];
+    blocks.forEach((b) => { b.querySelector(".cfg-state").textContent = "Cargando…"; setMsg(b.querySelector(".msg"), ""); });
+    try {
+      const data = await A.call({ action: "settings" });
+      blocks.forEach((b) => {
+        const cur = data[b.dataset.kind] || {};
+        b.querySelector("input").value = cur.link || "";
+        b.querySelector(".cfg-state").textContent = cur.link ? `✓ Conectada${cur.name ? ` · ${cur.name}` : ""}` : "Sin conectar";
+        b.querySelector(".cfg-state").classList.toggle("is-on", !!cur.link);
+      });
+    } catch (err) {
+      blocks.forEach((b) => { b.querySelector(".cfg-state").textContent = ""; setMsg(b.querySelector(".msg"), err.message, true); });
+    }
+  }
+
+  document.querySelectorAll("#zgpConfig .cfg-block").forEach((b) => {
+    const input = b.querySelector("input");
+    const btn = b.querySelector("button");
+    const msg = b.querySelector(".msg");
+    const save = async () => {
+      const link = input.value.trim();
+      if (!link) return setMsg(msg, "Pegá el link de la carpeta.", true);
+      btn.disabled = true;
+      setMsg(msg, "Comprobando el link y armando las carpetas…");
+      try {
+        const out = await A.call({ action: "root_save", kind: b.dataset.kind, root_folder_link: link });
+        b.querySelector(".cfg-state").textContent = `✓ Conectada${out.name ? ` · ${out.name}` : ""}`;
+        b.querySelector(".cfg-state").classList.add("is-on");
+        setMsg(msg, out.folders_ok === false ? "Quedó guardada, pero no pudimos crear alguna carpeta adentro: revisá que el link sea de “Puede editar”." : out.folders_ok ? "Listo: guardada, y ya se crearon las carpetas de los próximos eventos." : "Listo: guardada.", out.folders_ok === false);
+        if (A.current) A.reload(A.current.id); // la pestaña Carpetas se actualiza
+      } catch (err) {
+        setMsg(msg, err.message, true);
+      } finally {
+        btn.disabled = false;
+      }
+    };
+    btn.addEventListener("click", save);
+    input.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); save(); } });
+  });
+  document.addEventListener("click", (e) => { if (e.target.closest("[data-open-config]")) openConfig(); });
+  $("zgpConfigClose").addEventListener("click", () => $("zgpConfig").close());
+
+  // ---------- Lista de invitados: entradas sin cargo por mail ----------
+  function glRow() {
+    const row = el("div", "gl-row");
+    row.innerHTML = `
+      <div class="field"><label>Nombre</label><input type="text" class="gl-first" maxlength="60" autocomplete="off"></div>
+      <div class="field"><label>Apellido</label><input type="text" class="gl-last" maxlength="60" autocomplete="off"></div>
+      <div class="field gl-mail"><label>Mail</label><input type="email" class="gl-email" maxlength="160" autocomplete="off" inputmode="email"></div>
+      <div class="field gl-qty"><label>Entradas</label><input type="number" class="gl-quantity" min="1" max="10" value="1" inputmode="numeric"></div>
+      <button class="link-btn gl-remove" type="button" aria-label="Quitar">✕</button>`;
+    row.querySelector(".gl-remove").addEventListener("click", () => { if ($("glRows").children.length > 1) row.remove(); else row.querySelectorAll("input").forEach((i) => { i.value = i.type === "number" ? 1 : ""; }); });
+    return row;
+  }
+
+  async function loadGuestlist() {
+    const ev = A.current;
+    if (!ev) return;
+    $("glType").replaceChildren(...ev.ticket_types.filter((t) => t.active !== false).map((t) => { const o = el("option", "", t.name); o.value = t.id; return o; }));
+    if (!$("glRows").children.length) $("glRows").append(glRow());
+    setMsg($("glStatus"), "Cargando…");
+    try {
+      const { tickets } = await A.call({ action: "tickets", event_id: ev.id });
+      const comps = tickets.filter((t) => t.comp);
+      setMsg($("glStatus"), comps.length ? `${comps.length} ${comps.length > 1 ? "entradas" : "entrada"} sin cargo.` : "Todavía no hay invitados con entrada.");
+      $("glTable").querySelector("tbody").replaceChildren(...comps.map((t) => {
+        const tr = el("tr");
+        tr.append(el("td", "", t.holder_name), el("td", "", t.holder_email || "—"), el("td", "", t.code), el("td", t.status === "used" ? "" : "zgp-missing", t.status === "used" ? `Ingresó ${fmtTime(t.used_at)}` : "Todavía no"));
+        return tr;
+      }));
+    } catch (err) {
+      setMsg($("glStatus"), err.message, true);
+    }
+  }
+
+  $("glAdd").addEventListener("click", () => { const r = glRow(); $("glRows").append(r); r.querySelector(".gl-first").focus(); });
+  $("glForm").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const rows = [...$("glRows").children];
+    const guests = rows.map((r) => ({
+      first_name: r.querySelector(".gl-first").value.trim(),
+      last_name: r.querySelector(".gl-last").value.trim(),
+      email: r.querySelector(".gl-email").value.trim(),
+      quantity: Number(r.querySelector(".gl-quantity").value) || 1,
+    })).filter((g) => g.first_name || g.last_name || g.email);
+    if (!guests.length) return setMsg($("glMsg"), "Completá al menos un invitado.", true);
+    if (guests.some((g) => !g.first_name || !g.last_name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(g.email))) return setMsg($("glMsg"), "Cada invitado necesita nombre, apellido y un mail válido (ahí le llega la entrada).", true);
+    const total = guests.reduce((t, g) => t + g.quantity, 0);
+    if (!window.confirm(`¿Enviar ${total} ${total > 1 ? "entradas" : "entrada"} sin cargo a ${guests.length} ${guests.length > 1 ? "invitados" : "invitado"}? Les llegan por mail en el momento.`)) return;
+    $("glSend").disabled = true;
+    setMsg($("glMsg"), "Enviando entradas…");
+    try {
+      const { results } = await A.call({ action: "guestlist_send", event_id: A.current.id, ticket_type_id: $("glType").value, guests });
+      const okList = results.filter((r) => r.ok);
+      const failed = results.filter((r) => !r.ok);
+      const noMail = okList.filter((r) => !r.emailed);
+      const parts = [`Listo: ${okList.length} de ${results.length} ${results.length > 1 ? "invitados" : "invitado"} con entrada.`];
+      if (noMail.length) parts.push(`No pudimos mandar el mail a: ${noMail.map((r) => r.name).join(", ")} (la entrada está emitida; reenviala desde “Entradas”).`);
+      if (failed.length) parts.push(`No se emitió para: ${failed.map((r) => `${r.name} (${r.error})`).join(", ")}.`);
+      setMsg($("glMsg"), parts.join(" "), !!(failed.length || noMail.length));
+      // Quedan en el formulario solo los que fallaron, para reintentar.
+      const failedEmails = new Set(failed.map((r) => r.email));
+      rows.forEach((r) => { if (!failedEmails.has(r.querySelector(".gl-email").value.trim())) r.remove(); });
+      if (!$("glRows").children.length) $("glRows").append(glRow());
+      await loadGuestlist();
+      A.reload(A.current.id);
+    } catch (err) {
+      setMsg($("glMsg"), err.message, true);
+    } finally {
+      $("glSend").disabled = false;
+    }
+  });
+
+  window.ZGEventos = { review, openEditor, loadGuestlist };
 })();

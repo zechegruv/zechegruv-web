@@ -126,12 +126,13 @@
 
   function showView(name) {
     view = name;
-    ["scan", "issue", "list", "mic", "shows"].forEach((v) => { $(`zgp-${v}`).hidden = v !== name; });
+    ["scan", "issue", "list", "mic", "shows", "guestlist"].forEach((v) => { $(`zgp-${v}`).hidden = v !== name; });
     document.querySelectorAll("#zgpTabs .tab").forEach((b) => b.classList.toggle("is-active", b.dataset.view === name));
     if (name !== "scan") stopCamera();
     if (name === "list") loadTickets();
     if (name === "mic") loadMic();
     if (name === "shows") loadShows();
+    if (name === "guestlist" && window.ZGEventos) window.ZGEventos.loadGuestlist();
   }
 
   // ---------- Control de acceso ----------
@@ -390,43 +391,14 @@
     : `Hola ${g.name}! Ya sos parte del line up de ${current.name} (${fmtDate(current.starts_at)}). Subí tus pistas acá, sin usuario ni contraseña: ${g.link}\nEl link es solo tuyo. Nos vemos en el escenario 🌞`;
 
   // Dónde va a quedar cada cosa en OneDrive.
+  let rootSet = false;
   function paintPath() {
     const folder = $("zgpFolderName").value.trim() || "(carpeta de la edición)";
-    $("zgpFolderPath").textContent = $("zgpRootFolder").value.trim()
-      ? `📁 Carpeta madre / ${folder} / Open Mic · Shows / una carpeta por artista`
-      : "Pegá la carpeta madre una sola vez: después cada edición arma sus carpetas sola.";
+    $("zgpFolderPath").textContent = rootSet ? `📁 Shows & Open Mic / ${folder} / Open Mic · Shows / una carpeta por artista` : "";
+    $("zgpFolderPath").hidden = !rootSet;
+    $("zgpNoRoot").hidden = rootSet;
   }
-  ["zgpRootFolder", "zgpFolderName"].forEach((id) => $(id).addEventListener("input", paintPath));
-  // La carpeta madre se guarda sola, con su botón: se comprueba el link y se
-  // arman en el momento las carpetas del evento elegido.
-  $("zgpRootSave").addEventListener("click", async () => {
-    const link = $("zgpRootFolder").value.trim();
-    if (!link) return setMsg($("zgpRootMsg"), "Pegá el link de la carpeta madre.", true);
-    $("zgpRootSave").disabled = true;
-    setMsg($("zgpRootMsg"), "Comprobando el link y armando las carpetas…");
-    try {
-      const out = await call({ action: "root_save", event_id: current.id, root_folder_link: link });
-      $("zgpRootSet").hidden = false;
-      $("zgpRootEdit").hidden = true;
-      $("zgpRootSet").querySelector("span").textContent = `✓ Conectada${out.name ? ` · ${out.name}` : ""}`;
-      paintPath();
-      setMsg($("zgpRootMsg"), out.folders_ok === false
-        ? "La carpeta madre quedó guardada, pero no pudimos crear alguna carpeta adentro. Revisá que el link sea de “Puede editar”."
-        : out.folders_ok ? `Listo: carpeta madre conectada y “${out.folder_name}” creada con Open Mic y Shows.` : "Listo: carpeta madre conectada.", out.folders_ok === false);
-    } catch (err) {
-      setMsg($("zgpRootMsg"), err.message, true);
-    } finally {
-      $("zgpRootSave").disabled = false;
-    }
-  });
-  $("zgpRootFolder").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); $("zgpRootSave").click(); } });
-
-  $("zgpRootChange").addEventListener("click", () => {
-    $("zgpRootSet").hidden = true;
-    $("zgpRootEdit").hidden = false;
-    $("zgpRootFolder").focus();
-    $("zgpRootFolder").select();
-  });
+  $("zgpFolderName").addEventListener("input", paintPath);
 
   function paintGuests() {
     const data = showsData;
@@ -484,11 +456,7 @@
     showsData = data;
     $("zgpShowsForm").hidden = false;
     document.querySelector(".zgp-guests").hidden = false;
-    $("zgpRootFolder").value = data.root_folder_link || "";
-    // Con la carpeta madre ya cargada, se muestra en una línea (y "Cambiar").
-    $("zgpRootSet").hidden = !data.root_folder_link;
-    $("zgpRootEdit").hidden = !!data.root_folder_link;
-    setMsg($("zgpRootMsg"), "");
+    rootSet = !!data.root_folder_link;
     $("zgpFolderName").value = data.folder_name_custom || data.folder_name;
     $("zgpShowsDeadline").value = toLocalInput(data.shows_deadline);
     paintPath();
@@ -539,7 +507,6 @@
     const body = {
       action: "shows_save",
       event_id: current.id,
-      root_folder_link: $("zgpRootFolder").value.trim(),
       folder_name: $("zgpFolderName").value.trim(),
       // Sin links propios: todo va a la carpeta de la edición, dentro de la madre.
       openmic_folder_link: "",

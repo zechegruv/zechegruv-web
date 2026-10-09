@@ -10,6 +10,8 @@
 //   events                                   → eventos con sus datos y sus números
 //   event_save { event_id?, event, ticket_types } → crea (en borrador) o edita un evento y sus entradas
 //   door_list / door_add { label } / door_remove { access_id } → links de acceso de puerta del evento
+//   guestlist_send { ticket_type_id, guests: [{ first_name, last_name, email, quantity }] } → entradas sin cargo por mail
+//   settings / root_save { kind: show | camp, root_folder_link } → carpetas madre de los eventos
 //   tickets  { event_id }                    → entradas emitidas del evento
 //   openmic  { event_id }                    → inscriptos al open mic
 //   shows    { event_id }                    → carpetas del evento, quién toca (artistas e invitados) y pistas subidas
@@ -187,6 +189,35 @@ exports.handler = async (event) => {
     return json(200, { id: ev.id, slug: ev.slug, folders_ok });
   }
 
+  // ---------- Configuración: carpetas madre (Shows & Open Mic y Campamento Creativo) ----------
+  if (body.action === "settings") {
+    const [show, camp] = await Promise.all([folders.rootLink("show"), folders.rootLink("camp")]);
+    const name = async (link) => { if (!link) return null; const f = await drive.folder(link).catch(() => ({ error: true })); return f.error ? null : f.name; };
+    return json(200, { show: { link: show, name: await name(show) }, camp: { link: camp, name: await name(camp) } });
+  }
+  if (body.action === "root_save") {
+    const kind = body.kind === "camp" ? "camp" : "show";
+    const rootIn = text(body.root_folder_link, 600);
+    if (!/^https:\/\/\S+$/.test(rootIn)) return json(400, { error: "Pegá el link de la carpeta (empieza con https://)." });
+    const check = await drive.folder(rootIn).catch((e) => ({ error: String(e && e.message) }));
+    if (check.error) {
+      console.error("ZG PASS: carpeta madre", kind, check.error);
+      return json(400, { error: "OneDrive no nos deja entrar con ese link. Tiene que ser “Cualquier persona con el vínculo” + “Puede editar” (no “Personas específicas”)." });
+    }
+    if (!(await folders.setRootLink(rootIn, kind))) return json(502, { error: "No pudimos guardar la carpeta. ¿Ya corriste supabase/017_shows_carpetas.sql?" });
+    await audit("carpeta_madre", "settings", kind, { name: check.name }, adminId);
+    // Se arman ya las carpetas de los próximos eventos de ese tipo.
+    const upcoming = await db(`pass_events?kind=eq.${kind}&is_test=eq.${testMode()}&status=neq.cancelled&starts_at=gte.${new Date(Date.now() - 864e5).toISOString()}&select=*`);
+    let foldersOk = null;
+    for (const ev of upcoming.ok ? upcoming.data : []) {
+      const lineupRows = (await db(`pass_show_artists?event_id=eq.${ev.id}&select=profiles(display_name,full_name)`)).data || [];
+      const guestRows = (await db(`pass_show_guests?event_id=eq.${ev.id}&revoked_at=is.null&folder_link=is.null&select=name`)).data || [];
+      const ok = await folders.ensure(ev, [...lineupRows.map((r) => r.profiles && (r.profiles.display_name || r.profiles.full_name)), ...guestRows.map((g) => g.name)], rootIn);
+      if (ok !== null) foldersOk = foldersOk === false ? false : ok;
+    }
+    return json(200, { saved: true, name: check.name, folders_ok: foldersOk });
+  }
+
   if (!UUID.test(eventId)) return json(400, { error: "Elegí un evento." });
 
   // ---------- Entradas emitidas ----------
@@ -240,34 +271,11 @@ exports.handler = async (event) => {
     });
   }
 
-  // ---------- Guardar solo la carpeta madre (y armar las carpetas del evento) ----------
-  if (body.action === "root_save") {
-    const rootIn = text(body.root_folder_link, 600);
-    if (!/^https:\/\/\S+$/.test(rootIn)) return json(400, { error: "Pegá el link de la carpeta madre (empieza con https://)." });
-    const check = await drive.folder(rootIn).catch((e) => ({ error: String(e && e.message) }));
-    if (check.error) {
-      console.error("ZG PASS: carpeta madre", check.error);
-      return json(400, { error: "OneDrive no nos deja entrar con ese link. Tiene que ser “Cualquier persona con el vínculo” + “Puede editar” (no “Personas específicas”).", detail: check.error });
-    }
-    if (!(await folders.setRootLink(rootIn))) return json(502, { error: "No pudimos guardar la carpeta madre. ¿Ya corriste supabase/017_shows_carpetas.sql?" });
-    await audit("carpeta_madre", "settings", "root_folder_link", { name: check.name }, adminId);
-    const evRes = await db(`pass_events?id=eq.${eventId}&select=*`);
-    const ev = evRes.ok && evRes.data[0];
-    let foldersOk = null;
-    if (ev) {
-      const lineupRows = (await db(`pass_show_artists?event_id=eq.${eventId}&select=profiles(display_name,full_name)`)).data || [];
-      const guestRows = (await db(`pass_show_guests?event_id=eq.${eventId}&revoked_at=is.null&folder_link=is.null&select=name`)).data || [];
-      foldersOk = await folders.ensure(ev, [...lineupRows.map((r) => r.profiles && (r.profiles.display_name || r.profiles.full_name)), ...guestRows.map((g) => g.name)], rootIn);
-    }
-    return json(200, { saved: true, name: check.name, folders_ok: foldersOk, folder_name: ev ? folders.folderName(ev) : null });
-  }
-
   if (body.action === "shows_save") {
     const link = (v) => text(v, 600);
-    const rootIn = link(body.root_folder_link);
     const openmic = link(body.openmic_folder_link);
     const shows = link(body.shows_folder_link);
-    for (const [label, value] of [["madre", rootIn], ["Open Mic", openmic], ["Shows", shows]]) {
+    for (const [label, value] of [["Open Mic", openmic], ["Shows", shows]]) {
       if (!value) continue;
       if (!/^https:\/\/\S+$/.test(value)) return json(400, { error: `El link de la carpeta ${label} no parece un link.` });
       const check = await drive.folder(value).catch((e) => ({ error: String(e && e.message) }));
@@ -279,7 +287,6 @@ exports.handler = async (event) => {
       if (isNaN(deadline)) return json(400, { error: "La fecha límite de las pistas no es válida." });
       deadline = deadline.toISOString();
     }
-    if (rootIn !== (await folders.rootLink() || "") && !(await folders.setRootLink(rootIn))) return json(502, { error: "No pudimos guardar la carpeta madre. ¿Ya corriste supabase/017_shows_carpetas.sql?" });
 
     const ids = [...new Set((Array.isArray(body.artist_ids) ? body.artist_ids : []).map(String).filter((id) => UUID.test(id)))];
     const patch = {
@@ -435,6 +442,25 @@ exports.handler = async (event) => {
 
   // ---------- Control de acceso ----------
   if (body.action === "peek" || body.action === "checkin") return checkTicket(eventId, body, adminId);
+
+  // ---------- Lista de invitados: entradas sin cargo por mail ----------
+  // guests: [{ first_name, last_name, email, quantity }]. Cada invitado recibe
+  // su entrada bonificada por mail (ocupa un lugar igual que una paga).
+  if (body.action === "guestlist_send") {
+    const typeId = String(body.ticket_type_id || "");
+    const list = (Array.isArray(body.guests) ? body.guests : []).slice(0, 50);
+    if (!list.length) return json(400, { error: "Agregá al menos un invitado." });
+    const results = [];
+    for (const g of list) {
+      const out = await issueTickets(event, eventId, {
+        ticket_type_id: typeId, quantity: Number(g.quantity) || 1,
+        first_name: g.first_name, last_name: g.last_name, email: g.email, method: "comp", checkin: false,
+      }, adminId, { allowComp: true });
+      const data = JSON.parse(out.body || "{}");
+      results.push({ name: `${text(g.first_name, 60)} ${text(g.last_name, 60)}`.trim(), email: text(g.email, 160), ok: out.statusCode === 200, emailed: !!data.emailed, error: data.error || null, tickets: (data.tickets || []).length });
+    }
+    return json(200, { results });
+  }
 
   // ---------- Venta en puerta y bonificadas ----------
   if (body.action === "issue") return issueTickets(event, eventId, body, adminId, { allowComp: true, allowPrice: true });

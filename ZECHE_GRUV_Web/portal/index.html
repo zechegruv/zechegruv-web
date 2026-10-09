@@ -494,6 +494,7 @@
             <button class="tab" type="button" data-view="list" role="tab">Entradas</button>
             <button class="tab" type="button" data-view="mic" role="tab">Open mic</button>
             <button class="tab" type="button" data-view="shows" role="tab">Carpetas</button>
+            <button class="tab" type="button" data-view="guestlist" role="tab">Lista de invitados</button>
           </div>
 
           <!-- Escanear -->
@@ -602,6 +603,31 @@
             </div>
           </div>
 
+          <!-- Lista de invitados: entradas sin cargo por mail (zgpass-eventos.js) -->
+          <div id="zgp-guestlist" hidden>
+            <form class="card form gl-form" id="glForm" novalidate>
+              <h2 class="card-title">Lista de invitados</h2>
+              <p class="hint">A cada invitado le llega su entrada por mail, sin pagar. Ocupa un lugar igual que una entrada vendida.</p>
+              <div class="field gl-type">
+                <label for="glType">Tipo de entrada</label>
+                <select id="glType"></select>
+              </div>
+              <div class="gl-rows" id="glRows"></div>
+              <button class="link-btn" type="button" id="glAdd">+ Agregar otro invitado</button>
+              <p class="msg" id="glMsg" role="status"></p>
+              <button class="btn btn-primary" type="submit" id="glSend">Enviar entradas</button>
+            </form>
+            <div class="zgp-files">
+              <div class="zgp-files-head"><h2 class="card-title">Invitados con entrada</h2><p class="muted" id="glStatus"></p></div>
+              <div class="table-wrap">
+                <table class="table zgp-table" id="glTable">
+                  <thead><tr><th>Invitado</th><th>Mail</th><th>Código</th><th>Ingreso</th></tr></thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
           <!-- Carpetas: links de OneDrive del evento, line up (artistas del sello e invitados) y pistas recibidas -->
           <div id="zgp-shows" class="zgp-shows-grid" hidden>
             <form id="zgpShowsForm" class="zgp-shows-form" novalidate>
@@ -609,20 +635,9 @@
               <section class="card zgp-folders">
                 <div class="zgp-folders-head">
                   <h2 class="card-title">Carpetas</h2>
-                  <p class="hint">Las carpetas de cada edición se crean solas. Solo hace falta conectar la carpeta madre una vez.</p>
+                  <p class="hint">Se crean solas en OneDrive.</p>
                 </div>
-                <div class="zgp-folders-row">
-                  <div class="field zgp-root">
-                    <label for="zgpRootFolder">Carpeta madre</label>
-                    <div class="zgp-root-set" id="zgpRootSet" hidden>
-                      <span>✓ Conectada</span>
-                      <button class="link-btn" type="button" id="zgpRootChange">Cambiar</button>
-                    </div>
-                    <div class="zgp-root-edit" id="zgpRootEdit">
-                      <input type="url" id="zgpRootFolder" placeholder="https://1drv.ms/f/…" autocomplete="off" spellcheck="false">
-                      <button class="btn btn-primary" type="button" id="zgpRootSave">Guardar</button>
-                    </div>
-                  </div>
+                <div class="zgp-folders-row zgp-folders-row-2">
                   <div class="field">
                     <label for="zgpFolderName">Carpeta de esta edición</label>
                     <input type="text" id="zgpFolderName" maxlength="120" autocomplete="off">
@@ -632,8 +647,8 @@
                     <input type="datetime-local" id="zgpShowsDeadline">
                   </div>
                 </div>
-                <p class="msg" id="zgpRootMsg" role="status"></p>
                 <p class="hint zgp-path" id="zgpFolderPath"></p>
+                <p class="zgp-noroot" id="zgpNoRoot" hidden>Falta conectar la carpeta de Shows &amp; Open Mic. <button class="link-btn" type="button" data-open-config>Configurar carpetas de eventos</button></p>
               </section>
 
               <!-- Line up: invitados y artistas del sello (con el sol) -->
@@ -686,6 +701,9 @@
             </div>
           </div>
         </div>
+        <!-- Configuración (abajo de todo, para no ocupar lugar) -->
+        <p class="zgp-config"><button class="link-btn" type="button" data-open-config>⚙ Configurar carpetas de eventos</button></p>
+
         <!-- Crear / editar un evento (zgpass-eventos.js) -->
         <form class="zgp-editor" id="zgpEditor" novalidate hidden>
           <button class="link-btn back-link" type="button" id="zeBack">← Volver a ZG PASS</button>
@@ -1109,6 +1127,30 @@
     </form>
     <p class="msg" id="zgpDoorMsg" role="alert"></p>
     <div class="actions"><button class="btn" type="button" id="zgpDoorClose">Cerrar</button></div>
+  </dialog>
+
+  <!-- ZG PASS: carpetas madre de los eventos (zgpass-eventos.js) -->
+  <dialog class="dialog dialog-review" id="zgpConfig" aria-labelledby="zgpConfigTitle">
+    <div class="eyebrow">Configuración</div>
+    <h2 class="dialog-title" id="zgpConfigTitle">Carpetas de eventos</h2>
+    <p class="dialog-text">Se cargan una sola vez. Adentro, cada edición arma sola su carpeta. Pegá el link de OneDrive con “Cualquier persona con el vínculo” + “Puede editar”.</p>
+    <div class="cfg-block" data-kind="show">
+      <div class="cfg-head"><b>Shows &amp; Open Mic</b><span class="cfg-state"></span></div>
+      <div class="zgp-root-edit">
+        <input type="url" placeholder="https://1drv.ms/f/…" autocomplete="off" spellcheck="false">
+        <button class="btn btn-primary" type="button">Guardar</button>
+      </div>
+      <p class="msg" role="status"></p>
+    </div>
+    <div class="cfg-block" data-kind="camp">
+      <div class="cfg-head"><b>Campamento Creativo</b><span class="cfg-state"></span></div>
+      <div class="zgp-root-edit">
+        <input type="url" placeholder="https://1drv.ms/f/…" autocomplete="off" spellcheck="false">
+        <button class="btn btn-primary" type="button">Guardar</button>
+      </div>
+      <p class="msg" role="status"></p>
+    </div>
+    <div class="actions"><button class="btn" type="button" id="zgpConfigClose">Cerrar</button></div>
   </dialog>
 
   <!-- ZG PASS: revisar todo antes de publicar y abrir la venta (zgpass-eventos.js) -->

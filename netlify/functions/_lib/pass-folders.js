@@ -19,16 +19,20 @@ const KINDS = {
 };
 const TZ = "America/Argentina/Buenos_Aires";
 
-async function rootLink() {
-  const res = await db("pass_settings?key=eq.root_folder_link&select=value");
+// Una carpeta madre por tipo de evento: Shows & Open Mic y Campamento Creativo.
+const ROOT_KEYS = { show: "root_folder_link", camp: "camp_root_folder_link" };
+const rootKind = (kind) => (kind === "camp" ? "camp" : "show");
+
+async function rootLink(kind = "show") {
+  const res = await db(`pass_settings?key=eq.${ROOT_KEYS[rootKind(kind)]}&select=value`);
   return res.ok && res.data[0] ? res.data[0].value || null : null;
 }
 
-async function setRootLink(value) {
+async function setRootLink(value, kind = "show") {
   const res = await db("pass_settings?on_conflict=key", {
     method: "POST",
     prefer: "resolution=merge-duplicates",
-    body: { key: "root_folder_link", value: value || null, updated_at: new Date().toISOString() },
+    body: { key: ROOT_KEYS[rootKind(kind)], value: value || null, updated_at: new Date().toISOString() },
   });
   return res.ok;
 }
@@ -56,7 +60,7 @@ async function eventFolder(ev, kind, root) {
     const own = await drive.folder(ev[k.link]);
     return own.error ? { error: `link propio: ${own.error}` } : { target: own };
   }
-  const base = root === undefined ? await rootLink() : root;
+  const base = root === undefined ? await rootLink(ev.kind) : root;
   if (!base) return { error: "sin carpeta madre" };
   const top = await drive.folder(base);
   if (top.error) return { error: `carpeta madre: ${top.error}` };
@@ -66,26 +70,33 @@ async function eventFolder(ev, kind, root) {
   return sub ? { target: sub } : { error: `no se pudo crear ${k.name}` };
 }
 
-// Arma (si faltan) las carpetas del evento: la de la edición con Open Mic
-// y Shows, y adentro de Shows una por nombre. Nunca falla: devuelve si
-// salió todo bien.
+// Arma (si faltan) las carpetas del evento, dentro de la carpeta madre de
+// su tipo. Show: la de la edición con Open Mic y Shows, y adentro de Shows
+// una por nombre. Campamento: solo la de la edición. En los dos casos, las
+// ediciones anteriores que falten se crean vacías ("Edición 1"…). Nunca
+// falla: devuelve si salió todo bien (null si no hay carpeta madre).
 async function ensure(ev, names = [], root) {
-  if (ev.kind !== "show") return null;
-  const base = root === undefined ? await rootLink() : root;
-  if (!available(ev, "shows", base)) return null;
+  const base = root === undefined ? await rootLink(ev.kind) : root;
   try {
-    let ok = true;
-    // Las ediciones anteriores que falten se crean vacías ("Edición 1"…),
-    // así la carpeta madre queda completa y en orden.
     const n = editionNumber(ev);
-    if (n && n > 1 && folderName(ev).toLowerCase() === `edición ${n}` && !ev.shows_folder_link && !ev.openmic_folder_link) {
+    const plain = n && folderName(ev).toLowerCase() === `edición ${n}`;
+    if (ev.kind === "camp") {
+      if (!base) return null;
+      const top = await drive.folder(base);
+      if (top.error) return false;
+      if (plain) for (let k = 1; k < n; k++) await drive.subfolder(top, `Edición ${k}`);
+      return !!(await drive.subfolder(top, folderName(ev)));
+    }
+    if (ev.kind !== "show" || !available(ev, "shows", base)) return null;
+    let ok = true;
+    if (plain && n > 1 && !ev.shows_folder_link && !ev.openmic_folder_link) {
       const top = await drive.folder(base);
       if (!top.error) for (let k = 1; k < n; k++) await drive.subfolder(top, `Edición ${k}`);
     }
     if (ev.openmic_enabled && available(ev, "openmic", base)) ok = !(await eventFolder(ev, "openmic", base)).error && ok;
     const shows = await eventFolder(ev, "shows", base);
     if (shows.error) return false;
-    for (const n of names.filter(Boolean)) ok = !!(await drive.subfolder(shows.target, drive.cleanName(n))) && ok;
+    for (const name of names.filter(Boolean)) ok = !!(await drive.subfolder(shows.target, drive.cleanName(name))) && ok;
     return ok;
   } catch (e) {
     console.error("ZG PASS: carpetas", e);

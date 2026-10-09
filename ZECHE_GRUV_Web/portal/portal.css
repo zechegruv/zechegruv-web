@@ -2539,3 +2539,29 @@ a.ref-title:hover { color: var(--orange-soft); }
 .zgp-lineup .zgp-artists .check input:checked + .zgp-sun { filter: drop-shadow(0 0 6px rgba(245, 166, 35, .65)); opacity: 1; transform: scale(1.1) rotate(12deg); }
 .zgp-lineup .zgp-artists .check input:checked ~ span { color: var(--cream); font-weight: 600; }
 .zgp-lineup .zgp-artists .check input:focus-visible + .zgp-sun { outline: 2px solid var(--orange); outline-offset: 2px; }
+
+/* Lista de invitados (entradas sin cargo) */
+.gl-form .gl-type { max-width: 320px; width: 100%; }
+.gl-rows { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+.gl-row { display: grid; grid-template-columns: 1fr 1fr 1.6fr 90px auto; gap: 10px; align-items: end; width: 100%; }
+.gl-row .field input { width: 100%; }
+.gl-row .gl-remove { margin-bottom: 14px; font-size: 14px; text-decoration: none; }
+#zgp-guestlist .zgp-files { margin-top: 24px; }
+@media (max-width: 760px) {
+  .gl-row { grid-template-columns: 1fr 1fr; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+  .gl-row .gl-mail { grid-column: 1 / -1; }
+}
+
+/* Configuración de carpetas (abajo de todo + ventana) */
+.zgp-config { margin-top: 48px; padding-top: 18px; border-top: 1px solid var(--border); text-align: center; }
+.zgp-config .link-btn { font-size: 12px; color: var(--muted); }
+.zgp-noroot { font-size: 13px; color: var(--orange-soft); margin-top: 10px; }
+.zgp-noroot .link-btn { font-size: inherit; color: var(--orange-soft); }
+.cfg-block { padding: 16px 0; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 10px; }
+.cfg-block:last-of-type { border-bottom: 1px solid var(--border); margin-bottom: 18px; }
+.cfg-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.cfg-head b { font-size: 15px; }
+.cfg-state { font-size: 12px; color: var(--muted); }
+.cfg-state.is-on { color: #8fd18a; }
+.cfg-block input { border: 1px solid var(--border); background: rgba(255, 244, 220, .05); color: var(--cream); font-family: inherit; font-size: 14px; padding: 12px 13px; border-radius: 0; outline: none; }
+.cfg-block input:focus-visible { border-color: var(--orange); }
