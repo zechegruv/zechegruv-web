@@ -41,6 +41,10 @@
   function renderEvent() {
     const s = current.stats;
     $("zgpState").textContent = STATE[current.status] || current.status;
+    // Open mic y Carpetas son solo de los shows.
+    const isShow = current.kind === "show";
+    document.querySelectorAll('#zgpTabs [data-view="mic"], #zgpTabs [data-view="shows"]').forEach((b) => { b.hidden = !isShow; });
+    if (!isShow && (view === "mic" || view === "shows")) view = "scan";
     $("zgpPublish").hidden = current.status === "cancelled";
     $("zgpPublish").textContent = current.status === "published" ? "Cerrar la venta" : "Publicar y abrir la venta";
     $("zgpStats").replaceChildren(
@@ -61,7 +65,7 @@
       stat("Valor nominal", fmtMoney(s.face_value)),
       stat("Descuentos y bonificaciones", fmtMoney(s.face_value - s.revenue)),
     );
-    $("zgpType").replaceChildren(...current.ticket_types.map((t) => {
+    $("zgpType").replaceChildren(...current.ticket_types.filter((t) => t.active !== false).map((t) => {
       const option = el("option", "", `${t.name} — ${fmtMoney(t.price)}`);
       option.value = t.id;
       return option;
@@ -339,6 +343,16 @@
     ? `Hola ${g.name}! Ya son parte del line up de ${current.name} (${fmtDate(current.starts_at)}). Suban sus pistas acá, sin usuario ni contraseña: ${g.link}\nEl link es solo de ustedes. Nos vemos en el escenario 🌞`
     : `Hola ${g.name}! Ya sos parte del line up de ${current.name} (${fmtDate(current.starts_at)}). Subí tus pistas acá, sin usuario ni contraseña: ${g.link}\nEl link es solo tuyo. Nos vemos en el escenario 🌞`;
 
+  // Dónde va a quedar cada cosa en OneDrive.
+  function paintPath() {
+    const folder = $("zgpFolderName").value.trim() || "(carpeta de la edición)";
+    const own = $("zgpMicFolder").value.trim() || $("zgpShowsFolder").value.trim();
+    $("zgpFolderPath").textContent = $("zgpRootFolder").value.trim()
+      ? `Queda así: carpeta madre / ${folder} / Open Mic y Shows / un artista por carpeta.${own ? " (Con los links propios de abajo, se usan esos.)" : ""}`
+      : "Primero pegá la carpeta madre.";
+  }
+  ["zgpRootFolder", "zgpFolderName", "zgpMicFolder", "zgpShowsFolder"].forEach((id) => $(id).addEventListener("input", paintPath));
+
   function paintGuests() {
     const data = showsData;
     $("zgpGuestList").replaceChildren(...data.guests.map((g) => {
@@ -392,9 +406,13 @@
     showsData = data;
     $("zgpShowsForm").hidden = false;
     document.querySelector(".zgp-guests").hidden = false;
+    $("zgpRootFolder").value = data.root_folder_link || "";
+    $("zgpFolderName").value = data.folder_name_custom || data.folder_name;
     $("zgpMicFolder").value = data.openmic_folder_link || "";
     $("zgpShowsFolder").value = data.shows_folder_link || "";
+    $("zgpOverrides").open = !!(data.openmic_folder_link || data.shows_folder_link);
     $("zgpShowsDeadline").value = toLocalInput(data.shows_deadline);
+    paintPath();
 
     // Si todavía no se eligió a nadie, se proponen los del line up que tienen cuenta.
     const lineup = (data.lineup || []).map(norm);
@@ -407,6 +425,7 @@
       input.value = a.id;
       input.checked = chosen.has(a.id);
       label.append(input, el("span", "", a.active ? a.name : `${a.name} (inactivo)`));
+      if (data.notified.includes(a.id)) label.append(el("small", "zgp-notified", "· avisado"));
       return label;
     }));
     if (!data.chosen.length && chosen.size) setMsg($("zgpShowsMsg"), "Marcamos a los del line up que tienen cuenta. Revisá y guardá para habilitarles la subida.");
@@ -437,17 +456,23 @@
     const body = {
       action: "shows_save",
       event_id: current.id,
+      root_folder_link: $("zgpRootFolder").value.trim(),
+      folder_name: $("zgpFolderName").value.trim(),
       openmic_folder_link: $("zgpMicFolder").value.trim(),
       shows_folder_link: $("zgpShowsFolder").value.trim(),
       shows_deadline: deadline ? new Date(deadline).toISOString() : null,
       artist_ids: [...$("zgpShowArtists").querySelectorAll("input:checked")].map((i) => i.value),
     };
     $("zgpShowsSave").disabled = true;
-    setMsg($("zgpShowsMsg"), "Guardando y comprobando las carpetas…");
+    setMsg($("zgpShowsMsg"), "Guardando y armando las carpetas en OneDrive…");
     try {
-      await call(body);
+      const out = await call(body);
       await loadShows();
-      setMsg($("zgpShowsMsg"), "Listo: guardado.");
+      const parts = ["Listo: guardado."];
+      if (out.folders_ok === true) parts.push("Las carpetas ya están en OneDrive.");
+      if (out.folders_ok === false) parts.push("Ojo: no pudimos armar alguna carpeta en OneDrive; revisá los links.");
+      if (out.notified && out.notified.length) parts.push(`Les mandamos el mail para subir pistas a: ${out.notified.join(", ")}.`);
+      setMsg($("zgpShowsMsg"), parts.join(" "), out.folders_ok === false);
     } catch (err) {
       setMsg($("zgpShowsMsg"), err.message, true);
     } finally {
@@ -491,6 +516,8 @@
   $("zgpRefresh").addEventListener("click", () => load(current && current.id));
   $("zgpPublish").addEventListener("click", async () => {
     const next = current.status === "published" ? "closed" : "published";
+    // Publicar: primero el cartel para revisar todo (zgpass-eventos.js).
+    if (next === "published" && window.ZGEventos) return window.ZGEventos.review(current);
     const question = next === "published"
       ? `¿Publicar “${current.name}” y abrir la venta en el sitio?`
       : `¿Cerrar la venta online de “${current.name}”? Las entradas ya emitidas siguen valiendo.`;
@@ -539,5 +566,9 @@
       P.showPanel("pass");
       load(current && current.id);
     },
+    call,
+    reload: (id) => load(id),
+    get current() { return current; },
+    get events() { return events; },
   };
 })();

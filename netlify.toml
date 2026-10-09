@@ -31,6 +31,13 @@
   to = "/pass/pistas/"
   status = 302
 
+# Acceso de puerta de un evento (scanner, venta en puerta y contador), con
+# link único que arma el administrador en ZG PASS → "Acceso de puerta".
+[[redirects]]
+  from = "/puerta"
+  to = "/pass/puerta/"
+  status = 302
+
 # Tipografías: el nombre lleva versión (-v1), así que el navegador las
 # guarda un año sin volver a pedirlas. Si se cambia la fuente, subir a -v2.
 [[headers]]

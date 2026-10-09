@@ -462,8 +462,13 @@
 
       <!-- ZG PASS: entradas, control de acceso y venta en puerta (solo administrador) -->
       <div id="panel-pass" hidden>
-        <div class="eyebrow">ZG PASS</div>
-        <h1 class="title title-sm">Entradas</h1>
+        <div class="zgp-head">
+          <div>
+            <div class="eyebrow">ZG PASS</div>
+            <h1 class="title title-sm">Entradas</h1>
+          </div>
+          <button class="btn btn-primary" type="button" id="zgpNew">+ Crear evento</button>
+        </div>
         <p class="muted" id="zgpStatus"></p>
 
         <div id="zgpBody" hidden>
@@ -474,6 +479,8 @@
             </div>
             <span class="pill" id="zgpState"></span>
             <button class="btn" type="button" id="zgpPublish"></button>
+            <button class="btn" type="button" id="zgpEdit">Editar datos</button>
+            <button class="btn" type="button" id="zgpDoorBtn">Acceso de puerta</button>
             <button class="btn" type="button" id="zgpRefresh">Actualizar</button>
           </div>
           <p class="msg" id="zgpBarMsg" role="status"></p>
@@ -599,18 +606,30 @@
           <!-- Carpetas: links de OneDrive del evento, line up (artistas del sello e invitados) y pistas recibidas -->
           <div id="zgp-shows" hidden>
             <form class="card form zgp-shows-form" id="zgpShowsForm" novalidate>
-              <h2 class="card-title">Carpetas del evento</h2>
-              <p class="hint">Pegá el link de OneDrive de cada carpeta, compartido con permiso “Puede editar”. Nadie más ve estos links: la gente sube desde la web y el archivo cae directo ahí.</p>
+              <h2 class="card-title">Carpetas</h2>
+              <p class="hint">Nadie ve estos links: la gente sube desde la web y el archivo cae directo en OneDrive. Tienen que ser links con permiso “Puede editar”.</p>
               <div class="field">
-                <label for="zgpMicFolder">Open mic · link de edición</label>
-                <input type="url" id="zgpMicFolder" placeholder="https://1drv.ms/f/…" autocomplete="off" spellcheck="false">
-                <p class="hint">Acá llegan las canciones de quienes se anotan al open mic con su entrada.</p>
+                <label for="zgpRootFolder">Carpeta madre · se carga una sola vez</label>
+                <input type="url" id="zgpRootFolder" placeholder="https://1drv.ms/f/… (Shows y Open Mic)" autocomplete="off" spellcheck="false">
+                <p class="hint">Vale para todos los shows. Adentro, cada edición tiene su carpeta con “Open Mic” y “Shows”, y en Shows una por artista. Si no existen, se crean solas.</p>
               </div>
               <div class="field">
-                <label for="zgpShowsFolder">Shows · link de edición</label>
-                <input type="url" id="zgpShowsFolder" placeholder="https://1drv.ms/f/…" autocomplete="off" spellcheck="false">
-                <p class="hint">Un solo link por show. Cada integrante del line up (artistas del sello e invitados) sube a la carpeta con su nombre que esté adentro: si ya la creaste, usamos esa; si no, se crea sola. El nombre tiene que coincidir con el del portal o el del invitado (mayúsculas y tildes no importan).</p>
+                <label for="zgpFolderName">Carpeta de esta edición</label>
+                <input type="text" id="zgpFolderName" maxlength="120" autocomplete="off">
+                <p class="hint" id="zgpFolderPath"></p>
               </div>
+              <details class="zgp-guest-more zgp-overrides" id="zgpOverrides">
+                <summary>Usar otras carpetas solo para esta edición</summary>
+                <div class="field">
+                  <label for="zgpMicFolder">Open Mic · link de edición</label>
+                  <input type="url" id="zgpMicFolder" placeholder="https://1drv.ms/f/…" autocomplete="off" spellcheck="false">
+                </div>
+                <div class="field">
+                  <label for="zgpShowsFolder">Shows · link de edición</label>
+                  <input type="url" id="zgpShowsFolder" placeholder="https://1drv.ms/f/…" autocomplete="off" spellcheck="false">
+                </div>
+                <p class="hint">Si los dejás vacíos, se usa la carpeta de la edición dentro de la carpeta madre.</p>
+              </details>
               <div class="field">
                 <label for="zgpShowsDeadline">Pistas: se pueden subir hasta</label>
                 <input type="datetime-local" id="zgpShowsDeadline">
@@ -618,7 +637,7 @@
               </div>
 
               <h2 class="card-title zgp-sub">Line up · artistas del sello</h2>
-              <p class="hint">A los que marques les aparece en su portal la tarjeta para subir las pistas de este show.</p>
+              <p class="hint">A los que marques les aparece en su portal la tarjeta para subir sus pistas y, al guardar, les llega un mail avisándoles (una sola vez).</p>
               <div class="zgp-artists" id="zgpShowArtists"></div>
 
               <p class="msg" id="zgpShowsMsg" role="status"></p>
@@ -668,6 +687,126 @@
             </div>
           </div>
         </div>
+        <!-- Crear / editar un evento (zgpass-eventos.js) -->
+        <form class="zgp-editor" id="zgpEditor" novalidate hidden>
+          <button class="link-btn back-link" type="button" id="zeBack">← Volver a ZG PASS</button>
+          <div class="eyebrow" id="zeEyebrow">Nuevo show</div>
+          <h2 class="title title-sm" id="zeTitle">Crear show</h2>
+          <p class="hint ze-lead" id="zeLead"></p>
+
+          <section class="card form ze-block">
+            <h3 class="card-title">El evento</h3>
+            <div class="grid-2">
+              <div class="field">
+                <label for="zeName">Nombre</label>
+                <input type="text" id="zeName" maxlength="120" autocomplete="off">
+              </div>
+              <div class="field">
+                <label for="zeKind">Tipo</label>
+                <select id="zeKind">
+                  <option value="show">Shows &amp; Open Mic</option>
+                  <option value="camp">Campamento Creativo</option>
+                </select>
+              </div>
+            </div>
+            <div class="ze-row-3">
+              <div class="field">
+                <label for="zeDate">Fecha</label>
+                <input type="date" id="zeDate">
+              </div>
+              <div class="field">
+                <label for="zeTime">Hora</label>
+                <input type="time" id="zeTime">
+              </div>
+              <div class="field">
+                <label for="zeEnd">Termina (opcional)</label>
+                <input type="time" id="zeEnd">
+              </div>
+            </div>
+            <div class="grid-2">
+              <div class="field">
+                <label for="zeVenue">Lugar</label>
+                <input type="text" id="zeVenue" maxlength="120" placeholder="Teatro Sergio Souza">
+              </div>
+              <div class="field">
+                <label for="zeAddress">Dirección</label>
+                <input type="text" id="zeAddress" maxlength="200" placeholder="Rivadavia 1180, CABA">
+              </div>
+            </div>
+            <div class="field">
+              <label for="zeDescription">Descripción</label>
+              <textarea id="zeDescription" rows="4" maxlength="2000"></textarea>
+              <p class="hint">Se ve en la página de entradas, arriba del botón de compra.</p>
+            </div>
+            <div class="field">
+              <label for="zeInfo">Nota extra (opcional)</label>
+              <textarea id="zeInfo" rows="2" maxlength="600" placeholder="Ej.: Puertas 19:30 h. Ingreso solo con entrada digital."></textarea>
+              <p class="hint">Aparece en la página del evento y en la entrada.</p>
+            </div>
+            <div class="field ze-flyer">
+              <label>Flyer (opcional)</label>
+              <div class="ze-flyer-row">
+                <img id="zeFlyerImg" alt="" hidden>
+                <div>
+                  <input type="file" id="zeFlyerFile" accept="image/jpeg,image/png,image/webp" hidden>
+                  <button class="btn" type="button" id="zeFlyerBtn">Subir flyer</button>
+                  <button class="link-btn" type="button" id="zeFlyerRemove" hidden>Quitar</button>
+                  <p class="hint">JPG, PNG o WebP, hasta 5 MB. Sin flyer se usa el logo de ZECHE GRUV Shows.</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="card form ze-block">
+            <h3 class="card-title">Entradas</h3>
+            <div class="grid-2">
+              <div class="field">
+                <label for="zeCapacity">Capacidad (lugares en total)</label>
+                <input type="number" id="zeCapacity" min="1" max="5000" inputmode="numeric">
+              </div>
+              <div class="field">
+                <label for="zeMax">Máximo por persona</label>
+                <input type="number" id="zeMax" min="1" max="20" inputmode="numeric">
+              </div>
+            </div>
+            <div class="ze-types" id="zeTypes"></div>
+            <button class="link-btn" type="button" id="zeAddType">+ Agregar otro tipo de entrada</button>
+          </section>
+
+          <section class="card form ze-block" id="zeShowBlock">
+            <h3 class="card-title">Line up y open mic</h3>
+            <div class="field">
+              <label for="zeLineup">Line up (uno por línea)</label>
+              <textarea id="zeLineup" rows="4" placeholder="Pazz&#10;Maki&#10;Bastian &amp; Kaino"></textarea>
+              <p class="hint">Se ve en la página del evento, en la entrada y en el mail. Quién sube pistas se elige después, en la pestaña Carpetas.</p>
+            </div>
+            <label class="check">
+              <input type="checkbox" id="zeOpenmic">
+              <span>Hay open mic: quien compra su entrada puede anotarse y subir su canción</span>
+            </label>
+            <div class="grid-2">
+              <div class="field">
+                <label for="zeOpenmicDeadline">Inscripción al open mic hasta</label>
+                <input type="datetime-local" id="zeOpenmicDeadline">
+              </div>
+              <div class="field">
+                <label for="zeShowsDeadline">Pistas del line up hasta</label>
+                <input type="datetime-local" id="zeShowsDeadline">
+              </div>
+            </div>
+            <div class="field">
+              <label for="zeFolder">Carpeta de la edición</label>
+              <input type="text" id="zeFolder" maxlength="120" autocomplete="off">
+              <p class="hint">Dentro de la carpeta madre. Si ya la creaste en OneDrive, poné el mismo nombre; si no, se crea sola.</p>
+            </div>
+          </section>
+
+          <p class="msg" id="zeMsg" role="alert"></p>
+          <div class="actions ze-actions">
+            <button class="btn" type="submit" id="zeSave">Guardar borrador</button>
+            <button class="btn btn-primary" type="button" id="zeReview">Guardar y revisar para publicar</button>
+          </div>
+        </form>
       </div>
 
       <!-- Distribución: lista de lanzamientos -->
@@ -936,6 +1075,57 @@
     </div>
   </dialog>
 
+  <!-- ZG PASS: qué tipo de evento se crea (zgpass-eventos.js) -->
+  <dialog class="dialog dialog-review" id="zgpKind" aria-labelledby="zgpKindTitle">
+    <div class="eyebrow">Crear evento</div>
+    <h2 class="dialog-title" id="zgpKindTitle">¿Qué vamos a armar?</h2>
+    <p class="dialog-text">Arranca con los datos de la última edición de ese tipo: cambiás solo lo que haga falta.</p>
+    <div class="kind-options">
+      <button class="kind-option" type="button" data-kind="show">
+        <img src="/assets/camps/zeche-gruv-shows-logo.webp" alt="">
+        <b>Shows &amp; Open Mic</b>
+        <small>Line up, open mic y pistas de los artistas</small>
+      </button>
+      <button class="kind-option" type="button" data-kind="camp">
+        <img src="/assets/camps/zeche-gruv-camp-logo.webp" alt="">
+        <b>Campamento Creativo</b>
+        <small>Entradas y datos del encuentro</small>
+      </button>
+    </div>
+    <div class="actions"><button class="btn" type="button" id="zgpKindCancel">Cancelar</button></div>
+  </dialog>
+
+  <!-- ZG PASS: links de acceso de puerta (zgpass-eventos.js) -->
+  <dialog class="dialog dialog-review" id="zgpDoor" aria-labelledby="zgpDoorTitle">
+    <div class="eyebrow">Acceso de puerta</div>
+    <h2 class="dialog-title" id="zgpDoorTitle"></h2>
+    <p class="dialog-text">Un link para quien esté en la puerta: escanea las entradas, vende en puerta y ve el contador (totales, anticipadas y en puerta). No ve nada más del portal ni necesita cuenta. Vence 24 h después del evento.</p>
+    <ul class="zgp-guest-list" id="zgpDoorList"></ul>
+    <form class="zgp-guest-form" id="zgpDoorForm" novalidate>
+      <div class="field">
+        <label for="zgpDoorLabel">¿Quién va a estar en la puerta?</label>
+        <input type="text" id="zgpDoorLabel" maxlength="60" autocomplete="off" placeholder="Nombre">
+      </div>
+      <button class="btn btn-primary" type="submit" id="zgpDoorAdd">Crear link</button>
+    </form>
+    <p class="msg" id="zgpDoorMsg" role="alert"></p>
+    <div class="actions"><button class="btn" type="button" id="zgpDoorClose">Cerrar</button></div>
+  </dialog>
+
+  <!-- ZG PASS: revisar todo antes de publicar y abrir la venta (zgpass-eventos.js) -->
+  <dialog class="dialog dialog-review" id="zgpReview" aria-labelledby="zgpReviewTitle">
+    <div class="eyebrow">Antes de publicar</div>
+    <h2 class="dialog-title" id="zgpReviewTitle">Revisá que esté todo bien</h2>
+    <p class="dialog-text">Así lo va a ver la gente. Una vez publicado, las entradas quedan a la venta en zechegruv.com.</p>
+    <dl class="review-list" id="zgpReviewList"></dl>
+    <ul class="review-checks" id="zgpReviewChecks"></ul>
+    <p class="msg" id="zgpReviewMsg" role="alert"></p>
+    <div class="actions">
+      <button class="btn" type="button" id="zgpReviewEdit">Volver a editar</button>
+      <button class="btn btn-primary" type="button" id="zgpReviewPublish">Todo bien, publicar</button>
+    </div>
+  </dialog>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="../assets/data/artists.js"></script>
   <script src="portal.js"></script>
@@ -947,6 +1137,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
   <script src="/pass/ticket.js"></script>
   <script src="zgpass.js"></script>
+  <script src="zgpass-eventos.js"></script>
   <script src="/pass/pistas-card.js"></script>
   <script src="shows.js"></script>
 </body>

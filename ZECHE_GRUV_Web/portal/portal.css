@@ -2376,3 +2376,78 @@ a.ref-title:hover { color: var(--orange-soft); }
 .zgp-guest-more { flex: 1 1 100%; order: 2; font-size: 13px; color: var(--muted); }
 .zgp-guest-more summary { cursor: pointer; margin-bottom: 10px; }
 .zgp-guest-more .field { max-width: 460px; }
+
+/* ---------- ZG PASS: crear y editar eventos (zgpass-eventos.js) ---------- */
+
+.zgp-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 8px; }
+.zgp-notified { color: var(--orange-soft); font-size: 12px; margin-left: 4px; }
+
+.zgp-editor { display: flex; flex-direction: column; gap: 16px; max-width: 860px; }
+.zgp-editor > .title-sm { margin-top: -6px; }
+.ze-lead { max-width: 70ch; margin-bottom: 4px; }
+.ze-block .grid-2, .ze-block .field { width: 100%; }
+.ze-block .card-title { margin-bottom: 4px; }
+.ze-row-3 { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 16px; width: 100%; }
+
+.ze-types { display: flex; flex-direction: column; gap: 12px; width: 100%; }
+.ze-type {
+  display: grid;
+  grid-template-columns: 1.3fr .8fr 1.6fr auto auto;
+  align-items: end;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--border);
+}
+.ze-type .check { margin-bottom: 12px; white-space: nowrap; }
+.ze-type .ze-type-remove { margin-bottom: 14px; }
+
+.ze-flyer-row { display: flex; align-items: flex-start; gap: 16px; }
+.ze-flyer-row img { width: 96px; height: 120px; object-fit: cover; border: 1px solid var(--border); }
+.ze-flyer-row .hint { margin-top: 8px; }
+.ze-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+/* Cartel de revisión y elección del tipo de evento */
+.dialog-review { width: min(620px, calc(100vw - 32px)); border-color: rgba(245, 166, 35, .45); }
+.review-list { display: grid; grid-template-columns: max-content 1fr; gap: 8px 18px; margin-bottom: 16px; font-size: 14px; }
+.review-list dt { font-family: "DM Mono", monospace; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); padding-top: 3px; }
+.review-list dd { color: var(--cream); overflow-wrap: anywhere; }
+.review-flyer { grid-column: 1 / -1; width: 120px; height: 150px; object-fit: cover; border: 1px solid var(--border); margin-bottom: 6px; }
+.review-checks { list-style: none; display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; font-size: 13px; }
+.review-checks li { padding: 8px 12px; border-left: 2px solid var(--orange-soft); background: rgba(245, 166, 35, .08); color: var(--beige); }
+.review-checks li.is-blocking { border-color: var(--red); background: rgba(214, 40, 40, .12); color: #ffb3a8; }
+.dialog-review .actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+
+.kind-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px; }
+.kind-option {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 6px;
+  padding: 18px; border: 1px solid var(--border); background: rgba(255, 244, 220, .03);
+  color: var(--cream); font-family: inherit; text-align: left; cursor: pointer; transition: .25s ease;
+}
+.kind-option:hover { border-color: var(--orange); background: rgba(240, 120, 0, .1); }
+.kind-option img { height: 54px; width: auto; max-width: 100%; object-fit: contain; margin-bottom: 6px; }
+.kind-option b { font-size: 16px; letter-spacing: -.01em; }
+.kind-option small { font-size: 12px; color: var(--muted); line-height: 1.4; }
+
+@media (max-width: 640px) {
+  .ze-row-3 { grid-template-columns: 1fr 1fr; }
+  .ze-row-3 .field:first-child { grid-column: 1 / -1; }
+  .ze-type { grid-template-columns: 1fr 1fr; }
+  .ze-type .ze-type-desc { grid-column: 1 / -1; }
+  .kind-options { grid-template-columns: 1fr; }
+  .review-list { grid-template-columns: 1fr; gap: 2px; }
+  .review-list dd { margin-bottom: 8px; }
+}
+.zgp-editor > .back-link { align-self: flex-start; }
+
+/* ---------- Acceso de puerta (pass/puerta/) ---------- */
+.door-when { margin: -4px 0 24px; }
+.door-stats { grid-template-columns: repeat(5, minmax(0, 1fr)); margin-bottom: 28px; }
+.door-total { font-size: 20px; font-weight: 800; letter-spacing: -.02em; color: var(--orange-soft); }
+#zgpDoor .zgp-guest-list { margin-bottom: 18px; }
+#zgpDoor .zgp-guest-form { margin-bottom: 14px; }
+@media (max-width: 640px) {
+  .door-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .door-stats .zgp-stat:first-child { grid-column: 1 / -1; }
+}
+#door-issue .grid-2, #door-issue .field { width: 100%; }
+#door-issue .field input, #door-issue .field select { width: 100%; }

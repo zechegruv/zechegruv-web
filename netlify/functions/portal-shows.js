@@ -1,7 +1,8 @@
 // POST /.netlify/functions/portal-shows
 // Pistas de los shows de ZG PASS. Quien toca en un evento sube sus pistas y
-// llegan a la carpeta "Shows" del evento en OneDrive (pass_events.
-// shows_folder_link, link de edición), en una subcarpeta con su nombre.
+// llegan a la carpeta "Shows" del evento en OneDrive (la de su edición
+// dentro de la carpeta madre, o su link propio: _lib/pass-folders.js), en
+// una subcarpeta con su nombre.
 // Solo agrega archivos: no se borra, mueve ni renombra nada, y si el nombre
 // ya existe OneDrive guarda el nuevo aparte. Nadie recibe el link.
 //
@@ -25,13 +26,14 @@
 // (El invitado no manda event_id: su link es de un solo evento.)
 const { SUPABASE_URL, UUID, json, db, esc, sendMail, notifyEmail, serviceKey, testMode } = require("./_lib/pass");
 const drive = require("./_lib/onedrive");
+const folders = require("./_lib/pass-folders");
 
 const PUBLISHABLE_KEY = "sb_publishable_9M2gY0XZr7xIrV-1s9AiUA_XA1uNm0V";
 const MB = 1024 * 1024;
 const MAX_SIZE = 2048 * MB;
 const SIMPLE_MAX = 4 * MB; // lo que entra en un solo pedido a esta function
 const TYPES = /\.(wav|mp3|aif|aiff|flac|m4a|zip|rar|pdf|txt)$/i;
-const EVENT = "id,name,starts_at,venue_name,venue_address,status,is_test,shows_folder_link,shows_deadline";
+const EVENT = "*"; // también folder_name y links propios, si existen
 const INACTIVE = "Tu acceso al portal está pausado. Si querés retomar, escribinos por WhatsApp.";
 const GUEST_GONE = "Este link ya no está activo. Si tenés que subir tus pistas, escribinos y te mandamos uno nuevo.";
 const GUEST_DAYS_AFTER = 24 * 3600 * 1000; // el link del invitado vence 24 h después del show
@@ -45,15 +47,15 @@ async function userOf(event) {
   return user && user.id ? user : null;
 }
 
-function closedReason(ev, who) {
+function closedReason(ev, who, root) {
   if (ev.status === "cancelled") return "El evento se canceló.";
-  if (!(who && who.folderLink) && !ev.shows_folder_link) return "La subida de pistas todavía no está habilitada. Te avisamos cuando abra.";
+  if (!(who && who.folderLink) && !folders.available(ev, "shows", root)) return "La subida de pistas todavía no está habilitada. Te avisamos cuando abra.";
   if (Date.now() > Date.parse(ev.shows_deadline || ev.starts_at)) return "La subida de pistas para este show ya cerró. Si te falta algo, escribinos.";
   return "";
 }
 
-const showView = (ev, files, who) => {
-  const reason = closedReason(ev, who);
+const showView = (ev, files, who, root) => {
+  const reason = closedReason(ev, who, root);
   return {
     event_id: ev.id, name: ev.name, starts_at: ev.starts_at, venue_name: ev.venue_name, venue_address: ev.venue_address,
     open: !reason, closed_reason: reason, deadline: ev.shows_deadline || ev.starts_at, files,
@@ -69,8 +71,8 @@ async function folderFor(ev, who) {
     if (own.error) { console.error("ZG shows: carpeta invitado", own.error); return { error: "No pudimos abrir tu carpeta. Avisanos por WhatsApp." }; }
     return { target: own, prefix: "" };
   }
-  const root = await drive.folder(ev.shows_folder_link);
-  if (root.error) { console.error("ZG shows: carpeta", root.error); return { error: "No pudimos abrir la carpeta del show. Avisanos por WhatsApp." }; }
+  const { target: root, error } = await folders.eventFolder(ev, "shows");
+  if (error) { console.error("ZG shows: carpeta", error); return { error: "No pudimos abrir la carpeta del show. Avisanos por WhatsApp." }; }
   const sub = await drive.subfolder(root, drive.cleanName(name) || "Artista");
   // Si no se pudo crear la subcarpeta, va suelto con el nombre adelante.
   return sub ? { target: sub, prefix: "" } : { target: root, prefix: `${drive.cleanName(name)} - ` };
@@ -148,12 +150,13 @@ exports.handler = async (event) => {
 
     const who = await whoIs(event, body);
     if (who.error) return who.error;
+    const root = await folders.rootLink();
 
     // ---- Sus shows ----
     if (body.action === "mine") {
       if (who.kind === "guest") {
         const ev = who.guestEvent;
-        return json(200, { guest: { name: who.name, gift_session: who.gift === true, plural: who.plural === true }, shows: [showView(ev, await filesOf(who, ev), who)] });
+        return json(200, { guest: { name: who.name, gift_session: who.gift === true, plural: who.plural === true }, shows: [showView(ev, await filesOf(who, ev), who, root)] });
       }
       const res = await db(`pass_show_artists?profile_id=eq.${who.id}&select=pass_events(${EVENT})`);
       if (!res.ok) return json(200, { shows: [] }); // p. ej. todavía no se corrió 016_shows_pistas.sql
@@ -161,7 +164,7 @@ exports.handler = async (event) => {
       const events = res.data.map((r) => r.pass_events)
         .filter((ev) => ev && ev.is_test === testMode() && ev.status !== "cancelled" && Date.parse(ev.starts_at) > since)
         .sort((a, b) => Date.parse(a.starts_at) - Date.parse(b.starts_at));
-      return json(200, { shows: await Promise.all(events.map(async (ev) => showView(ev, await filesOf(who, ev)))) });
+      return json(200, { shows: await Promise.all(events.map(async (ev) => showView(ev, await filesOf(who, ev), who, root))) });
     }
 
     const ev = await eventFor(who, body.event_id);
@@ -187,7 +190,7 @@ exports.handler = async (event) => {
 
     // ---- Abrir una subida ----
     if (body.action !== "start" && body.action !== "simple") return json(400, { error: "Acción desconocida." });
-    const reason = closedReason(ev, who);
+    const reason = closedReason(ev, who, root);
     if (reason) return json(409, { error: reason });
     const name = drive.cleanName(body.name);
     if (!name || !TYPES.test(name)) return json(400, { error: "Ese tipo de archivo no se puede subir. Mandá WAV, MP3, AIFF, FLAC o un ZIP con las pistas." });

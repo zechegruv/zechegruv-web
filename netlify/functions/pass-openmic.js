@@ -16,12 +16,13 @@
 //   status { uploadUrl }                                 → qué partes faltan
 //   done   { code }                                      → la canción terminó de subir: avisa por mail
 //
-// La canción va a la carpeta de OneDrive del evento (pass_events.
-// openmic_folder_link, link de edición), con el nombre
+// La canción va a la carpeta Open Mic del evento (la de su edición dentro
+// de la carpeta madre, o su link propio: _lib/pass-folders.js), con el nombre
 // "AKA - Canción - Nota.mp3". El archivo no pasa entero por acá: el
 // navegador lo manda en partes, directo a OneDrive o a través de esta function.
 const { json, db, esc, sendMail, notifyEmail, serviceKey, testMode } = require("./_lib/pass");
 const drive = require("./_lib/onedrive");
+const folders = require("./_lib/pass-folders");
 
 const MB = 1024 * 1024;
 const MAX_SIZE = 150 * MB;
@@ -30,7 +31,8 @@ const TYPES = /\.(mp3|wav)$/i;
 const TUNE = /^((Do|Re|Mi|Fa|Sol|La|Si)#? (mayor|menor)|Sin tune)$/;
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const EVENT = "id,slug,kind,name,starts_at,openmic_enabled,openmic_deadline,openmic_folder_link";
+// "*": también trae folder_name y los links propios, si existen (017_shows_carpetas.sql).
+const EVENT = "*";
 const TICKET = "id,code,status,holder_name";
 const text = (value, max) => String(value || "").replace(/\s+/g, " ").trim().slice(0, max);
 
@@ -159,7 +161,7 @@ exports.handler = async (event) => {
       if (!TYPES.test(original)) return json(400, { error: "La canción tiene que ser un archivo MP3 o WAV." });
       if (!(size > 0)) return json(400, { error: "El archivo está vacío." });
       if (size > MAX_SIZE) return json(400, { error: `El archivo pesa más de ${MAX_SIZE / MB} MB.` });
-      if (!ev.openmic_folder_link) return json(409, { error: "La subida de canciones todavía no está habilitada. Probá más tarde." });
+      if (!folders.available(ev, "openmic", await folders.rootLink())) return json(409, { error: "La subida de canciones todavía no está habilitada. Probá más tarde." });
 
       const ext = original.match(TYPES)[1].toLowerCase();
       const fileName = `${drive.cleanName(`${fields.aka} - ${fields.song_title} - ${fields.tune_note}`)}.${ext}`;
@@ -171,8 +173,8 @@ exports.handler = async (event) => {
       if (!saved.ok) return json(502, { error: "No pudimos guardar tu inscripción. Probá de nuevo." });
 
       if (size <= SIMPLE_MAX) return json(200, { mode: "simple" });
-      const target = await drive.folder(ev.openmic_folder_link);
-      if (target.error) { console.error("ZG PASS open mic: carpeta", target.error); return json(502, { error: "No pudimos abrir la carpeta de canciones. Avisanos por Instagram." }); }
+      const { target, error: folderError } = await folders.eventFolder(ev, "openmic");
+      if (folderError) { console.error("ZG PASS open mic: carpeta", folderError); return json(502, { error: "No pudimos abrir la carpeta de canciones. Avisanos por Instagram." }); }
       const uploadUrl = await drive.createUploadSession(target, fileName);
       if (!uploadUrl) return json(502, { error: "No pudimos iniciar la subida. Probá de nuevo en un momento." });
       return json(200, { mode: "session", uploadUrl });
@@ -184,8 +186,8 @@ exports.handler = async (event) => {
       if (signup.uploaded_at) return json(200, { done: true });
       const data = Buffer.from(String(body.data || ""), "base64");
       if (!data.length || data.length > SIMPLE_MAX) return json(400, { error: "Subida inválida." });
-      const target = await drive.folder(ev.openmic_folder_link);
-      if (target.error) return json(502, { error: "No pudimos abrir la carpeta de canciones. Avisanos por Instagram." });
+      const { target, error: folderError } = await folders.eventFolder(ev, "openmic");
+      if (folderError) return json(502, { error: "No pudimos abrir la carpeta de canciones. Avisanos por Instagram." });
       const name = await drive.putSmall(target, signup.file_name, data);
       if (!name) return json(502, { error: "No pudimos subir el archivo. Probá de nuevo." });
       await finish(ev, signup, name);

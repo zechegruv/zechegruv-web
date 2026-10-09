@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="referrer" content="no-referrer" />
+  <title>Puerta — ZG PASS</title>
+
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon/favicon-32x32.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/favicon/apple-touch-icon.png">
+  <meta name="theme-color" content="#4B2509">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/portal/portal.css">
+  <link rel="stylesheet" href="/pass/pass.css">
+</head>
+
+<body>
+  <nav>
+    <a class="nav-mark" href="/">
+      <img class="nav-sun" src="/assets/zeche-gruv-sol.webp" alt="" aria-hidden="true">
+      ZECHE GRUV®
+    </a>
+    <div class="nav-right"><span class="pass-wordmark">ZG PASS</span></div>
+  </nav>
+
+  <main>
+    <section id="view-loading">
+      <div class="spinner" role="status" aria-label="Cargando"></div>
+    </section>
+
+    <section id="view-state" hidden>
+      <div class="state">
+        <div class="eyebrow">ZG PASS / Puerta</div>
+        <h1 class="title title-sm">Este acceso no está activo.</h1>
+        <p class="lead" id="stateText"></p>
+      </div>
+    </section>
+
+    <section id="view-main" hidden>
+      <div class="eyebrow" id="doorEyebrow">ZG PASS / Puerta</div>
+      <h1 class="title title-sm" id="doorTitle"></h1>
+      <p class="muted door-when" id="doorWhen"></p>
+
+      <!-- Contador -->
+      <div class="zgp-stats door-stats" id="doorStats"></div>
+
+      <div class="tabs zgp-tabs" id="doorTabs" role="tablist">
+        <button class="tab is-active" type="button" data-view="scan" role="tab">Escanear QR</button>
+        <button class="tab" type="button" data-view="issue" role="tab">Venta en puerta</button>
+      </div>
+
+      <!-- Escanear -->
+      <div id="door-scan">
+        <div class="zgp-scan">
+          <div class="zgp-camera" id="zgpCamera" hidden>
+            <video id="zgpVideo" playsinline muted></video>
+            <div class="zgp-frame" aria-hidden="true"></div>
+          </div>
+          <div class="zgp-result" id="zgpResult" hidden role="status" aria-live="assertive">
+            <div class="zgp-result-title" id="zgpResultTitle"></div>
+            <div class="zgp-result-name" id="zgpResultName"></div>
+            <div class="zgp-result-meta" id="zgpResultMeta"></div>
+            <button class="btn zgp-big" type="button" id="zgpMark" hidden>Marcar como ingresado</button>
+          </div>
+          <button class="btn btn-primary zgp-big" type="button" id="zgpScanBtn">Abrir cámara</button>
+          <p class="msg" id="zgpScanMsg" role="alert"></p>
+          <form class="zgp-manual" id="zgpManual" novalidate>
+            <div class="field">
+              <label for="zgpCode">¿No lee el QR? Escribí el código de la entrada</label>
+              <input type="text" id="zgpCode" placeholder="ZG-26-000001" autocapitalize="characters" autocomplete="off" maxlength="12">
+            </div>
+            <button class="btn" type="submit">Buscar</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Venta en puerta -->
+      <div id="door-issue" hidden>
+        <form class="card form" id="zgpIssueForm" novalidate>
+          <h2 class="card-title">Venta en puerta</h2>
+          <div class="grid-2">
+            <div class="field">
+              <label for="zgpType">Tipo de entrada</label>
+              <select id="zgpType"></select>
+            </div>
+            <div class="field">
+              <label for="zgpQty">Cantidad</label>
+              <input type="number" id="zgpQty" min="1" max="20" value="1" inputmode="numeric">
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="field">
+              <label for="zgpFirst">Nombre</label>
+              <input type="text" id="zgpFirst" maxlength="60" autocomplete="off">
+            </div>
+            <div class="field">
+              <label for="zgpLast">Apellido</label>
+              <input type="text" id="zgpLast" maxlength="60" autocomplete="off">
+            </div>
+          </div>
+          <div class="field">
+            <label for="zgpEmail">Mail (opcional)</label>
+            <input type="email" id="zgpEmail" maxlength="160" autocomplete="off" inputmode="email">
+            <p class="hint">Si lo cargás, le llega la entrada por mail. Si no, mostrale el QR de la pantalla.</p>
+          </div>
+          <div class="field">
+            <label for="zgpMethod">Medio de pago</label>
+            <select id="zgpMethod">
+              <option value="cash">Efectivo</option>
+              <option value="transfer">Transferencia</option>
+              <option value="mercadopago">Mercado Pago</option>
+            </select>
+          </div>
+          <p class="door-total" id="doorTotal"></p>
+          <label class="check">
+            <input type="checkbox" id="zgpEnter" checked>
+            <span>Está entrando ahora: registrar el ingreso (no hace falta escanear)</span>
+          </label>
+          <p class="msg" id="zgpIssueMsg" role="alert"></p>
+          <button class="btn btn-primary" type="submit" id="zgpIssueSubmit">Cobrar y emitir entrada</button>
+        </form>
+        <div class="tickets zgp-issued" id="zgpIssued"></div>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+  <script src="/pass/ticket.js"></script>
+  <script src="/pass/puerta/puerta.js"></script>
+</body>
+</html>
