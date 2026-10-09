@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="referrer" content="no-referrer" />
+  <title>Tus pistas — ZG PASS</title>
+
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/favicon/apple-touch-icon.png">
+  <meta name="theme-color" content="#4B2509">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/portal/portal.css">
+  <link rel="stylesheet" href="/pass/pass.css">
+</head>
+
+<body>
+  <nav>
+    <a class="nav-mark" href="/">
+      <img class="nav-sun" src="/assets/zeche-gruv-sol.webp" alt="" aria-hidden="true">
+      ZECHE GRUV®
+    </a>
+    <div class="nav-right">
+      <a class="pass-wordmark" href="/pass/">ZG PASS</a>
+    </div>
+  </nav>
+
+  <main>
+    <section id="view-loading">
+      <div class="spinner" role="status" aria-label="Cargando"></div>
+    </section>
+
+    <!-- Link vencido, dado de baja o mal copiado -->
+    <section id="view-state" hidden>
+      <div class="state">
+        <div class="eyebrow">ZG PASS / Pistas</div>
+        <h1 class="title title-sm" id="stateTitle">Este link no está activo.</h1>
+        <p class="lead" id="stateText"></p>
+        <div class="actions"><a class="btn" href="/">Ir a ZECHE GRUV</a></div>
+      </div>
+    </section>
+
+    <section class="pistas-page" id="view-main" hidden>
+      <div class="eyebrow">ZG PASS / Artista invitado</div>
+      <h1 class="title title-sm" id="guestTitle"></h1>
+      <p class="lead" id="guestLead"></p>
+      <div id="guestCard"></div>
+
+      <aside class="pistas-scene">
+        <img class="pistas-scene-sun" src="/assets/zeche-gruv-sol.webp" alt="" aria-hidden="true">
+        <div class="eyebrow">Por qué hacemos esto</div>
+        <p>En ZECHE GRUV creemos que la escena crece cuando el escenario se comparte. En cada open mic elegimos a alguien para el line up de la fecha siguiente, y así una canción que sonó una vez puede convertirse en un show.</p>
+        <!-- Con sesión de regalo (pistas.js) -->
+        <div class="pistas-scene-gift" id="giftBlock" hidden>
+          <p id="giftText"></p>
+          <a class="btn btn-primary pistas-gift" id="giftBtn" target="_blank" rel="noopener"></a>
+        </div>
+        <!-- Sin sesión de regalo -->
+        <div class="pistas-scene-gift" id="studioBlock" hidden>
+          <p id="studioText"></p>
+          <a class="link-btn" id="studioBtn" target="_blank" rel="noopener">Escribinos →</a>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <script src="/pass/ticket.js"></script>
+  <script src="/pass/pistas-card.js"></script>
+  <script src="/pass/pistas/pistas.js"></script>
+</body>
+</html>

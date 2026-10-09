@@ -344,6 +344,8 @@
 
     // Tus canciones (canciones.js).
     if (window.ZGSongs) window.ZGSongs.load(p);
+    // Tu show: subir pistas para los shows en los que toca (shows.js).
+    if (window.ZGShows) window.ZGShows.load(p);
     // Las carpetas de OneDrive se empiezan a traer ya, en segundo plano, para
     // que Referencias, Exports, etc. abran al instante (archivos.js).
     if (window.ZGFiles && !(p.id === me.id && admin)) window.ZGFiles.prefetch(p);

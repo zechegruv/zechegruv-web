@@ -33,7 +33,34 @@ async function folder(editLink) {
   const root = await res.json();
   const driveId = root.parentReference && root.parentReference.driveId;
   if (!driveId || !root.id || !root.folder) return { error: "el link no es de una carpeta" };
-  return { headers, itemPath: (name) => `${ONEDRIVE_API}/drives/${driveId}/items/${root.id}:/${encodeURIComponent(name)}:` };
+  return { ...target(headers, driveId, root.id), name: root.name };
+}
+
+const target = (headers, driveId, itemId) => ({ headers, driveId, itemId, itemPath: (name) => `${ONEDRIVE_API}/drives/${driveId}/items/${itemId}:/${encodeURIComponent(name)}:` });
+
+// Subcarpeta con ese nombre adentro de la carpeta (la crea si no existe).
+// Si OneDrive no deja crearla, devuelve null y se sube a la carpeta misma.
+async function subfolder(parent, name) {
+  const base = `${ONEDRIVE_API}/drives/${parent.driveId}/items/${parent.itemId}/children`;
+  const norm = (s) => String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+  const find = async () => {
+    const res = await fetch(`${base}?$top=500`, { headers: parent.headers });
+    if (!res.ok) return null;
+    const hit = ((await res.json()).value || []).find((c) => c.folder && norm(c.name) === norm(name));
+    return hit ? target(parent.headers, parent.driveId, hit.id) : null;
+  };
+  const found = await find();
+  if (found) return found;
+  const res = await fetch(base, {
+    method: "POST",
+    headers: { ...parent.headers, "Content-Type": "application/json" },
+    body: JSON.stringify({ name, folder: {}, "@name.conflictBehavior": "fail" }),
+  });
+  if (res.ok) {
+    const made = await res.json().catch(() => null);
+    if (made && made.id) return target(parent.headers, parent.driveId, made.id);
+  }
+  return find(); // la pudo haber creado otra subida al mismo tiempo
 }
 
 // Abre una subida por partes y devuelve la dirección a la que mandarlas.
@@ -66,4 +93,4 @@ async function sessionStatus(uploadUrl) {
   return res.ok ? res.json() : null;
 }
 
-module.exports = { UPLOAD_HOST, cleanName, folder, createUploadSession, putSmall, putChunk, sessionStatus };
+module.exports = { UPLOAD_HOST, cleanName, folder, subfolder, createUploadSession, putSmall, putChunk, sessionStatus };

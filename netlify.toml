@@ -23,6 +23,14 @@
   to = "/pass/openmic/"
   status = 302
 
+# Pistas de un artista invitado a tocar (sin cuenta en el portal): link
+# único que se arma desde el portal, ZG PASS → Carpetas. La clave (?k=…)
+# pasa sola a la página.
+[[redirects]]
+  from = "/pistas"
+  to = "/pass/pistas/"
+  status = 302
+
 # Tipografías: el nombre lleva versión (-v1), así que el navegador las
 # guarda un año sin volver a pedirlas. Si se cambia la fuente, subir a -v2.
 [[headers]]

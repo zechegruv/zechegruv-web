@@ -10,13 +10,21 @@
 //   events                                   → eventos con sus números
 //   tickets  { event_id }                    → entradas emitidas del evento
 //   openmic  { event_id }                    → inscriptos al open mic
+//   shows    { event_id }                    → carpetas del evento, quién toca (artistas e invitados) y pistas subidas
+//   shows_save { event_id, openmic_folder_link, shows_folder_link, shows_deadline, artist_ids }
+//            guarda las carpetas (comprueba que los links abran) y los artistas del sello que tocan
+//   guest_add    { event_id, folder_link, email?, gift_session }
+//            invitado sin cuenta: sube a SU carpeta (el nombre se toma de la carpeta), con un link
+//            único que vence 24 h después del show; si hay mail, se lo manda
+//   guest_remove { event_id, guest_id }      → el link del invitado deja de andar
 //   status   { event_id, status }            → publicar / cerrar la venta / volver a borrador
 //   peek     { event_id, token | code }      → ¿esta entrada es válida? (no la marca)
 //   checkin  { event_id, token | code }      → marcar como ingresada
 //   issue    { event_id, ticket_type_id, quantity, first_name, last_name, email?, method, unit_price?, checkin? }
 //            method: cash | transfer | mercadopago (cobrado por fuera) | comp (bonificada)
 //            checkin: true registra el ingreso en el mismo momento
-const { SUPABASE_URL, UUID, json, db, rpc, audit, sendTickets, siteUrl, testMode, serviceKey } = require("./_lib/pass");
+const { SUPABASE_URL, UUID, json, db, rpc, audit, sendTickets, siteUrl, testMode, serviceKey, esc, sendMail, notifyEmail } = require("./_lib/pass");
+const drive = require("./_lib/onedrive");
 
 const PUBLISHABLE_KEY = "sb_publishable_9M2gY0XZr7xIrV-1s9AiUA_XA1uNm0V";
 const text = (value, max) => String(value || "").replace(/\s+/g, " ").trim().slice(0, max);
@@ -31,6 +39,25 @@ async function adminOf(event) {
   if (!user || !user.id) return null;
   const role = await db(`profiles?id=eq.${user.id}&select=role`);
   return role.ok && role.data[0] && role.data[0].role === "admin" ? user.id : null;
+}
+
+// Link único de un invitado para subir sus pistas (sin cuenta en el portal).
+const guestLink = (event, token) => `${siteUrl(event)}/pistas?k=${token}`;
+
+function guestMail(ev, name, link, plural) {
+  const t = (one, many) => (plural ? many : one);
+  const tz = { timeZone: "America/Argentina/Buenos_Aires" };
+  const day = new Intl.DateTimeFormat("es-AR", { ...tz, weekday: "long", day: "numeric", month: "long" }).format(new Date(ev.starts_at));
+  const until = new Intl.DateTimeFormat("es-AR", { ...tz, weekday: "long", day: "numeric", month: "numeric", hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date(ev.shows_deadline || ev.starts_at)).replace(",", "");
+  return {
+    subject: `${name}, ${plural ? "suban sus" : "subí tus"} pistas para ${ev.name}`,
+    html: `<div style="font-family:Arial,sans-serif;color:#241105;max-width:520px;line-height:1.55">`
+      + `<p style="font-size:16px">Hola ${esc(name)}:</p>`
+      + `<p style="font-size:16px">Ya ${t("sos", "son")} parte del line up de <strong>${esc(ev.name)}</strong>, el ${esc(day)}${ev.venue_name ? ` en ${esc(ev.venue_name)}` : ""}. Para que esa noche todo suene como lo ${t("ensayaste", "ensayaron")}, ${t("subí tus", "suban sus")} pistas en este link:</p>`
+      + `<p style="margin:26px 0"><a href="${esc(link)}" style="background:#F07800;color:#fff;padding:14px 22px;text-decoration:none;font-weight:bold;display:inline-block">${t("Subir mis pistas", "Subir nuestras pistas")}</a></p>`
+      + `<p style="font-size:14px;color:#8a6a45">No ${t("necesitás", "necesitan")} usuario ni contraseña: el link es solo ${t("tuyo", "de ustedes")}, no lo compartan. ${t("Tenés", "Tienen")} tiempo para subirlas hasta el ${esc(until)} h.</p>`
+      + `<p style="font-size:14px">Nos vemos en el escenario.<br>ZECHE GRUV</p></div>`,
+  };
 }
 
 const active = (t) => t.status === "valid" || t.status === "used";
@@ -133,6 +160,90 @@ exports.handler = async (event) => {
         tune_note: s.tune_note, file_name: s.file_name, uploaded: !!s.uploaded_at, code: s.pass_tickets.code,
       })),
     });
+  }
+
+  // ---------- Shows: carpetas, quién toca y pistas subidas ----------
+  if (body.action === "shows") {
+    const ev = await db(`pass_events?id=eq.${eventId}&select=openmic_enabled,openmic_folder_link,shows_folder_link,shows_deadline,starts_at,lineup`);
+    if (!ev.ok) return json(502, { error: "Falta correr supabase/016_shows_pistas.sql en Supabase." });
+    if (!ev.data[0]) return json(404, { error: "No encontramos el evento." });
+    const [artists, chosen, guests, files] = await Promise.all([
+      db("profiles?role=eq.artist&select=*&order=display_name.asc"),
+      db(`pass_show_artists?event_id=eq.${eventId}&select=profile_id`),
+      db(`pass_show_guests?event_id=eq.${eventId}&revoked_at=is.null&select=id,name,email,token,gift_session,plural,created_at&order=created_at.asc`),
+      db(`pass_show_files?event_id=eq.${eventId}&select=profile_id,guest_id,file_name,file_size,uploaded_at&order=uploaded_at.asc`),
+    ]);
+    if (!artists.ok || !chosen.ok || !guests.ok || !files.ok) return json(502, { error: "No pudimos cargar el line up. ¿Ya corriste supabase/016_shows_pistas.sql?" });
+    return json(200, {
+      ...ev.data[0],
+      artists: artists.data.map((p) => ({ id: p.id, name: p.display_name || p.full_name || p.email, active: p.active !== false })),
+      chosen: chosen.data.map((r) => r.profile_id),
+      guests: guests.data.map((g) => ({ id: g.id, name: g.name, email: g.email, gift_session: g.gift_session, plural: g.plural, link: guestLink(event, g.token) })),
+      files: files.data,
+    });
+  }
+
+  if (body.action === "shows_save") {
+    const link = (v) => text(v, 600);
+    const openmic = link(body.openmic_folder_link);
+    const shows = link(body.shows_folder_link);
+    for (const [label, value] of [["Open mic", openmic], ["Shows", shows]]) {
+      if (!value) continue;
+      if (!/^https:\/\/\S+$/.test(value)) return json(400, { error: `El link de la carpeta ${label} no parece un link.` });
+      const check = await drive.folder(value).catch((e) => ({ error: String(e && e.message) }));
+      if (check.error) return json(400, { error: `No pudimos abrir la carpeta ${label} con ese link. Tiene que ser el link de OneDrive con permiso “Puede editar”.` });
+    }
+    let deadline = null;
+    if (body.shows_deadline) {
+      deadline = new Date(body.shows_deadline);
+      if (isNaN(deadline)) return json(400, { error: "La fecha límite de las pistas no es válida." });
+      deadline = deadline.toISOString();
+    }
+    const ids = [...new Set((Array.isArray(body.artist_ids) ? body.artist_ids : []).map(String).filter((id) => UUID.test(id)))];
+    const patch = { openmic_folder_link: openmic || null, shows_folder_link: shows || null, shows_deadline: deadline, updated_at: new Date().toISOString() };
+    const res = await db(`pass_events?id=eq.${eventId}`, { method: "PATCH", prefer: "return=representation", body: patch });
+    if (!res.ok || !res.data[0]) return json(502, { error: "No pudimos guardar las carpetas del evento." });
+    const del = await db(`pass_show_artists?event_id=eq.${eventId}`, { method: "DELETE" });
+    if (!del.ok) return json(502, { error: "No pudimos guardar quién toca." });
+    if (ids.length) {
+      const ins = await db("pass_show_artists", { method: "POST", body: ids.map((id) => ({ event_id: eventId, profile_id: id })) });
+      if (!ins.ok) return json(502, { error: "No pudimos guardar quién toca." });
+    }
+    await audit("evento_shows", "event", eventId, { name: res.data[0].name, openmic: !!openmic, shows: !!shows, artistas: ids.length }, adminId);
+    return json(200, { saved: true });
+  }
+
+  // ---------- Invitados sin cuenta: link único para subir pistas ----------
+  if (body.action === "guest_add") {
+    const folderLink = text(body.folder_link, 600);
+    const email = text(body.email, 160).toLowerCase();
+    if (!/^https:\/\/\S+$/.test(folderLink)) return json(400, { error: "Pegá el link de edición de la carpeta del invitado." });
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json(400, { error: "Ese mail no parece válido." });
+    const evRes = await db(`pass_events?id=eq.${eventId}&select=name,starts_at,venue_name,shows_deadline`);
+    const ev = evRes.ok && evRes.data[0];
+    if (!ev) return json(404, { error: "No encontramos el evento." });
+    // El nombre del invitado es el de su carpeta.
+    const folder = await drive.folder(folderLink).catch((e) => ({ error: String(e && e.message) }));
+    if (folder.error) return json(400, { error: "No pudimos abrir esa carpeta. Tiene que ser el link de OneDrive con permiso “Puede editar”." });
+    const name = text(folder.name, 80) || "Artista invitado";
+    // Dúo o banda: lo marca el administrador, o se nota en el nombre ("Bastian & Kaino").
+    const plural = body.plural === true || /\s(&|y|\+)\s/i.test(` ${name} `);
+    const res = await db("pass_show_guests", { method: "POST", prefer: "return=representation", body: { event_id: eventId, name, email: email || null, folder_link: folderLink, gift_session: body.gift_session === true, plural } });
+    if (!res.ok || !res.data[0]) return json(502, { error: "No pudimos crear el link del invitado." });
+    const g = res.data[0];
+    const link = guestLink(event, g.token);
+    await audit("invitado_pistas", "event", eventId, { name, email: !!email }, adminId);
+    const emailed = email ? await sendMail({ to: email, replyTo: notifyEmail(), ...guestMail(ev, name, link, plural) }).catch(() => false) : false;
+    return json(200, { guest: { id: g.id, name, email: g.email, link }, emailed });
+  }
+
+  if (body.action === "guest_remove") {
+    const guestId = String(body.guest_id || "");
+    if (!UUID.test(guestId)) return json(400, { error: "Invitado inválido." });
+    const res = await db(`pass_show_guests?id=eq.${guestId}&event_id=eq.${eventId}`, { method: "PATCH", prefer: "return=representation", body: { revoked_at: new Date().toISOString() } });
+    if (!res.ok || !res.data[0]) return json(502, { error: "No pudimos desactivar el link." });
+    await audit("invitado_pistas_baja", "event", eventId, { name: res.data[0].name }, adminId);
+    return json(200, { removed: true });
   }
 
   // ---------- Publicar / cerrar la venta ----------

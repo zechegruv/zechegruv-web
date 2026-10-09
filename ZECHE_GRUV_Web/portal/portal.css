@@ -2219,3 +2219,156 @@ a.ref-title:hover { color: var(--orange-soft); }
   .ref-links { grid-template-columns: 1fr; }
   .ref-preview img { width: 104px; }
 }
+
+/* ---------- Tu show: subida de pistas (shows.js) ---------- */
+
+.show-files {
+  position: relative;
+  list-style: none;
+  margin-top: 18px;
+  max-width: 62ch;
+  border-top: 1px solid var(--border);
+}
+
+.show-files li {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+
+.show-check { color: var(--orange-soft); font-weight: 700; }
+.show-name { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.show-files small { color: var(--muted); font-size: 12px; white-space: nowrap; }
+
+.show-actions {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.show-actions .hint { max-width: 62ch; }
+
+.show-closed {
+  position: relative;
+  margin-top: 18px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+/* ---------- ZG PASS: shows y carpetas ---------- */
+
+.zgp-shows-form .field { width: 100%; max-width: 620px; }
+.zgp-shows-form > .hint { max-width: 70ch; }
+
+.zgp-artists {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 10px 18px;
+  margin-top: 6px;
+}
+
+.zgp-artists .check.is-inactive { color: var(--muted); }
+
+.zgp-files-title { margin-top: 32px; }
+
+@media (max-width: 640px) {
+  .zgp-artists { grid-template-columns: 1fr 1fr; }
+}
+
+/* Paso a paso para preparar y subir las pistas (pass/pistas-card.js) */
+.pistas-how {
+  position: relative;
+  margin-top: 20px;
+  max-width: 62ch;
+  border: 1px solid var(--border);
+  background: rgba(36, 17, 5, .55);
+}
+
+.pistas-how summary {
+  padding: 13px 16px;
+  font-family: "DM Mono", monospace;
+  font-size: 10px;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: var(--orange-soft);
+  cursor: pointer;
+}
+
+.pistas-how ol {
+  margin: 0;
+  padding: 2px 16px 16px 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--beige);
+}
+
+.pistas-how li::marker { color: var(--orange-soft); font-weight: 700; }
+.pistas-how strong { color: var(--cream); }
+
+/* Página del invitado */
+.pistas-gift { align-self: flex-start; margin-top: 4px; position: relative; }
+.pistas-page { max-width: 760px; }
+.pistas-page > .title-sm { margin: 10px 0 14px; }
+.pistas-page > .lead { margin-bottom: 28px; }
+
+.pistas-scene {
+  position: relative;
+  overflow: hidden;
+  margin-top: 40px;
+  padding: 26px 26px 22px;
+  border-left: 2px solid var(--orange);
+  background: rgba(36, 17, 5, .5);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--beige);
+}
+.pistas-scene p { max-width: 60ch; position: relative; }
+.pistas-scene .link-btn { align-self: flex-start; font-size: 13px; color: var(--orange-soft); position: relative; }
+.pistas-scene-sun { position: absolute; right: -30px; bottom: -30px; width: 130px; opacity: .1; pointer-events: none; }
+
+/* ZG PASS → Carpetas: line up e invitados */
+.zgp-sub { margin: 18px 0 0; padding-top: 22px; border-top: 1px solid var(--border); width: 100%; }
+.zgp-guests { margin-top: 16px; }
+.zgp-guests > .hint { max-width: 70ch; margin: -6px 0 18px; }
+
+.zgp-guest-list { list-style: none; border-top: 1px solid var(--border); margin-bottom: 18px; }
+.zgp-guest {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.zgp-guest-who { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.zgp-guest-who small { font-size: 12px; color: var(--muted); }
+.zgp-guest-who small.zgp-missing { color: #ff9a8a; }
+.zgp-guest-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+.btn-sm { padding: 9px 12px; }
+
+
+.zgp-guest-form { display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
+.zgp-guest-form .field { flex: 1 1 220px; max-width: 300px; }
+.zgp-guest-form .zgp-guest-link { flex: 2 1 320px; max-width: 460px; }
+.zgp-guest-gift { flex: 1 1 100%; order: 3; }
+.zgp-guest-form .btn { order: 4; }
+
+@media (max-width: 640px) {
+  .pistas-scene { padding: 22px 18px 18px; }
+  .zgp-guest-form .field { max-width: none; }
+}
+.pistas-scene-gift { position: relative; display: flex; flex-direction: column; gap: 14px; }

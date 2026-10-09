@@ -94,11 +94,12 @@
 
   function showView(name) {
     view = name;
-    ["scan", "issue", "list", "mic"].forEach((v) => { $(`zgp-${v}`).hidden = v !== name; });
+    ["scan", "issue", "list", "mic", "shows"].forEach((v) => { $(`zgp-${v}`).hidden = v !== name; });
     document.querySelectorAll("#zgpTabs .tab").forEach((b) => b.classList.toggle("is-active", b.dataset.view === name));
     if (name !== "scan") stopCamera();
     if (name === "list") loadTickets();
     if (name === "mic") loadMic();
+    if (name === "shows") loadShows();
   }
 
   // ---------- Control de acceso ----------
@@ -319,6 +320,162 @@
       setMsg($("zgpMicStatus"), err.message, true);
     }
   }
+
+  // ---------- Carpetas y line up ----------
+  // datetime-local trabaja en la hora de la compu: se pasa a ISO con su zona.
+  const toLocalInput = (iso) => {
+    if (!iso) return "";
+    const d = new Date(iso);
+    const pad = (n) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
+  const fmtSize = (b) => (b ? (b >= 1024 * 1024 * 1024 ? `${(b / 1024 / 1024 / 1024).toFixed(1)} GB` : `${(b / 1024 / 1024).toFixed(1)} MB`) : "—");
+  const norm = (v) => String(v || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
+  let showsFor = null;
+  let showsData = null;
+
+  // Mensaje listo para mandarle al invitado por WhatsApp.
+  const guestText = (g) => g.plural
+    ? `Hola ${g.name}! Ya son parte del line up de ${current.name} (${fmtDate(current.starts_at)}). Suban sus pistas acá, sin usuario ni contraseña: ${g.link}\nEl link es solo de ustedes. Nos vemos en el escenario 🌞`
+    : `Hola ${g.name}! Ya sos parte del line up de ${current.name} (${fmtDate(current.starts_at)}). Subí tus pistas acá, sin usuario ni contraseña: ${g.link}\nEl link es solo tuyo. Nos vemos en el escenario 🌞`;
+
+  function paintGuests() {
+    const data = showsData;
+    $("zgpGuestList").replaceChildren(...data.guests.map((g) => {
+      const li = el("li", "zgp-guest");
+      const files = data.files.filter((f) => f.guest_id === g.id).length;
+      const who = el("div", "zgp-guest-who");
+      who.append(el("strong", "", g.name), el("small", files ? "" : "zgp-missing", `${files ? `${files} ${files > 1 ? "archivos subidos" : "archivo subido"}` : "Todavía no subió nada"}${g.plural ? " · dúo o banda" : ""}${g.gift_session ? " · con sesión de regalo" : ""}`));
+      const actions = el("div", "zgp-guest-actions");
+      const copy = el("button", "btn btn-sm", "Copiar link");
+      copy.type = "button";
+      copy.addEventListener("click", async () => {
+        try { await navigator.clipboard.writeText(g.link); copy.textContent = "¡Copiado!"; } catch (e) { window.prompt("Copiá el link:", g.link); }
+        setTimeout(() => { copy.textContent = "Copiar link"; }, 1800);
+      });
+      const wa = el("a", "btn btn-sm", "WhatsApp");
+      wa.href = `https://wa.me/?text=${encodeURIComponent(guestText(g))}`;
+      wa.target = "_blank";
+      wa.rel = "noopener";
+      const off = el("button", "link-btn", "Quitar");
+      off.type = "button";
+      off.addEventListener("click", async () => {
+        if (!window.confirm(`¿Quitar a ${g.name} del line up? Su link deja de andar (lo que ya subió queda en la carpeta).`)) return;
+        try {
+          await call({ action: "guest_remove", event_id: current.id, guest_id: g.id });
+          loadShows();
+        } catch (err) { setMsg($("zgpGuestMsg"), err.message, true); }
+      });
+      actions.append(copy, wa, off);
+      li.append(who, actions);
+      return li;
+    }));
+    $("zgpGuestList").hidden = !data.guests.length;
+  }
+
+  async function loadShows() {
+    const ev = current;
+    showsFor = null;
+    setMsg($("zgpShowsMsg"), "");
+    setMsg($("zgpGuestMsg"), "");
+    setMsg($("zgpShowsStatus"), "Cargando…");
+    $("zgpShowsForm").hidden = true;
+    document.querySelector(".zgp-guests").hidden = true;
+    let data;
+    try {
+      data = await call({ action: "shows", event_id: ev.id });
+    } catch (err) {
+      return setMsg($("zgpShowsStatus"), err.message, true);
+    }
+    if (current !== ev) return;
+    showsFor = ev.id;
+    showsData = data;
+    $("zgpShowsForm").hidden = false;
+    document.querySelector(".zgp-guests").hidden = false;
+    $("zgpMicFolder").value = data.openmic_folder_link || "";
+    $("zgpShowsFolder").value = data.shows_folder_link || "";
+    $("zgpShowsDeadline").value = toLocalInput(data.shows_deadline);
+
+    // Si todavía no se eligió a nadie, se proponen los del line up que tienen cuenta.
+    const lineup = (data.lineup || []).map(norm);
+    const chosen = new Set(data.chosen.length ? data.chosen : data.artists.filter((a) => lineup.includes(norm(a.name))).map((a) => a.id));
+    const sorted = [...data.artists].sort((a, b) => (chosen.has(b.id) - chosen.has(a.id)) || (b.active - a.active) || a.name.localeCompare(b.name, "es"));
+    $("zgpShowArtists").replaceChildren(...sorted.map((a) => {
+      const label = el("label", a.active ? "check" : "check is-inactive");
+      const input = el("input");
+      input.type = "checkbox";
+      input.value = a.id;
+      input.checked = chosen.has(a.id);
+      label.append(input, el("span", "", a.active ? a.name : `${a.name} (inactivo)`));
+      return label;
+    }));
+    if (!data.chosen.length && chosen.size) setMsg($("zgpShowsMsg"), "Marcamos a los del line up que tienen cuenta. Revisá y guardá para habilitarles la subida.");
+    paintGuests();
+
+    // Pistas recibidas, y quién todavía no subió nada.
+    const nameOf = Object.fromEntries([...data.artists.map((a) => [a.id, a.name]), ...data.guests.map((g) => [g.id, `${g.name} (invitado)`])]);
+    const rows = data.files.map((f) => {
+      const tr = el("tr");
+      tr.append(el("td", "", nameOf[f.profile_id || f.guest_id] || "—"), el("td", "", f.file_name), el("td", "", fmtSize(f.file_size)), el("td", "", `${fmtDate(f.uploaded_at)} ${fmtTime(f.uploaded_at)}`));
+      return tr;
+    });
+    const withFiles = new Set(data.files.map((f) => f.profile_id || f.guest_id));
+    [...data.chosen, ...data.guests.map((g) => g.id)].filter((id) => !withFiles.has(id)).forEach((id) => {
+      const tr = el("tr");
+      tr.append(el("td", "", nameOf[id] || "—"), el("td", "zgp-missing", "Todavía no subió nada"), el("td", "", "—"), el("td", "", "—"));
+      rows.push(tr);
+    });
+    $("zgpShowsTable").querySelector("tbody").replaceChildren(...rows);
+    const n = data.files.length;
+    setMsg($("zgpShowsStatus"), n ? `${n} ${n > 1 ? "archivos recibidos" : "archivo recibido"}.` : rows.length ? "Todavía no llegó ninguna pista." : "");
+  }
+
+  $("zgpShowsForm").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!showsFor || showsFor !== current.id) return;
+    const deadline = $("zgpShowsDeadline").value;
+    const body = {
+      action: "shows_save",
+      event_id: current.id,
+      openmic_folder_link: $("zgpMicFolder").value.trim(),
+      shows_folder_link: $("zgpShowsFolder").value.trim(),
+      shows_deadline: deadline ? new Date(deadline).toISOString() : null,
+      artist_ids: [...$("zgpShowArtists").querySelectorAll("input:checked")].map((i) => i.value),
+    };
+    $("zgpShowsSave").disabled = true;
+    setMsg($("zgpShowsMsg"), "Guardando y comprobando las carpetas…");
+    try {
+      await call(body);
+      await loadShows();
+      setMsg($("zgpShowsMsg"), "Listo: guardado.");
+    } catch (err) {
+      setMsg($("zgpShowsMsg"), err.message, true);
+    } finally {
+      $("zgpShowsSave").disabled = false;
+    }
+  });
+
+  $("zgpGuestForm").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!showsFor || showsFor !== current.id) return;
+    const folder = $("zgpGuestFolder").value.trim();
+    if (!folder) return setMsg($("zgpGuestMsg"), "Pegá el link de edición de la carpeta del invitado.", true);
+    $("zgpGuestAdd").disabled = true;
+    setMsg($("zgpGuestMsg"), "Abriendo la carpeta…");
+    try {
+      const out = await call({ action: "guest_add", event_id: current.id, folder_link: folder, email: $("zgpGuestEmail").value.trim(), gift_session: $("zgpGuestGift").checked, plural: $("zgpGuestPlural").checked });
+      $("zgpGuestFolder").value = "";
+      $("zgpGuestEmail").value = "";
+      $("zgpGuestGift").checked = false;
+      $("zgpGuestPlural").checked = false;
+      await loadShows();
+      setMsg($("zgpGuestMsg"), out.emailed ? `Listo: le mandamos el link a ${out.guest.email}.` : `Listo: copiá el link de ${out.guest.name} o mandáselo por WhatsApp.`);
+    } catch (err) {
+      setMsg($("zgpGuestMsg"), err.message, true);
+    } finally {
+      $("zgpGuestAdd").disabled = false;
+    }
+  });
 
   // ---------- Eventos de la interfaz ----------
   $("zgpEvent").addEventListener("change", () => {

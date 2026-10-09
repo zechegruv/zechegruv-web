@@ -144,6 +144,9 @@
           <div class="welcome-body" id="welcomeBody"></div>
         </div>
 
+        <!-- Tu show: subida de pistas para los shows de ZG PASS en los que toca (shows.js) -->
+        <div id="showCards"></div>
+
         <!-- Tus canciones: etapa de cada canción, leída de Notion (canciones.js) -->
         <div class="card songs-card" id="songsCard" hidden>
           <div class="songs-head">
@@ -484,6 +487,7 @@
             <button class="tab" type="button" data-view="issue" role="tab">Venta en puerta</button>
             <button class="tab" type="button" data-view="list" role="tab">Entradas</button>
             <button class="tab" type="button" data-view="mic" role="tab">Open mic</button>
+            <button class="tab" type="button" data-view="shows" role="tab">Carpetas</button>
           </div>
 
           <!-- Escanear -->
@@ -587,6 +591,71 @@
             <div class="table-wrap">
               <table class="table zgp-table" id="zgpMicTable">
                 <thead><tr><th>AKA</th><th>Canción</th><th>Nota</th><th>Nombre</th><th>Instagram</th><th>Mail</th><th>Archivo</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Carpetas: links de OneDrive del evento, line up (artistas del sello e invitados) y pistas recibidas -->
+          <div id="zgp-shows" hidden>
+            <form class="card form zgp-shows-form" id="zgpShowsForm" novalidate>
+              <h2 class="card-title">Carpetas del evento</h2>
+              <p class="hint">Pegá el link de OneDrive de cada carpeta, compartido con permiso “Puede editar”. Nadie más ve estos links: la gente sube desde la web y el archivo cae directo ahí.</p>
+              <div class="field">
+                <label for="zgpMicFolder">Open mic · link de edición</label>
+                <input type="url" id="zgpMicFolder" placeholder="https://1drv.ms/f/…" autocomplete="off" spellcheck="false">
+                <p class="hint">Acá llegan las canciones de quienes se anotan al open mic con su entrada.</p>
+              </div>
+              <div class="field">
+                <label for="zgpShowsFolder">Shows · link de edición</label>
+                <input type="url" id="zgpShowsFolder" placeholder="https://1drv.ms/f/…" autocomplete="off" spellcheck="false">
+                <p class="hint">Acá llegan las pistas de los artistas del sello, cada uno en una carpeta con su nombre (se crea sola). Los invitados suben a su propia carpeta, más abajo.</p>
+              </div>
+              <div class="field">
+                <label for="zgpShowsDeadline">Pistas: se pueden subir hasta</label>
+                <input type="datetime-local" id="zgpShowsDeadline">
+                <p class="hint">Vacío: hasta la hora del evento.</p>
+              </div>
+
+              <h2 class="card-title zgp-sub">Line up · artistas del sello</h2>
+              <p class="hint">A los que marques les aparece en su portal la tarjeta para subir las pistas de este show.</p>
+              <div class="zgp-artists" id="zgpShowArtists"></div>
+
+              <p class="msg" id="zgpShowsMsg" role="status"></p>
+              <button class="btn btn-primary" type="submit" id="zgpShowsSave">Guardar</button>
+            </form>
+
+            <div class="card zgp-guests">
+              <h2 class="card-title">Line up · invitados sin cuenta</h2>
+              <p class="hint">Para quien toca y no trabaja con el sello (por ejemplo, quien elegiste en el open mic). Pegá el link de edición de su carpeta: el nombre lo tomamos de la carpeta. Le pasás un link único, sube sin usuario ni contraseña y el link deja de andar 24 h después del show.</p>
+              <ul class="zgp-guest-list" id="zgpGuestList"></ul>
+              <form class="zgp-guest-form" id="zgpGuestForm" novalidate>
+                <div class="field zgp-guest-link">
+                  <label for="zgpGuestFolder">Su carpeta · link de edición</label>
+                  <input type="url" id="zgpGuestFolder" placeholder="https://1drv.ms/f/…" autocomplete="off" spellcheck="false">
+                </div>
+                <div class="field">
+                  <label for="zgpGuestEmail">Mail (opcional)</label>
+                  <input type="email" id="zgpGuestEmail" maxlength="160" autocomplete="off" inputmode="email">
+                </div>
+                <label class="check zgp-guest-gift">
+                  <input type="checkbox" id="zgpGuestPlural">
+                  <span>Es un dúo o banda (su página les habla en plural; con “&” o “y” en el nombre se marca solo)</span>
+                </label>
+                <label class="check zgp-guest-gift">
+                  <input type="checkbox" id="zgpGuestGift">
+                  <span>Regalarle una sesión de 2 h en el estudio (aparece en su página)</span>
+                </label>
+                <button class="btn" type="submit" id="zgpGuestAdd">Crear link</button>
+              </form>
+              <p class="msg" id="zgpGuestMsg" role="status"></p>
+            </div>
+
+            <h2 class="card-title zgp-files-title">Pistas recibidas</h2>
+            <p class="muted" id="zgpShowsStatus"></p>
+            <div class="table-wrap">
+              <table class="table zgp-table" id="zgpShowsTable">
+                <thead><tr><th>Artista</th><th>Archivo</th><th>Tamaño</th><th>Subido</th></tr></thead>
                 <tbody></tbody>
               </table>
             </div>
@@ -871,5 +940,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
   <script src="/pass/ticket.js"></script>
   <script src="zgpass.js"></script>
+  <script src="/pass/pistas-card.js"></script>
+  <script src="shows.js"></script>
 </body>
 </html>
