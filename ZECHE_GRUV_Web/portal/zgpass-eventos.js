@@ -431,21 +431,26 @@
 
   function paintGlEvents() {
     const list = glEventsList();
-    if (!list.some((e) => e.id === glEventId)) {
-      const cur = A.current && list.find((e) => e.id === A.current.id);
-      glEventId = (cur || list[0] || {}).id || null;
-    }
-    $("glNoEvents").hidden = !!list.length;
-    $("glEvents").hidden = !list.length;
-    // Sin eventos a la venta no hay a qué invitar: se oculta el formulario.
-    [$("glType").closest(".gl-type"), $("glRows"), $("glAdd"), $("glSend")].forEach((node) => { node.hidden = !list.length; });
+    // Las cortesías van al evento elegido arriba, si está a la venta; si no,
+    // se elige uno de los que sí lo están (y pasa a ser el de arriba).
+    const cur = A.current && list.find((e) => e.id === A.current.id);
+    glEventId = cur ? cur.id : null;
+    $("glNoEvents").hidden = !!glEventId;
+    $("glNoEvents").textContent = list.length ? "Este evento no está a la venta. Elegí a cuál invitar:" : "No hay ningún evento a la venta. Publicá uno para poder mandar cortesías.";
+    $("glEvents").hidden = !list.length || !!glEventId;
+    [$("glType").closest(".gl-type"), $("glRows"), $("glAdd"), $("glSend")].forEach((node) => { node.hidden = !glEventId; });
     $("glEvents").replaceChildren(...list.map((e) => {
       const b = el("button", `zgp-event${e.id === glEventId ? " is-active" : ""}`);
       b.type = "button";
       const top = el("span", "zgp-event-top");
       top.append(el("span", "zgp-event-kind", e.kind === "camp" ? "Campamento Creativo" : "Shows & Open Mic"), el("span", "zgp-event-state is-published", "A la venta"));
       b.append(top, el("b", "", e.name), el("small", "", `${fmtDate(e.starts_at)} · ${fmtTime(e.starts_at)}`));
-      b.addEventListener("click", () => { if (glEventId !== e.id) { glEventId = e.id; loadGuestlist(); } });
+      b.addEventListener("click", () => {
+        if (glEventId === e.id) return;
+        glEventId = e.id;
+        $("zgpEvent").value = e.id; // es el mismo evento que el de arriba
+        $("zgpEvent").dispatchEvent(new Event("change"));
+      });
       return b;
     }));
     const ev = glEvent();
@@ -453,25 +458,10 @@
     $("glSend").textContent = ev ? `Enviar entradas para ${ev.kind === "camp" ? "el campamento" : "el show"}` : "Enviar entradas";
   }
 
-  async function loadGuestlist() {
+  // Las cortesías ya enviadas se ven en la lista de entradas (filtro "Cortesías").
+  function loadGuestlist() {
     paintGlEvents();
-    const ev = glEvent();
     if (!$("glRows").children.length) $("glRows").append(glRow());
-    if (!ev) { $("glTable").querySelector("tbody").replaceChildren(); return setMsg($("glStatus"), ""); }
-    setMsg($("glStatus"), "Cargando…");
-    try {
-      const { tickets } = await A.call({ action: "tickets", event_id: ev.id });
-      if (glEventId !== ev.id) return;
-      const comps = tickets.filter((t) => t.comp);
-      setMsg($("glStatus"), comps.length ? `${ev.name}: ${comps.length} ${comps.length > 1 ? "entradas" : "entrada"} sin cargo.` : `${ev.name}: todavía no hay invitados con entrada.`);
-      $("glTable").querySelector("tbody").replaceChildren(...comps.map((t) => {
-        const tr = el("tr");
-        tr.append(el("td", "", t.holder_name), el("td", "", t.holder_email || "—"), el("td", "", t.code), el("td", t.status === "used" ? "" : "zgp-missing", t.status === "used" ? `Ingresó ${fmtTime(t.used_at)}` : "Todavía no"));
-        return tr;
-      }));
-    } catch (err) {
-      setMsg($("glStatus"), err.message, true);
-    }
   }
 
   $("glAdd").addEventListener("click", () => { const r = glRow(); $("glRows").append(r); r.querySelector(".gl-first").focus(); });

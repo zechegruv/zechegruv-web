@@ -455,12 +455,9 @@
         <div id="zgpBody" hidden>
           <div class="tabs zgp-tabs zgp-menu" id="zgpTabs" role="tablist">
             <button class="tab is-active" type="button" data-view="summary" role="tab">Resumen</button>
-            <button class="tab" type="button" data-view="scan" role="tab">Escanear QR</button>
-            <button class="tab" type="button" data-view="issue" role="tab">Venta en puerta</button>
-            <button class="tab" type="button" data-view="list" role="tab">Entradas</button>
-            <button class="tab" type="button" data-view="mic" role="tab">Open mic</button>
-            <button class="tab" type="button" data-view="shows" role="tab">Line up</button>
-            <button class="tab" type="button" data-view="guestlist" role="tab">Lista de invitados</button>
+            <button class="tab" type="button" data-view="door" role="tab">Puerta</button>
+            <button class="tab" type="button" data-view="tickets" role="tab">Entradas</button>
+            <button class="tab" type="button" data-view="stage" role="tab">Escenario</button>
           </div>
           <div class="zgp-events" id="zgpEventPicker" role="listbox" aria-label="Evento"></div>
           <div class="zgp-bar">
@@ -481,8 +478,11 @@
           </div>
 
 
+          <!-- Puerta: escanear y vender, juntos -->
+          <div id="zgp-door" class="zgp-view zgp-door" hidden>
           <!-- Escanear -->
-          <div id="zgp-scan" class="zgp-view">
+          <div id="zgp-scan" class="zgp-scan-col">
+            <h2 class="card-title">Escanear entradas</h2>
             <div class="zgp-scan">
               <div class="zgp-camera" id="zgpCamera" hidden>
                 <video id="zgpVideo" playsinline muted></video>
@@ -507,7 +507,7 @@
           </div>
 
           <!-- Venta en puerta / bonificadas -->
-          <div id="zgp-issue" hidden class="zgp-view">
+          <div id="zgp-issue">
             <form class="card form" id="zgpIssueForm" novalidate>
               <h2 class="card-title">Venta en puerta</h2>
               <div class="grid-2">
@@ -542,7 +542,7 @@
                     <option value="cash">Efectivo</option>
                     <option value="transfer">Transferencia</option>
                     <option value="mercadopago">Mercado Pago (cobrado aparte)</option>
-                    <option value="comp">Bonificada (sin cargo)</option>
+                    <option value="comp">Cortesía (sin cargo)</option>
                   </select>
                 </div>
                 <div class="field">
@@ -554,48 +554,25 @@
                 <input type="checkbox" id="zgpEnter" checked>
                 <span>Está entrando ahora: registrar el ingreso (no hace falta escanear)</span>
               </label>
-              <p class="hint">Las bonificadas ocupan un lugar igual que las pagas.</p>
+              <p class="hint">Las cortesías ocupan un lugar igual que las pagas.</p>
               <p class="msg" id="zgpIssueMsg" role="alert"></p>
               <button class="btn btn-primary" type="submit" id="zgpIssueSubmit">Emitir entrada</button>
             </form>
             <div class="tickets zgp-issued" id="zgpIssued"></div>
           </div>
 
-          <!-- Entradas emitidas -->
-          <div id="zgp-list" hidden class="zgp-view">
-            <div class="field zgp-search">
-              <label for="zgpSearch">Buscar por nombre, mail o código</label>
-              <input type="search" id="zgpSearch" autocomplete="off">
-            </div>
-            <p class="muted" id="zgpListStatus"></p>
-            <div class="table-wrap">
-              <table class="table zgp-table" id="zgpTable">
-                <thead><tr><th>Código</th><th>Titular</th><th>Tipo</th><th>Origen</th><th>Pagó</th><th>Ingreso</th><th></th></tr></thead>
-                <tbody></tbody>
-              </table>
-            </div>
           </div>
 
-          <!-- Inscriptos al open mic -->
-          <div id="zgp-mic" hidden class="zgp-view">
-            <p class="muted" id="zgpMicStatus"></p>
-            <div class="table-wrap">
-              <table class="table zgp-table" id="zgpMicTable">
-                <thead><tr><th>AKA</th><th>Canción</th><th>Nota</th><th>Nombre</th><th>Instagram</th><th>Mail</th><th>Archivo</th><th></th></tr></thead>
-                <tbody></tbody>
-              </table>
-            </div>
-          </div>
-
+          <!-- Entradas: cortesías y lista completa con filtros -->
+          <div id="zgp-tickets" class="zgp-view" hidden>
           <!-- Lista de invitados: entradas sin cargo por mail (zgpass-eventos.js) -->
-          <div id="zgp-guestlist" hidden class="zgp-view">
+          <div id="zgp-guestlist">
             <form class="card form gl-form" id="glForm" novalidate>
-              <h2 class="card-title">Lista de invitados</h2>
-              <p class="hint">A cada invitado le llega su entrada por mail, sin pagar. Ocupa un lugar igual que una entrada vendida.</p>
+              <h2 class="card-title">Cortesías</h2>
+              <p class="hint">Entradas sin cargo: a cada invitado le llega la suya por mail. Ocupan un lugar igual que una vendida y aparecen abajo, en la lista, como “Cortesía”.</p>
               <div class="field gl-events-field">
-                <label>¿Para qué evento?</label>
+                <p class="zgp-noroot" id="glNoEvents" hidden></p>
                 <div class="zgp-events gl-events" id="glEvents"></div>
-                <p class="zgp-noroot" id="glNoEvents" hidden>No hay ningún evento a la venta. Publicá uno para poder mandar invitaciones.</p>
               </div>
               <div class="field gl-type">
                 <label for="glType">Tipo de entrada</label>
@@ -606,19 +583,36 @@
               <p class="msg" id="glMsg" role="status"></p>
               <button class="btn btn-primary" type="submit" id="glSend">Enviar entradas</button>
             </form>
-            <div class="zgp-files">
-              <div class="zgp-files-head"><h2 class="card-title">Invitados con entrada</h2><p class="muted" id="glStatus"></p></div>
-              <div class="table-wrap">
-                <table class="table zgp-table" id="glTable">
-                  <thead><tr><th>Invitado</th><th>Mail</th><th>Código</th><th>Ingreso</th></tr></thead>
-                  <tbody></tbody>
-                </table>
-              </div>
+          </div>
+
+          <!-- Entradas emitidas -->
+          <div id="zgp-list">
+            <div class="zgp-files-head"><h2 class="card-title">Entradas</h2><p class="muted" id="zgpListStatus"></p></div>
+            <div class="zgp-filters" id="zgpFilters" role="tablist">
+              <button class="chip-btn is-active" type="button" data-filter="all">Todas</button>
+              <button class="chip-btn" type="button" data-filter="web">Vendidas online</button>
+              <button class="chip-btn" type="button" data-filter="door">En puerta</button>
+              <button class="chip-btn" type="button" data-filter="comp">Cortesías</button>
+              <button class="chip-btn" type="button" data-filter="in">Ingresaron</button>
+            </div>
+            <div class="field zgp-search">
+              <label for="zgpSearch">Buscar por nombre, mail o código</label>
+              <input type="search" id="zgpSearch" autocomplete="off">
+            </div>
+            <div class="table-wrap">
+              <table class="table zgp-table" id="zgpTable">
+                <thead><tr><th>Código</th><th>Titular</th><th>Tipo</th><th>Origen</th><th>Pagó</th><th>Ingreso</th><th></th></tr></thead>
+                <tbody></tbody>
+              </table>
             </div>
           </div>
 
+          </div>
+
+          <!-- Escenario: invitados al line up, line up, pistas recibidas y open mic -->
+          <div id="zgp-stage" class="zgp-view" hidden>
           <!-- Carpetas: links de OneDrive del evento, line up (artistas del sello e invitados) y pistas recibidas -->
-          <div id="zgp-shows" class="zgp-view zgp-shows-grid" hidden>
+          <div id="zgp-shows" class="zgp-shows-grid">
             <form id="zgpShowsForm" class="zgp-shows-form" novalidate>
               <!-- Solo si falta conectar la carpeta madre de los shows -->
               <p class="zgp-noroot zgp-folders" id="zgpNoRoot" hidden>Falta conectar la carpeta de Shows &amp; Open Mic. <button class="link-btn" type="button" data-open-config>Configurar carpetas de eventos</button></p>
@@ -638,7 +632,7 @@
 
             <!-- Paso 1: sumar al invitado (después aparece en el line up) -->
             <div class="card zgp-guests">
-              <h2 class="card-title">Sumar invitado</h2>
+              <h2 class="card-title">Invitados al line up</h2>
               <p class="hint">Para quien toca y no trabaja con el sello (por ejemplo, quien elegiste en el open mic). Le creás un link único para subir sus pistas, sin usuario ni contraseña (vence 24 h después del show), y su carpeta se crea sola en OneDrive con este nombre. Después aparece en el line up, de donde copiás su link o se lo mandás por WhatsApp.</p>
               <form class="zgp-guest-form" id="zgpGuestForm" novalidate>
                 <div class="field">
@@ -671,6 +665,17 @@
                 </table>
               </div>
             </div>
+          <div id="zgp-mic" class="zgp-files zgp-mic-block">
+            <div class="zgp-files-head"><h2 class="card-title">Open mic</h2><p class="muted" id="zgpMicStatus"></p></div>
+            <div class="table-wrap">
+              <table class="table zgp-table" id="zgpMicTable">
+                <thead><tr><th>AKA</th><th>Canción</th><th>Nota</th><th>Nombre</th><th>Instagram</th><th>Mail</th><th>Archivo</th><th></th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+
+          </div>
           </div>
         </div>
         <!-- Configuración (abajo de todo, para no ocupar lugar) -->

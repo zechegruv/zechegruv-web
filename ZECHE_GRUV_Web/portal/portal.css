@@ -2636,3 +2636,18 @@ a.ref-title:hover { color: var(--orange-soft); }
 @media (max-width: 900px) {
   .zgp-menu { -webkit-mask-image: linear-gradient(90deg, #000 85%, transparent); mask-image: linear-gradient(90deg, #000 85%, transparent); }
 }
+
+/* ZG PASS en 4 secciones */
+.zgp-door { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 20px; align-items: start; }
+.zgp-door #zgp-issue .card { margin: 0; }
+#zgp-tickets { display: flex; flex-direction: column; gap: 22px; }
+.zgp-filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.chip-btn {
+  border: 1px solid var(--border); background: transparent; color: var(--beige); cursor: pointer;
+  font-family: "DM Mono", monospace; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; padding: 8px 12px; transition: .2s ease;
+}
+.chip-btn::after { content: attr(data-count); margin-left: 8px; color: var(--muted); }
+.chip-btn:hover { border-color: rgba(245, 166, 35, .5); }
+.chip-btn.is-active { border-color: var(--orange); background: rgba(240, 120, 0, .14); color: var(--cream); }
+.zgp-mic-block { order: 5; }
+@media (max-width: 900px) { .zgp-door { grid-template-columns: 1fr; } }

@@ -41,10 +41,11 @@
   function renderEvent() {
     const s = current.stats;
     $("zgpState").textContent = STATE[current.status] || current.status;
-    // Open mic y Carpetas son solo de los shows.
+    // Escenario (line up, pistas y open mic) es solo de los shows.
     const isShow = current.kind === "show";
-    document.querySelectorAll('#zgpTabs [data-view="mic"], #zgpTabs [data-view="shows"]').forEach((b) => { b.hidden = !isShow; });
-    if (!isShow && (view === "mic" || view === "shows")) view = "summary";
+    document.querySelector('#zgpTabs [data-view="stage"]').hidden = !isShow;
+    if (!isShow && view === "stage") view = "summary";
+    $("zgp-mic").hidden = !current.openmic_enabled;
     $("zgpPublish").hidden = current.status === "cancelled";
     $("zgpPublish").textContent = current.status === "published" ? "Cerrar la venta" : "Publicar y abrir la venta";
     $("zgpStats").replaceChildren(
@@ -128,17 +129,15 @@
     // Una sola pantalla: la vista anterior se difumina y entra la nueva.
     const changed = name !== view || !$(`zgp-${name}`).classList.contains("is-in");
     view = name;
-    ["summary", "scan", "issue", "list", "mic", "shows", "guestlist"].forEach((v) => {
+    ["summary", "door", "tickets", "stage"].forEach((v) => {
       const node = $(`zgp-${v}`);
       node.hidden = v !== name;
       if (v === name && changed) { node.classList.remove("is-in"); void node.offsetWidth; node.classList.add("is-in"); }
     });
     document.querySelectorAll("#zgpTabs .tab").forEach((b) => b.classList.toggle("is-active", b.dataset.view === name));
-    if (name !== "scan") stopCamera();
-    if (name === "list") loadTickets();
-    if (name === "mic") loadMic();
-    if (name === "shows") loadShows();
-    if (name === "guestlist" && window.ZGEventos) window.ZGEventos.loadGuestlist();
+    if (name !== "door") stopCamera();
+    if (name === "tickets") { loadTickets(); if (window.ZGEventos) window.ZGEventos.loadGuestlist(); }
+    if (name === "stage") { loadShows(); if (current.openmic_enabled) loadMic(); }
   }
 
   // ---------- Control de acceso ----------
@@ -217,7 +216,7 @@
     $("zgpResultName").textContent = data.holder_name || "";
     const meta = [];
     if (data.code) meta.push(data.code);
-    if (data.type) meta.push(data.comp ? `${data.type} · Bonificada` : data.type);
+    if (data.type) meta.push(data.comp ? `${data.type} · Cortesía` : data.type);
     if (kind === "ok" || kind === "done") meta.push(current.name);
     if (kind === "already_used" && data.used_at) meta.push(`Ingresó el ${fmtDate(data.used_at).toLowerCase()} a las ${fmtTime(data.used_at)}`);
     $("zgpResultMeta").textContent = meta.join("\n");
@@ -264,7 +263,7 @@
     const comp = $("zgpMethod").value === "comp";
     $("zgpPrice").value = comp ? 0 : type ? type.price : "";
     $("zgpPrice").disabled = comp;
-    $("zgpIssueSubmit").textContent = comp ? "Emitir bonificada" : "Emitir entrada";
+    $("zgpIssueSubmit").textContent = comp ? "Emitir cortesía" : "Emitir entrada";
   }
 
   async function issue(ev) {
@@ -303,14 +302,28 @@
 
   // ---------- Entradas emitidas ----------
   function origin(t) {
-    if (t.comp) return "Bonificada";
+    if (t.comp) return "Cortesía";
     return `${ORIGIN[t.method] || "—"}${t.channel === "door" ? " · puerta" : ""}`;
   }
 
+  // Filtro de la lista: todas, vendidas online, en puerta, cortesías o las que ya ingresaron.
+  let filter = "all";
+  const FILTERS = {
+    all: () => true,
+    web: (t) => !t.comp && t.channel === "web",
+    door: (t) => !t.comp && t.channel === "door",
+    comp: (t) => t.comp,
+    in: (t) => t.status === "used",
+  };
   function renderTickets() {
     const q = $("zgpSearch").value.trim().toLowerCase();
-    const rows = tickets.filter((t) => !q || `${t.code} ${t.holder_name} ${t.holder_email || ""}`.toLowerCase().includes(q));
-    setMsg($("zgpListStatus"), tickets.length ? `${rows.length} de ${tickets.length} entradas.` : "Todavía no hay entradas emitidas para este evento.");
+    const rows = tickets.filter(FILTERS[filter]).filter((t) => !q || `${t.code} ${t.holder_name} ${t.holder_email || ""}`.toLowerCase().includes(q));
+    document.querySelectorAll("#zgpFilters .chip-btn").forEach((b) => {
+      const n = tickets.filter(FILTERS[b.dataset.filter]).length;
+      b.classList.toggle("is-active", b.dataset.filter === filter);
+      b.dataset.count = n;
+    });
+    setMsg($("zgpListStatus"), tickets.length ? `${rows.length} de ${tickets.length}` : "Todavía no hay entradas emitidas para este evento.");
     $("zgpTable").querySelector("tbody").replaceChildren(...rows.map((t) => {
       const tr = el("tr");
       const holder = el("td", "", t.holder_name);
@@ -595,6 +608,7 @@
   $("zgpMethod").addEventListener("change", syncPrice);
   $("zgpIssueForm").addEventListener("submit", issue);
   $("zgpSearch").addEventListener("input", renderTickets);
+  $("zgpFilters").addEventListener("click", (e) => { const b = e.target.closest(".chip-btn"); if (b) { filter = b.dataset.filter; renderTickets(); } });
   $("zgpTable").addEventListener("click", async (event) => {
     const btn = event.target.closest("button[data-code]");
     if (!btn) return;
