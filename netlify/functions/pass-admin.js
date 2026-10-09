@@ -182,7 +182,9 @@ exports.handler = async (event) => {
       if (!keep.has(t.id)) await db(`pass_ticket_types?id=eq.${t.id}`, { method: "PATCH", body: { active: false } });
     }
     await audit(editing ? "evento_editado" : "evento_creado", "event", ev.id, { name: ev.name }, adminId);
-    return json(200, { id: ev.id, slug: ev.slug });
+    // Las carpetas de la edición (Open Mic y Shows) se crean solas.
+    const folders_ok = await folders.ensure(ev);
+    return json(200, { id: ev.id, slug: ev.slug, folders_ok });
   }
 
   if (!UUID.test(eventId)) return json(400, { error: "Elegí un evento." });
@@ -275,33 +277,12 @@ exports.handler = async (event) => {
     if (gone.length && !(await db(`pass_show_artists?event_id=eq.${eventId}&profile_id=in.(${gone.join(",")})`, { method: "DELETE" })).ok) return json(502, { error: "No pudimos guardar quién toca." });
     if (added.length && !(await db("pass_show_artists", { method: "POST", body: added.map((id) => ({ event_id: eventId, profile_id: id })) })).ok) return json(502, { error: "No pudimos guardar quién toca." });
 
-    // Se arman las carpetas de la edición y la de cada artista, para que ya
-    // aparezcan en OneDrive (si algo falla, se vuelve a intentar al subir).
+    // Se arman las carpetas de la edición y la de cada artista e invitado,
+    // para que ya aparezcan en OneDrive (si algo falla, se reintenta al subir).
     const root = await folders.rootLink();
-    let foldersOk = null;
-    if (folders.available(ev, "shows", root) || folders.available(ev, "openmic", root)) {
-      foldersOk = true;
-      try {
-        if (ev.openmic_enabled && folders.available(ev, "openmic", root)) {
-          const om = await folders.eventFolder(ev, "openmic", root);
-          if (om.error) foldersOk = false;
-        }
-        if (folders.available(ev, "shows", root)) {
-          const sh = await folders.eventFolder(ev, "shows", root);
-          if (sh.error) foldersOk = false;
-          else {
-            const names = (await db(`pass_show_artists?event_id=eq.${eventId}&select=profiles(display_name,full_name)`)).data || [];
-            const guestNames = (await db(`pass_show_guests?event_id=eq.${eventId}&revoked_at=is.null&folder_link=is.null&select=name`)).data || [];
-            for (const n of [...names.map((r) => r.profiles && (r.profiles.display_name || r.profiles.full_name)), ...guestNames.map((g) => g.name)].filter(Boolean)) {
-              await drive.subfolder(sh.target, drive.cleanName(n));
-            }
-          }
-        }
-      } catch (e) {
-        console.error("ZG PASS: carpetas", e);
-        foldersOk = false;
-      }
-    }
+    const lineupRows = (await db(`pass_show_artists?event_id=eq.${eventId}&select=profiles(display_name,full_name)`)).data || [];
+    const guestRows = (await db(`pass_show_guests?event_id=eq.${eventId}&revoked_at=is.null&folder_link=is.null&select=name`)).data || [];
+    const foldersOk = await folders.ensure(ev, [...lineupRows.map((r) => r.profiles && (r.profiles.display_name || r.profiles.full_name)), ...guestRows.map((g) => g.name)], root);
 
     // Aviso por mail a los artistas del sello que todavía no lo recibieron.
     const notified = [];
@@ -347,6 +328,11 @@ exports.handler = async (event) => {
     if (!res.ok || !res.data[0]) return json(502, { error: "No pudimos crear el link del invitado." });
     const g = res.data[0];
     const link = guestLink(event, g.token);
+    // Su carpeta dentro de Shows, para que ya aparezca en OneDrive.
+    if (!folderLink) {
+      const full = await db(`pass_events?id=eq.${eventId}&select=*`);
+      if (full.ok && full.data[0]) await folders.ensure(full.data[0], [name]);
+    }
     await audit("invitado_pistas", "event", eventId, { name, email: !!email }, adminId);
     const emailed = email ? await sendMail({ to: email, replyTo: notifyEmail(), ...guestMail(ev, name, link, plural) }).catch(() => false) : false;
     return json(200, { guest: { id: g.id, name, email: g.email, link }, emailed });

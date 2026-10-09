@@ -91,9 +91,37 @@
     // Por defecto, el próximo evento.
     current = events.find((e) => e.id === keepId) || events.find((e) => Date.parse(e.starts_at) > Date.now() - 12 * 3600 * 1000) || events[events.length - 1];
     $("zgpEvent").value = current.id;
+    paintPicker();
     $("zgpBody").hidden = false;
     renderEvent();
     showView(view);
+  }
+
+  // Tarjetas para elegir el evento (próximos primero; los pasados, más tenues).
+  const STATE_SHORT = { draft: "Borrador", published: "A la venta", closed: "Venta cerrada", cancelled: "Cancelado" };
+  function paintPicker() {
+    const now = Date.now() - 12 * 3600 * 1000;
+    const list = [...events].sort((a, b) => {
+      const pa = Date.parse(a.starts_at) < now, pb = Date.parse(b.starts_at) < now;
+      return pa - pb || (pa ? Date.parse(b.starts_at) - Date.parse(a.starts_at) : Date.parse(a.starts_at) - Date.parse(b.starts_at));
+    });
+    $("zgpEventPicker").replaceChildren(...list.map((e) => {
+      const past = Date.parse(e.starts_at) < now;
+      const b = el("button", `zgp-event${e.id === current.id ? " is-active" : ""}${past ? " is-past" : ""}`);
+      b.type = "button";
+      b.setAttribute("role", "option");
+      b.setAttribute("aria-selected", e.id === current.id ? "true" : "false");
+      const top = el("span", "zgp-event-top");
+      top.append(el("span", "zgp-event-kind", e.kind === "camp" ? "Campamento" : "Show"), el("span", `zgp-event-state is-${e.status}`, past ? "Pasado" : STATE_SHORT[e.status] || e.status));
+      b.append(top, el("b", "", e.name), el("small", "", `${fmtDate(e.starts_at)} · ${fmtTime(e.starts_at)}`));
+      b.addEventListener("click", () => {
+        if (e.id === current.id) return;
+        $("zgpEvent").value = e.id;
+        $("zgpEvent").dispatchEvent(new Event("change"));
+        paintPicker();
+      });
+      return b;
+    }));
   }
 
   function showView(name) {
@@ -346,12 +374,11 @@
   // Dónde va a quedar cada cosa en OneDrive.
   function paintPath() {
     const folder = $("zgpFolderName").value.trim() || "(carpeta de la edición)";
-    const own = $("zgpMicFolder").value.trim() || $("zgpShowsFolder").value.trim();
     $("zgpFolderPath").textContent = $("zgpRootFolder").value.trim()
-      ? `📁 Carpeta madre / ${folder} / Open Mic · Shows / una carpeta por artista${own ? " — con links propios para esta edición" : ""}`
+      ? `📁 Carpeta madre / ${folder} / Open Mic · Shows / una carpeta por artista`
       : "Pegá la carpeta madre una sola vez: después cada edición arma sus carpetas sola.";
   }
-  ["zgpRootFolder", "zgpFolderName", "zgpMicFolder", "zgpShowsFolder"].forEach((id) => $(id).addEventListener("input", paintPath));
+  ["zgpRootFolder", "zgpFolderName"].forEach((id) => $(id).addEventListener("input", paintPath));
   $("zgpRootChange").addEventListener("click", () => {
     $("zgpRootSet").hidden = true;
     $("zgpRootFolder").hidden = false;
@@ -417,9 +444,6 @@
     $("zgpRootSet").hidden = !data.root_folder_link;
     $("zgpRootFolder").hidden = !!data.root_folder_link;
     $("zgpFolderName").value = data.folder_name_custom || data.folder_name;
-    $("zgpMicFolder").value = data.openmic_folder_link || "";
-    $("zgpShowsFolder").value = data.shows_folder_link || "";
-    $("zgpOverrides").open = !!(data.openmic_folder_link || data.shows_folder_link);
     $("zgpShowsDeadline").value = toLocalInput(data.shows_deadline);
     paintPath();
 
@@ -467,8 +491,9 @@
       event_id: current.id,
       root_folder_link: $("zgpRootFolder").value.trim(),
       folder_name: $("zgpFolderName").value.trim(),
-      openmic_folder_link: $("zgpMicFolder").value.trim(),
-      shows_folder_link: $("zgpShowsFolder").value.trim(),
+      // Sin links propios: todo va a la carpeta de la edición, dentro de la madre.
+      openmic_folder_link: "",
+      shows_folder_link: "",
       shows_deadline: deadline ? new Date(deadline).toISOString() : null,
       artist_ids: [...$("zgpShowArtists").querySelectorAll("input:checked")].map((i) => i.value),
     };
@@ -492,14 +517,13 @@
   $("zgpGuestForm").addEventListener("submit", async (event) => {
     event.preventDefault();
     if (!showsFor || showsFor !== current.id) return;
-    const folder = $("zgpGuestFolder").value.trim();
+    const folder = ""; // sube a su carpeta dentro de Shows (se crea sola)
     const name = $("zgpGuestName").value.trim();
     if (!name && !folder) return setMsg($("zgpGuestMsg"), "Poné el nombre artístico del invitado.", true);
     $("zgpGuestAdd").disabled = true;
     setMsg($("zgpGuestMsg"), "Creando el link…");
     try {
       const out = await call({ action: "guest_add", event_id: current.id, name, folder_link: folder, email: $("zgpGuestEmail").value.trim(), gift_session: $("zgpGuestGift").checked, plural: $("zgpGuestPlural").checked });
-      $("zgpGuestFolder").value = "";
       $("zgpGuestName").value = "";
       $("zgpGuestEmail").value = "";
       $("zgpGuestGift").checked = false;

@@ -472,11 +472,10 @@
         <p class="muted" id="zgpStatus"></p>
 
         <div id="zgpBody" hidden>
+          <div class="zgp-events" id="zgpEventPicker" role="listbox" aria-label="Evento"></div>
           <div class="zgp-bar">
-            <div class="field">
-              <label for="zgpEvent">Evento</label>
-              <select id="zgpEvent"></select>
-            </div>
+            <!-- Elección del evento: tarjetas (el select queda oculto, es el que guarda cuál está elegido) -->
+            <select id="zgpEvent" hidden></select>
             <span class="pill" id="zgpState"></span>
             <button class="btn" type="button" id="zgpPublish"></button>
             <button class="btn" type="button" id="zgpEdit">Editar datos</button>
@@ -610,7 +609,7 @@
               <section class="card zgp-folders">
                 <div class="zgp-folders-head">
                   <h2 class="card-title">Carpetas</h2>
-                  <p class="hint">Links de OneDrive con permiso “Puede editar”. Nadie más los ve.</p>
+                  <p class="hint">Las carpetas de cada edición se crean solas. Solo hace falta conectar la carpeta madre una vez.</p>
                 </div>
                 <div class="zgp-folders-row">
                   <div class="field zgp-root">
@@ -631,28 +630,15 @@
                   </div>
                 </div>
                 <p class="hint zgp-path" id="zgpFolderPath"></p>
-                <details class="zgp-guest-more zgp-overrides" id="zgpOverrides">
-                  <summary>Usar otras carpetas solo para esta edición</summary>
-                  <div class="zgp-folders-row zgp-folders-row-2">
-                    <div class="field">
-                      <label for="zgpMicFolder">Open Mic · link de edición</label>
-                      <input type="url" id="zgpMicFolder" placeholder="https://1drv.ms/f/…" autocomplete="off" spellcheck="false">
-                    </div>
-                    <div class="field">
-                      <label for="zgpShowsFolder">Shows · link de edición</label>
-                      <input type="url" id="zgpShowsFolder" placeholder="https://1drv.ms/f/…" autocomplete="off" spellcheck="false">
-                    </div>
-                  </div>
-                </details>
               </section>
 
               <!-- Line up del sello -->
               <section class="card zgp-lineup">
                 <h2 class="card-title">Line up · artistas del sello</h2>
-                <p class="hint">Les aparece en su portal la tarjeta para subir pistas y, al guardar, les llega un mail (una sola vez).</p>
+                <p class="hint">Al confirmar se crean sus carpetas en OneDrive, les aparece en su portal la tarjeta para subir pistas y les llega un mail (una sola vez).</p>
                 <div class="zgp-artists" id="zgpShowArtists"></div>
                 <p class="msg" id="zgpShowsMsg" role="status"></p>
-                <button class="btn btn-primary" type="submit" id="zgpShowsSave">Guardar carpetas y line up</button>
+                <button class="btn btn-primary" type="submit" id="zgpShowsSave">Confirmar line up</button>
               </section>
             </form>
 
@@ -669,13 +655,6 @@
                   <label for="zgpGuestEmail">Mail (opcional)</label>
                   <input type="email" id="zgpGuestEmail" maxlength="160" autocomplete="off" inputmode="email">
                 </div>
-                <details class="zgp-guest-more">
-                  <summary>¿Su carpeta está fuera de Shows?</summary>
-                  <div class="field zgp-guest-link">
-                    <label for="zgpGuestFolder">Link de edición de su carpeta (opcional)</label>
-                    <input type="url" id="zgpGuestFolder" placeholder="https://1drv.ms/f/…" autocomplete="off" spellcheck="false">
-                  </div>
-                </details>
                 <label class="check zgp-guest-gift">
                   <input type="checkbox" id="zgpGuestPlural">
                   <span>Es dúo o banda (les habla en plural)</span>

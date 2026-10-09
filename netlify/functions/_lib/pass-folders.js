@@ -60,4 +60,24 @@ async function eventFolder(ev, kind, root) {
   return sub ? { target: sub } : { error: `no se pudo crear ${k.name}` };
 }
 
-module.exports = { KINDS, rootLink, setRootLink, folderName, available, eventFolder };
+// Arma (si faltan) las carpetas del evento: la de la edición con Open Mic
+// y Shows, y adentro de Shows una por nombre. Nunca falla: devuelve si
+// salió todo bien.
+async function ensure(ev, names = [], root) {
+  if (ev.kind !== "show") return null;
+  const base = root === undefined ? await rootLink() : root;
+  if (!available(ev, "shows", base)) return null;
+  try {
+    let ok = true;
+    if (ev.openmic_enabled && available(ev, "openmic", base)) ok = !(await eventFolder(ev, "openmic", base)).error && ok;
+    const shows = await eventFolder(ev, "shows", base);
+    if (shows.error) return false;
+    for (const n of names.filter(Boolean)) ok = !!(await drive.subfolder(shows.target, drive.cleanName(n))) && ok;
+    return ok;
+  } catch (e) {
+    console.error("ZG PASS: carpetas", e);
+    return false;
+  }
+}
+
+module.exports = { KINDS, rootLink, setRootLink, folderName, available, eventFolder, ensure };

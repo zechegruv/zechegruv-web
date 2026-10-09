@@ -2487,3 +2487,20 @@ a.ref-title:hover { color: var(--orange-soft); }
   .zgp-shows-grid { grid-template-columns: 1fr; }
   .zgp-folders-row, .zgp-folders-row-2 { grid-template-columns: 1fr; }
 }
+
+/* ZG PASS: tarjetas para elegir el evento */
+.zgp-events { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 14px; scrollbar-width: thin; }
+.zgp-event {
+  flex: 0 0 auto; width: 250px; display: flex; flex-direction: column; align-items: flex-start; gap: 4px;
+  padding: 14px 16px; border: 1px solid var(--border); background: var(--brown-dark);
+  color: var(--cream); font-family: inherit; text-align: left; cursor: pointer; transition: .2s ease;
+}
+.zgp-event:hover { border-color: rgba(245, 166, 35, .5); }
+.zgp-event.is-active { border-color: var(--orange); background: linear-gradient(180deg, rgba(240, 120, 0, .16), rgba(240, 120, 0, .04)), var(--brown-dark); }
+.zgp-event.is-past { opacity: .55; }
+.zgp-event b { font-size: 15px; line-height: 1.25; letter-spacing: -.01em; }
+.zgp-event small { font-size: 12px; color: var(--muted); }
+.zgp-event-top { display: flex; justify-content: space-between; width: 100%; gap: 8px; margin-bottom: 2px; }
+.zgp-event-kind, .zgp-event-state { font-family: "DM Mono", monospace; font-size: 9px; letter-spacing: .13em; text-transform: uppercase; color: var(--muted); }
+.zgp-event-state.is-published { color: #8fd18a; }
+.zgp-event-state.is-draft { color: var(--orange-soft); }
