@@ -477,7 +477,7 @@
             <button class="tab" type="button" data-view="issue" role="tab">Venta en puerta</button>
             <button class="tab" type="button" data-view="list" role="tab">Entradas</button>
             <button class="tab" type="button" data-view="mic" role="tab">Open mic</button>
-            <button class="tab" type="button" data-view="shows" role="tab">Carpetas</button>
+            <button class="tab" type="button" data-view="shows" role="tab">Line up</button>
             <button class="tab" type="button" data-view="guestlist" role="tab">Lista de invitados</button>
           </div>
 
@@ -620,25 +620,8 @@
           <!-- Carpetas: links de OneDrive del evento, line up (artistas del sello e invitados) y pistas recibidas -->
           <div id="zgp-shows" class="zgp-shows-grid" hidden>
             <form id="zgpShowsForm" class="zgp-shows-form" novalidate>
-              <!-- Carpetas: una franja -->
-              <section class="card zgp-folders">
-                <div class="zgp-folders-head">
-                  <h2 class="card-title">Carpetas</h2>
-                  <p class="hint">Se crean solas en OneDrive.</p>
-                </div>
-                <div class="zgp-folders-row zgp-folders-row-2">
-                  <div class="field">
-                    <label for="zgpFolderName">Carpeta de esta edición</label>
-                    <input type="text" id="zgpFolderName" maxlength="120" autocomplete="off">
-                  </div>
-                  <div class="field">
-                    <label for="zgpShowsDeadline">Pistas hasta</label>
-                    <input type="datetime-local" id="zgpShowsDeadline">
-                  </div>
-                </div>
-                <p class="hint zgp-path" id="zgpFolderPath"></p>
-                <p class="zgp-noroot" id="zgpNoRoot" hidden>Falta conectar la carpeta de Shows &amp; Open Mic. <button class="link-btn" type="button" data-open-config>Configurar carpetas de eventos</button></p>
-              </section>
+              <!-- Solo si falta conectar la carpeta madre de los shows -->
+              <p class="zgp-noroot zgp-folders" id="zgpNoRoot" hidden>Falta conectar la carpeta de Shows &amp; Open Mic. <button class="link-btn" type="button" data-open-config>Configurar carpetas de eventos</button></p>
 
               <!-- Line up: invitados y artistas del sello (con el sol) -->
               <section class="card zgp-lineup">
@@ -656,11 +639,11 @@
             <!-- Paso 1: sumar al invitado (después aparece en el line up) -->
             <div class="card zgp-guests">
               <h2 class="card-title">Sumar invitado</h2>
-              <p class="hint">Para quien toca y no trabaja con el sello (por ejemplo, quien elegiste en el open mic). Le creás un link único para subir sus pistas, sin usuario ni contraseña; vence 24 h después del show. Después aparece en el line up, de donde copiás su link o se lo mandás por WhatsApp.</p>
+              <p class="hint">Para quien toca y no trabaja con el sello (por ejemplo, quien elegiste en el open mic). Le creás un link único para subir sus pistas, sin usuario ni contraseña (vence 24 h después del show), y su carpeta se crea sola en OneDrive con este nombre. Después aparece en el line up, de donde copiás su link o se lo mandás por WhatsApp.</p>
               <form class="zgp-guest-form" id="zgpGuestForm" novalidate>
                 <div class="field">
                   <label for="zgpGuestName">Nombre artístico</label>
-                  <input type="text" id="zgpGuestName" maxlength="80" autocomplete="off" placeholder="Igual que su carpeta en Shows">
+                  <input type="text" id="zgpGuestName" maxlength="80" autocomplete="off" placeholder="Ej.: Bastian &amp; Kaino">
                 </div>
                 <div class="field">
                   <label for="zgpGuestEmail">Mail (opcional)</label>
@@ -799,11 +782,6 @@
                 <label for="zeShowsDeadline">Pistas del line up hasta</label>
                 <input type="datetime-local" id="zeShowsDeadline">
               </div>
-            </div>
-            <div class="field">
-              <label for="zeFolder">Carpeta de la edición</label>
-              <input type="text" id="zeFolder" maxlength="120" autocomplete="off">
-              <p class="hint">Dentro de la carpeta madre. Si ya la creaste en OneDrive, poné el mismo nombre; si no, se crea sola.</p>
             </div>
           </section>
 

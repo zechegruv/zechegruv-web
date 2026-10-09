@@ -390,15 +390,9 @@
     ? `Hola ${g.name}! Ya son parte del line up de ${current.name} (${fmtDate(current.starts_at)}). Suban sus pistas acá, sin usuario ni contraseña: ${g.link}\nEl link es solo de ustedes. Nos vemos en el escenario 🌞`
     : `Hola ${g.name}! Ya sos parte del line up de ${current.name} (${fmtDate(current.starts_at)}). Subí tus pistas acá, sin usuario ni contraseña: ${g.link}\nEl link es solo tuyo. Nos vemos en el escenario 🌞`;
 
-  // Dónde va a quedar cada cosa en OneDrive.
+  // Aviso solo si falta conectar la carpeta madre de los shows.
   let rootSet = false;
-  function paintPath() {
-    const folder = $("zgpFolderName").value.trim() || "(carpeta de la edición)";
-    $("zgpFolderPath").textContent = rootSet ? `📁 Shows & Open Mic / ${folder} / Open Mic · Shows / una carpeta por artista` : "";
-    $("zgpFolderPath").hidden = !rootSet;
-    $("zgpNoRoot").hidden = rootSet;
-  }
-  $("zgpFolderName").addEventListener("input", paintPath);
+  const paintPath = () => { $("zgpNoRoot").hidden = rootSet; };
 
   function paintGuests() {
     const data = showsData;
@@ -457,8 +451,6 @@
     $("zgpShowsForm").hidden = false;
     document.querySelector(".zgp-guests").hidden = false;
     rootSet = !!data.root_folder_link;
-    $("zgpFolderName").value = data.folder_name_custom || data.folder_name;
-    $("zgpShowsDeadline").value = toLocalInput(data.shows_deadline);
     paintPath();
 
     // Si todavía no se eligió a nadie, se proponen los del line up que tienen cuenta.
@@ -503,15 +495,12 @@
   $("zgpShowsForm").addEventListener("submit", async (event) => {
     event.preventDefault();
     if (!showsFor || showsFor !== current.id) return;
-    const deadline = $("zgpShowsDeadline").value;
     const body = {
       action: "shows_save",
       event_id: current.id,
-      folder_name: $("zgpFolderName").value.trim(),
       // Sin links propios: todo va a la carpeta de la edición, dentro de la madre.
       openmic_folder_link: "",
       shows_folder_link: "",
-      shows_deadline: deadline ? new Date(deadline).toISOString() : null,
       artist_ids: [...$("zgpShowArtists").querySelectorAll("input:checked")].map((i) => i.value),
     };
     $("zgpShowsSave").disabled = true;

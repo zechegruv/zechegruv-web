@@ -289,10 +289,11 @@ exports.handler = async (event) => {
     }
 
     const ids = [...new Set((Array.isArray(body.artist_ids) ? body.artist_ids : []).map(String).filter((id) => UUID.test(id)))];
-    const patch = {
-      openmic_folder_link: openmic || null, shows_folder_link: shows || null, shows_deadline: deadline,
-      folder_name: text(body.folder_name, 120) || null, updated_at: new Date().toISOString(),
-    };
+    // Solo se tocan los campos que vienen (la carpeta y el plazo de pistas se
+    // editan desde "Editar datos" del evento).
+    const patch = { openmic_folder_link: openmic || null, shows_folder_link: shows || null, updated_at: new Date().toISOString() };
+    if ("shows_deadline" in body) patch.shows_deadline = deadline;
+    if ("folder_name" in body) patch.folder_name = text(body.folder_name, 120) || null;
     const res = await db(`pass_events?id=eq.${eventId}`, { method: "PATCH", prefer: "return=representation", body: patch });
     if (!res.ok || !res.data[0]) return json(502, { error: "No pudimos guardar las carpetas del evento." });
     const ev = res.data[0];

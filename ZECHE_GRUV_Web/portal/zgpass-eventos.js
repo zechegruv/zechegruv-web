@@ -43,7 +43,6 @@
   // ---------- Abrir el formulario ----------
   // "#3" → "#4": el nombre del show nuevo sigue la numeración del anterior.
   const nextName = (name) => String(name || "").replace(/#\s*(\d+)\s*$/, (_, n) => `#${Number(n) + 1}`);
-  const edition = (name) => { const m = String(name || "").match(/#\s*(\d+)\s*$/); return m ? `Edición ${m[1]}` : ""; };
 
   function fill(e, isNew) {
     $("zeName").value = e.name || "";
@@ -61,7 +60,6 @@
     $("zeOpenmic").checked = !!e.openmic_enabled;
     $("zeOpenmicDeadline").value = isNew ? "" : toLocalInput(e.openmic_deadline);
     $("zeShowsDeadline").value = isNew ? "" : toLocalInput(e.shows_deadline);
-    $("zeFolder").value = isNew ? edition(e.name) : e.folder_name || "";
     flyerUrl = isNew ? "" : e.image_url || "";
     paintFlyer();
     const types = (e.ticket_types && e.ticket_types.length ? e.ticket_types : [{ name: "General", price: "" }])
@@ -175,7 +173,8 @@
         openmic_enabled: $("zeKind").value === "show" && $("zeOpenmic").checked,
         openmic_deadline: iso($("zeOpenmicDeadline").value),
         shows_deadline: iso($("zeShowsDeadline").value),
-        folder_name: $("zeFolder").value.trim(),
+        // La carpeta de la edición es automática ("Edición N"); al editar se conserva la que tenía.
+        folder_name: editing ? editing.folder_name || "" : "",
       },
       ticket_types,
     };
