@@ -2451,3 +2451,7 @@ a.ref-title:hover { color: var(--orange-soft); }
 }
 #door-issue .grid-2, #door-issue .field { width: 100%; }
 #door-issue .field input, #door-issue .field select { width: 100%; }
+.door-pin { display: flex; align-items: baseline; gap: 8px; margin-top: 4px; }
+.door-pin span { font-family: "DM Mono", monospace; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.door-pin b { font-family: "DM Mono", monospace; font-size: 18px; letter-spacing: .3em; color: var(--orange-soft); }
+.pin-input { font-family: "DM Mono", monospace; font-size: 28px !important; letter-spacing: .5em; text-align: center; width: 100%; }

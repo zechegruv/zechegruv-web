@@ -41,6 +41,21 @@
       </div>
     </section>
 
+    <!-- Código de 4 números: se pide una sola vez en cada celular -->
+    <section class="view-narrow" id="view-pin" hidden style="max-width:420px">
+      <div class="eyebrow">ZG PASS / Puerta</div>
+      <h1 class="title title-sm" id="pinTitle">Ingresá tu código</h1>
+      <p class="lead">Son los 4 números que te pasó ZECHE GRUV. Lo pedimos solo esta vez: después este celular lo recuerda.</p>
+      <form class="card form" id="pinForm" novalidate style="margin-top:24px">
+        <div class="field">
+          <label for="pinInput">Código</label>
+          <input class="pin-input" type="text" id="pinInput" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="one-time-code" placeholder="••••">
+        </div>
+        <p class="msg" id="pinMsg" role="alert"></p>
+        <button class="btn btn-primary" type="submit" id="pinSubmit">Entrar</button>
+      </form>
+    </section>
+
     <section id="view-main" hidden>
       <div class="eyebrow" id="doorEyebrow">ZG PASS / Puerta</div>
       <h1 class="title title-sm" id="doorTitle"></h1>

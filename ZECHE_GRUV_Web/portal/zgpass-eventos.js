@@ -296,7 +296,8 @@
   });
 
   // ---------- Acceso de puerta ----------
-  const doorText = (a, ev) => `Hola ${a.label}! Este es tu acceso a la puerta de ${ev.name} (${fmtDate(ev.starts_at)}): ${a.link}\nDesde ahí escaneás las entradas, vendés en puerta y ves el contador. Es solo para vos, no lo compartas.`;
+  // El código NO va en este mensaje: se pasa aparte (en persona o en otro mensaje).
+  const doorText = (a, ev) => `Hola ${a.label}! Este es tu acceso a la puerta de ${ev.name} (${fmtDate(ev.starts_at)}): ${a.link}\nDesde ahí escaneás las entradas, vendés en puerta y ves el contador. La primera vez te va a pedir un código de 4 números: te lo paso aparte. Es solo para vos, no lo compartas.`;
 
   async function loadDoor() {
     const ev = A.current;
@@ -307,7 +308,10 @@
       $("zgpDoorList").replaceChildren(...access.map((a) => {
         const li = el("li", "zgp-guest");
         const who = el("div", "zgp-guest-who");
-        who.append(el("strong", "", a.label), el("small", "", "Scanner, venta en puerta y contador"));
+        who.append(el("strong", "", a.label), el("small", a.locked ? "zgp-missing" : "", a.locked ? "Bloqueado por códigos incorrectos: creale un link nuevo" : "Scanner, venta en puerta y contador"));
+        const code = el("div", "door-pin");
+        code.append(el("span", "", "Código"), el("b", "", a.pin || "—"));
+        who.append(code);
         const actions = el("div", "zgp-guest-actions");
         const copy = el("button", "btn btn-sm", "Copiar link");
         copy.type = "button";
@@ -351,7 +355,7 @@
       await A.call({ action: "door_add", event_id: A.current.id, label });
       $("zgpDoorLabel").value = "";
       await loadDoor();
-      setMsg($("zgpDoorMsg"), `Listo: copiá el link de ${label} o mandáselo por WhatsApp.`);
+      setMsg($("zgpDoorMsg"), `Listo: mandale el link a ${label} y pasale el código aparte.`);
     } catch (err) {
       setMsg($("zgpDoorMsg"), err.message, true);
     } finally {

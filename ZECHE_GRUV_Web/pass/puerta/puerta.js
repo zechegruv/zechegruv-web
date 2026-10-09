@@ -15,12 +15,33 @@
   let pending = null;
 
   const setMsg = (node, text, isError) => { node.textContent = text || ""; node.classList.toggle("is-error", !!isError); };
-  const show = (name) => ["loading", "state", "main"].forEach((v) => { $(`view-${v}`).hidden = v !== name; });
+  const show = (name) => ["loading", "state", "pin", "main"].forEach((v) => { $(`view-${v}`).hidden = v !== name; });
+
+  // El código se guarda en este celular (si el navegador lo permite) para
+  // no pedirlo de nuevo.
+  const PIN_KEY = `zg-puerta-${k.slice(0, 16)}`;
+  let pin = "";
+  try { pin = localStorage.getItem(PIN_KEY) || ""; } catch (e) { /* sin almacenamiento: se pide cada vez */ }
+  const savePin = (value) => { pin = value; try { if (value) localStorage.setItem(PIN_KEY, value); else localStorage.removeItem(PIN_KEY); } catch (e) { /* nada */ } };
 
   async function call(body) {
-    const res = await api("pass-door", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...body, k }) });
-    if (!res.ok) { const err = new Error(res.data.error || "No pudimos completar la operación."); err.status = res.status; throw err; }
+    const res = await api("pass-door", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...body, k, pin }) });
+    if (!res.ok) {
+      const err = new Error(res.data.error || "No pudimos completar la operación.");
+      err.status = res.status;
+      err.needPin = !!res.data.need_pin;
+      throw err;
+    }
     return res.data;
+  }
+
+  function askPin(message) {
+    stopCamera();
+    savePin("");
+    $("pinInput").value = "";
+    setMsg($("pinMsg"), message || "", !!message);
+    show("pin");
+    setTimeout(() => $("pinInput").focus(), 50);
   }
 
   // ---------- Evento y contador ----------
@@ -46,7 +67,8 @@
       info = await call({ action: "info" });
       paint();
     } catch (err) {
-      if (err.status === 404 || err.status === 410) { $("stateText").textContent = err.message; show("state"); }
+      if (err.needPin) askPin();
+      else if ([404, 410, 423].includes(err.status)) { $("stateText").textContent = err.message; show("state"); }
     }
   }
 
@@ -142,6 +164,7 @@
       const out = await call({ action: "peek", ...what });
       showResult(out.result, out);
     } catch (err) {
+      if (err.needPin) return askPin();
       $("zgpResult").hidden = true;
       $("zgpScanBtn").textContent = "Escanear otra";
       setMsg($("zgpScanMsg"), err.message, true);
@@ -209,11 +232,13 @@
   }
 
   // ---------- Arranque ----------
+  let started = false;
   async function start() {
     if (!/^[0-9a-f]{64}$/.test(k)) { $("stateText").textContent = "Revisá que hayas copiado el link completo."; return show("state"); }
     try {
       info = await call({ action: "info" });
     } catch (err) {
+      if (err.needPin) return askPin(pin ? err.message : "");
       $("stateText").textContent = err.message;
       return show("state");
     }
@@ -230,8 +255,28 @@
     syncTotal();
     paint();
     show("main");
-    setInterval(() => { if (!document.hidden) refresh(); }, 20000); // el contador se actualiza solo
+    if (!started) setInterval(() => { if (!document.hidden && !$("view-main").hidden) refresh(); }, 20000); // el contador se actualiza solo
+    started = true;
   }
+
+  $("pinForm").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const value = $("pinInput").value.replace(/\D/g, "");
+    if (value.length !== 4) return setMsg($("pinMsg"), "Son 4 números.", true);
+    $("pinSubmit").disabled = true;
+    pin = value;
+    try {
+      await call({ action: "info" });
+      savePin(value);
+      await start();
+    } catch (err) {
+      pin = "";
+      if (err.needPin) setMsg($("pinMsg"), err.message || "Código incorrecto.", true);
+      else { $("stateText").textContent = err.message; show("state"); }
+    } finally {
+      $("pinSubmit").disabled = false;
+    }
+  });
 
   $("doorTabs").addEventListener("click", (event) => { const b = event.target.closest(".tab"); if (b) showView(b.dataset.view); });
   $("zgpScanBtn").addEventListener("click", () => { if (scanning) stopCamera(); else startCamera(); });

@@ -363,9 +363,9 @@ exports.handler = async (event) => {
 
   // ---------- Acceso de puerta: link solo con scanner, venta en puerta y contador ----------
   if (body.action === "door_list") {
-    const res = await db(`pass_door_access?event_id=eq.${eventId}&revoked_at=is.null&select=id,label,token,created_at&order=created_at.asc`);
+    const res = await db(`pass_door_access?event_id=eq.${eventId}&revoked_at=is.null&select=id,label,token,pin,failed_attempts,created_at&order=created_at.asc`);
     if (!res.ok) return json(502, { error: "No pudimos cargar los accesos de puerta. ¿Ya corriste supabase/017_shows_carpetas.sql?" });
-    return json(200, { access: res.data.map((a) => ({ id: a.id, label: a.label, link: `${siteUrl(event)}/puerta?k=${a.token}` })) });
+    return json(200, { access: res.data.map((a) => ({ id: a.id, label: a.label, pin: a.pin, locked: a.failed_attempts >= 10, link: `${siteUrl(event)}/puerta?k=${a.token}` })) });
   }
   if (body.action === "door_add") {
     const label = text(body.label, 60);
@@ -373,7 +373,7 @@ exports.handler = async (event) => {
     const res = await db("pass_door_access", { method: "POST", prefer: "return=representation", body: { event_id: eventId, label } });
     if (!res.ok || !res.data[0]) return json(502, { error: "No pudimos crear el acceso de puerta." });
     await audit("acceso_puerta", "event", eventId, { label }, adminId);
-    return json(200, { id: res.data[0].id, label, link: `${siteUrl(event)}/puerta?k=${res.data[0].token}` });
+    return json(200, { id: res.data[0].id, label, pin: res.data[0].pin, link: `${siteUrl(event)}/puerta?k=${res.data[0].token}` });
   }
   if (body.action === "door_remove") {
     const id = String(body.access_id || "");
