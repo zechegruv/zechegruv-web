@@ -2651,3 +2651,61 @@ a.ref-title:hover { color: var(--orange-soft); }
 .chip-btn.is-active { border-color: var(--orange); background: rgba(240, 120, 0, .14); color: var(--cream); }
 .zgp-mic-block { order: 5; }
 @media (max-width: 900px) { .zgp-door { grid-template-columns: 1fr; } }
+
+/* ---------- La escena: próximo evento del sello (escena.js) ---------- */
+/* Franja fina arriba de todo, como la de entradas del sitio */
+.escena-bar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 60; height: 44px;
+  display: flex; align-items: center; justify-content: center; gap: 14px; padding: 0 4vw;
+  border: 0; background: var(--orange); color: var(--brown-dark); font-family: inherit; cursor: pointer; white-space: nowrap; overflow: hidden;
+  transform: translateY(-100%); transition: transform .45s cubic-bezier(.2, .8, .2, 1), background .25s ease;
+}
+.escena-bar.is-on { transform: none; }
+.escena-bar:hover { background: var(--orange-soft); }
+body:has(.escena-bar.is-on) { padding-top: 44px; }
+body:has(.escena-bar.is-on) nav { top: 44px; }
+.escena-bar-when { font-family: "DM Mono", monospace; font-size: 11px; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; }
+.escena-bar-name { font-size: 14px; font-weight: 800; letter-spacing: -.02em; color: var(--cream); }
+.escena-bar-lineup { font-family: "DM Mono", monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.escena-bar-cta { flex: none; padding: 6px 13px; background: var(--brown-dark); color: var(--cream); border-radius: 999px; font-size: 12.5px; font-weight: 800; }
+
+/* Aviso con flyer: baja, se lee y se achica a la franja */
+.escena-card {
+  position: fixed; top: 14px; left: 50%; z-index: 70; width: min(600px, calc(100vw - 24px));
+  display: grid; grid-template-columns: 112px 1fr; gap: 18px; padding: 16px; overflow: hidden;
+  background:
+    radial-gradient(120% 140% at 100% 0%, rgba(240, 120, 0, .25) 0%, rgba(240, 120, 0, 0) 55%),
+    var(--brown-dark);
+  border: 1px solid rgba(245, 166, 35, .45); box-shadow: 0 24px 60px rgba(10, 4, 0, .6);
+  opacity: 0; pointer-events: none; transform: translate(-50%, -30px) scale(.97);
+  transition: opacity .35s ease, transform .45s cubic-bezier(.2, .8, .2, 1);
+}
+.escena-card.is-open { opacity: 1; pointer-events: auto; transform: translate(-50%, 0) scale(1); }
+.escena-card.is-mine { border-color: var(--orange); }
+.escena-flyer { width: 112px; height: 140px; object-fit: cover; border: 1px solid var(--border); background: #1a0b03; }
+.escena-flyer.is-logo { object-fit: contain; padding: 10px; }
+.escena-body { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.escena-eyebrow { font-family: "DM Mono", monospace; font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--orange-soft); }
+.escena-card.is-mine .escena-eyebrow { color: var(--cream); background: var(--orange); align-self: flex-start; padding: 3px 8px; }
+.escena-name { font-size: 20px; font-weight: 800; letter-spacing: -.03em; line-height: 1.1; }
+.escena-meta { font-size: 13px; color: var(--beige); }
+.escena-lineup { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
+.escena-lineup span { font-family: "DM Mono", monospace; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; padding: 4px 8px; border: 1px solid var(--border); color: var(--beige); }
+.escena-lineup span.is-me { border-color: var(--orange); color: var(--cream); background: rgba(240, 120, 0, .18); }
+.escena-actions { display: flex; align-items: center; gap: 14px; margin-top: 6px; }
+.escena-actions .btn { padding: 10px 14px; }
+.escena-progress { position: absolute; left: 0; bottom: 0; height: 2px; width: 100%; background: var(--orange); transform-origin: left; transform: scaleX(0); }
+.escena-card.is-open .escena-progress { animation: escena-progress 7s linear forwards; }
+.escena-card.is-held .escena-progress { animation-play-state: paused; }
+@keyframes escena-progress { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+
+@media (max-width: 1100px) { .escena-bar-lineup { display: none; } }
+@media (max-width: 640px) {
+  .escena-bar { justify-content: space-between; gap: 10px; padding: 0 10px 0 16px; }
+  .escena-bar-name { display: none; }
+  .escena-bar-when { font-size: 10px; letter-spacing: .1em; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  .escena-card { grid-template-columns: 84px 1fr; gap: 12px; padding: 12px; top: 10px; }
+  .escena-flyer { width: 84px; height: 108px; }
+  .escena-name { font-size: 17px; }
+}
+.escena-actions .btn { white-space: nowrap; }

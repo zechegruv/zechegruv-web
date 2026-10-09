@@ -188,6 +188,8 @@
     // Equipo de distribución: entra directo a los lanzamientos de todos.
     else if (me.role === "distribution") window.ZGDistribution.openList(null);
     else showProfile(me);
+    // La escena: el próximo evento del sello, como aviso y después franja (escena.js).
+    if (me.role === "artist" && window.ZGEscena) window.ZGEscena.start(me);
   }
 
   $("loginForm").addEventListener("submit", async (event) => {
