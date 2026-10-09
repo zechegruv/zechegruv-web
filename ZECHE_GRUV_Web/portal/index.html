@@ -596,7 +596,7 @@
             <p class="muted" id="zgpMicStatus"></p>
             <div class="table-wrap">
               <table class="table zgp-table" id="zgpMicTable">
-                <thead><tr><th>AKA</th><th>Canción</th><th>Nota</th><th>Nombre</th><th>Instagram</th><th>Mail</th><th>Archivo</th></tr></thead>
+                <thead><tr><th>AKA</th><th>Canción</th><th>Nota</th><th>Nombre</th><th>Instagram</th><th>Mail</th><th>Archivo</th><th></th></tr></thead>
                 <tbody></tbody>
               </table>
             </div>
@@ -632,20 +632,23 @@
                 <p class="hint zgp-path" id="zgpFolderPath"></p>
               </section>
 
-              <!-- Line up del sello -->
+              <!-- Line up: invitados y artistas del sello (con el sol) -->
               <section class="card zgp-lineup">
-                <h2 class="card-title">Line up · artistas del sello</h2>
-                <p class="hint">Al confirmar se crean sus carpetas en OneDrive, les aparece en su portal la tarjeta para subir pistas y les llega un mail (una sola vez).</p>
+                <h2 class="card-title">Line up</h2>
+                <p class="hint">Marcá a los artistas del sello que tocan. Al confirmar se crean sus carpetas en OneDrive, les aparece en su portal la tarjeta para subir pistas y les llega un mail (una sola vez). Los invitados ya están adentro desde que creaste su link.</p>
+                <h3 class="zgp-lineup-sub" id="zgpGuestsSub">Invitados</h3>
+                <ul class="zgp-guest-list" id="zgpGuestList"></ul>
+                <h3 class="zgp-lineup-sub">Artistas del sello</h3>
                 <div class="zgp-artists" id="zgpShowArtists"></div>
                 <p class="msg" id="zgpShowsMsg" role="status"></p>
                 <button class="btn btn-primary" type="submit" id="zgpShowsSave">Confirmar line up</button>
               </section>
             </form>
 
+            <!-- Paso 1: sumar al invitado (después aparece en el line up) -->
             <div class="card zgp-guests">
-              <h2 class="card-title">Invitados sin cuenta</h2>
-              <p class="hint">Para quien toca y no trabaja con el sello. Sube con un link único, sin usuario ni contraseña; vence 24 h después del show.</p>
-              <ul class="zgp-guest-list" id="zgpGuestList"></ul>
+              <h2 class="card-title">Sumar invitado</h2>
+              <p class="hint">Para quien toca y no trabaja con el sello (por ejemplo, quien elegiste en el open mic). Le creás un link único para subir sus pistas, sin usuario ni contraseña; vence 24 h después del show. Después aparece en el line up, de donde copiás su link o se lo mandás por WhatsApp.</p>
               <form class="zgp-guest-form" id="zgpGuestForm" novalidate>
                 <div class="field">
                   <label for="zgpGuestName">Nombre artístico</label>
@@ -663,7 +666,7 @@
                   <input type="checkbox" id="zgpGuestGift">
                   <span>Regalarle una sesión de 2 h en el estudio</span>
                 </label>
-                <button class="btn" type="submit" id="zgpGuestAdd">Crear link</button>
+                <button class="btn btn-primary" type="submit" id="zgpGuestAdd">Crear link</button>
               </form>
               <p class="msg" id="zgpGuestMsg" role="status"></p>
             </div>

@@ -204,11 +204,11 @@ exports.handler = async (event) => {
 
   // ---------- Inscriptos al open mic ----------
   if (body.action === "openmic") {
-    const res = await db(`pass_openmic?event_id=eq.${eventId}&select=full_name,aka,instagram,email,song_title,tune_note,file_name,uploaded_at,created_at,pass_tickets(code)&order=created_at.asc`);
+    const res = await db(`pass_openmic?event_id=eq.${eventId}&select=id,full_name,aka,instagram,email,song_title,tune_note,file_name,uploaded_at,created_at,pass_tickets(code)&order=created_at.asc`);
     if (!res.ok) return json(502, { error: "No pudimos cargar los inscriptos." });
     return json(200, {
       signups: res.data.map((s) => ({
-        aka: s.aka, full_name: s.full_name, instagram: s.instagram, email: s.email, song_title: s.song_title,
+        id: s.id, aka: s.aka, full_name: s.full_name, instagram: s.instagram, email: s.email, song_title: s.song_title,
         tune_note: s.tune_note, file_name: s.file_name, uploaded: !!s.uploaded_at, code: s.pass_tickets.code,
       })),
     });
@@ -368,6 +368,30 @@ exports.handler = async (event) => {
     if (!res.ok || !res.data[0]) return json(502, { error: "No pudimos dar de baja el acceso." });
     await audit("acceso_puerta_baja", "event", eventId, { label: res.data[0].label }, adminId);
     return json(200, { removed: true });
+  }
+
+  // ---------- Borrar una inscripción al open mic (prueba o error) ----------
+  // Saca la canción de la carpeta Open Mic y borra la inscripción: la entrada
+  // sigue valiendo y la persona puede volver a anotarse.
+  if (body.action === "openmic_delete") {
+    const id = String(body.signup_id || "");
+    if (!UUID.test(id)) return json(400, { error: "Inscripción inválida." });
+    const res = await db(`pass_openmic?id=eq.${id}&event_id=eq.${eventId}&select=id,aka,song_title,file_name,uploaded_at,pass_events(*)`);
+    const s = res.ok && res.data[0];
+    if (!s) return json(404, { error: "No encontramos esa inscripción." });
+    let file = "missing";
+    if (s.file_name) {
+      try {
+        const { target, error } = await folders.eventFolder(s.pass_events, "openmic");
+        file = error ? "error" : await drive.remove(target, s.file_name);
+      } catch (e) {
+        file = "error";
+      }
+    }
+    const del = await db(`pass_openmic?id=eq.${id}`, { method: "DELETE" });
+    if (!del.ok) return json(502, { error: "No pudimos borrar la inscripción. ¿Ya corriste supabase/019_borrar_openmic.sql?" });
+    await audit("openmic_borrado", "event", eventId, { aka: s.aka, song: s.song_title, file }, adminId);
+    return json(200, { deleted: true, file });
   }
 
   // ---------- Publicar / cerrar la venta ----------

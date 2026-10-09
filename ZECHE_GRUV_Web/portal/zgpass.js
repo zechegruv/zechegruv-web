@@ -346,6 +346,24 @@
           el("td", "", s.instagram ? `@${s.instagram}` : "—"), el("td", "", s.email),
           el("td", s.uploaded ? "" : "zgp-missing", s.uploaded ? s.file_name : "No terminó de subir"),
         );
+        // Borrar: saca la canción de la carpeta Open Mic y la inscripción del portal.
+        const del = el("button", "link-btn zgp-del", "Borrar");
+        del.type = "button";
+        del.addEventListener("click", async () => {
+          if (!window.confirm(`¿Borrar la inscripción de ${s.aka} (“${s.song_title}”)?\n\nSe borra la canción de la carpeta Open Mic y desaparece del portal. No se puede deshacer. Su entrada sigue valiendo y puede volver a anotarse.`)) return;
+          del.disabled = true;
+          try {
+            const out = await call({ action: "openmic_delete", event_id: current.id, signup_id: s.id });
+            await loadMic();
+            setMsg($("zgpMicStatus"), out.file === "error" ? `Borramos la inscripción de ${s.aka}, pero no pudimos borrar el archivo de OneDrive: borralo a mano de la carpeta Open Mic.` : `Listo: borramos la inscripción y la canción de ${s.aka}.`, out.file === "error");
+          } catch (err) {
+            del.disabled = false;
+            setMsg($("zgpMicStatus"), err.message, true);
+          }
+        });
+        const td = el("td");
+        td.append(del);
+        tr.append(td);
         return tr;
       }));
     } catch (err) {
@@ -392,7 +410,9 @@
       const li = el("li", "zgp-guest");
       const files = data.files.filter((f) => f.guest_id === g.id).length;
       const who = el("div", "zgp-guest-who");
-      who.append(el("strong", "", g.name), el("small", files ? "" : "zgp-missing", `${files ? `${files} ${files > 1 ? "archivos subidos" : "archivo subido"}` : "Todavía no subió nada"}${g.plural ? " · dúo o banda" : ""}${g.gift_session ? " · con sesión de regalo" : ""}`));
+      const nameRow = el("div", "zgp-guest-name");
+      nameRow.append(el("strong", "", g.name), el("span", "zgp-tag", "Invitado"));
+      who.append(nameRow, el("small", files ? "" : "zgp-missing", `${files ? `${files} ${files > 1 ? "archivos subidos" : "archivo subido"}` : "Todavía no subió nada"}${g.plural ? " · dúo o banda" : ""}${g.gift_session ? " · con sesión de regalo" : ""}`));
       const actions = el("div", "zgp-guest-actions");
       const copy = el("button", "btn btn-sm", "Copiar link");
       copy.type = "button";
@@ -418,6 +438,7 @@
       return li;
     }));
     $("zgpGuestList").hidden = !data.guests.length;
+    $("zgpGuestsSub").hidden = !data.guests.length;
   }
 
   async function loadShows() {
@@ -457,7 +478,11 @@
       input.type = "checkbox";
       input.value = a.id;
       input.checked = chosen.has(a.id);
-      label.append(input, el("span", "", a.active ? a.name : `${a.name} (inactivo)`));
+      const sun = el("img", "zgp-sun");
+      sun.src = "../assets/zeche-gruv-sol.webp";
+      sun.alt = "";
+      sun.title = "Artista del sello";
+      label.append(input, sun, el("span", "", a.active ? a.name : `${a.name} (inactivo)`));
       if (data.notified.includes(a.id)) label.append(el("small", "zgp-notified", "· avisado"));
       return label;
     }));

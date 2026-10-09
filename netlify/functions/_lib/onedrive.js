@@ -93,4 +93,15 @@ async function sessionStatus(uploadUrl) {
   return res.ok ? res.json() : null;
 }
 
-module.exports = { UPLOAD_HOST, cleanName, folder, subfolder, createUploadSession, putSmall, putChunk, sessionStatus };
+// Borra un archivo de la carpeta por su nombre: "deleted" | "missing" | "error".
+async function remove(parent, name) {
+  const res = await fetch(parent.itemPath(name), { headers: parent.headers });
+  if (res.status === 404) return "missing";
+  if (!res.ok) return "error";
+  const item = await res.json().catch(() => null);
+  if (!item || !item.id || item.folder) return "error";
+  const del = await fetch(`${ONEDRIVE_API}/drives/${parent.driveId}/items/${item.id}`, { method: "DELETE", headers: parent.headers });
+  return del.ok || del.status === 404 ? "deleted" : "error";
+}
+
+module.exports = { UPLOAD_HOST, cleanName, folder, subfolder, remove, createUploadSession, putSmall, putChunk, sessionStatus };

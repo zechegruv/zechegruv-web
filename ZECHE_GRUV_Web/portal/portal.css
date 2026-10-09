@@ -2504,3 +2504,25 @@ a.ref-title:hover { color: var(--orange-soft); }
 .zgp-event-kind, .zgp-event-state { font-family: "DM Mono", monospace; font-size: 9px; letter-spacing: .13em; text-transform: uppercase; color: var(--muted); }
 .zgp-event-state.is-published { color: #8fd18a; }
 .zgp-event-state.is-draft { color: var(--orange-soft); }
+
+/* Carpetas → orden: carpetas, sumar invitado, line up, pistas recibidas */
+.zgp-shows-grid { grid-template-columns: minmax(0, 1fr); }
+.zgp-folders { order: 1; }
+.zgp-guests { order: 2; }
+.zgp-lineup { order: 3; }
+.zgp-files { order: 4; }
+.zgp-guests .zgp-guest-form { display: grid; grid-template-columns: 1fr 1fr auto; align-items: end; gap: 12px 16px; }
+.zgp-guests .zgp-guest-form .field { max-width: none; }
+.zgp-guests .zgp-guest-gift { grid-column: span 1; order: 0; }
+.zgp-guests .zgp-guest-form .btn { order: 0; grid-column: 3; grid-row: 1; align-self: end; }
+.zgp-lineup-sub { font-family: "DM Mono", monospace; font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); font-weight: 500; margin-top: 6px; }
+.zgp-lineup .zgp-guest-list { width: 100%; border-top: 1px solid var(--border); margin: 0; }
+.zgp-guest-name { display: flex; align-items: center; gap: 10px; }
+.zgp-tag { font-family: "DM Mono", monospace; font-size: 9px; letter-spacing: .13em; text-transform: uppercase; color: var(--beige); border: 1px solid var(--border); padding: 3px 7px; }
+.zgp-sun { width: 18px; height: 18px; object-fit: contain; flex: 0 0 auto; }
+.zgp-lineup .zgp-artists { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); }
+.zgp-del { color: #ff9a8a; white-space: nowrap; }
+@media (max-width: 760px) {
+  .zgp-guests .zgp-guest-form { grid-template-columns: 1fr; }
+  .zgp-guests .zgp-guest-form .btn { grid-column: auto; grid-row: auto; justify-self: start; }
+}
