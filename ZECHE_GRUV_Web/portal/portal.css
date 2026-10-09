@@ -2263,8 +2263,6 @@ a.ref-title:hover { color: var(--orange-soft); }
 
 /* ---------- ZG PASS: shows y carpetas ---------- */
 
-.zgp-shows-form .field { width: 100%; max-width: 620px; }
-.zgp-shows-form > .hint { max-width: 70ch; }
 
 .zgp-artists {
   display: grid;
@@ -2275,7 +2273,6 @@ a.ref-title:hover { color: var(--orange-soft); }
 
 .zgp-artists .check.is-inactive { color: var(--muted); }
 
-.zgp-files-title { margin-top: 32px; }
 
 @media (max-width: 640px) {
   .zgp-artists { grid-template-columns: 1fr 1fr; }
@@ -2339,8 +2336,6 @@ a.ref-title:hover { color: var(--orange-soft); }
 .pistas-scene-sun { position: absolute; right: -30px; bottom: -30px; width: 130px; opacity: .1; pointer-events: none; }
 
 /* ZG PASS → Carpetas: line up e invitados */
-.zgp-sub { margin: 18px 0 0; padding-top: 22px; border-top: 1px solid var(--border); width: 100%; }
-.zgp-guests { margin-top: 16px; }
 .zgp-guests > .hint { max-width: 70ch; margin: -6px 0 18px; }
 
 .zgp-guest-list { list-style: none; border-top: 1px solid var(--border); margin-bottom: 18px; }
@@ -2455,3 +2450,40 @@ a.ref-title:hover { color: var(--orange-soft); }
 .door-pin span { font-family: "DM Mono", monospace; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
 .door-pin b { font-family: "DM Mono", monospace; font-size: 18px; letter-spacing: .3em; color: var(--orange-soft); }
 .pin-input { font-family: "DM Mono", monospace; font-size: 28px !important; letter-spacing: .5em; text-align: center; width: 100%; }
+
+/* ---------- ZG PASS → Carpetas: carpetas arriba, line up e invitados lado a lado, pistas abajo ---------- */
+.zgp-shows-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+.zgp-shows-form { display: contents; }
+.zgp-folders, .zgp-files { grid-column: 1 / -1; }
+.zgp-folders { padding: 20px 22px; }
+.zgp-folders-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+.zgp-folders-head .card-title { margin: 0; }
+.zgp-folders-row { display: grid; grid-template-columns: 1.4fr 1fr .9fr; gap: 14px; align-items: end; }
+.zgp-folders-row-2 { grid-template-columns: 1fr 1fr; margin-top: 10px; }
+.zgp-folders .field input { width: 100%; }
+.zgp-root-set {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  min-height: 46px; padding: 0 14px; border: 1px solid rgba(245, 166, 35, .35); background: rgba(240, 120, 0, .08);
+  font-size: 14px; color: var(--orange-soft);
+}
+.zgp-path { margin: 10px 0 2px; color: var(--beige); }
+.zgp-overrides { margin-top: 8px; }
+.zgp-overrides summary { margin-bottom: 0; }
+
+.zgp-lineup, .zgp-guests { padding: 20px 22px; display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
+.zgp-lineup .card-title, .zgp-guests .card-title { margin-bottom: 0; }
+.zgp-lineup > .hint, .zgp-guests > .hint { margin: 0; max-width: none; }
+.zgp-lineup .zgp-artists { width: 100%; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px 14px; margin: 4px 0; }
+.zgp-guests .zgp-guest-list { width: 100%; margin-bottom: 4px; }
+.zgp-guests .zgp-guest { padding: 10px 0; }
+.zgp-guests .zgp-guest-form { width: 100%; }
+.zgp-guests .zgp-guest-form .field { flex: 1 1 160px; max-width: none; }
+
+.zgp-files { margin-top: 8px; }
+.zgp-files-head { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin-bottom: 10px; }
+.zgp-files-head .card-title { margin: 0; }
+
+@media (max-width: 900px) {
+  .zgp-shows-grid { grid-template-columns: 1fr; }
+  .zgp-folders-row, .zgp-folders-row-2 { grid-template-columns: 1fr; }
+}

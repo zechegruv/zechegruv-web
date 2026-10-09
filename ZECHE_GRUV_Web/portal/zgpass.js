@@ -348,10 +348,16 @@
     const folder = $("zgpFolderName").value.trim() || "(carpeta de la edición)";
     const own = $("zgpMicFolder").value.trim() || $("zgpShowsFolder").value.trim();
     $("zgpFolderPath").textContent = $("zgpRootFolder").value.trim()
-      ? `Queda así: carpeta madre / ${folder} / Open Mic y Shows / un artista por carpeta.${own ? " (Con los links propios de abajo, se usan esos.)" : ""}`
-      : "Primero pegá la carpeta madre.";
+      ? `📁 Carpeta madre / ${folder} / Open Mic · Shows / una carpeta por artista${own ? " — con links propios para esta edición" : ""}`
+      : "Pegá la carpeta madre una sola vez: después cada edición arma sus carpetas sola.";
   }
   ["zgpRootFolder", "zgpFolderName", "zgpMicFolder", "zgpShowsFolder"].forEach((id) => $(id).addEventListener("input", paintPath));
+  $("zgpRootChange").addEventListener("click", () => {
+    $("zgpRootSet").hidden = true;
+    $("zgpRootFolder").hidden = false;
+    $("zgpRootFolder").focus();
+    $("zgpRootFolder").select();
+  });
 
   function paintGuests() {
     const data = showsData;
@@ -407,6 +413,9 @@
     $("zgpShowsForm").hidden = false;
     document.querySelector(".zgp-guests").hidden = false;
     $("zgpRootFolder").value = data.root_folder_link || "";
+    // Con la carpeta madre ya cargada, se muestra en una línea (y "Cambiar").
+    $("zgpRootSet").hidden = !data.root_folder_link;
+    $("zgpRootFolder").hidden = !!data.root_folder_link;
     $("zgpFolderName").value = data.folder_name_custom || data.folder_name;
     $("zgpMicFolder").value = data.openmic_folder_link || "";
     $("zgpShowsFolder").value = data.shows_folder_link || "";

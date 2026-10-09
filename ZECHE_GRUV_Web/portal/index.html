@@ -604,49 +604,61 @@
           </div>
 
           <!-- Carpetas: links de OneDrive del evento, line up (artistas del sello e invitados) y pistas recibidas -->
-          <div id="zgp-shows" hidden>
-            <form class="card form zgp-shows-form" id="zgpShowsForm" novalidate>
-              <h2 class="card-title">Carpetas</h2>
-              <p class="hint">Nadie ve estos links: la gente sube desde la web y el archivo cae directo en OneDrive. Tienen que ser links con permiso “Puede editar”.</p>
-              <div class="field">
-                <label for="zgpRootFolder">Carpeta madre · se carga una sola vez</label>
-                <input type="url" id="zgpRootFolder" placeholder="https://1drv.ms/f/… (Shows y Open Mic)" autocomplete="off" spellcheck="false">
-                <p class="hint">Vale para todos los shows. Adentro, cada edición tiene su carpeta con “Open Mic” y “Shows”, y en Shows una por artista. Si no existen, se crean solas.</p>
-              </div>
-              <div class="field">
-                <label for="zgpFolderName">Carpeta de esta edición</label>
-                <input type="text" id="zgpFolderName" maxlength="120" autocomplete="off">
-                <p class="hint" id="zgpFolderPath"></p>
-              </div>
-              <details class="zgp-guest-more zgp-overrides" id="zgpOverrides">
-                <summary>Usar otras carpetas solo para esta edición</summary>
-                <div class="field">
-                  <label for="zgpMicFolder">Open Mic · link de edición</label>
-                  <input type="url" id="zgpMicFolder" placeholder="https://1drv.ms/f/…" autocomplete="off" spellcheck="false">
+          <div id="zgp-shows" class="zgp-shows-grid" hidden>
+            <form id="zgpShowsForm" class="zgp-shows-form" novalidate>
+              <!-- Carpetas: una franja -->
+              <section class="card zgp-folders">
+                <div class="zgp-folders-head">
+                  <h2 class="card-title">Carpetas</h2>
+                  <p class="hint">Links de OneDrive con permiso “Puede editar”. Nadie más los ve.</p>
                 </div>
-                <div class="field">
-                  <label for="zgpShowsFolder">Shows · link de edición</label>
-                  <input type="url" id="zgpShowsFolder" placeholder="https://1drv.ms/f/…" autocomplete="off" spellcheck="false">
+                <div class="zgp-folders-row">
+                  <div class="field zgp-root">
+                    <label for="zgpRootFolder">Carpeta madre</label>
+                    <div class="zgp-root-set" id="zgpRootSet" hidden>
+                      <span>✓ Conectada</span>
+                      <button class="link-btn" type="button" id="zgpRootChange">Cambiar</button>
+                    </div>
+                    <input type="url" id="zgpRootFolder" placeholder="https://1drv.ms/f/… (Shows y Open Mic)" autocomplete="off" spellcheck="false">
+                  </div>
+                  <div class="field">
+                    <label for="zgpFolderName">Carpeta de esta edición</label>
+                    <input type="text" id="zgpFolderName" maxlength="120" autocomplete="off">
+                  </div>
+                  <div class="field">
+                    <label for="zgpShowsDeadline">Pistas hasta</label>
+                    <input type="datetime-local" id="zgpShowsDeadline">
+                  </div>
                 </div>
-                <p class="hint">Si los dejás vacíos, se usa la carpeta de la edición dentro de la carpeta madre.</p>
-              </details>
-              <div class="field">
-                <label for="zgpShowsDeadline">Pistas: se pueden subir hasta</label>
-                <input type="datetime-local" id="zgpShowsDeadline">
-                <p class="hint">Vacío: hasta la hora del evento.</p>
-              </div>
+                <p class="hint zgp-path" id="zgpFolderPath"></p>
+                <details class="zgp-guest-more zgp-overrides" id="zgpOverrides">
+                  <summary>Usar otras carpetas solo para esta edición</summary>
+                  <div class="zgp-folders-row zgp-folders-row-2">
+                    <div class="field">
+                      <label for="zgpMicFolder">Open Mic · link de edición</label>
+                      <input type="url" id="zgpMicFolder" placeholder="https://1drv.ms/f/…" autocomplete="off" spellcheck="false">
+                    </div>
+                    <div class="field">
+                      <label for="zgpShowsFolder">Shows · link de edición</label>
+                      <input type="url" id="zgpShowsFolder" placeholder="https://1drv.ms/f/…" autocomplete="off" spellcheck="false">
+                    </div>
+                  </div>
+                </details>
+              </section>
 
-              <h2 class="card-title zgp-sub">Line up · artistas del sello</h2>
-              <p class="hint">A los que marques les aparece en su portal la tarjeta para subir sus pistas y, al guardar, les llega un mail avisándoles (una sola vez).</p>
-              <div class="zgp-artists" id="zgpShowArtists"></div>
-
-              <p class="msg" id="zgpShowsMsg" role="status"></p>
-              <button class="btn btn-primary" type="submit" id="zgpShowsSave">Guardar</button>
+              <!-- Line up del sello -->
+              <section class="card zgp-lineup">
+                <h2 class="card-title">Line up · artistas del sello</h2>
+                <p class="hint">Les aparece en su portal la tarjeta para subir pistas y, al guardar, les llega un mail (una sola vez).</p>
+                <div class="zgp-artists" id="zgpShowArtists"></div>
+                <p class="msg" id="zgpShowsMsg" role="status"></p>
+                <button class="btn btn-primary" type="submit" id="zgpShowsSave">Guardar carpetas y line up</button>
+              </section>
             </form>
 
             <div class="card zgp-guests">
-              <h2 class="card-title">Line up · invitados sin cuenta</h2>
-              <p class="hint">Para quien toca y no trabaja con el sello (por ejemplo, quien elegiste en el open mic). Sube sin usuario ni contraseña, con un link único que deja de andar 24 h después del show.</p>
+              <h2 class="card-title">Invitados sin cuenta</h2>
+              <p class="hint">Para quien toca y no trabaja con el sello. Sube con un link único, sin usuario ni contraseña; vence 24 h después del show.</p>
               <ul class="zgp-guest-list" id="zgpGuestList"></ul>
               <form class="zgp-guest-form" id="zgpGuestForm" novalidate>
                 <div class="field">
@@ -666,24 +678,25 @@
                 </details>
                 <label class="check zgp-guest-gift">
                   <input type="checkbox" id="zgpGuestPlural">
-                  <span>Es un dúo o banda (su página les habla en plural; con “&” o “y” en el nombre se marca solo)</span>
+                  <span>Es dúo o banda (les habla en plural)</span>
                 </label>
                 <label class="check zgp-guest-gift">
                   <input type="checkbox" id="zgpGuestGift">
-                  <span>Regalarle una sesión de 2 h en el estudio (aparece en su página)</span>
+                  <span>Regalarle una sesión de 2 h en el estudio</span>
                 </label>
                 <button class="btn" type="submit" id="zgpGuestAdd">Crear link</button>
               </form>
               <p class="msg" id="zgpGuestMsg" role="status"></p>
             </div>
 
-            <h2 class="card-title zgp-files-title">Pistas recibidas</h2>
-            <p class="muted" id="zgpShowsStatus"></p>
-            <div class="table-wrap">
-              <table class="table zgp-table" id="zgpShowsTable">
-                <thead><tr><th>Artista</th><th>Archivo</th><th>Tamaño</th><th>Subido</th></tr></thead>
-                <tbody></tbody>
-              </table>
+            <div class="zgp-files">
+              <div class="zgp-files-head"><h2 class="card-title">Pistas recibidas</h2><p class="muted" id="zgpShowsStatus"></p></div>
+              <div class="table-wrap">
+                <table class="table zgp-table" id="zgpShowsTable">
+                  <thead><tr><th>Artista</th><th>Archivo</th><th>Tamaño</th><th>Subido</th></tr></thead>
+                  <tbody></tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
