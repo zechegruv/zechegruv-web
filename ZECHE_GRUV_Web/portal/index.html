@@ -618,7 +618,10 @@
                       <span>✓ Conectada</span>
                       <button class="link-btn" type="button" id="zgpRootChange">Cambiar</button>
                     </div>
-                    <input type="url" id="zgpRootFolder" placeholder="https://1drv.ms/f/… (Shows y Open Mic)" autocomplete="off" spellcheck="false">
+                    <div class="zgp-root-edit" id="zgpRootEdit">
+                      <input type="url" id="zgpRootFolder" placeholder="https://1drv.ms/f/…" autocomplete="off" spellcheck="false">
+                      <button class="btn btn-primary" type="button" id="zgpRootSave">Guardar</button>
+                    </div>
                   </div>
                   <div class="field">
                     <label for="zgpFolderName">Carpeta de esta edición</label>
@@ -629,13 +632,14 @@
                     <input type="datetime-local" id="zgpShowsDeadline">
                   </div>
                 </div>
+                <p class="msg" id="zgpRootMsg" role="status"></p>
                 <p class="hint zgp-path" id="zgpFolderPath"></p>
               </section>
 
               <!-- Line up: invitados y artistas del sello (con el sol) -->
               <section class="card zgp-lineup">
                 <h2 class="card-title">Line up</h2>
-                <p class="hint">Marcá a los artistas del sello que tocan. Al confirmar se crean sus carpetas en OneDrive, les aparece en su portal la tarjeta para subir pistas y les llega un mail (una sola vez). Los invitados ya están adentro desde que creaste su link.</p>
+                <p class="hint">Encendé el sol de los artistas del sello que tocan. Al confirmar se crean sus carpetas en OneDrive, les aparece en su portal la tarjeta para subir pistas y les llega un mail (una sola vez). Los invitados ya están adentro desde que creaste su link.</p>
                 <h3 class="zgp-lineup-sub" id="zgpGuestsSub">Invitados</h3>
                 <ul class="zgp-guest-list" id="zgpGuestList"></ul>
                 <h3 class="zgp-lineup-sub">Artistas del sello</h3>

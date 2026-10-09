@@ -2526,3 +2526,16 @@ a.ref-title:hover { color: var(--orange-soft); }
   .zgp-guests .zgp-guest-form { grid-template-columns: 1fr; }
   .zgp-guests .zgp-guest-form .btn { grid-column: auto; grid-row: auto; justify-self: start; }
 }
+.zgp-root-edit { display: flex; gap: 8px; }
+.zgp-root-edit input { flex: 1; min-width: 0; }
+.zgp-root-edit .btn { flex: 0 0 auto; }
+#zgpRootMsg { margin-top: 10px; }
+/* Line up: el sol es el selector (apagado: no toca · encendido: toca) */
+.zgp-lineup .zgp-artists .check { position: relative; gap: 8px; padding: 6px 8px; margin: -6px -8px; border: 1px solid transparent; transition: .2s ease; user-select: none; }
+.zgp-lineup .zgp-artists .check:hover { border-color: var(--border); }
+.zgp-lineup .zgp-artists .check input { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+.zgp-lineup .zgp-artists .check .zgp-sun { width: 24px; height: 24px; filter: grayscale(1) brightness(.75); opacity: .35; transition: .25s ease; }
+.zgp-lineup .zgp-artists .check span { color: var(--muted); transition: .2s ease; }
+.zgp-lineup .zgp-artists .check input:checked + .zgp-sun { filter: drop-shadow(0 0 6px rgba(245, 166, 35, .65)); opacity: 1; transform: scale(1.1) rotate(12deg); }
+.zgp-lineup .zgp-artists .check input:checked ~ span { color: var(--cream); font-weight: 600; }
+.zgp-lineup .zgp-artists .check input:focus-visible + .zgp-sun { outline: 2px solid var(--orange); outline-offset: 2px; }

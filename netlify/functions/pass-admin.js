@@ -240,6 +240,28 @@ exports.handler = async (event) => {
     });
   }
 
+  // ---------- Guardar solo la carpeta madre (y armar las carpetas del evento) ----------
+  if (body.action === "root_save") {
+    const rootIn = text(body.root_folder_link, 600);
+    if (!/^https:\/\/\S+$/.test(rootIn)) return json(400, { error: "Pegá el link de la carpeta madre (empieza con https://)." });
+    const check = await drive.folder(rootIn).catch((e) => ({ error: String(e && e.message) }));
+    if (check.error) {
+      console.error("ZG PASS: carpeta madre", check.error);
+      return json(400, { error: "OneDrive no nos deja entrar con ese link. Tiene que ser “Cualquier persona con el vínculo” + “Puede editar” (no “Personas específicas”).", detail: check.error });
+    }
+    if (!(await folders.setRootLink(rootIn))) return json(502, { error: "No pudimos guardar la carpeta madre. ¿Ya corriste supabase/017_shows_carpetas.sql?" });
+    await audit("carpeta_madre", "settings", "root_folder_link", { name: check.name }, adminId);
+    const evRes = await db(`pass_events?id=eq.${eventId}&select=*`);
+    const ev = evRes.ok && evRes.data[0];
+    let foldersOk = null;
+    if (ev) {
+      const lineupRows = (await db(`pass_show_artists?event_id=eq.${eventId}&select=profiles(display_name,full_name)`)).data || [];
+      const guestRows = (await db(`pass_show_guests?event_id=eq.${eventId}&revoked_at=is.null&folder_link=is.null&select=name`)).data || [];
+      foldersOk = await folders.ensure(ev, [...lineupRows.map((r) => r.profiles && (r.profiles.display_name || r.profiles.full_name)), ...guestRows.map((g) => g.name)], rootIn);
+    }
+    return json(200, { saved: true, name: check.name, folders_ok: foldersOk, folder_name: ev ? folders.folderName(ev) : null });
+  }
+
   if (body.action === "shows_save") {
     const link = (v) => text(v, 600);
     const rootIn = link(body.root_folder_link);

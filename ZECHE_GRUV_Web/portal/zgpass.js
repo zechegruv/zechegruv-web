@@ -397,9 +397,33 @@
       : "Pegá la carpeta madre una sola vez: después cada edición arma sus carpetas sola.";
   }
   ["zgpRootFolder", "zgpFolderName"].forEach((id) => $(id).addEventListener("input", paintPath));
+  // La carpeta madre se guarda sola, con su botón: se comprueba el link y se
+  // arman en el momento las carpetas del evento elegido.
+  $("zgpRootSave").addEventListener("click", async () => {
+    const link = $("zgpRootFolder").value.trim();
+    if (!link) return setMsg($("zgpRootMsg"), "Pegá el link de la carpeta madre.", true);
+    $("zgpRootSave").disabled = true;
+    setMsg($("zgpRootMsg"), "Comprobando el link y armando las carpetas…");
+    try {
+      const out = await call({ action: "root_save", event_id: current.id, root_folder_link: link });
+      $("zgpRootSet").hidden = false;
+      $("zgpRootEdit").hidden = true;
+      $("zgpRootSet").querySelector("span").textContent = `✓ Conectada${out.name ? ` · ${out.name}` : ""}`;
+      paintPath();
+      setMsg($("zgpRootMsg"), out.folders_ok === false
+        ? "La carpeta madre quedó guardada, pero no pudimos crear alguna carpeta adentro. Revisá que el link sea de “Puede editar”."
+        : out.folders_ok ? `Listo: carpeta madre conectada y “${out.folder_name}” creada con Open Mic y Shows.` : "Listo: carpeta madre conectada.", out.folders_ok === false);
+    } catch (err) {
+      setMsg($("zgpRootMsg"), err.message, true);
+    } finally {
+      $("zgpRootSave").disabled = false;
+    }
+  });
+  $("zgpRootFolder").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); $("zgpRootSave").click(); } });
+
   $("zgpRootChange").addEventListener("click", () => {
     $("zgpRootSet").hidden = true;
-    $("zgpRootFolder").hidden = false;
+    $("zgpRootEdit").hidden = false;
     $("zgpRootFolder").focus();
     $("zgpRootFolder").select();
   });
@@ -463,7 +487,8 @@
     $("zgpRootFolder").value = data.root_folder_link || "";
     // Con la carpeta madre ya cargada, se muestra en una línea (y "Cambiar").
     $("zgpRootSet").hidden = !data.root_folder_link;
-    $("zgpRootFolder").hidden = !!data.root_folder_link;
+    $("zgpRootEdit").hidden = !!data.root_folder_link;
+    setMsg($("zgpRootMsg"), "");
     $("zgpFolderName").value = data.folder_name_custom || data.folder_name;
     $("zgpShowsDeadline").value = toLocalInput(data.shows_deadline);
     paintPath();
