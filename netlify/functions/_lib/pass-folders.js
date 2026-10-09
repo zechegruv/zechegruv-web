@@ -33,9 +33,15 @@ async function setRootLink(value) {
   return res.ok;
 }
 
-// Nombre de la carpeta de la edición: el elegido, o "Nombre del show · dd-mm-aaaa".
+// Número de edición, a partir del nombre ("… Open Mic #2" → 2).
+const editionNumber = (ev) => { const m = String(ev.name || "").match(/#\s*(\d+)\s*$/); return m ? Number(m[1]) : null; };
+
+// Nombre de la carpeta de la edición: el elegido, o "Edición N" (o, si el
+// nombre no tiene número, "Nombre del show · dd-mm-aaaa").
 function folderName(ev) {
   if (ev.folder_name) return drive.cleanName(ev.folder_name);
+  const n = editionNumber(ev);
+  if (n) return `Edición ${n}`;
   const day = new Intl.DateTimeFormat("es-AR", { timeZone: TZ, day: "2-digit", month: "2-digit", year: "numeric" }).format(new Date(ev.starts_at)).replace(/\//g, "-");
   return drive.cleanName(`${ev.name} · ${day}`);
 }
@@ -69,6 +75,13 @@ async function ensure(ev, names = [], root) {
   if (!available(ev, "shows", base)) return null;
   try {
     let ok = true;
+    // Las ediciones anteriores que falten se crean vacías ("Edición 1"…),
+    // así la carpeta madre queda completa y en orden.
+    const n = editionNumber(ev);
+    if (n && n > 1 && folderName(ev).toLowerCase() === `edición ${n}` && !ev.shows_folder_link && !ev.openmic_folder_link) {
+      const top = await drive.folder(base);
+      if (!top.error) for (let k = 1; k < n; k++) await drive.subfolder(top, `Edición ${k}`);
+    }
     if (ev.openmic_enabled && available(ev, "openmic", base)) ok = !(await eventFolder(ev, "openmic", base)).error && ok;
     const shows = await eventFolder(ev, "shows", base);
     if (shows.error) return false;
