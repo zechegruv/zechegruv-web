@@ -2585,7 +2585,7 @@ a.ref-title:hover { color: var(--orange-soft); }
 .gl-events { margin: 4px 0 0; }
 .gl-events-field { width: 100%; }
 /* ZG PASS: menú de secciones arriba de todo y fijo al bajar */
-.zgp-menu { position: sticky; top: 58px; z-index: 20; background: var(--brown); margin: 0 0 22px; overflow-x: auto; scrollbar-width: none; }
+.zgp-menu { position: sticky; top: var(--nav-h, 58px); z-index: 20; background: var(--brown); margin: 0 0 22px; overflow-x: auto; scrollbar-width: none; }
 .zgp-menu::-webkit-scrollbar { display: none; }
 .zgp-menu .tab { white-space: nowrap; }
 #zgpMoney { margin-bottom: 32px; }
@@ -2709,3 +2709,21 @@ body:has(.escena-bar.is-on) nav { top: 44px; }
   .escena-name { font-size: 17px; }
 }
 .escena-actions .btn { white-space: nowrap; }
+
+/* Menú del administrador en la franja de arriba, como en el sitio */
+.nav-tabs { display: flex; align-items: center; gap: 4px; margin-left: auto; }
+.nav-tabs .tab {
+  border: 0; background: none; padding: 8px 12px; cursor: pointer; position: relative;
+  font-family: "DM Mono", monospace; font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); transition: color .2s ease;
+}
+.nav-tabs .tab:hover { color: var(--cream); }
+.nav-tabs .tab.is-active { color: var(--cream); }
+.nav-tabs .tab.is-active::after { content: ""; position: absolute; left: 12px; right: 12px; bottom: -4px; height: 2px; background: var(--orange); }
+.nav-tabs:not([hidden]) + .nav-right .nav-tag { padding-left: 16px; border-left: 1px solid var(--border); }
+@media (max-width: 900px) {
+  nav { flex-wrap: wrap; row-gap: 10px; }
+  .nav-tabs { order: 3; width: 100%; margin: 0 -8px; overflow-x: auto; scrollbar-width: none; }
+  .nav-tabs::-webkit-scrollbar { display: none; }
+  .nav-tabs .tab { white-space: nowrap; }
+  .nav-tabs:not([hidden]) + .nav-right .nav-tag { display: none; }
+}

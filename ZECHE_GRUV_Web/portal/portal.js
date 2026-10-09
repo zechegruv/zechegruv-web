@@ -53,6 +53,8 @@
   function showView(name) {
     ["loading", "login", "recovery", "app"].forEach((v) => { $(`view-${v}`).hidden = v !== name; });
     $("logoutBtn").hidden = name !== "app";
+    // El menú del administrador vive en la franja de arriba: solo con la sesión abierta.
+    $("tabs").hidden = !(name === "app" && me && me.role === "admin");
   }
 
   function setMsg(el, text, isError) {
@@ -781,6 +783,13 @@
   $("cfgOpen").addEventListener("click", openCfg);
   $("artistCfgClose").addEventListener("click", () => $("artistCfg").close());
   $("artistCfg").addEventListener("click", (e) => { if (e.target === $("artistCfg")) $("artistCfg").close(); });
+
+  // Alto real de la franja de arriba (cambia con el menú y en celular): los
+  // menús fijos de cada sección se pegan justo debajo.
+  const navEl = document.querySelector("nav");
+  const syncNav = () => document.documentElement.style.setProperty("--nav-h", `${navEl.getBoundingClientRect().height}px`);
+  new ResizeObserver(syncNav).observe(navEl);
+  syncNav();
 
   // Lo que necesitan los módulos de distribución y de archivos.
   window.ZGPortal = {

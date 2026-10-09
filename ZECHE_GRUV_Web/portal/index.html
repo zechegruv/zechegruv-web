@@ -35,6 +35,13 @@
       <img class="nav-sun" src="../assets/zeche-gruv-sol.webp" alt="" aria-hidden="true">
       ZECHE GRUV®
     </a>
+    <!-- Menú del administrador, en la franja de arriba -->
+    <div class="nav-tabs" id="tabs" role="tablist" hidden>
+      <button class="tab is-active" type="button" data-tab="artists" role="tab">Artistas</button>
+      <button class="tab" type="button" data-tab="releases" role="tab">Distribución</button>
+      <button class="tab" type="button" data-tab="pass" role="tab">ZG PASS</button>
+      <button class="tab" type="button" data-tab="me" role="tab">Mi perfil</button>
+    </div>
     <div class="nav-right">
       <span class="nav-tag">Portal de artistas</span>
       <button class="btn" type="button" id="logoutBtn" hidden>Salir</button>
@@ -106,12 +113,6 @@
 
     <!-- ---------- Portal ---------- -->
     <section class="view" id="view-app" hidden>
-      <div class="tabs" id="tabs" role="tablist" hidden>
-        <button class="tab is-active" type="button" data-tab="artists" role="tab">Artistas</button>
-        <button class="tab" type="button" data-tab="releases" role="tab">Distribución</button>
-        <button class="tab" type="button" data-tab="pass" role="tab">ZG PASS</button>
-        <button class="tab" type="button" data-tab="me" role="tab">Mi perfil</button>
-      </div>
 
       <!-- Perfil (propio, o el de un artista cuando lo abre el admin) -->
       <div id="panel-profile">
