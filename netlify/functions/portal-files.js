@@ -164,7 +164,9 @@ exports.handler = async (event) => {
 
   const rows = await supabase(`/rest/v1/artist_private?profile_id=eq.${artistId}&select=onedrive_link,onedrive_edit_link`, serviceKey);
   if (!rows) return json(500, { error: BAD_KEY });
-  const link = rows && rows[0] && rows[0].onedrive_link;
+  // Con el link de edición alcanza para todo (leer, descargar y subir); el
+  // de solo ver queda como respaldo para carpetas cargadas antes.
+  const link = rows && rows[0] && (rows[0].onedrive_edit_link || rows[0].onedrive_link);
   if (!link) return json(200, { configured: false, exists: false, files: [], groups: [] });
 
   try {

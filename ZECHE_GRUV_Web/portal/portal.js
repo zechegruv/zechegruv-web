@@ -316,23 +316,10 @@
       $("fSpotify").value = p.spotify_artist_id || "";
       $("fApple").value = p.apple_id || "";
       $("fFormat").value = p.format || "";
-      // El link de la carpeta vive en una tabla aparte, solo del administrador.
-      $("fFolder").value = "";
-      $("fFolderEdit").value = "";
-      db.from("artist_private").select("onedrive_link, onedrive_edit_link").eq("profile_id", p.id).maybeSingle().then(({ data }) => {
-        if (!viewing || viewing.id !== p.id) return;
-        $("fFolder").value = (data && data.onedrive_link) || "";
-        $("fFolderEdit").value = (data && data.onedrive_edit_link) || "";
-      });
-      // La ficha de Notion se pide aparte: si falta la columna (009_notion.sql),
-      // las carpetas se siguen cargando igual.
-      $("fNotion").value = "";
-      db.from("artist_private").select("notion_page_id").eq("profile_id", p.id).maybeSingle().then(({ data }) => {
-        if (!viewing || viewing.id !== p.id) return;
-        $("fNotion").value = data && data.notion_page_id ? `https://www.notion.so/${data.notion_page_id}` : "";
-      });
     }
     $("passwordForm").hidden = !own;
+    // ⚙ Configuración (carpeta y Notion): solo el administrador, en un artista.
+    $("cfgOpen").hidden = !(admin && !own && p.role === "artist");
     // Borrar: solo el administrador, y nunca su cuenta ni la de otro administrador.
     $("dangerZone").hidden = !(admin && !own && p.role !== "admin");
     // Activo / inactivo: también solo el administrador, sobre artistas.
@@ -378,32 +365,12 @@
         format: $("fFormat").value || null,
       });
     }
-    const folderLink = $("fFolder").value.trim();
-    const folderEditLink = $("fFolderEdit").value.trim();
-    if (admin && [folderLink, folderEditLink].some((l) => l && !/^https:\/\/(1drv\.ms|onedrive\.live\.com)\//.test(l))) {
-      setMsg(msg, "Los links de carpeta tienen que ser links compartidos de OneDrive (empiezan con https://1drv.ms/).", true);
-      return;
-    }
-    if (admin && folderLink && folderLink === folderEditLink) {
-      setMsg(msg, "Pusiste el mismo link en los dos campos. El primero tiene que ser de solo ver y el segundo de edición.", true);
-      return;
-    }
-
-    const notionId = parseNotionId($("fNotion").value);
-    if (admin && notionId === undefined) { setMsg(msg, NOTION_BAD, true); return; }
-
     const submit = event.submitter || $("profileForm").querySelector('[type="submit"]');
     submit.disabled = true;
     setMsg(msg, "Guardando…");
     try {
       const { data, error } = await db.from("profiles").update(changes).eq("id", viewing.id).select().single();
       if (error) throw new Error("No pudimos guardar los cambios. Probá de nuevo.");
-      if (admin) {
-        const saved = await db.from("artist_private").upsert({ profile_id: viewing.id, onedrive_link: folderLink || null, onedrive_edit_link: folderEditLink || null, updated_at: new Date().toISOString() });
-        if (saved.error) throw new Error("Se guardó el perfil, pero no la carpeta de OneDrive. Probá de nuevo.");
-        const notion = await db.from("artist_private").update({ notion_page_id: notionId }).eq("profile_id", viewing.id);
-        if (notion.error) throw new Error("Se guardó el perfil, pero no la ficha de Notion. ¿Ya corriste supabase/009_notion.sql?");
-      }
       if (data.id === me.id) me = data;
       showProfile(data);
       setMsg(msg, "Cambios guardados.");
@@ -628,13 +595,13 @@
     if (!display_name) { setMsg(msg, team ? "Escribí su nombre: es como la saludamos en el mail." : "Escribí el nombre artístico: es como lo saludamos en el mail.", true); return; }
     if (team) { await inviteTeam(email, display_name); return; }
     // Datos que quedan asociados al perfil apenas se crea la cuenta.
-    const folder = $("inviteFolder").value.trim();
+    // Un solo link de carpeta (de edición): sirve para ver, descargar y subir.
     const folderEdit = $("inviteFolderEdit").value.trim();
-    if ([folder, folderEdit].some((l) => l && !/^https:\/\/(1drv\.ms|onedrive\.live\.com)\//.test(l))) {
-      setMsg(msg, "Los links de carpeta tienen que ser links compartidos de OneDrive (empiezan con https://1drv.ms/).", true);
+    const folder = folderEdit;
+    if (folderEdit && !/^https:\/\/(1drv\.ms|onedrive\.live\.com)\//.test(folderEdit)) {
+      setMsg(msg, "El link de la carpeta tiene que ser un link compartido de OneDrive (empieza con https://1drv.ms/).", true);
       return;
     }
-    if (folder && folder === folderEdit) { setMsg(msg, "Pusiste el mismo link en los dos campos. El primero es de solo ver y el segundo de edición.", true); return; }
     const spotifyId = parseSpotifyId($("inviteSpotify").value);
     if (spotifyId === undefined) { setMsg(msg, "No reconocemos ese perfil de Spotify. Pegá el link del artista.", true); return; }
     const format = $("inviteFormat").value || null;
@@ -665,7 +632,7 @@
         const saved = await db.from("profiles").update({ spotify_artist_id: spotifyId, format }).eq("id", data.id);
         if (saved.error) linked = false;
       }
-      ["inviteEmail", "inviteName", "inviteFolder", "inviteFolderEdit", "inviteSpotify", "inviteFormat", "inviteNotion"].forEach((id) => { $(id).value = ""; });
+      ["inviteEmail", "inviteName", "inviteFolderEdit", "inviteSpotify", "inviteFormat", "inviteNotion"].forEach((id) => { $(id).value = ""; });
       await showArtists();
       setMsg(msg, linked
         ? `Invitación enviada a ${data.email}. Su perfil ya quedó con los datos que cargaste.`
@@ -740,6 +707,78 @@
     new MutationObserver(label).observe(tbody, { childList: true });
     label();
   });
+
+  // ---------- ⚙ Configuración de un artista (solo administrador) ----------
+  // Carpeta de OneDrive (un solo link, de edición) y ficha de Notion. Cada
+  // una se guarda con su botón; ya cargadas, quedan en una línea.
+  function cfgState(block, on, text) {
+    block.querySelector(".cfg-state").textContent = on ? `✓ ${text}` : "Sin cargar";
+    block.querySelector(".cfg-state").classList.toggle("is-on", on);
+    block.querySelector(".zgp-root-edit").hidden = on;
+    block.querySelector(".cfg-change").hidden = !on;
+  }
+
+  async function openCfg() {
+    const p = viewing;
+    $("artistCfgTitle").textContent = nameOf(p);
+    ["cfgFolder", "cfgNotion"].forEach((id) => { setMsg($(id).querySelector(".msg"), ""); $(id).querySelector("input").value = ""; $(id).querySelector(".cfg-state").textContent = "Cargando…"; });
+    $("artistCfg").showModal();
+    const { data } = await db.from("artist_private").select("*").eq("profile_id", p.id).maybeSingle();
+    if (!viewing || viewing.id !== p.id) return;
+    const folder = data && (data.onedrive_edit_link || data.onedrive_link);
+    $("cfgFolder").querySelector("input").value = folder || "";
+    cfgState($("cfgFolder"), !!(data && data.onedrive_edit_link), "Conectada");
+    if (data && !data.onedrive_edit_link && data.onedrive_link) setMsg($("cfgFolder").querySelector(".msg"), "Tiene solo el link de ver: pegá el de edición para que también pueda subir archivos.", true);
+    const notion = data && data.notion_page_id;
+    $("cfgNotion").querySelector("input").value = notion ? `https://www.notion.so/${notion}` : "";
+    cfgState($("cfgNotion"), !!notion, "Vinculada");
+  }
+
+  function cfgBind(id, save) {
+    const block = $(id);
+    const btn = block.querySelector(".zgp-root-edit .btn");
+    const input = block.querySelector("input");
+    const msg = block.querySelector(".msg");
+    const run = async () => {
+      btn.disabled = true;
+      setMsg(msg, "Guardando…");
+      try {
+        await save(input.value.trim(), block);
+        setMsg(msg, "Guardado.");
+      } catch (err) {
+        setMsg(msg, err.message, true);
+      } finally {
+        btn.disabled = false;
+      }
+    };
+    btn.addEventListener("click", run);
+    input.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); run(); } });
+    block.querySelector(".cfg-change").addEventListener("click", () => {
+      block.querySelector(".zgp-root-edit").hidden = false;
+      block.querySelector(".cfg-change").hidden = true;
+      input.focus();
+      input.select();
+    });
+  }
+
+  cfgBind("cfgFolder", async (link, block) => {
+    if (link && !/^https:\/\/(1drv\.ms|onedrive\.live\.com)\//.test(link)) throw new Error("Tiene que ser un link compartido de OneDrive (empieza con https://1drv.ms/).");
+    const saved = await db.from("artist_private").upsert({ profile_id: viewing.id, onedrive_link: link || null, onedrive_edit_link: link || null, updated_at: new Date().toISOString() });
+    if (saved.error) throw new Error("No pudimos guardar la carpeta. Probá de nuevo.");
+    cfgState(block, !!link, "Conectada");
+    if (window.ZGFiles) window.ZGFiles.prefetch(viewing);
+  });
+  cfgBind("cfgNotion", async (link, block) => {
+    const notionId = link ? parseNotionId(link) : null;
+    if (notionId === undefined) throw new Error(NOTION_BAD);
+    const saved = await db.from("artist_private").upsert({ profile_id: viewing.id, notion_page_id: notionId, updated_at: new Date().toISOString() });
+    if (saved.error) throw new Error("No pudimos guardar la ficha de Notion. ¿Ya corriste supabase/009_notion.sql?");
+    cfgState(block, !!notionId, "Vinculada");
+    if (window.ZGSongs) window.ZGSongs.load(viewing);
+  });
+  $("cfgOpen").addEventListener("click", openCfg);
+  $("artistCfgClose").addEventListener("click", () => $("artistCfg").close());
+  $("artistCfg").addEventListener("click", (e) => { if (e.target === $("artistCfg")) $("artistCfg").close(); });
 
   // Lo que necesitan los módulos de distribución y de archivos.
   window.ZGPortal = {

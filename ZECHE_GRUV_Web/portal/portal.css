@@ -2565,3 +2565,20 @@ a.ref-title:hover { color: var(--orange-soft); }
 .cfg-state.is-on { color: #8fd18a; }
 .cfg-block input { border: 1px solid var(--border); background: rgba(255, 244, 220, .05); color: var(--cream); font-family: inherit; font-size: 14px; padding: 12px 13px; border-radius: 0; outline: none; }
 .cfg-block input:focus-visible { border-color: var(--orange); }
+
+/* ⚙ Configuración de un artista: panel a la derecha (solo administrador) */
+.profile-head-main { flex: 1; min-width: 0; }
+.cfg-open { align-self: flex-start; white-space: nowrap; }
+.drawer {
+  margin: 0 0 0 auto; height: 100vh; max-height: 100vh; width: min(440px, 100vw);
+  padding: 28px 26px; border: 0; border-left: 1px solid rgba(245, 166, 35, .35);
+  background: var(--brown-dark); color: var(--cream); overflow-y: auto;
+}
+.drawer[open] { animation: drawer-in .25s ease; }
+@keyframes drawer-in { from { transform: translateX(40px); opacity: 0; } to { transform: none; opacity: 1; } }
+.drawer::backdrop { background: rgba(20, 9, 2, .6); }
+.drawer-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 6px; }
+.drawer-close { font-size: 18px; text-decoration: none; }
+.drawer .cfg-block .hint { margin: 0; }
+.drawer .cfg-change { align-self: flex-start; font-size: 12px; }
+@media (max-width: 640px) { .cfg-open { padding: 10px 12px; } }

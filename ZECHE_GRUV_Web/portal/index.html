@@ -128,12 +128,14 @@
             </button>
             <input type="file" id="fPhoto" accept="image/jpeg,image/png,image/webp" hidden>
           </div>
-          <div>
+          <div class="profile-head-main">
             <div class="eyebrow" id="profileRole">Artista ZECHE GRUV</div>
             <h1 class="title title-sm" id="profileName"></h1>
             <div class="chips" id="profileChips"></div>
             <p class="msg" id="photoMsg" role="status"></p>
           </div>
+          <!-- Solo administrador, en el perfil de un artista: carpeta y Notion -->
+          <button class="btn cfg-open" type="button" id="cfgOpen" hidden>⚙ Configuración</button>
         </header>
 
         <!-- Bienvenida: qué hacemos en la próxima sesión, leído de Notion (canciones.js) -->
@@ -233,21 +235,6 @@
                   <option value="album">Álbum</option>
                 </select>
               </div>
-              <div class="field">
-                <label for="fFolder">Carpeta en OneDrive · link de solo ver</label>
-                <input type="url" id="fFolder" placeholder="https://1drv.ms/f/…">
-                <p class="hint">Con este link el portal muestra y deja descargar los archivos.</p>
-              </div>
-              <div class="field">
-                <label for="fFolderEdit">Carpeta en OneDrive · link de edición</label>
-                <input type="url" id="fFolderEdit" placeholder="https://1drv.ms/f/…">
-                <p class="hint">Con este link el portal deja subir a Referencias y Letras. El artista no ve ninguno de los dos links.</p>
-              </div>
-              <div class="field">
-                <label for="fNotion">Ficha en Notion (opcional)</label>
-                <input type="url" id="fNotion" placeholder="https://www.notion.so/…">
-                <p class="hint">El portal encuentra solo su ficha en Clientes Zeche Gruv, por el mail o por el nombre artístico. Pegá un link acá únicamente si no coinciden. El artista no lo ve.</p>
-              </div>
             </div>
 
             <p class="msg" id="profileMsg" role="status"></p>
@@ -322,12 +309,9 @@
           </div>
           <div class="row artist-only">
             <div class="field">
-              <label for="inviteFolder">Carpeta en OneDrive · link de solo ver</label>
-              <input type="url" id="inviteFolder" placeholder="https://1drv.ms/f/…" autocomplete="off">
-            </div>
-            <div class="field">
-              <label for="inviteFolderEdit">Carpeta en OneDrive · link de edición</label>
+              <label for="inviteFolderEdit">Su carpeta en OneDrive (opcional)</label>
               <input type="url" id="inviteFolderEdit" placeholder="https://1drv.ms/f/…" autocomplete="off">
+              <p class="hint">Un solo link, con “Puede editar”. El artista nunca lo ve. También lo podés cargar después, desde ⚙ Configuración en su perfil.</p>
             </div>
           </div>
           <div class="row artist-only">
@@ -1127,6 +1111,38 @@
     </form>
     <p class="msg" id="zgpDoorMsg" role="alert"></p>
     <div class="actions"><button class="btn" type="button" id="zgpDoorClose">Cerrar</button></div>
+  </dialog>
+
+  <!-- Configuración de un artista (solo administrador): panel a la derecha -->
+  <dialog class="drawer" id="artistCfg" aria-labelledby="artistCfgTitle">
+    <div class="drawer-head">
+      <div>
+        <div class="eyebrow">Configuración · solo vos</div>
+        <h2 class="dialog-title" id="artistCfgTitle"></h2>
+      </div>
+      <button class="link-btn drawer-close" type="button" id="artistCfgClose" aria-label="Cerrar">✕</button>
+    </div>
+    <p class="dialog-text">Nada de esto lo ve el artista.</p>
+    <div class="cfg-block" id="cfgFolder">
+      <div class="cfg-head"><b>Carpeta en OneDrive</b><span class="cfg-state"></span></div>
+      <p class="hint">Un solo link, compartido con “Cualquier persona con el vínculo” + “Puede editar”. Con ese el portal muestra, descarga y sube archivos.</p>
+      <div class="zgp-root-edit">
+        <input type="url" placeholder="https://1drv.ms/f/…" autocomplete="off" spellcheck="false">
+        <button class="btn btn-primary" type="button">Guardar</button>
+      </div>
+      <button class="link-btn cfg-change" type="button" hidden>Cambiar link</button>
+      <p class="msg" role="status"></p>
+    </div>
+    <div class="cfg-block" id="cfgNotion">
+      <div class="cfg-head"><b>Ficha en Notion</b><span class="cfg-state"></span></div>
+      <p class="hint">Opcional: el portal la encuentra solo por el mail o el nombre artístico. Pegá un link solo si no coinciden.</p>
+      <div class="zgp-root-edit">
+        <input type="url" placeholder="https://www.notion.so/…" autocomplete="off" spellcheck="false">
+        <button class="btn btn-primary" type="button">Guardar</button>
+      </div>
+      <button class="link-btn cfg-change" type="button" hidden>Cambiar link</button>
+      <p class="msg" role="status"></p>
+    </div>
   </dialog>
 
   <!-- ZG PASS: carpetas madre de los eventos (zgpass-eventos.js) -->
