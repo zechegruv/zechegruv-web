@@ -13,8 +13,8 @@
 //   shows    { event_id }                    → carpetas del evento, quién toca (artistas e invitados) y pistas subidas
 //   shows_save { event_id, openmic_folder_link, shows_folder_link, shows_deadline, artist_ids }
 //            guarda las carpetas (comprueba que los links abran) y los artistas del sello que tocan
-//   guest_add    { event_id, folder_link, email?, gift_session }
-//            invitado sin cuenta: sube a SU carpeta (el nombre se toma de la carpeta), con un link
+//   guest_add    { event_id, name, folder_link?, email?, gift_session, plural }
+//            invitado sin cuenta: sube a la carpeta con su nombre dentro de Shows (o a la suya, si se pega su link), con un link
 //            único que vence 24 h después del show; si hay mail, se lo manda
 //   guest_remove { event_id, guest_id }      → el link del invitado deja de andar
 //   status   { event_id, status }            → publicar / cerrar la venta / volver a borrador
@@ -215,20 +215,26 @@ exports.handler = async (event) => {
 
   // ---------- Invitados sin cuenta: link único para subir pistas ----------
   if (body.action === "guest_add") {
+    // Lo normal: solo el nombre, y sube a la carpeta con su nombre adentro de
+    // Shows (la usa si ya existe, si no la crea). Si su carpeta está en otro
+    // lado, se pega su link y el nombre se toma de esa carpeta.
     const folderLink = text(body.folder_link, 600);
     const email = text(body.email, 160).toLowerCase();
-    if (!/^https:\/\/\S+$/.test(folderLink)) return json(400, { error: "Pegá el link de edición de la carpeta del invitado." });
+    if (folderLink && !/^https:\/\/\S+$/.test(folderLink)) return json(400, { error: "El link de la carpeta no parece un link." });
+    if (!folderLink && !text(body.name, 80)) return json(400, { error: "Poné el nombre artístico del invitado." });
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json(400, { error: "Ese mail no parece válido." });
     const evRes = await db(`pass_events?id=eq.${eventId}&select=name,starts_at,venue_name,shows_deadline`);
     const ev = evRes.ok && evRes.data[0];
     if (!ev) return json(404, { error: "No encontramos el evento." });
-    // El nombre del invitado es el de su carpeta.
-    const folder = await drive.folder(folderLink).catch((e) => ({ error: String(e && e.message) }));
-    if (folder.error) return json(400, { error: "No pudimos abrir esa carpeta. Tiene que ser el link de OneDrive con permiso “Puede editar”." });
-    const name = text(folder.name, 80) || "Artista invitado";
+    let name = text(body.name, 80);
+    if (folderLink) {
+      const folder = await drive.folder(folderLink).catch((e) => ({ error: String(e && e.message) }));
+      if (folder.error) return json(400, { error: "No pudimos abrir esa carpeta. Tiene que ser el link de OneDrive con permiso “Puede editar”." });
+      name = name || text(folder.name, 80) || "Artista invitado";
+    }
     // Dúo o banda: lo marca el administrador, o se nota en el nombre ("Bastian & Kaino").
     const plural = body.plural === true || /\s(&|y|\+)\s/i.test(` ${name} `);
-    const res = await db("pass_show_guests", { method: "POST", prefer: "return=representation", body: { event_id: eventId, name, email: email || null, folder_link: folderLink, gift_session: body.gift_session === true, plural } });
+    const res = await db("pass_show_guests", { method: "POST", prefer: "return=representation", body: { event_id: eventId, name, email: email || null, folder_link: folderLink || null, gift_session: body.gift_session === true, plural } });
     if (!res.ok || !res.data[0]) return json(502, { error: "No pudimos crear el link del invitado." });
     const g = res.data[0];
     const link = guestLink(event, g.token);

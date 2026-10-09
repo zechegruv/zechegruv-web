@@ -459,12 +459,14 @@
     event.preventDefault();
     if (!showsFor || showsFor !== current.id) return;
     const folder = $("zgpGuestFolder").value.trim();
-    if (!folder) return setMsg($("zgpGuestMsg"), "Pegá el link de edición de la carpeta del invitado.", true);
+    const name = $("zgpGuestName").value.trim();
+    if (!name && !folder) return setMsg($("zgpGuestMsg"), "Poné el nombre artístico del invitado.", true);
     $("zgpGuestAdd").disabled = true;
-    setMsg($("zgpGuestMsg"), "Abriendo la carpeta…");
+    setMsg($("zgpGuestMsg"), "Creando el link…");
     try {
-      const out = await call({ action: "guest_add", event_id: current.id, folder_link: folder, email: $("zgpGuestEmail").value.trim(), gift_session: $("zgpGuestGift").checked, plural: $("zgpGuestPlural").checked });
+      const out = await call({ action: "guest_add", event_id: current.id, name, folder_link: folder, email: $("zgpGuestEmail").value.trim(), gift_session: $("zgpGuestGift").checked, plural: $("zgpGuestPlural").checked });
       $("zgpGuestFolder").value = "";
+      $("zgpGuestName").value = "";
       $("zgpGuestEmail").value = "";
       $("zgpGuestGift").checked = false;
       $("zgpGuestPlural").checked = false;

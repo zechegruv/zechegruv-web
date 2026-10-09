@@ -11,7 +11,8 @@
 //     mandar "artist" para ver o subir por otro.
 //   · Invitado sin cuenta: { k } con la clave de su link único
 //     (pass_show_guests.token), desde zechegruv.com/pistas?k=…
-//     Sube directo a SU carpeta (pass_show_guests.folder_link). El link
+//     Sube, igual que los artistas, a la carpeta con su nombre dentro de
+//     Shows; o a su propia carpeta si se cargó su link (folder_link). El link
 //     deja de andar 24 h después de la hora del show.
 //
 // Acciones (campo "action"):

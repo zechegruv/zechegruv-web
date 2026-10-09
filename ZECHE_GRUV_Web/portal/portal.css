@@ -2372,3 +2372,7 @@ a.ref-title:hover { color: var(--orange-soft); }
   .zgp-guest-form .field { max-width: none; }
 }
 .pistas-scene-gift { position: relative; display: flex; flex-direction: column; gap: 14px; }
+
+.zgp-guest-more { flex: 1 1 100%; order: 2; font-size: 13px; color: var(--muted); }
+.zgp-guest-more summary { cursor: pointer; margin-bottom: 10px; }
+.zgp-guest-more .field { max-width: 460px; }

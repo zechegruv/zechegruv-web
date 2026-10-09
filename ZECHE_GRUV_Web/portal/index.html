@@ -609,7 +609,7 @@
               <div class="field">
                 <label for="zgpShowsFolder">Shows · link de edición</label>
                 <input type="url" id="zgpShowsFolder" placeholder="https://1drv.ms/f/…" autocomplete="off" spellcheck="false">
-                <p class="hint">Acá llegan las pistas de los artistas del sello, cada uno en una carpeta con su nombre (se crea sola). Los invitados suben a su propia carpeta, más abajo.</p>
+                <p class="hint">Un solo link por show. Cada integrante del line up (artistas del sello e invitados) sube a la carpeta con su nombre que esté adentro: si ya la creaste, usamos esa; si no, se crea sola. El nombre tiene que coincidir con el del portal o el del invitado (mayúsculas y tildes no importan).</p>
               </div>
               <div class="field">
                 <label for="zgpShowsDeadline">Pistas: se pueden subir hasta</label>
@@ -627,17 +627,24 @@
 
             <div class="card zgp-guests">
               <h2 class="card-title">Line up · invitados sin cuenta</h2>
-              <p class="hint">Para quien toca y no trabaja con el sello (por ejemplo, quien elegiste en el open mic). Pegá el link de edición de su carpeta: el nombre lo tomamos de la carpeta. Le pasás un link único, sube sin usuario ni contraseña y el link deja de andar 24 h después del show.</p>
+              <p class="hint">Para quien toca y no trabaja con el sello (por ejemplo, quien elegiste en el open mic). Sube sin usuario ni contraseña, con un link único que deja de andar 24 h después del show.</p>
               <ul class="zgp-guest-list" id="zgpGuestList"></ul>
               <form class="zgp-guest-form" id="zgpGuestForm" novalidate>
-                <div class="field zgp-guest-link">
-                  <label for="zgpGuestFolder">Su carpeta · link de edición</label>
-                  <input type="url" id="zgpGuestFolder" placeholder="https://1drv.ms/f/…" autocomplete="off" spellcheck="false">
+                <div class="field">
+                  <label for="zgpGuestName">Nombre artístico</label>
+                  <input type="text" id="zgpGuestName" maxlength="80" autocomplete="off" placeholder="Igual que su carpeta en Shows">
                 </div>
                 <div class="field">
                   <label for="zgpGuestEmail">Mail (opcional)</label>
                   <input type="email" id="zgpGuestEmail" maxlength="160" autocomplete="off" inputmode="email">
                 </div>
+                <details class="zgp-guest-more">
+                  <summary>¿Su carpeta está fuera de Shows?</summary>
+                  <div class="field zgp-guest-link">
+                    <label for="zgpGuestFolder">Link de edición de su carpeta (opcional)</label>
+                    <input type="url" id="zgpGuestFolder" placeholder="https://1drv.ms/f/…" autocomplete="off" spellcheck="false">
+                  </div>
+                </details>
                 <label class="check zgp-guest-gift">
                   <input type="checkbox" id="zgpGuestPlural">
                   <span>Es un dúo o banda (su página les habla en plural; con “&” o “y” en el nombre se marca solo)</span>

@@ -4,8 +4,8 @@
 --   · Artistas del sello: desde su portal (tarjeta "Tu show").
 --   · Invitados sin cuenta (p. ej. quien ganó su lugar en el open mic):
 --     con un link único, zechegruv.com/pistas?k=…, sin usuario ni contraseña.
---     Sube a SU carpeta (el link de edición que se pega al crearlo; el nombre
---     se toma de la carpeta). El link deja de andar 24 h después del show.
+--     Sube, igual que los artistas, a la carpeta con su nombre dentro de
+--     Shows (o a otra, si se pega su link). El link vence 24 h después del show.
 -- Los links de las carpetas (Open mic y Shows), quién toca y los invitados
 -- se manejan desde el portal: ZG PASS → pestaña "Carpetas".
 -- Pegar completo en Supabase → SQL Editor → Run. Se puede correr más de una vez.
@@ -26,9 +26,9 @@ create table if not exists public.pass_show_artists (
 create table if not exists public.pass_show_guests (
   id uuid primary key default gen_random_uuid(),
   event_id uuid not null references public.pass_events (id) on delete cascade,
-  name text not null,                    -- se toma del nombre de su carpeta
+  name text not null,                    -- nombre artístico (y de su carpeta dentro de Shows)
   email text,
-  folder_link text,                      -- link de EDICIÓN de su carpeta en OneDrive
+  folder_link text,                      -- opcional: link de EDICIÓN de una carpeta propia fuera de Shows
   gift_session boolean not null default false, -- su página le regala una sesión de 2 h en el estudio
   plural boolean not null default false,       -- dúo o banda: la página les habla en plural
   token text not null unique default replace(gen_random_uuid()::text || gen_random_uuid()::text, '-', ''),
@@ -41,7 +41,6 @@ alter table public.pass_show_guests
   add column if not exists folder_link text,
   add column if not exists gift_session boolean not null default false,
   add column if not exists plural boolean not null default false;
-update public.pass_show_guests set revoked_at = now() where folder_link is null and revoked_at is null;
 
 -- Pistas que ya terminaron de subir (de un artista o de un invitado).
 create table if not exists public.pass_show_files (
