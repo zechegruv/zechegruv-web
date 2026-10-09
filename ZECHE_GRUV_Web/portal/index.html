@@ -456,6 +456,14 @@
         <p class="muted" id="zgpStatus"></p>
 
         <div id="zgpBody" hidden>
+          <div class="tabs zgp-tabs zgp-menu" id="zgpTabs" role="tablist">
+            <button class="tab is-active" type="button" data-view="scan" role="tab">Escanear QR</button>
+            <button class="tab" type="button" data-view="issue" role="tab">Venta en puerta</button>
+            <button class="tab" type="button" data-view="list" role="tab">Entradas</button>
+            <button class="tab" type="button" data-view="mic" role="tab">Open mic</button>
+            <button class="tab" type="button" data-view="shows" role="tab">Line up</button>
+            <button class="tab" type="button" data-view="guestlist" role="tab">Lista de invitados</button>
+          </div>
           <div class="zgp-events" id="zgpEventPicker" role="listbox" aria-label="Evento"></div>
           <div class="zgp-bar">
             <!-- Elección del evento: tarjetas (el select queda oculto, es el que guarda cuál está elegido) -->
@@ -472,14 +480,6 @@
           <div class="zgp-stats" id="zgpStats"></div>
           <div class="zgp-stats zgp-stats-sm" id="zgpMoney"></div>
 
-          <div class="tabs zgp-tabs" id="zgpTabs" role="tablist">
-            <button class="tab is-active" type="button" data-view="scan" role="tab">Escanear QR</button>
-            <button class="tab" type="button" data-view="issue" role="tab">Venta en puerta</button>
-            <button class="tab" type="button" data-view="list" role="tab">Entradas</button>
-            <button class="tab" type="button" data-view="mic" role="tab">Open mic</button>
-            <button class="tab" type="button" data-view="shows" role="tab">Line up</button>
-            <button class="tab" type="button" data-view="guestlist" role="tab">Lista de invitados</button>
-          </div>
 
           <!-- Escanear -->
           <div id="zgp-scan">

@@ -572,6 +572,12 @@
   $("zgpTabs").addEventListener("click", (event) => {
     const btn = event.target.closest(".tab");
     if (btn) showView(btn.dataset.view);
+    // Si el contenido de la sección quedó fuera de la pantalla, se baja hasta él.
+    const target = btn && $(`zgp-${btn.dataset.view}`);
+    if (target) {
+      const top = target.getBoundingClientRect().top;
+      if (top > window.innerHeight * 0.6 || top < 0) window.scrollTo({ top: window.scrollY + top - $("zgpTabs").getBoundingClientRect().bottom - 16, behavior: "smooth" });
+    }
   });
   $("zgpScanBtn").addEventListener("click", () => { if (scanning) stopCamera(); else startCamera(); });
   $("zgpMark").addEventListener("click", mark);

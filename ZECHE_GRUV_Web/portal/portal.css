@@ -2584,3 +2584,8 @@ a.ref-title:hover { color: var(--orange-soft); }
 @media (max-width: 640px) { .cfg-open { padding: 10px 12px; } }
 .gl-events { margin: 4px 0 0; }
 .gl-events-field { width: 100%; }
+/* ZG PASS: menú de secciones arriba de todo y fijo al bajar */
+.zgp-menu { position: sticky; top: 58px; z-index: 20; background: var(--brown); margin: 0 0 22px; overflow-x: auto; scrollbar-width: none; }
+.zgp-menu::-webkit-scrollbar { display: none; }
+.zgp-menu .tab { white-space: nowrap; }
+#zgpMoney { margin-bottom: 32px; }
