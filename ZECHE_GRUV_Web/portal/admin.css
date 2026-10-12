@@ -229,3 +229,143 @@ body.is-admin .zg-fab { display: flex; }
 @media (prefers-reduced-motion: reduce) {
   .zh-card, .zh-box, .zh-bar > i, .zh-sun, .zg-fab-btn, .zg-fab-btn img, .zg-fab-bubble, .zh-list li:first-child .zh-dot { animation: none; }
 }
+
+/* =====================================================================
+   Secciones del admin con el criterio del preview: tarjetas redondeadas,
+   pastillas, Geist/Bricolage, todo fluido de celular a compu.
+   ===================================================================== */
+
+/* ---------- Artistas: grilla de tarjetas (todas las pantallas) ---------- */
+body.is-admin .table-wrap:has(#artistsTable) { background: none; border: 0; border-radius: 0; overflow: visible; }
+body.is-admin #artistsTable { display: block; width: 100%; }
+body.is-admin #artistsTable thead { display: none; }
+body.is-admin #artistsTable tbody {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+  gap: 14px;
+}
+body.is-admin #artistsTable tbody tr {
+  position: relative;
+  display: flex; flex-wrap: wrap; align-items: center; align-content: flex-start;
+  gap: 4px 8px;
+  margin: 0;
+  padding: 20px 20px 20px 86px;
+  min-height: 92px;
+  background: var(--panel);
+  border: 1px solid rgba(240, 224, 192, .1);
+  border-radius: 22px;
+  cursor: pointer;
+  transition: transform 300ms cubic-bezier(.23, 1, .32, 1), border-color 200ms ease, box-shadow 300ms ease;
+  animation: zhRise 600ms cubic-bezier(.16, 1, .3, 1) both;
+}
+body.is-admin #artistsTable tbody tr:nth-child(2) { animation-delay: 40ms; }
+body.is-admin #artistsTable tbody tr:nth-child(3) { animation-delay: 80ms; }
+body.is-admin #artistsTable tbody tr:nth-child(4) { animation-delay: 120ms; }
+body.is-admin #artistsTable tbody tr:nth-child(n+5) { animation-delay: 160ms; }
+body.is-admin #artistsTable tbody tr:focus-visible { outline: 2px solid var(--orange-soft); outline-offset: 3px; }
+body.is-admin #artistsTable tr.row-inactive { opacity: .6; }
+body.is-admin #artistsTable .row-inactive td { opacity: 1; }
+body.is-admin #artistsTable td {
+  display: block; padding: 0; border: 0; background: none;
+  text-align: left; font-size: 14px; white-space: normal; overflow-wrap: anywhere;
+}
+body.is-admin #artistsTable td::before { content: none; display: none; }
+body.is-admin #artistsTable td:nth-child(1) { position: absolute; left: 20px; top: 20px; }
+body.is-admin #artistsTable .avatar { width: 52px; height: 52px; }
+body.is-admin #artistsTable td:nth-child(2) { flex: 1 1 100%; padding: 0 84px 0 0; font-family: var(--display); font-size: 20px; font-weight: 700; letter-spacing: -.01em; line-height: 1.2; }
+body.is-admin #artistsTable td:nth-child(3) { flex: 1 1 100%; color: var(--muted); }
+body.is-admin #artistsTable td:nth-child(4) { flex: 1 1 100%; color: var(--muted); font-size: 13px; margin: 4px 0 6px; }
+body.is-admin #artistsTable td:nth-child(5),
+body.is-admin #artistsTable td:nth-child(6) {
+  display: inline-flex; padding: 5px 11px; border-radius: 999px;
+  background: #241105; border: 1px solid rgba(240, 224, 192, .1);
+  font-size: 12px; font-weight: 500; color: var(--beige);
+}
+body.is-admin #artistsTable td:nth-child(7) {
+  position: absolute; right: 18px; top: 20px;
+  padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 600;
+  background: rgba(240, 224, 192, .08); color: var(--muted);
+}
+body.is-admin #artistsTable td.tag-on { background: rgba(127, 209, 160, .12); color: #7FD1A0; }
+body.is-admin #artistsTable td.tag-off { background: rgba(255, 155, 92, .12); color: #FF9B5C; }
+body.is-admin #artistsTable td.tag-admin { color: var(--orange-soft); border-color: rgba(240, 120, 0, .35); }
+@media (hover: hover) and (pointer: fine) {
+  body.is-admin #artistsTable tbody tr:hover { transform: translateY(-3px); border-color: rgba(240, 120, 0, .5); box-shadow: 0 18px 44px rgba(0, 0, 0, .3); }
+}
+
+/* ---------- Tablas (lanzamientos, entradas, archivos) ---------- */
+body.is-admin .table-wrap { background: var(--panel); border: 1px solid rgba(240, 224, 192, .1); border-radius: 22px; }
+body.is-admin .table th { color: var(--muted); font-weight: 500; background: transparent; border-color: rgba(240, 224, 192, .08); }
+body.is-admin .table td { border-color: rgba(240, 224, 192, .06); font-size: 14px; }
+body.is-admin .table tbody tr { transition: background-color 200ms ease; }
+@media (hover: hover) and (pointer: fine) { body.is-admin .table tbody tr:hover { background: rgba(240, 120, 0, .05); } }
+body.is-admin .status,
+body.is-admin .chip {
+  display: inline-flex; align-items: center;
+  font-family: var(--body); font-size: 12px; font-weight: 600; letter-spacing: 0; text-transform: none;
+  padding: 4px 10px; border-radius: 999px; border: 1px solid rgba(240, 224, 192, .14);
+}
+body.is-admin .status-submitted { background: rgba(245, 166, 35, .1); }
+body.is-admin .status-published { background: rgba(159, 212, 154, .1); }
+@media (max-width: 640px) {
+  body.is-admin .table-wrap { background: none; border: 0; border-radius: 0; }
+  body.is-admin .table:not(#artistsTable) tbody tr { background: var(--panel); border-color: rgba(240, 224, 192, .1); border-radius: 18px; padding: 16px 18px; }
+  body.is-admin .table td[data-label]::before { font-family: var(--body); font-size: 12px; font-weight: 500; letter-spacing: 0; text-transform: none; }
+  body.is-admin #artistsTable tbody tr { padding: 18px 18px 18px 82px; }
+  body.is-admin #artistsTable td:nth-child(1) { left: 18px; top: 18px; }
+}
+
+/* ---------- Perfil del artista (vista del admin) ---------- */
+body.is-admin .profile-head { gap: 20px; }
+body.is-admin .profile-head .avatar { border-radius: 50%; }
+body.is-admin .sections { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); gap: 12px; }
+body.is-admin .sections li,
+body.is-admin .sections li:first-child {
+  border: 1px solid rgba(240, 224, 192, .12);
+  border-radius: 18px;
+  background: #241105;
+  transition: transform 300ms cubic-bezier(.23, 1, .32, 1), border-color 200ms ease, background-color 200ms ease;
+}
+body.is-admin .sections .section-btn,
+body.is-admin .sections li:first-child .section-btn,
+body.is-admin .sections li:last-child .section-btn { padding: 18px; height: 100%; box-sizing: border-box; }
+body.is-admin .section-text b { font-family: var(--body); font-weight: 600; }
+@media (hover: hover) and (pointer: fine) {
+  body.is-admin .sections li:hover { transform: translateY(-2px); border-color: rgba(240, 120, 0, .5); background: rgba(240, 120, 0, .06); }
+}
+
+/* ---------- Formularios ---------- */
+body.is-admin .zg-select-btn { border-radius: 12px; border-color: rgba(240, 224, 192, .18); }
+body.is-admin input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+body.is-admin textarea { border-color: rgba(240, 224, 192, .18); transition: border-color 200ms ease, box-shadow 200ms ease; }
+body.is-admin input:not([type="checkbox"]):not([type="radio"]):focus,
+body.is-admin textarea:focus { outline: none; border-color: var(--orange); box-shadow: 0 0 0 4px rgba(240, 120, 0, .18); }
+body.is-admin details { border-radius: 22px; }
+body.is-admin .notice { border-radius: 16px; }
+body.is-admin .card-title { font-size: 22px; font-weight: 700; }
+body.is-admin .card { padding: 24px; }
+@media (max-width: 640px) {
+  body.is-admin .card { padding: 18px; }
+  body.is-admin .title { font-size: 38px; margin-bottom: 20px; }
+  body.is-admin .btn-primary { width: 100%; justify-content: center; }
+}
+
+/* ---------- ZG PASS ---------- */
+body.is-admin .zgp-event { border-radius: 18px; }
+body.is-admin .zgp-big { border-radius: 999px; font-size: 16px; }
+@media (max-width: 640px) {
+  body.is-admin .zgp-bar { gap: 8px; }
+  body.is-admin .zgp-stats { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+}
+
+/* Ajustes finos */
+body.is-admin #artistsTable tr:has(td.tag-admin) td:nth-child(7) { display: none; }
+body.is-admin #artistsTable tr:has(td.tag-admin) td:nth-child(2) { padding-right: 0; }
+body.is-admin .chip-btn {
+  border-radius: 999px; padding: 7px 14px; font-size: 13px; font-weight: 500;
+  border-color: rgba(240, 224, 192, .2); transition: background-color 200ms ease, border-color 200ms ease, color 200ms ease;
+}
+body.is-admin .chip-btn.is-active, body.is-admin .chip-btn[aria-pressed="true"] { background: var(--cream); color: var(--brown-dark); border-color: var(--cream); }
+@media (max-width: 640px) {
+  body.is-admin .table td[data-label].col-artist { display: flex; justify-content: space-between; gap: 16px; }
+}
