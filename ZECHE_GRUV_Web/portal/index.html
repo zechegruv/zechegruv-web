@@ -17,6 +17,9 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="portal.css">
   <link rel="stylesheet" href="/pass/pass.css">
+  <link rel="stylesheet" href="admin.css">
+  <!-- Medición de visitas (Google Analytics 4) -->
+  <script src="/assets/js/medicion.js?v=1"></script>
 </head>
 
 <body>
@@ -37,10 +40,12 @@
     </a>
     <!-- Menú del administrador, en la franja de arriba -->
     <div class="nav-tabs" id="tabs" role="tablist" hidden>
-      <button class="tab is-active" type="button" data-tab="artists" role="tab">Artistas</button>
+      <button class="tab is-active" type="button" data-tab="home" role="tab">Inicio</button>
+      <button class="tab" type="button" data-tab="artists" role="tab">Artistas</button>
       <button class="tab" type="button" data-tab="pass" role="tab">ZG PASS</button>
       <button class="tab" type="button" data-tab="releases" role="tab">Distribución</button>
       <button class="tab" type="button" data-tab="me" role="tab">Mi perfil</button>
+      <button class="tab tab-gruvi" type="button" data-tab="gruvi" role="tab"><img src="../assets/gruvi.svg" alt="" aria-hidden="true">Gruvi</button>
     </div>
     <div class="nav-right">
       <span class="nav-tag">Portal de artistas</span>
@@ -113,6 +118,9 @@
 
     <!-- ---------- Portal ---------- -->
     <section class="view" id="view-app" hidden>
+
+      <!-- Administrador: Inicio (admin-home.js) -->
+      <div id="panel-home" hidden></div>
 
       <!-- Perfil (propio, o el de un artista cuando lo abre el admin) -->
       <div id="panel-profile">
@@ -1185,6 +1193,7 @@
   <script src="/pass/ticket.js"></script>
   <script src="zgpass.js"></script>
   <script src="zgpass-eventos.js"></script>
+  <script src="admin-home.js"></script>
   <script src="/pass/pistas-card.js"></script>
   <script src="shows.js"></script>
   <script src="escena.js"></script>

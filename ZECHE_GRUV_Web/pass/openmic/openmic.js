@@ -118,6 +118,7 @@
     try {
       const started = await call({ action: "start", ...fields, file_name: file.name, file_size: file.size });
       await upload(file, started, fields.code);
+      if (window.zgTrack) window.zgTrack("inscripcion_openmic", {});
       showState("¡Ya estás anotado!", `Recibimos “${fields.song_title}” de ${fields.aka}. Nos vemos en el open mic.`, true);
     } catch (err) {
       setMsg(err.message, true);

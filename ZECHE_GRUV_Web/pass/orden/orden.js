@@ -33,6 +33,14 @@
 
   function showPaid(order) {
     try { localStorage.removeItem(ORDER_KEY); } catch (e) {}
+    // Medición: la compra se cuenta una sola vez aunque recarguen la página.
+    try {
+      const key = `zg-medido-${order.number}`;
+      if (window.zgTrack && !localStorage.getItem(key)) {
+        window.zgTrack("purchase", { transaction_id: String(order.number), currency: "ARS", cantidad: order.tickets.length });
+        localStorage.setItem(key, "1");
+      }
+    } catch (e) {}
     const many = order.tickets.length > 1;
     $("paidNumber").textContent = `Orden ${order.number}`;
     $("paidTitle").textContent = many ? "¡Tus entradas están confirmadas!" : "¡Tu entrada está confirmada!";

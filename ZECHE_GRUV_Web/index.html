@@ -53,6 +53,33 @@
 
   <link rel="stylesheet" href="assets/css/site.css?v=__BUILD__">
 
+  <!-- Medición de visitas (Google Analytics 4). Poné tu ID de medición
+       en GA_ID; mientras diga G-XXXXXXXXXX no se carga nada. -->
+  <script>window.ZG_GA_ID = "G-8HB1KK6Y4S";</script>
+  <script src="assets/js/medicion.js?v=__BUILD__" defer></script>
+
+  <!-- Ficha de negocio para Google (datos estructurados) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "ProfessionalService",
+    "name": "ZECHE GRUV",
+    "description": "Sello y estudio de producción musical en Buenos Aires. Acompañamos a artistas sesión a sesión: producción, grabación, mezcla, mastering y distribución.",
+    "url": "https://www.zechegruv.com/",
+    "logo": "https://www.zechegruv.com/assets/logo.png",
+    "image": "https://www.zechegruv.com/assets/og-image.jpg",
+    "telephone": "+54 9 11 3328-7422",
+    "email": "zechegruv@gmail.com",
+    "founder": { "@type": "Person", "name": "Yaco Santana" },
+    "address": { "@type": "PostalAddress", "addressLocality": "Buenos Aires", "addressCountry": "AR" },
+    "areaServed": "Buenos Aires",
+    "priceRange": "$$",
+    "sameAs": [
+      "https://www.instagram.com/zechegruv/",
+      "https://open.spotify.com/intl-es/artist/0yIGrWjWqKnM7qJ0uyImij"
+    ]
+  }
+  </script>
 </head>
 
 <body>
@@ -132,6 +159,7 @@
 
       <form class="visit-form" id="visitForm" name="visita-estudio" method="POST" data-netlify="true" netlify-honeypot="bot-field">
         <input type="hidden" name="form-name" value="visita-estudio">
+        <input type="hidden" name="origen_boton" id="visitOrigin" value="web">
         <input type="hidden" name="idioma" id="visitLang" value="es">
         <p class="visit-hp" aria-hidden="true"><label>No completar: <input name="bot-field" tabindex="-1" autocomplete="off"></label></p>
 
@@ -220,7 +248,7 @@
           Sello Discográfico independiente y productora. Desarrollo artístico integral, composición, grabación, producción, mezcla, mastering, distribución, portada y video, sesión a sesión, con <a href="https://open.spotify.com/intl-es/artist/0yIGrWjWqKnM7qJ0uyImij" target="_blank" rel="noopener">Yaco Santana</a>.
         </p>
         <div class="buttons hero-buttons">
-          <a class="btn btn-primary" href="https://wa.me/5491133287422?text=Hola%20ZECHE%20GRUV!%20Quiero%20ir%20a%20conocer%20el%20estudio%20%F0%9F%99%8C" target="_blank" rel="noopener" data-visit-open data-i18n="hero_cta_primary">Vení a conocer el estudio ↗</a>
+          <a class="btn btn-primary" href="https://wa.me/5491133287422?text=Hola%20ZECHE%20GRUV!%20Quiero%20ir%20a%20conocer%20el%20estudio%20%F0%9F%99%8C" target="_blank" rel="noopener" data-visit-open="portada" data-i18n="hero_cta_primary">Vení a conocer el estudio ↗</a>
           <a class="btn" href="https://open.spotify.com/playlist/1FbK9IaTCJMCtTLQSg7ayI" target="_blank" rel="noopener" data-i18n="hero_cta_secondary">Escuchá el sello</a>
         </div>
       </div>
@@ -336,7 +364,7 @@
 
     <div class="session-outro">
       <p data-i18n="session_outro">Después viene la distribución y, si querés, el video.</p>
-      <a class="btn btn-primary" href="https://wa.me/5491133287422?text=Hola%20ZECHE%20GRUV!%20Quiero%20ir%20a%20conocer%20el%20estudio%20%F0%9F%99%8C" target="_blank" rel="noopener" data-visit-open data-i18n="hero_cta_primary">Vení a conocer el estudio ↗</a>
+      <a class="btn btn-primary" href="https://wa.me/5491133287422?text=Hola%20ZECHE%20GRUV!%20Quiero%20ir%20a%20conocer%20el%20estudio%20%F0%9F%99%8C" target="_blank" rel="noopener" data-visit-open="como-trabajamos" data-i18n="hero_cta_primary">Vení a conocer el estudio ↗</a>
     </div>
   </section>
 

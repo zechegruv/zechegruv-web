@@ -44,10 +44,12 @@
   let recovering = linkType === "invite" || linkType === "recovery";
 
   // ---------- Utilidades ----------
-  const PANELS = ["profile", "artists", "releases", "release", "files", "lyric", "pass"];
+  const PANELS = ["home", "profile", "artists", "releases", "release", "files", "lyric", "pass"];
   function showPanel(name) {
     PANELS.forEach((p) => { $(`panel-${p}`).hidden = p !== name; });
     window.scrollTo(0, 0);
+    // Medición: qué secciones usan los artistas (tu uso como admin no cuenta).
+    if (me && me.role !== "admin" && window.zgTrack) window.zgTrack("portal_seccion", { seccion: name, tipo_cuenta: me.role });
   }
 
   function showView(name) {
@@ -55,6 +57,8 @@
     $("logoutBtn").hidden = name !== "app";
     // El menú del administrador vive en la franja de arriba: solo con la sesión abierta.
     $("tabs").hidden = !(name === "app" && me && me.role === "admin");
+    // Panel nuevo del administrador (admin.css): barra lateral e Inicio.
+    document.body.classList.toggle("is-admin", name === "app" && !!me && me.role === "admin");
   }
 
   function setMsg(el, text, isError) {
@@ -184,9 +188,16 @@
     }
     me = data;
     const admin = me.role === "admin";
+    // Medición: tu dispositivo queda excluido; para los artistas se cuenta
+    // el ingreso con su id interno (un código, nunca nombre ni mail).
+    if (admin) { if (window.zgNoMedir) window.zgNoMedir(true); }
+    else if (window.gtag) {
+      window.gtag("set", { user_id: me.id, user_properties: { tipo_cuenta: me.role } });
+      window.zgTrack("portal_ingreso", { tipo_cuenta: me.role });
+    }
     $("tabs").hidden = !admin;
     showView("app");
-    if (admin) openTab("artists");
+    if (admin) openTab("home");
     // Equipo de distribución: entra directo a los lanzamientos de todos.
     else if (me.role === "distribution") window.ZGDistribution.openList(null);
     else showProfile(me);
@@ -423,6 +434,8 @@
   // ---------- Administrador ----------
   function openTab(tab) {
     document.querySelectorAll("#tabs .tab").forEach((b) => b.classList.toggle("is-active", b.dataset.tab === tab));
+    if (tab === "gruvi") { if (window.ZGHome && window.ZGHome.gruviUrl) window.open(window.ZGHome.gruviUrl, "_blank", "noopener"); else openTab("home"); return; }
+    if (tab === "home") { if (window.ZGHome) window.ZGHome.open(); else showArtists(); return; }
     if (tab === "me") showProfile(me);
     else if (tab === "releases") window.ZGDistribution.openList(null);
     else if (tab === "pass") window.ZGPassAdmin.open();
@@ -435,7 +448,10 @@
   // Carpetas de OneDrive (archivos.js).
   $("sectionsList").addEventListener("click", (event) => {
     const btn = event.target.closest("[data-section]");
-    if (btn) window.ZGFiles.open(btn.dataset.section, viewing);
+    if (btn) {
+      if (me && me.role !== "admin" && window.zgTrack) window.zgTrack("portal_carpeta", { carpeta: btn.dataset.section });
+      window.ZGFiles.open(btn.dataset.section, viewing);
+    }
   });
 
   $("tabs").addEventListener("click", (event) => {
@@ -793,7 +809,7 @@
 
   // Lo que necesitan los módulos de distribución y de archivos.
   window.ZGPortal = {
-    db, $, setMsg, showPanel, nameOf, FORMAT_LABEL,
+    db, $, setMsg, showPanel, nameOf, FORMAT_LABEL, openTab,
     get me() { return me; },
     backToProfile(profile) { if (profile && profile.id !== me.id) showProfile(profile); else if (me.role === "admin") openTab("me"); else showProfile(me); },
   };

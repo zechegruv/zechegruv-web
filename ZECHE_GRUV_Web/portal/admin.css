@@ -1,0 +1,169 @@
+/* ZECHE GRUV — Panel de administrador (diseño nuevo).
+   Todo vale solo con body.is-admin: el portal de los artistas no cambia.
+   La lógica de cada sección (ZG PASS, puerta, distribución, artistas) es
+   la de siempre; esto es la piel y el Inicio. */
+
+body.is-admin {
+  --side-w: 248px;
+  --panel: #2E1607;
+  --panel-2: #241105;
+  --r: 22px;
+  background: #1B0D04;
+}
+
+/* ---------- Barra lateral (computadora) ---------- */
+@media (min-width: 901px) {
+  body.is-admin .nav-tabs:not([hidden]) {
+    position: fixed;
+    left: 0;
+    top: var(--nav-h, 70px);
+    bottom: 0;
+    width: var(--side-w);
+    margin: 0;
+    padding: 24px 16px;
+    box-sizing: border-box;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+    background: #241105;
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    z-index: 40;
+  }
+  body.is-admin .nav-tabs .tab {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    text-align: left;
+    padding: 12px 14px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--muted);
+    transition: background-color 200ms ease, color 200ms ease;
+  }
+  body.is-admin .nav-tabs .tab.is-active::after { content: none; }
+  body.is-admin .nav-tabs .tab.is-active { background: rgba(240, 120, 0, .14); color: var(--cream); font-weight: 600; }
+  body.is-admin .nav-tabs .tab::before {
+    content: "";
+    width: 8px; height: 8px; border-radius: 50%;
+    background: rgba(240, 224, 192, .25);
+    flex-shrink: 0;
+    transition: transform 300ms cubic-bezier(.23, 1, .32, 1), background-color 200ms ease;
+  }
+  body.is-admin .nav-tabs .tab.is-active::before { background: var(--orange); transform: scale(1.3); }
+  body.is-admin .nav-tabs .tab-gruvi { margin-top: auto; }
+  body.is-admin main { margin-left: var(--side-w); max-width: none; padding: 40px 48px 120px; }
+  body.is-admin .nav-tabs:not([hidden]) + .nav-right .nav-tag { border-left: 0; padding-left: 0; }
+}
+@media (hover: hover) and (pointer: fine) {
+  body.is-admin .nav-tabs .tab:hover { color: var(--cream); background: rgba(240, 224, 192, .06); }
+}
+
+/* ---------- Celular: menú en pastillas que se deslizan ---------- */
+@media (max-width: 900px) {
+  body.is-admin .nav-tabs .tab { border-radius: 999px; padding: 9px 14px; }
+  body.is-admin .nav-tabs .tab.is-active { background: rgba(240, 120, 0, .16); }
+  body.is-admin .nav-tabs .tab.is-active::after { content: none; }
+  body.is-admin main { padding: 24px 16px 110px; }
+}
+
+/* Gruvi en el menú */
+body.is-admin .nav-tabs .tab-gruvi { color: var(--cream); }
+body.is-admin .nav-tabs .tab-gruvi::before { content: none; }
+.tab-gruvi img, .zh-gruvi-face { width: 26px; height: 26px; flex-shrink: 0; }
+
+/* ---------- Piel general del admin ---------- */
+body.is-admin .card,
+body.is-admin .table-wrap,
+body.is-admin .zgp-event { border-radius: var(--r); }
+body.is-admin .card { background: var(--panel); border-color: rgba(240, 224, 192, .1); }
+body.is-admin .btn { border-radius: 999px; transition: transform 160ms cubic-bezier(.23, 1, .32, 1), background-color 200ms ease, color 200ms ease, border-color 200ms ease; }
+body.is-admin .btn:active { transform: scale(.97); }
+body.is-admin .zgp-stats { border-radius: var(--r); overflow: hidden; }
+body.is-admin input, body.is-admin select, body.is-admin textarea { border-radius: 12px; }
+
+/* ---------- Inicio ---------- */
+.zh { display: flex; flex-direction: column; gap: 22px; }
+.zh-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px; }
+.zh-eyebrow { font-family: "DM Mono", monospace; font-size: 13px; letter-spacing: .14em; text-transform: uppercase; color: var(--orange-soft); }
+.zh-title { margin: 6px 0 0; font-size: clamp(36px, 6vw, 54px); font-weight: 800; letter-spacing: -.04em; line-height: 1; }
+.zh-lead { margin: 10px 0 0; color: var(--beige); font-size: 17px; }
+.zh-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 14px; }
+.zh-card {
+  background: var(--panel, #2E1607);
+  border: 1px solid rgba(240, 224, 192, .1);
+  border-radius: 22px;
+  padding: 24px;
+  display: flex; flex-direction: column; gap: 10px;
+  position: relative; overflow: hidden;
+  animation: zhRise 700ms cubic-bezier(.16, 1, .3, 1) both;
+}
+.zh-card:nth-child(2) { animation-delay: 80ms; }
+.zh-card:nth-child(3) { animation-delay: 160ms; }
+.zh-card:nth-child(4) { animation-delay: 240ms; }
+.zh-wide { grid-column: span 2; }
+.zh-label { font-size: 14px; color: var(--muted); }
+.zh-num { font-size: 46px; font-weight: 800; letter-spacing: -.04em; line-height: 1; font-variant-numeric: tabular-nums; }
+.zh-sub { font-size: 14px; color: var(--muted); }
+.zh-bar { height: 10px; border-radius: 999px; background: rgba(240, 224, 192, .1); overflow: hidden; }
+.zh-bar > i { display: block; height: 100%; width: var(--w, 0%); background: var(--orange); border-radius: 999px; transform-origin: 0 50%; animation: zhBar 1400ms cubic-bezier(.16, 1, .3, 1) 200ms both; }
+.zh-event { background: var(--orange); color: var(--brown-dark); border-color: transparent; }
+.zh-event .zh-label, .zh-event .zh-sub { color: var(--brown-dark); }
+.zh-event .zh-bar { background: rgba(36, 17, 5, .18); }
+.zh-event .zh-bar > i { background: var(--brown-dark); }
+.zh-event .zh-sun { position: absolute; right: -50px; top: -50px; width: 190px; opacity: .18; animation: zhSpin 50s linear infinite; pointer-events: none; }
+.zh-event-name { font-size: 26px; font-weight: 800; letter-spacing: -.02em; line-height: 1.05; }
+.zh-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: auto; padding-top: 6px; position: relative; }
+.zh-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  font: inherit; font-weight: 700; font-size: 14px;
+  padding: 11px 18px; border-radius: 999px; border: 0; cursor: pointer;
+  background: var(--brown-dark); color: var(--cream);
+  transition: transform 160ms cubic-bezier(.23, 1, .32, 1), background-color 200ms ease;
+}
+.zh-btn:active { transform: scale(.96); }
+.zh-btn.is-ghost { background: transparent; color: inherit; box-shadow: inset 0 0 0 1px currentColor; }
+.zh-btn.is-orange { background: var(--orange); color: var(--brown-dark); }
+.zh-btn[disabled] { opacity: .55; cursor: not-allowed; }
+.zh-quick { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr)); gap: 10px; }
+.zh-q {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 6px;
+  text-align: left; font: inherit; color: var(--cream); cursor: pointer;
+  background: var(--panel, #2E1607); border: 1px solid rgba(240, 224, 192, .1); border-radius: 18px; padding: 16px;
+  transition: transform 300ms cubic-bezier(.23, 1, .32, 1), border-color 200ms ease;
+}
+.zh-q b { font-size: 15px; }
+.zh-q span { font-size: 13px; color: var(--muted); }
+.zh-q:active { transform: scale(.97); }
+.zh-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.zh-list li { display: flex; gap: 14px; align-items: baseline; padding: 12px 2px; border-top: 1px solid rgba(240, 224, 192, .08); }
+.zh-list .zh-date { font-family: "DM Mono", monospace; font-size: 13px; color: var(--orange-soft); width: 96px; flex-shrink: 0; }
+.zh-list .zh-what { flex: 1; font-weight: 600; min-width: 0; }
+.zh-list .zh-tag { font-size: 13px; color: var(--muted); }
+.zh-h2 { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -.02em; }
+.zh-gruvi { flex-direction: row; align-items: center; gap: 18px; }
+.zh-gruvi .zh-gruvi-face { width: 64px; height: 64px; animation: zhBob 3s ease-in-out infinite; }
+.zh-soon { border-style: dashed; background: transparent; }
+@media (hover: hover) and (pointer: fine) {
+  .zh-q:hover { transform: translateY(-3px); border-color: rgba(240, 120, 0, .55); }
+  .zh-btn:not([disabled]):hover { background: #3a1c08; }
+  .zh-btn.is-orange:not([disabled]):hover { background: #FF8A1F; }
+}
+@media (max-width: 700px) {
+  .zh-wide { grid-column: auto; }
+  .zh-num { font-size: 36px; }
+  .zh-card { padding: 20px; }
+  .zh-list li { flex-wrap: wrap; gap: 2px 12px; }
+  .zh-list .zh-date { width: auto; }
+  .zh-list .zh-what { flex-basis: 100%; order: 3; }
+  .zh-list .zh-tag { margin-left: auto; }
+}
+@keyframes zhRise { from { opacity: 0; transform: translateY(18px); } }
+@keyframes zhBar { from { transform: scaleX(0); } }
+@keyframes zhSpin { to { transform: rotate(360deg); } }
+@keyframes zhBob { 50% { transform: translateY(-4px); } }
+@media (prefers-reduced-motion: reduce) {
+  .zh-card, .zh-bar > i, .zh-event .zh-sun, .zh-gruvi .zh-gruvi-face { animation: none; }
+}

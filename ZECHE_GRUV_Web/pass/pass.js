@@ -71,6 +71,7 @@
   function renderEvent(e) {
     current = e;
     eventSchema(e);
+    if (window.zgTrack) window.zgTrack("ver_evento", { evento: e.slug });
     const kind = kindOf(e.kind);
     document.title = `${e.name} — ZG PASS`;
     $("eventArt").src = e.image_url || kind.logo;
@@ -154,6 +155,7 @@
       return;
     }
     try { localStorage.setItem(ORDER_KEY, JSON.stringify({ url: res.data.order_url, expires_at: res.data.expires_at })); } catch (e) {}
+    if (window.zgTrack) window.zgTrack("begin_checkout", { evento: current.slug, currency: "ARS", value: selectedType().price * qty, cantidad: qty });
     button.textContent = "Te llevamos a Mercado Pago…";
     location.href = res.data.pay_url;
   }

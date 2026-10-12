@@ -76,6 +76,7 @@ const STUDIO_PHOTOS = [
 const WHATSAPP_NUMBER = "5491133287422"; // ZECHE GRUV — +54 9 11 3328-7422
 
 function waLink(message) {
+  if (window.zgTrack) window.zgTrack("whatsapp_servicio", { mensaje: String(message).slice(0, 90) });
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
 }
 
@@ -1239,7 +1240,15 @@ const VISIT_BOOKING_URL = "";
   }
 
   document.querySelectorAll("[data-visit-open]").forEach((el) => {
-    el.addEventListener("click", (event) => { event.preventDefault(); openVisit(); });
+    el.addEventListener("click", (event) => {
+      event.preventDefault();
+      // Guarda desde qué botón llegó la persona (portada, cómo trabajamos…)
+      const origin = el.dataset.visitOpen || (el.closest("section") && el.closest("section").id) || "web";
+      const field = document.getElementById("visitOrigin");
+      if (field) field.value = origin;
+      if (window.zgTrack) window.zgTrack("abrir_visita", { boton: origin });
+      openVisit();
+    });
   });
   document.getElementById("visitClose").addEventListener("click", closeVisit);
   modal.addEventListener("click", (event) => { if (event.target === modal) closeVisit(); });
@@ -1277,7 +1286,9 @@ const VISIT_BOOKING_URL = "";
       + `Teléfono: ${data.get("telefono")}\n`
       + `Mail: ${data.get("email")}\n`
       + `Instagram: ${data.get("instagram") || "-"}\n`
-      + `Motivo de la visita: ${data.get("motivo")}`;
+      + `Motivo de la visita: ${data.get("motivo")}\n`
+      + `(Vengo de la web · ${data.get("origen_boton") || "web"})`;
+    if (window.zgTrack) window.zgTrack("reserva_visita", { boton: data.get("origen_boton") || "web" });
     window.location.href = `https://wa.me/5491133287422?text=${encodeURIComponent(msg)}`;
   });
 

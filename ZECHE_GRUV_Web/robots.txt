@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /portal/
+Disallow: /pass/puerta/
+Disallow: /pass/pistas/
+Disallow: /pass/orden/
+
+Sitemap: https://www.zechegruv.com/sitemap.xml
