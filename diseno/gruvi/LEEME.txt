@@ -1,0 +1,18 @@
+GRUVI — personaje oficial de ZECHE GRUV
+El sol del logo con los auriculares del estudio.
+
+Archivos: gruvi-<expresión>.svg (vectoriales, escalan sin perder calidad)
+  feliz       saludo, uso general
+  escucha     demos, escuchas, contenido de proceso
+  sorpresa    "¡esa toma!", antes y después
+  concentrado mezcla y master
+  festejo     lanzamientos, premios, entradas validadas
+  guino       adelantos, secretos, lo que viene
+  dormido     entregas a la noche, avisos fuera de horario
+
+Colores: cuerpo #F07800 · rayos #F5A623 · auriculares y rasgos #241105
+         brillo #FF9A3C · cachetes #FFB866 · fondo marca #4B2509 · crema #FFF4DC
+Reglas: sobre marrón o crema; un Gruvi por pieza; mínimo 24 px;
+        no sacarle los auriculares ni cambiarle la forma; no usarlo para cobrar.
+Voz: corto, en voseo, palabras de estudio ("bora", "una última toma"). Nunca vende de frente.
+Hoja completa y piezas de ejemplo: artefacto "Gruvi · Personaje ZECHE GRUV" en Claude.
