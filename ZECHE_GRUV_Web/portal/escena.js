@@ -21,6 +21,9 @@
   let started = false;
   async function start(profile) {
     if (started || !profile || profile.role !== "artist") return;
+    // Portal nuevo del artista: el evento ya está en "Mi proyecto" y en su
+    // pestaña "La escena" (artista.js), así que el aviso flotante no va.
+    if (document.body.classList.contains("is-artist")) return;
     started = true;
     let ev;
     try {

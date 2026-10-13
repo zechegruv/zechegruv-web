@@ -37,7 +37,8 @@
   <nav>
     <a class="nav-mark" href="../index.html">
       <img class="nav-sun" src="../assets/zeche-gruv-sol.webp" alt="" aria-hidden="true">
-      ZECHE GRUV®
+      <span class="nav-mark-text">ZECHE GRUV®</span>
+      <img class="nav-logo" src="../assets/logo-svg/zeche-gruv-texto.svg" alt="ZECHE GRUV">
     </a>
     <!-- Menú del administrador, en la franja de arriba -->
     <div class="nav-tabs" id="tabs" role="tablist" hidden>
@@ -53,11 +54,13 @@
       <div class="side-who" aria-hidden="true">
         <img class="side-who-av" id="sideWhoImg" alt="" hidden>
         <span class="side-who-av side-who-empty" id="sideWhoEmpty"></span>
-        <span class="side-who-text"><b id="sideWhoName"></b><small>Artista ZECHE GRUV</small></span>
+        <span class="side-who-text"><b id="sideWhoName"></b><small id="sideWhoSub">Artista ZECHE GRUV</small></span>
       </div>
       <button class="tab is-active" type="button" data-atab="proyecto" role="tab">Mi proyecto</button>
       <button class="tab" type="button" data-atab="canciones" role="tab">Canciones<span class="tab-badge" id="atabBadge" hidden></span></button>
       <button class="tab" type="button" data-atab="archivos" role="tab">Archivos</button>
+      <button class="tab" type="button" data-atab="escena" role="tab" id="atabEscena" hidden>La escena<span class="tab-badge tab-new" id="atabNew" hidden>Nuevo</span></button>
+      <button class="tab" type="button" data-atab="invitar" role="tab">Invitá a un amigo</button>
       <button class="tab" type="button" data-atab="distribucion" role="tab">Distribución</button>
       <button class="tab" type="button" data-atab="perfil" role="tab">Mi perfil</button>
     </div>
@@ -161,6 +164,9 @@
           <button class="btn cfg-open" type="button" id="cfgOpen" hidden>⚙ Configuración</button>
         </header>
 
+        <!-- Mi proyecto: avance de las canciones y lo que hay para aprobar (canciones.js) -->
+        <div id="projectCards" hidden></div>
+
         <!-- Bienvenida: qué hacemos en la próxima sesión, leído de Notion (canciones.js) -->
         <div class="card welcome-card" id="welcomeCard" hidden>
           <img class="welcome-sun" src="../assets/zeche-gruv-sol.webp" alt="" aria-hidden="true">
@@ -169,8 +175,9 @@
           <div class="welcome-body" id="welcomeBody"></div>
         </div>
 
-        <!-- Mi proyecto: avance de las canciones y lo que hay para aprobar (canciones.js) -->
-        <div id="projectCards" hidden></div>
+        <!-- La escena e Invitá a un amigo: pestañas del artista (artista.js) -->
+        <div id="sceneTab" class="atab-pane"></div>
+        <div id="inviteTab" class="atab-pane"></div>
 
         <!-- Tu show: subida de pistas para los shows de ZG PASS en los que toca (shows.js) -->
         <div id="showCards"></div>

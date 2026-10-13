@@ -167,57 +167,90 @@
     sendReview(li, box.dataset.kind, "cambios", note);
   });
 
-  // ---------- Mi proyecto: avance y pendientes ----------
-  // Avance: cada canción suma una parte por etapa cumplida (las terminadas,
-  // todas). Sin fechas: solo cuánto falta y qué hay para escuchar.
+  // ---------- Mi proyecto (portal nuevo del artista) ----------
+  // Como el preview "Rediseño web", armado con los datos de cada artista:
+  // saludo con la fecha, avance del proyecto, el próximo evento del sello y
+  // lo que tiene para escuchar y aprobar (o cómo va cada canción).
+  // Sin fechas de entrega.
+  const NOUN_OF = { album: ["Tu disco", "del disco"], ep: ["Tu EP", "del EP"], single: ["Tu single", "del single"] };
+  const STAGE_LINE = ["arrancó", "está en producción", "está en grabación", "ya está en mezcla", "ya está en master"];
+  const capFirst = (t) => t.charAt(0).toUpperCase() + t.slice(1);
+  const listJoin = (a) => (a.length > 1 ? `${a.slice(0, -1).join(", ")} y ${a[a.length - 1]}` : a[0] || "");
+
   function renderProject(profile, data) {
     const box = $("projectCards");
     const own = profile.id === P.me.id;
-    const active = (data && data.active) || [];
-    const done = (data && data.done) || [];
+    if (!own || P.me.role !== "artist") { box.hidden = true; box.replaceChildren(); return; }
+    const active = (data && data.configured && data.active) || [];
+    const done = (data && data.configured && data.done) || [];
     const total = active.length + done.length;
-    if (!own || !data || !data.configured || !total) {
-      box.hidden = true;
-      box.replaceChildren();
-      if (own && window.ZGArtistNav) window.ZGArtistNav.setPending(0);
-      return;
-    }
-    const steps = active.reduce((n, s) => n + Math.max(0, s.step), 0) + done.length * STAGES.length;
-    const pct = Math.round((steps / (total * STAGES.length)) * 100);
-    const counts = {};
-    active.forEach((s) => { const k = s.step >= 0 ? STAGES[s.step][1] : "Por arrancar"; counts[k] = (counts[k] || 0) + 1; });
-    const parts = Object.entries(counts).map(([k, n]) => `${n} en ${k.toLowerCase()}`);
-    if (done.length) parts.push(`${done.length} ${done.length === 1 ? "terminada" : "terminadas"}`);
+    const [noun, ofNoun] = NOUN_OF[profile.format] || ["Tu proyecto", "del proyecto"];
     const pending = active.filter((s) => s.ready && !approved(s));
     if (window.ZGArtistNav) window.ZGArtistNav.setPending(pending.length);
-    const C = 2 * Math.PI * 72;
-    const ring = `
-      <section class="ap-card ap-ring-card" aria-label="Avance del proyecto">
-        <div class="ap-ring">
-          <svg viewBox="0 0 160 160" aria-hidden="true"><circle cx="80" cy="80" r="72" class="ap-ring-bg"/><circle cx="80" cy="80" r="72" class="ap-ring-fg" style="stroke-dasharray:${C.toFixed(1)};--off:${(C * (1 - pct / 100)).toFixed(1)};--full:${C.toFixed(1)}"/></svg>
-          <div class="ap-ring-num"><b>${pct}%</b><span>del proyecto</span></div>
-        </div>
-        <div class="ap-ring-text">
-          <b>${countLabel(total)}</b>
-          <span>${esc(parts.join(" · "))}</span>
-          <button class="btn ap-link" type="button" data-go="canciones">Ver mis canciones →</button>
-        </div>
-      </section>`;
-    const items = pending.map((s) => `<li><b>${esc(s.title)}</b><span>${s.step === 4 ? "Master" : "Mezcla"} lista</span></li>`).join("");
-    const todo = pending.length
-      ? `<section class="ap-card ap-todo" aria-label="Para escuchar y aprobar">
-          <img class="ap-todo-sun" src="../assets/zeche-gruv-sol.webp" alt="" aria-hidden="true">
-          <span class="ap-eyebrow">Para escuchar y aprobar</span>
-          <ul>${items}</ul>
-          <button class="btn ap-dark" type="button" data-go="canciones">Escuchar y aprobar</button>
-        </section>`
-      : `<section class="ap-card ap-todo is-calm" aria-label="Para aprobar">
-          <img class="ap-todo-sun" src="../assets/zeche-gruv-sol.webp" alt="" aria-hidden="true">
-          <span class="ap-eyebrow">Para aprobar</span>
-          <p>Nada pendiente por ahora. Cuando una mezcla o un master esté listo, te aparece acá para que lo escuches y lo apruebes.</p>
+
+    // Saludo: la etapa más avanzada y lo que tiene para aprobar.
+    const top = active.reduce((m, s) => Math.max(m, s.step), -1);
+    let lead;
+    if (!total) lead = "Acá vas a ver cómo avanza tu música, etapa por etapa.";
+    else if (!active.length) lead = `${noun} está terminado. ¡Gracias por confiar en el estudio!`;
+    else lead = `${noun} ${top >= 0 ? STAGE_LINE[top] : "está por arrancar"}.`;
+    if (pending.length) lead += ` Tenés ${pending.length === 1 ? "una canción" : `${pending.length} canciones`} para escuchar y aprobar.`;
+    const today = capFirst(new Date().toLocaleDateString("es-AR", { weekday: "long", day: "numeric", month: "long" }).replace(",", ""));
+
+    // Avance: cada canción suma una parte por etapa cumplida.
+    let ring = "";
+    if (total) {
+      const steps = active.reduce((n, s) => n + Math.max(0, s.step), 0) + done.length * STAGES.length;
+      const pct = Math.round((steps / (total * STAGES.length)) * 100);
+      const counts = {};
+      active.forEach((s) => { const k = s.step >= 0 ? STAGES[s.step][1] : "Por arrancar"; counts[k] = (counts[k] || 0) + 1; });
+      const parts = Object.entries(counts).map(([k, n]) => `${n} en ${k.toLowerCase()}`);
+      if (done.length) parts.push(`${done.length} ${done.length === 1 ? "terminada" : "terminadas"}`);
+      const C = 2 * Math.PI * 72;
+      ring = `
+        <section class="ap-card ap-ring-card" aria-label="Avance">
+          <div class="ap-ring">
+            <svg viewBox="0 0 160 160" aria-hidden="true"><circle cx="80" cy="80" r="72" class="ap-ring-bg"/><circle cx="80" cy="80" r="72" class="ap-ring-fg" style="stroke-dasharray:${C.toFixed(1)};--off:${(C * (1 - pct / 100)).toFixed(1)};--full:${C.toFixed(1)}"/></svg>
+            <div class="ap-ring-num"><b>${pct}%</b><span>${ofNoun}</span></div>
+          </div>
+          <div class="ap-ring-text">
+            <b>${countLabel(total)}</b>
+            <span>${esc(listJoin(parts))}</span>
+            <span>${pending.length ? `${pending.length} para escuchar y aprobar` : "Nada pendiente para aprobar"}</span>
+          </div>
         </section>`;
-    box.innerHTML = `<div class="ap-grid">${ring}${todo}</div>`;
+    }
+
+    // Lista: lo que hay para aprobar; si no hay nada, cómo va cada canción.
+    const rows = (pending.length ? pending : active).map((s, i) => {
+      const stage = s.step >= 0 ? STAGES[s.step][1] : "Por arrancar";
+      const tag = pending.length ? "Para aprobar" : approved(s) ? `${s.step === 4 ? "Master" : "Mezcla"} aprobada` : "En proceso";
+      return `<li><button type="button" class="ap-row" data-go="canciones" style="animation-delay:${300 + i * 80}ms">
+        <span class="ap-dot${i === 0 && pending.length ? " is-now" : ""}" aria-hidden="true"></span>
+        <span class="ap-stage">${esc(stage)}</span>
+        <span class="ap-what">${esc(s.title)}${s.feat ? ` <small>feat. ${esc(s.feat)}</small>` : ""}</span>
+        <span class="ap-tag">${tag}</span>
+      </button></li>`;
+    }).join("");
+    const list = rows ? `
+      <section class="ap-card ap-list" aria-label="${pending.length ? "Para escuchar y aprobar" : "Tus canciones"}">
+        <h2 class="ap-h2">${pending.length ? "Para escuchar y aprobar" : "Tus canciones"}</h2>
+        <ol>${rows}</ol>
+      </section>` : "";
+
+    box.innerHTML = `
+      <header class="ap-head">
+        <div>
+          <span class="ap-eyebrow ap-date">${esc(today)}</span>
+          <h1 class="ap-hello">Hola, ${esc(firstName(profile))}.</h1>
+          <p class="ap-lead">${esc(lead)}</p>
+        </div>
+        ${total ? '<button class="btn btn-primary ap-cta" type="button" data-go="canciones">Ver mis canciones</button>' : ""}
+      </header>
+      <div class="ap-grid">${ring}<div id="apScene" class="ap-scene-slot"></div></div>
+      ${list}`;
     box.hidden = false;
+    if (window.ZGArtistNav) window.ZGArtistNav.fillScene($("apScene"), "small");
   }
 
   function doneSong(song) {
@@ -354,6 +387,7 @@
     } catch (err) {
       if (ticket !== current) return;
       renderWelcome(profile, null);
+      renderProject(profile, null);
       // Al artista no se le muestra un error: la sección aparece cuando funciona.
       if (!admin) { card.hidden = true; return; }
       status.textContent = err.message !== "error" ? err.message : "No pudimos traer las canciones. Probá de nuevo en un momento.";

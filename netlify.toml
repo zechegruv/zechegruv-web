@@ -31,6 +31,14 @@
   to = "/pass/pistas/"
   status = 302
 
+# Link de "Invitá a un amigo" del portal: zechegruv.com/v/<artista> lleva
+# al inicio marcado como recomendación de ese artista (Google Analytics lo
+# cuenta como campaña).
+[[redirects]]
+  from = "/v/:artista"
+  to = "/?utm_source=amigo&utm_medium=referido&utm_campaign=:artista"
+  status = 302
+
 # Acceso de puerta de un evento (scanner, venta en puerta y contador), con
 # link único que arma el administrador en ZG PASS → "Acceso de puerta".
 [[redirects]]

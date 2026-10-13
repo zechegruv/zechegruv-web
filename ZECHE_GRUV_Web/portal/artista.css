@@ -321,3 +321,108 @@ body.is-artist .songs-done { border-radius: 20px; }
   .review-actions .review-btn { flex: 1 1 auto; justify-content: center; }
 }
 body.is-artist .songs-done { margin-top: 16px; }
+
+/* =====================================================================
+   Mi proyecto, La escena e Invitá a un amigo como el preview
+   ===================================================================== */
+/* Logo del sello arriba de la barra lateral */
+.nav-logo { display: none; }
+body.is-artist .nav-mark .nav-sun,
+body.is-artist .nav-mark .nav-mark-text { display: none; }
+body.is-artist .nav-logo { display: block; height: 40px; width: auto; }
+@media (max-width: 900px) { body.is-artist .nav-logo { height: 30px; } }
+.tab-new { font-size: 11px; }
+/* La franja fina de "La escena" ya no hace falta: tiene su pestaña */
+body.is-artist .escena-bar { display: none !important; }
+body.is-artist:has(.escena-bar.is-on) { padding-top: 0; }
+
+/* Qué se ve en cada pestaña (las nuevas) */
+.atab-pane { display: none; }
+body.is-artist[data-atab="escena"] #sceneTab,
+body.is-artist[data-atab="invitar"] #inviteTab { display: flex; flex-direction: column; gap: 20px; max-width: 900px; animation: zhRise 600ms cubic-bezier(.16, 1, .3, 1) both; }
+body.is-artist[data-atab="proyecto"] .profile-head,
+body.is-artist[data-atab="escena"] #panel-profile > :not(#sceneTab),
+body.is-artist[data-atab="invitar"] #panel-profile > :not(#inviteTab),
+body.is-artist[data-atab="canciones"] .atab-pane,
+body.is-artist[data-atab="archivos"] .atab-pane,
+body.is-artist[data-atab="perfil"] .atab-pane { display: none !important; }
+body.is-artist #projectCards { display: flex; flex-direction: column; gap: 20px; margin-bottom: 20px; }
+body.is-artist #projectCards[hidden] { display: none; }
+
+/* Saludo */
+.ap-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px; }
+.ap-head > div { display: flex; flex-direction: column; gap: 6px; }
+.ap-date { color: var(--orange-soft); letter-spacing: .14em; }
+.ap-hello { margin: 0; font-family: var(--display); font-weight: 800; font-size: clamp(38px, 6vw, 56px); line-height: 1; letter-spacing: -.03em; }
+.ap-lead { margin: 0; font-size: 18px; color: var(--beige); max-width: 60ch; }
+.ap-cta { padding: 14px 24px; font-size: 15px; }
+.ap-tab-title { margin-bottom: 4px; }
+.ap-foot { margin: 0; color: var(--muted); }
+.ap-ring-text > span + span { margin-top: -4px; }
+.ap-scene-slot { min-height: 1px; }
+
+/* La escena (tarjeta naranja) */
+.ap-scene { background: var(--orange); color: var(--brown-dark); border-color: transparent; }
+.ap-scene .ap-eyebrow { color: var(--brown-dark); }
+.sc-main { display: flex; flex-direction: column; gap: 10px; position: relative; }
+.sc-name { font-family: var(--display); font-weight: 800; font-size: 30px; line-height: 1.05; letter-spacing: -.02em; }
+.sc-meta { font-weight: 500; }
+.sc-note { font-size: 15px; }
+.sc-lineup { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.sc-lineup span { font-size: 13px; font-weight: 600; padding: 5px 11px; border-radius: 999px; background: rgba(36, 17, 5, .12); }
+.sc-lineup span.is-me { background: var(--brown-dark); color: var(--cream); }
+.sc-actions { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; margin-top: auto; position: relative; }
+.sc-friends { color: var(--brown-dark); font-weight: 600; text-decoration: underline; padding: 6px 2px; }
+.ap-scene.is-big { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 28px; padding: 36px; }
+.ap-scene.is-big .sc-main { flex: 1 1 320px; }
+.ap-scene.is-big .sc-name { font-size: 40px; line-height: 1; }
+.ap-scene.is-big .sc-meta { font-size: 18px; }
+.ap-scene.is-big .ap-todo-sun { top: auto; bottom: -80px; right: -80px; width: 300px; opacity: .16; }
+.ap-scene.is-big .sc-actions { margin-top: 0; align-items: stretch; }
+.ap-scene.is-big .ap-dark { font-size: 17px; padding: 16px 26px; justify-content: center; }
+
+/* Lista: para escuchar y aprobar / tus canciones */
+.ap-list { gap: 8px; }
+.ap-h2 { margin: 0 0 8px; font-family: var(--display); font-weight: 700; font-size: 26px; letter-spacing: -.02em; }
+.ap-list ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.ap-row {
+  width: 100%; display: flex; align-items: center; gap: 16px; text-align: left;
+  padding: 16px 4px; border: 0; border-top: 1px solid rgba(240, 224, 192, .08); background: none;
+  font: inherit; color: var(--cream); cursor: pointer;
+  animation: zhRise 600ms cubic-bezier(.16, 1, .3, 1) both; transition: background-color 200ms ease;
+}
+.ap-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; background: rgba(240, 224, 192, .3); }
+.ap-dot.is-now { background: var(--orange); animation: zhPulse 1.6s ease-out infinite; }
+.ap-stage { font-family: var(--mono); font-size: 14px; color: var(--orange-soft); width: 92px; flex-shrink: 0; }
+.ap-what { flex: 1; font-weight: 500; min-width: 0; }
+.ap-what small { color: var(--muted); font-weight: 400; }
+.ap-tag { font-size: 13px; color: var(--muted); }
+@media (hover: hover) and (pointer: fine) { .ap-row:hover { background: rgba(240, 224, 192, .04); } .sc-friends:hover { color: var(--cream); } }
+
+/* Invitá a un amigo */
+.ap-invite { gap: 22px; padding: 36px; }
+.iv-big { margin: 0; font-family: var(--display); font-weight: 700; font-size: 30px; line-height: 1.15; letter-spacing: -.02em; max-width: 28ch; }
+.iv-link { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.iv-url { flex: 1 1 260px; background: #241105; border: 1px dashed rgba(240, 224, 192, .3); border-radius: 14px; padding: 14px 16px; font-family: var(--mono); font-size: 15px; overflow-wrap: anywhere; }
+.iv-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: 12px; }
+.iv-steps li { background: #241105; border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 6px; }
+.iv-steps span { font-family: var(--mono); color: var(--orange-soft); }
+.iv-steps b { font-weight: 600; }
+.iv-steps small { font-size: 14px; color: var(--muted); }
+
+@media (max-width: 640px) {
+  .ap-cta { width: 100%; justify-content: center; }
+  .ap-lead { font-size: 16px; }
+  .ap-row { flex-wrap: wrap; gap: 2px 12px; padding: 14px 2px; }
+  .ap-stage { width: auto; }
+  .ap-tag { margin-left: auto; }
+  .ap-what { order: 3; flex: 1 1 100%; padding-left: 22px; }
+  .ap-scene.is-big, .ap-invite { padding: 22px; }
+  .ap-scene.is-big .sc-name { font-size: 30px; }
+  .ap-scene.is-big .sc-actions { width: 100%; }
+  .iv-big { font-size: 23px; }
+  .iv-link .btn { flex: 1 1 auto; justify-content: center; }
+}
+/* La bienvenida va debajo del saludo: sin repetir el "Hola" */
+body.is-artist[data-atab="proyecto"] .welcome-title { display: none; }
+body.is-artist .ap-dark, body.is-artist .iv-link .btn, body.is-artist .ap-cta { justify-content: center; text-align: center; }
