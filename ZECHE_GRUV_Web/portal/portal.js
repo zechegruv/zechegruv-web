@@ -48,6 +48,8 @@
   function showPanel(name) {
     PANELS.forEach((p) => { $(`panel-${p}`).hidden = p !== name; });
     window.scrollTo(0, 0);
+    // Menú del artista (artista.js): marca la pestaña de lo que se abrió.
+    if (window.ZGArtistNav) window.ZGArtistNav.sync(name);
     // Medición: qué secciones usan los artistas (tu uso como admin no cuenta).
     if (me && me.role !== "admin" && window.zgTrack) window.zgTrack("portal_seccion", { seccion: name, tipo_cuenta: me.role });
   }
@@ -59,6 +61,10 @@
     $("tabs").hidden = !(name === "app" && me && me.role === "admin");
     // Panel nuevo del administrador (admin.css): barra lateral e Inicio.
     document.body.classList.toggle("is-admin", name === "app" && !!me && me.role === "admin");
+    // Portal nuevo del artista (artista.css / artista.js): barra lateral y menú propio.
+    const artist = name === "app" && !!me && me.role === "artist";
+    document.body.classList.toggle("is-artist", artist);
+    $("artistTabs").hidden = !artist;
   }
 
   function setMsg(el, text, isError) {
@@ -809,7 +815,7 @@
 
   // Lo que necesitan los módulos de distribución y de archivos.
   window.ZGPortal = {
-    db, $, setMsg, showPanel, nameOf, FORMAT_LABEL, openTab,
+    db, $, setMsg, showPanel, nameOf, FORMAT_LABEL, openTab, showProfile, paintAvatar,
     get me() { return me; },
     backToProfile(profile) { if (profile && profile.id !== me.id) showProfile(profile); else if (me.role === "admin") openTab("me"); else showProfile(me); },
   };

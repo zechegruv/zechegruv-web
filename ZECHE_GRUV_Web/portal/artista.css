@@ -1,0 +1,323 @@
+/* ZECHE GRUV — Portal del artista (diseño del preview "Rediseño web").
+   Todo vale solo con body.is-artist: el administrador y el equipo de
+   distribución no cambian. La piel es la misma que la del panel de
+   administrador (admin.css); abajo, lo propio del artista: menú,
+   "Mi proyecto", qué se ve en cada pestaña y aprobar mezcla y master.
+   Sin fechas de entrega en ningún lado. */
+
+body.is-artist {
+  --side-w: 260px;
+  --panel: #2E1607;
+  --panel-2: #241105;
+  --r: 22px;
+  --display: "Bricolage Grotesque", "Manrope", sans-serif;
+  --body: "Geist", "Manrope", system-ui, sans-serif;
+  --mono: "Geist Mono", "DM Mono", monospace;
+  background: #1B0D04;
+  font-family: var(--body);
+}
+
+/* ---------- Tipografía y controles como en el preview ---------- */
+body.is-artist main h1, body.is-artist main h2, body.is-artist main h3,
+body.is-artist .title, body.is-artist .card-title { font-family: var(--display); letter-spacing: -.02em; }
+body.is-artist .title { font-weight: 800; letter-spacing: -.03em; }
+body.is-artist .eyebrow { font-family: var(--mono); font-size: 13px; letter-spacing: .14em; }
+body.is-artist .btn,
+body.is-artist .tab,
+body.is-artist .chip-btn,
+body.is-artist .link-btn,
+body.is-artist .pill {
+  font-family: var(--body);
+  text-transform: none;
+  letter-spacing: 0;
+}
+body.is-artist .btn {
+  font-size: 14px; font-weight: 600;
+  padding: 11px 18px; border-radius: 999px;
+  transition: transform 160ms cubic-bezier(.23, 1, .32, 1), background-color 200ms ease, color 200ms ease, border-color 200ms ease;
+}
+body.is-artist .btn:active { transform: scale(.97); }
+body.is-artist .pill { font-size: 13px; font-weight: 600; border-radius: 999px; }
+body.is-artist .field label,
+body.is-artist label { font-family: var(--body); text-transform: none; letter-spacing: 0; font-size: 13px; font-weight: 600; }
+body.is-artist input, body.is-artist select, body.is-artist textarea { border-radius: 12px; font-family: var(--body); }
+body.is-artist .card,
+body.is-artist .table-wrap,
+body.is-artist .zgp-event { border-radius: var(--r); }
+body.is-artist .card { background: var(--panel); border-color: rgba(240, 224, 192, .1); }
+body.is-artist .zgp-stats { border-radius: var(--r); overflow: hidden; }
+body.is-artist .zgp-stat strong { font-family: var(--display); }
+body.is-artist .zgp-stat span { font-family: var(--body); text-transform: none; letter-spacing: 0; font-size: 13px; }
+body.is-artist table th { font-family: var(--body); text-transform: none; letter-spacing: 0; font-size: 13px; }
+/* Pestañas internas (ZG PASS: Resumen, Puerta…): pastillas */
+body.is-artist main .tab { font-size: 14px; font-weight: 500; border-radius: 999px; padding: 9px 16px; border-bottom: 0; }
+body.is-artist main .tab.is-active { background: rgba(240, 120, 0, .16); color: var(--cream); }
+body.is-artist .zgp-menu { background: #1B0D04; border-radius: 0; }
+
+/* ---------- Compu: barra lateral con el logo arriba (sin franja superior) ---------- */
+@media (min-width: 901px) {
+  body.is-artist nav {
+    position: fixed; top: 0; left: 0;
+    width: var(--side-w); height: 92px;
+    box-sizing: border-box;
+    padding: 30px 26px 0;
+    justify-content: flex-start;
+    background: #241105;
+    border-bottom: 0;
+    z-index: 42;
+  }
+  body.is-artist .nav-tag { display: none; }
+  body.is-artist #logoutBtn { position: fixed; left: 26px; bottom: 24px; z-index: 43; }
+  body.is-artist .nav-tabs:not([hidden]) {
+    position: fixed; left: 0; top: 92px; bottom: 0;
+    width: var(--side-w);
+    margin: 0; padding: 8px 16px 92px;
+    box-sizing: border-box;
+    flex-direction: column; align-items: stretch; gap: 4px;
+    background: #241105;
+    border-right: 1px solid rgba(240, 224, 192, .1);
+    overflow-y: auto;
+    z-index: 41;
+  }
+  body.is-artist nav { border-right: 1px solid rgba(240, 224, 192, .1); }
+  body.is-artist .nav-tabs .tab {
+    display: flex; align-items: center; gap: 12px;
+    width: 100%; text-align: left;
+    padding: 12px 14px; border-radius: 12px;
+    font-size: 15px; font-weight: 500; color: #C9A980;
+    transition: background-color 200ms ease, color 200ms ease;
+  }
+  body.is-artist .nav-tabs .tab::before {
+    content: ""; width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+    background: rgba(240, 224, 192, .25);
+    transition: transform 300ms cubic-bezier(.23, 1, .32, 1), background-color 200ms ease;
+  }
+  body.is-artist .nav-tabs .tab.is-active { background: rgba(240, 120, 0, .14); color: var(--cream); font-weight: 600; }
+  body.is-artist .nav-tabs .tab.is-active::before { background: var(--orange); transform: scale(1.3); }
+  body.is-artist .nav-tabs .tab.is-active::after { content: none; }
+  body.is-artist main { margin-left: var(--side-w); max-width: none; padding: 40px 48px 120px; }
+  body.is-artist .zgp-menu { top: 0; }
+}
+@media (hover: hover) and (pointer: fine) {
+  body.is-artist .nav-tabs .tab:hover { color: var(--cream); background: rgba(240, 224, 192, .06); }
+}
+/* Gruvi va como botón flotante, no en el menú */
+body.is-artist .nav-tabs .tab-gruvi { display: none; }
+
+/* ---------- Celular: barra arriba y menú en pastillas ---------- */
+@media (max-width: 900px) {
+  body.is-artist .nav-tabs .tab { border-radius: 999px; padding: 9px 14px; font-size: 14px; }
+  body.is-artist .nav-tabs .tab.is-active { background: rgba(240, 120, 0, .16); }
+  body.is-artist .nav-tabs .tab.is-active::after { content: none; }
+  body.is-artist main { padding: 24px 16px 110px; }
+}
+
+
+/* ---------- Tablas (lanzamientos, entradas, archivos) ---------- */
+body.is-artist .table-wrap { background: var(--panel); border: 1px solid rgba(240, 224, 192, .1); border-radius: 22px; }
+body.is-artist .table th { color: var(--muted); font-weight: 500; background: transparent; border-color: rgba(240, 224, 192, .08); }
+body.is-artist .table td { border-color: rgba(240, 224, 192, .06); font-size: 14px; }
+body.is-artist .table tbody tr { transition: background-color 200ms ease; }
+@media (hover: hover) and (pointer: fine) { body.is-artist .table tbody tr:hover { background: rgba(240, 120, 0, .05); } }
+body.is-artist .status,
+body.is-artist .chip {
+  display: inline-flex; align-items: center;
+  font-family: var(--body); font-size: 12px; font-weight: 600; letter-spacing: 0; text-transform: none;
+  padding: 4px 10px; border-radius: 999px; border: 1px solid rgba(240, 224, 192, .14);
+}
+body.is-artist .status-submitted { background: rgba(245, 166, 35, .1); }
+body.is-artist .status-published { background: rgba(159, 212, 154, .1); }
+@media (max-width: 640px) {
+  body.is-artist .table-wrap { background: none; border: 0; border-radius: 0; }
+  body.is-artist .table td[data-label]::before { font-family: var(--body); font-size: 12px; font-weight: 500; letter-spacing: 0; text-transform: none; }
+}
+
+/* ---------- Perfil del artista (vista del admin) ---------- */
+body.is-artist .profile-head { gap: 20px; }
+body.is-artist .profile-head .avatar { border-radius: 50%; }
+body.is-artist .sections { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); gap: 12px; }
+body.is-artist .sections li,
+body.is-artist .sections li:first-child {
+  border: 1px solid rgba(240, 224, 192, .12);
+  border-radius: 18px;
+  background: #241105;
+  transition: transform 300ms cubic-bezier(.23, 1, .32, 1), border-color 200ms ease, background-color 200ms ease;
+}
+body.is-artist .sections .section-btn,
+body.is-artist .sections li:first-child .section-btn,
+body.is-artist .sections li:last-child .section-btn { padding: 18px; height: 100%; box-sizing: border-box; }
+body.is-artist .section-text b { font-family: var(--body); font-weight: 600; }
+@media (hover: hover) and (pointer: fine) {
+  body.is-artist .sections li:hover { transform: translateY(-2px); border-color: rgba(240, 120, 0, .5); background: rgba(240, 120, 0, .06); }
+}
+
+/* ---------- Formularios ---------- */
+body.is-artist .zg-select-btn { border-radius: 12px; border-color: rgba(240, 224, 192, .18); }
+body.is-artist input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+body.is-artist textarea { border-color: rgba(240, 224, 192, .18); transition: border-color 200ms ease, box-shadow 200ms ease; }
+body.is-artist input:not([type="checkbox"]):not([type="radio"]):focus,
+body.is-artist textarea:focus { outline: none; border-color: var(--orange); box-shadow: 0 0 0 4px rgba(240, 120, 0, .18); }
+body.is-artist details { border-radius: 22px; }
+body.is-artist .notice { border-radius: 16px; }
+body.is-artist .card-title { font-size: 22px; font-weight: 700; }
+body.is-artist .card { padding: 24px; }
+@media (max-width: 640px) {
+  body.is-artist .card { padding: 18px; }
+  body.is-artist .title { font-size: 38px; margin-bottom: 20px; }
+  body.is-artist .btn-primary { width: 100%; justify-content: center; }
+}
+
+
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* ---------- Menú del artista ---------- */
+body.is-artist .artist-tabs .tab { position: relative; }
+.tab-badge {
+  margin-left: auto; min-width: 22px; box-sizing: border-box; text-align: center;
+  background: var(--orange); color: var(--brown-dark);
+  font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 999px;
+  animation: zhPulse 1.6s ease-out 3;
+}
+.side-who { display: none; }
+@media (min-width: 901px) {
+  body.is-artist .side-who {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px; margin: 0 0 14px; border-radius: 16px; background: #2E1607;
+  }
+  body.is-artist .side-who-av { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+  body.is-artist .side-who-empty { display: flex; align-items: center; justify-content: center; background: var(--orange); color: var(--brown-dark); font-family: var(--display); font-weight: 800; }
+  body.is-artist .side-who-empty[hidden] { display: none; }
+  body.is-artist .side-who-text { display: flex; flex-direction: column; min-width: 0; }
+  body.is-artist .side-who-text b { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  body.is-artist .side-who-text small { font-size: 12px; color: var(--muted); }
+  /* La franja de "La escena" va sobre el contenido, no sobre la barra lateral */
+  body.is-artist .escena-bar { left: var(--side-w); }
+  body.is-artist:has(.escena-bar.is-on) nav { top: 0; }
+}
+@media (max-width: 900px) {
+  body.is-artist .tab-badge { margin-left: 6px; }
+}
+
+/* ---------- Qué se ve en cada pestaña ---------- */
+/* Mi proyecto: saludo, bienvenida, avance y shows */
+body.is-artist[data-atab="proyecto"] #songsCard,
+body.is-artist[data-atab="proyecto"] .space-card,
+body.is-artist[data-atab="proyecto"] #panel-profile > .grid-2,
+/* Canciones: solo las canciones */
+body.is-artist[data-atab="canciones"] .profile-head,
+body.is-artist[data-atab="canciones"] #welcomeCard,
+body.is-artist[data-atab="canciones"] #projectCards,
+body.is-artist[data-atab="canciones"] #showCards,
+body.is-artist[data-atab="canciones"] .space-card,
+body.is-artist[data-atab="canciones"] #panel-profile > .grid-2,
+/* Archivos: las carpetas */
+body.is-artist[data-atab="archivos"] .profile-head,
+body.is-artist[data-atab="archivos"] #welcomeCard,
+body.is-artist[data-atab="archivos"] #projectCards,
+body.is-artist[data-atab="archivos"] #showCards,
+body.is-artist[data-atab="archivos"] #songsCard,
+body.is-artist[data-atab="archivos"] #panel-profile > .grid-2,
+/* Mi perfil: foto, nombre y contraseña */
+body.is-artist[data-atab="perfil"] #welcomeCard,
+body.is-artist[data-atab="perfil"] #projectCards,
+body.is-artist[data-atab="perfil"] #showCards,
+body.is-artist[data-atab="perfil"] #songsCard,
+body.is-artist[data-atab="perfil"] .space-card { display: none !important; }
+/* Distribución ya está en el menú: no se repite entre las carpetas */
+body.is-artist .sections li:has(#openDistribution) { display: none; }
+body.is-artist[data-atab="archivos"] .space-card,
+body.is-artist[data-atab="canciones"] #songsCard { animation: zhRise 600ms cubic-bezier(.16, 1, .3, 1) both; }
+
+/* Títulos grandes como el preview */
+body.is-artist .profile-head .title { font-size: clamp(38px, 6vw, 56px); line-height: 1; }
+body.is-artist #songsTitle,
+body.is-artist #spaceTitle { font-size: clamp(32px, 5vw, 44px); font-weight: 800; letter-spacing: -.03em; margin-bottom: 6px; }
+body.is-artist .songs-card,
+body.is-artist .space-card { background: transparent; border: 0; padding: 0; }
+body.is-artist .songs-sub { color: var(--beige); font-size: 16px; margin-bottom: 18px; }
+
+/* Bienvenida: tarjeta cálida */
+body.is-artist .welcome-card { border-radius: 24px; background: #2E1607; border: 1px solid rgba(240, 224, 192, .1); animation: zhRise 700ms cubic-bezier(.16, 1, .3, 1) both; }
+body.is-artist .welcome-title { font-family: var(--display); font-weight: 800; letter-spacing: -.03em; }
+
+/* ---------- Mi proyecto: avance y para aprobar ---------- */
+#projectCards { margin-bottom: 16px; }
+.ap-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 16px; }
+.ap-card {
+  border-radius: 24px; padding: 28px; position: relative; overflow: hidden;
+  display: flex; flex-direction: column; gap: 12px;
+  background: #2E1607; border: 1px solid rgba(240, 224, 192, .1);
+  animation: zhRise 700ms cubic-bezier(.16, 1, .3, 1) both;
+}
+.ap-grid > .ap-card:nth-child(2) { animation-delay: 100ms; }
+.ap-ring-card { flex-direction: row; align-items: center; gap: 24px; }
+.ap-ring { position: relative; width: 150px; height: 150px; flex-shrink: 0; }
+.ap-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.ap-ring circle { fill: none; stroke-width: 12; }
+.ap-ring-bg { stroke: rgba(240, 224, 192, .12); }
+.ap-ring-fg { stroke: var(--orange); stroke-linecap: round; stroke-dashoffset: var(--off); animation: apRing 1600ms cubic-bezier(.16, 1, .3, 1) 200ms both; }
+@keyframes apRing { from { stroke-dashoffset: var(--full); } }
+.ap-ring-num { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.ap-ring-num b { font-family: var(--display); font-weight: 800; font-size: 38px; line-height: 1; }
+.ap-ring-num span { font-size: 13px; color: var(--muted); }
+.ap-ring-text { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; min-width: 0; }
+.ap-ring-text > b { font-size: 18px; font-weight: 600; }
+.ap-ring-text > span { color: var(--muted); font-size: 15px; }
+.ap-link { margin-top: 6px; background: transparent; border: 1px solid rgba(240, 224, 192, .3); color: var(--cream); }
+.ap-todo { background: var(--orange); color: var(--brown-dark); border-color: transparent; }
+.ap-todo.is-calm { background: #2E1607; color: var(--cream); border-color: rgba(240, 224, 192, .1); }
+.ap-todo.is-calm p { color: var(--beige); font-size: 15px; max-width: 42ch; position: relative; }
+.ap-todo-sun { position: absolute; right: -50px; top: -50px; width: 190px; opacity: .18; animation: zhSpin 50s linear infinite; pointer-events: none; }
+.ap-todo.is-calm .ap-todo-sun { opacity: .07; }
+.ap-eyebrow { font-family: var(--mono); font-size: 13px; letter-spacing: .12em; text-transform: uppercase; position: relative; }
+.ap-todo:not(.is-calm) .ap-eyebrow { font-weight: 500; }
+.ap-todo ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; position: relative; }
+.ap-todo li { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
+.ap-todo li b { font-family: var(--display); font-size: 24px; font-weight: 800; letter-spacing: -.02em; line-height: 1.1; }
+.ap-todo li span { font-size: 14px; font-weight: 600; white-space: nowrap; }
+.ap-dark { margin-top: auto; align-self: flex-start; position: relative; background: var(--brown-dark); color: var(--cream); border-color: var(--brown-dark); }
+@media (hover: hover) and (pointer: fine) {
+  .ap-link:hover { border-color: var(--cream); }
+  .ap-dark:hover { background: #3a1c08; border-color: #3a1c08; }
+}
+@media (max-width: 640px) {
+  .ap-card { padding: 20px; }
+  .ap-ring-card { gap: 18px; }
+  .ap-ring { width: 112px; height: 112px; }
+  .ap-ring-num b { font-size: 28px; }
+  .ap-dark { width: 100%; justify-content: center; }
+}
+
+/* ---------- Canciones: tarjetas como el preview ---------- */
+body.is-artist .songs { display: flex; flex-direction: column; gap: 12px; }
+body.is-artist .songs > .song,
+body.is-artist .songs > .song:first-child {
+  background: #2E1607; border: 1px solid rgba(240, 224, 192, .1); border-radius: 20px; padding: 22px 24px;
+  transition: border-color 250ms ease, transform 350ms cubic-bezier(.23, 1, .32, 1);
+}
+body.is-artist .songs > .song.is-awaiting { border-color: rgba(240, 120, 0, .7); box-shadow: 0 0 0 1px rgba(240, 120, 0, .25); }
+body.is-artist .song-title { font-size: 19px; font-weight: 600; }
+body.is-artist .song-stage { border-radius: 999px; font-family: var(--body); text-transform: none; letter-spacing: 0; font-size: 13px; font-weight: 600; }
+body.is-artist .songs-done { border-radius: 20px; }
+
+/* Aprobar mezcla / master (también lo ve el admin, sin botones) */
+.song-review { margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(240, 224, 192, .08); display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
+.review-hint { font-size: 14px; color: var(--muted); }
+.review-asked { font-size: 14px; color: var(--beige); background: rgba(240, 224, 192, .05); border-radius: 12px; padding: 10px 12px; }
+.review-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.review-actions[hidden] { display: none; }
+.review-form { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+.review-form[hidden] { display: none; }
+.review-form textarea { width: 100%; box-sizing: border-box; resize: vertical; }
+.review-btn { border-radius: 999px; text-transform: none; letter-spacing: 0; font-family: var(--body, inherit); font-weight: 600; }
+.review-ghost { background: transparent; }
+.review-btn:disabled { opacity: .55; cursor: not-allowed; }
+.review-state { font-size: 14px; font-weight: 600; color: #9FD49A; }
+.review-state.is-wait { color: var(--orange-soft); }
+.song-review.is-ok { flex-direction: row; }
+.review-msg:empty { display: none; }
+@media (max-width: 640px) {
+  body.is-artist .songs > .song { padding: 18px; }
+  .review-actions .review-btn { flex: 1 1 auto; justify-content: center; }
+}
+body.is-artist .songs-done { margin-top: 16px; }

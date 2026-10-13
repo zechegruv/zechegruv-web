@@ -18,6 +18,7 @@
   <link rel="stylesheet" href="portal.css">
   <link rel="stylesheet" href="/pass/pass.css">
   <link rel="stylesheet" href="admin.css">
+  <link rel="stylesheet" href="artista.css">
   <!-- Medición de visitas (Google Analytics 4) -->
   <script src="/assets/js/medicion.js?v=1"></script>
 </head>
@@ -46,6 +47,19 @@
       <button class="tab" type="button" data-tab="releases" role="tab">Distribución</button>
       <button class="tab" type="button" data-tab="me" role="tab">Mi perfil</button>
       <button class="tab tab-gruvi" type="button" data-tab="gruvi" role="tab"><img src="../assets/gruvi.svg" alt="" aria-hidden="true">Gruvi</button>
+    </div>
+    <!-- Menú del artista (artista.js): barra lateral en la compu, pastillas en el celu -->
+    <div class="nav-tabs artist-tabs" id="artistTabs" role="tablist" aria-label="Portal" hidden>
+      <div class="side-who" aria-hidden="true">
+        <img class="side-who-av" id="sideWhoImg" alt="" hidden>
+        <span class="side-who-av side-who-empty" id="sideWhoEmpty"></span>
+        <span class="side-who-text"><b id="sideWhoName"></b><small>Artista ZECHE GRUV</small></span>
+      </div>
+      <button class="tab is-active" type="button" data-atab="proyecto" role="tab">Mi proyecto</button>
+      <button class="tab" type="button" data-atab="canciones" role="tab">Canciones<span class="tab-badge" id="atabBadge" hidden></span></button>
+      <button class="tab" type="button" data-atab="archivos" role="tab">Archivos</button>
+      <button class="tab" type="button" data-atab="distribucion" role="tab">Distribución</button>
+      <button class="tab" type="button" data-atab="perfil" role="tab">Mi perfil</button>
     </div>
     <div class="nav-right">
       <span class="nav-tag">Portal de artistas</span>
@@ -154,6 +168,9 @@
           <h2 class="welcome-title" id="welcomeTitle"></h2>
           <div class="welcome-body" id="welcomeBody"></div>
         </div>
+
+        <!-- Mi proyecto: avance de las canciones y lo que hay para aprobar (canciones.js) -->
+        <div id="projectCards" hidden></div>
 
         <!-- Tu show: subida de pistas para los shows de ZG PASS en los que toca (shows.js) -->
         <div id="showCards"></div>
@@ -1187,6 +1204,7 @@
   <script src="distribucion.js"></script>
   <script src="archivos.js"></script>
   <script src="canciones.js"></script>
+  <script src="artista.js"></script>
   <script src="letras.js"></script>
   <script src="referencias-youtube.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>

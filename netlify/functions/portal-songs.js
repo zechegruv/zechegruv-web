@@ -14,6 +14,11 @@
 //   artista ve en qué etapa está cada canción, no los plazos internos (los
 //   maneja el estudio). Tampoco salen las Notas, las tareas, los pagos ni
 //   los datos personales de la ficha.
+// - Aprobar mezcla y master (portal-review.js): cada canción en Mezcla o
+//   Master trae si ya se puede aprobar ("ready") y lo último que dijo el
+//   artista ("review": aprobada o cambios). El master se puede aprobar
+//   cuando ya no tiene fecha de entrega en Notion (al terminarlo, Zeche la
+//   borra: solo falta que el artista lo apruebe). La fecha en sí no sale.
 //
 // Variables de entorno en Netlify:
 //   SUPABASE_SERVICE_ROLE_KEY (secreta)
@@ -95,7 +100,24 @@ function toSong(page) {
     done: stageName in DONE,
     release: dateOf(p["Fecha de lanzamiento"]),
     updated: page.last_edited_time || null,
+    // Mezcla: se aprueba mientras está en Mezcla. Master: cuando ya se
+    // entregó (sin fecha de entrega pendiente).
+    ready: step === 3 || (step === 4 && !dateOf(p["Fecha de entrega"])),
   };
+}
+
+// Lo último que dijo el artista sobre la etapa actual de cada canción.
+const REVIEW_KIND = { 3: "mezcla", 4: "master" };
+function withReviews(songs, rows) {
+  return songs.map((song) => {
+    const kind = REVIEW_KIND[song.step] || (song.done ? "master" : null);
+    const last = kind && (rows || []).find((r) => r.song_id.replace(/-/g, "") === song.id.replace(/-/g, "") && r.kind === kind);
+    return {
+      ...song,
+      ready: !song.done && song.ready,
+      review: last ? { kind, action: last.action, note: last.note || null, at: last.created_at } : null,
+    };
+  });
 }
 
 // En proceso: primero la más avanzada. Terminadas: la última que salió (o
@@ -235,7 +257,10 @@ exports.handler = async (event) => {
         { property: "Fecha de Vencimiento", date: { on_or_after: todayAR() } },
       ] }).catch(() => []),
     ]);
-    const songs = songPages.map(toSong);
+    // Aprobaciones (supabase/020_aprobaciones.sql). Si la tabla todavía no
+    // existe, las canciones se muestran igual, sin aprobaciones.
+    const reviews = await supabase(`/rest/v1/song_approvals?profile_id=eq.${artistId}&select=song_id,kind,action,note,created_at&order=created_at.desc&limit=300`, serviceKey);
+    const songs = withReviews(songPages.map(toSong), Array.isArray(reviews) ? reviews : []);
     return json(200, { configured: true, ...split(songs), next: nextSession(tasks, songs) });
   } catch (err) {
     // 404: la integración no tiene acceso a la base (hay que conectarla en Notion).
@@ -249,6 +274,7 @@ exports.handler = async (event) => {
 // Para pruebas.
 exports._toSong = toSong;
 exports._split = split;
+exports._withReviews = withReviews;
 exports._parsePageId = parsePageId;
 exports._nextSession = nextSession;
 exports._findClient = findClient;
