@@ -146,13 +146,14 @@ async function settlePayment(paymentId, base) {
 // ---------- Mails (Resend, con el dominio zechegruv.com ya verificado) ----------
 const esc = (text) => String(text == null ? "" : text).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
-async function sendMail({ to, subject, html, replyTo }) {
+// from: remitente. Por defecto ZG PASS (entradas); el portal usa ZG Portal.
+async function sendMail({ to, subject, html, replyTo, from }) {
   const key = clean(process.env.RESEND_API_KEY);
   if (!key) { console.error("ZG PASS: falta RESEND_API_KEY, no se mandó el mail", subject); return false; }
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ from: "ZG PASS <pass@zechegruv.com>", to: [to], subject, html, reply_to: replyTo || undefined }),
+    body: JSON.stringify({ from: from || "ZG PASS <pass@zechegruv.com>", to: [to], subject, html, reply_to: replyTo || undefined }),
   });
   if (!res.ok) console.error("ZG PASS: Resend rechazó el mail", res.status, await res.text().catch(() => ""));
   return res.ok;

@@ -137,13 +137,13 @@
     fun.append(el("h2", "zh-h2", "Del open mic al estudio"), funBody);
     split.append(rel, fun);
 
-    // Lo que dijeron los artistas de sus mezclas y masters (portal-reviews)
-    const rvBox = el("section", "zh-box zh-reviews");
-    const rvBody = el("div", "", "");
-    rvBox.append(el("h2", "zh-h2", "Mezclas y masters: lo que dijeron"), rvBody);
+    // Hoy en el estudio: próximas tareas (Notion) y avisos de mezclas y
+    // masters (admin-avisos.js), arriba de todo.
+    const work = el("div");
 
-    wrap.append(head, grid, rvBox, qbox, split);
+    wrap.append(head, work, grid, qbox, split);
     root.replaceChildren(wrap);
+    if (window.ZGAvisos) window.ZGAvisos.mount(work); else work.remove();
 
     const [incRes, evRes, artRes, relRes] = await Promise.allSettled([
       ingresos(),
@@ -215,28 +215,6 @@
       funBody.append(el("p", "zh-sub", "Aparece cuando haya un open mic a la venta."));
     }
 
-    // Mezclas y masters: lo último que aprobaron o pidieron cambiar.
-    reviews().then((list) => {
-      if (!list || !list.length) { rvBody.replaceWith(el("p", "zh-sub", list ? "Cuando un artista apruebe o te deje notas sobre una mezcla o un master, aparece acá." : "No pudimos cargarlo.")); return; }
-      const ul = el("ul", "zh-list zh-rv-list");
-      list.slice(0, 6).forEach((r) => {
-        const li = el("li");
-        const b = el("button", "zh-rv");
-        b.type = "button";
-        const what = r.kind === "mezcla" ? "la mezcla" : "el master";
-        const verb = r.action === "aprobada" ? `aprobó ${what}` : `pidió cambios en ${what}`;
-        b.append(
-          el("span", `zh-dot ${r.action === "aprobada" ? "is-ok" : "is-now"}`),
-          el("span", "zh-what", `${r.artist || "Un artista"} ${verb} de «${r.song}»`),
-          el("span", "zh-tag", r.action === "cambios" && r.notes ? `${r.notes} ${r.notes === 1 ? "nota" : "notas"} · ${fmtDate(r.at).replace(/,? \d{4}$/, "")}` : fmtDate(r.at).replace(/,? \d{4}$/, "")),
-        );
-        b.addEventListener("click", () => openReview(r));
-        li.append(b);
-        ul.append(li);
-      });
-      rvBody.replaceWith(ul);
-    });
-
     // Lo que viene: lanzamientos con fecha
     const rels = relRes.status === "fulfilled" && !relRes.value.error ? relRes.value.data : null;
     if (rels && rels.length) {
@@ -249,23 +227,6 @@
       });
       relBody.replaceWith(ul);
     } else relBody.replaceWith(el("p", "zh-sub", rels ? "No hay lanzamientos con fecha por delante." : "No pudimos cargar los lanzamientos."));
-  }
-
-  async function reviews() {
-    try {
-      const { data: { session } } = await db.auth.getSession();
-      const res = await fetch("/.netlify/functions/portal-reviews", { headers: { Authorization: `Bearer ${session.access_token}` } });
-      if (!res.ok) return null;
-      return (await res.json()).reviews || [];
-    } catch (e) { return null; }
-  }
-
-  // Abre el perfil del artista en sus canciones, con esa canción para escuchar.
-  async function openReview(r) {
-    const { data } = await db.from("profiles").select("*").eq("id", r.profile_id).single();
-    if (!data) return;
-    if (window.ZGSongs && window.ZGSongs.openWhenReady) window.ZGSongs.openWhenReady(data.id, r.song_id);
-    P.showProfile(data);
   }
 
   // ---------- Gruvi flotante ----------

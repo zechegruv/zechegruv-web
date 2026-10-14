@@ -81,10 +81,28 @@
     play: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13a1 1 0 001.5.86l10.6-6.5a1 1 0 000-1.72L9.5 4.64A1 1 0 008 5.5z"/></svg>',
     check: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
     notes: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14v10H9l-4 4z"/><path d="M9 9h6M9 12h4"/></svg>',
+    send: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12l15-7-5 15-3-6z"/></svg>',
   };
   const eq = '<span class="dv-eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span>';
 
+  // El administrador: botones Entregado / Aprobado (portal-mark.js). Quedan
+  // en Notion (Canciones → Entrega) y reemplazan el aviso anterior del Inicio.
   function reviewHtml(song) {
+    const html = reviewCore(song);
+    const d = song.delivery;
+    if (!d || song.done || viewingOwn || P.me.role !== "admin") return html;
+    const ao = d.kind === "mezcla" ? "a" : "o";
+    const pressed = (on) => `aria-pressed="${on ? "true" : "false"}"`;
+    return `${html}
+      <div class="dv-admin" data-mark-song="${esc(song.id)}" data-kind="${d.kind}">
+        <span class="dv-admin-label">${NOUN[d.kind]}:</span>
+        <button class="dv-mark" type="button" data-mark="entregada" ${pressed(d.state === "aprobar")}>${IC.send}<span>Entregad${ao}</span></button>
+        <button class="dv-mark is-ok" type="button" data-mark="aprobada" ${pressed(d.state === "aprobada")}>${IC.check}<span>Aprobad${ao}</span></button>
+        <span class="dv-mark-msg" role="status"></span>
+      </div>`;
+  }
+
+  function reviewCore(song) {
     const d = song.delivery;
     if (!d || song.done) return "";
     const own = viewingOwn;
@@ -97,7 +115,15 @@
     if (d.state === "proceso") {
       return `<div class="dv is-proceso"><span class="dv-ico">${eq}</span><span class="dv-text"><b>${NOUN[d.kind]} en proceso</b><span>${own
         ? `Zeche está trabajando en ${WHAT[d.kind]}. Cuando esté, te aparece acá para escucharl${ao} y aprobarl${ao}.`
-        : `Todavía no subiste ${WHAT[d.kind]}: el artista no ve nada para aprobar. Subí un audio con "${d.kind === "mezcla" ? "mix" : "master"}" en el nombre a su carpeta y aparece solo.`}</span></span></div>`;
+        : `Todavía no subiste ${WHAT[d.kind]}: el artista no ve nada para aprobar. Subí un audio con "${d.kind === "mezcla" ? "mix" : "master"}" en el nombre a su carpeta y aparece solo, o tocá «Entregad${ao}» si se l${ao} mandaste por otro lado.`}</span></span></div>`;
+    }
+    if (d.state === "aprobar" && !d.file) {
+      // Entregado a mano (sin audio en la carpeta): se aprueba desde acá.
+      if (!own) return `<div class="dv is-espera"><span class="dv-ico">${IC.send}</span><span class="dv-text"><b>${NOUN[d.kind]} entregad${ao}</b><span>Marcad${ao} a mano. Esperando que l${ao} apruebe desde su portal.</span></span></div>`;
+      return `<div class="dv is-aprobar" data-quick-song="${esc(song.id)}" data-kind="${d.kind}"><span class="dv-ico">${IC.send}</span><span class="dv-text"><b>${NOUN[d.kind]} para aprobar</b><span>Zeche te pasó ${WHAT[d.kind]}. Escuchal${ao} y contanos: ¿la aprobás o querés cambios?</span></span>
+        <div class="review-actions"><button class="btn review-btn" type="button" data-quick="aprobada">${IC.check}<span>Aprobar</span></button><button class="btn review-btn review-ghost" type="button" data-quick="cambios">Pedir cambios</button></div>
+        <form class="review-form" hidden><textarea rows="3" maxlength="1000" placeholder="¿Qué te gustaría cambiar?"></textarea><div class="review-actions"><button class="btn review-btn" type="submit">Mandar</button><button class="btn review-btn review-ghost" type="button" data-quick="cancelar">Cancelar</button></div></form>
+        <p class="review-msg" role="status"></p></div>`;
     }
     if (d.state === "aprobar") {
       const drafts = own && window.ZGReview ? window.ZGReview.drafts(song) : 0;
@@ -145,6 +171,82 @@
     if (b) { e.preventDefault(); listen(b.dataset.listen); }
   });
 
+  async function authed(url, body) {
+    const { data: { session } } = await db.auth.getSession();
+    const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` }, body: JSON.stringify(body) });
+    const out = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(out.error || "No pudimos guardarlo. Probá de nuevo.");
+    return out;
+  }
+  const repaint = (found) => { if (shownProfile) paint(shownProfile, found.data); };
+
+  // Administrador: Entregado / Aprobado.
+  document.addEventListener("click", async (e) => {
+    const b = e.target.closest("[data-mark]");
+    if (!b) return;
+    const box = b.closest("[data-mark-song]");
+    const found = box && findSong(box.dataset.markSong);
+    if (!found || !shownProfile) return;
+    const action = b.dataset.mark;
+    const { song } = found;
+    const msg = box.querySelector(".dv-mark-msg");
+    box.querySelectorAll("[data-mark]").forEach((x) => { x.disabled = true; });
+    b.classList.add("is-busy");
+    msg.textContent = "Guardando…";
+    try {
+      await authed("/.netlify/functions/portal-mark", { song: song.id, kind: box.dataset.kind, action, artist: shownProfile.id });
+      song.delivery = { ...song.delivery, state: action === "aprobada" ? "aprobada" : "aprobar", manual: action, by: "admin" };
+      song.ready = action === "entregada";
+      repaint(found);
+      const again = document.querySelector(`[data-mark-song="${song.id}"] [data-mark="${action}"]`);
+      if (again) again.classList.add("is-pop");
+    } catch (err) {
+      msg.textContent = err.message;
+      box.querySelectorAll("[data-mark]").forEach((x) => { x.disabled = false; });
+      b.classList.remove("is-busy");
+    }
+  });
+
+  // Artista: aprobar o pedir cambios de lo que Zeche marcó "Entregado" sin audio.
+  async function quickSend(box, action, note) {
+    const found = findSong(box.dataset.quickSong);
+    if (!found) return;
+    const msg = box.querySelector(".review-msg");
+    box.querySelectorAll("button").forEach((x) => { x.disabled = true; });
+    P.setMsg(msg, "Enviando…");
+    try {
+      const out = await authed("/.netlify/functions/portal-review", { song: found.song.id, kind: box.dataset.kind, action, note: note || undefined });
+      const review = out.review || { action, note, at: new Date().toISOString(), marks: [] };
+      found.song.delivery = { ...found.song.delivery, state: action === "aprobada" ? "aprobada" : "cambios", review };
+      found.song.review = { kind: found.song.delivery.kind, ...review };
+      found.song.ready = false;
+      repaint(found);
+    } catch (err) {
+      P.setMsg(msg, err.message, true);
+      box.querySelectorAll("button").forEach((x) => { x.disabled = false; });
+    }
+  }
+  document.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-quick]");
+    if (!b) return;
+    const box = b.closest("[data-quick-song]");
+    if (!box) return;
+    const form = box.querySelector(".review-form");
+    const top = box.querySelector(":scope > .review-actions");
+    if (b.dataset.quick === "aprobada") quickSend(box, "aprobada");
+    else if (b.dataset.quick === "cambios") { form.hidden = false; top.hidden = true; form.querySelector("textarea").focus(); }
+    else if (b.dataset.quick === "cancelar") { form.hidden = true; top.hidden = false; }
+  });
+  document.addEventListener("submit", (e) => {
+    const form = e.target.closest("[data-quick-song] .review-form");
+    if (!form) return;
+    e.preventDefault();
+    const note = form.querySelector("textarea").value.trim();
+    const box = form.closest("[data-quick-song]");
+    if (!note) { P.setMsg(box.querySelector(".review-msg"), "Contanos qué te gustaría cambiar.", true); return; }
+    quickSend(box, "cambios", note);
+  });
+
   // ---------- Mi proyecto (portal nuevo del artista) ----------
   // Como el preview "Rediseño web", armado con los datos de cada artista:
   // saludo con la fecha, avance del proyecto, el próximo evento del sello y
@@ -158,13 +260,15 @@
   function renderProject(profile, data) {
     const box = $("projectCards");
     const own = profile.id === P.me.id;
-    if (!own || P.me.role !== "artist") { box.hidden = true; box.replaceChildren(); return; }
+    // El artista en su portal, o el administrador mirándolo (vista-artista.js).
+    const asArtist = profile.role === "artist" && (own ? P.me.role === "artist" : P.me.role === "admin");
+    if (!asArtist) { box.hidden = true; box.replaceChildren(); return; }
     const active = (data && data.configured && data.active) || [];
     const done = (data && data.configured && data.done) || [];
     const total = active.length + done.length;
     const [noun, ofNoun] = NOUN_OF[profile.format] || ["Tu proyecto", "del proyecto"];
     const pending = active.filter((s) => s.ready && !approved(s));
-    if (window.ZGArtistNav) window.ZGArtistNav.setPending(pending.length);
+    if (own && window.ZGArtistNav) window.ZGArtistNav.setPending(pending.length);
 
     // Saludo: la etapa más avanzada y lo que tiene para aprobar.
     const top = active.reduce((m, s) => Math.max(m, s.step), -1);

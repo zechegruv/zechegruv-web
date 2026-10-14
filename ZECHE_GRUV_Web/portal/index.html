@@ -21,6 +21,7 @@
   <link rel="stylesheet" href="artista.css">
   <link rel="stylesheet" href="revision.css">
   <link rel="stylesheet" href="letras.css">
+  <link rel="stylesheet" href="vista-artista.css">
   <!-- Medición de visitas (Google Analytics 4) -->
   <script src="/assets/js/medicion.js?v=1"></script>
 </head>
@@ -138,6 +139,26 @@
     <!-- ---------- Portal ---------- -->
     <section class="view" id="view-app" hidden>
 
+      <!-- Administrador mirando a un artista: su portal, como lo ve él (vista-artista.js) -->
+      <div class="vw-bar" id="viewBar" hidden>
+        <div class="vw-top">
+          <button class="vw-back" type="button" id="viewBack">← Artistas</button>
+          <span class="vw-who">
+            <img class="vw-av" id="viewAvatar" alt="" hidden>
+            <span class="vw-av vw-av-empty" id="viewAvatarEmpty" aria-hidden="true"></span>
+            <span>Así lo ve <b id="viewName"></b></span>
+          </span>
+        </div>
+        <div class="vw-tabs" id="viewTabs" role="tablist" aria-label="Portal del artista">
+          <span class="vw-ind" id="viewInd" aria-hidden="true"></span>
+          <button class="vw-tab is-active" type="button" role="tab" data-vtab="proyecto">Mi proyecto</button>
+          <button class="vw-tab" type="button" role="tab" data-vtab="canciones">Canciones</button>
+          <button class="vw-tab" type="button" role="tab" data-vtab="archivos">Archivos</button>
+          <button class="vw-tab" type="button" role="tab" data-vtab="distribucion">Distribución</button>
+          <button class="vw-tab vw-tab-admin" type="button" role="tab" data-vtab="admin">Admin</button>
+        </div>
+      </div>
+
       <!-- Administrador: Inicio (admin-home.js) -->
       <div id="panel-home" hidden></div>
 
@@ -165,14 +186,6 @@
           <!-- Solo administrador, en el perfil de un artista: carpeta y Notion -->
           <button class="btn cfg-open" type="button" id="cfgOpen" hidden>⚙ Configuración</button>
         </header>
-        <!-- Admin mirando a un artista: saltar a cada parte de su perfil -->
-        <div class="sub-nav pf-nav" id="profileNav" role="navigation" aria-label="Partes del perfil" hidden>
-          <button type="button" data-pf="songsCard">Canciones</button>
-          <button type="button" data-pf="spaceCard">Carpeta y letras</button>
-          <button type="button" data-pf="profileForm">Datos</button>
-          <button type="button" data-pf="accessZone">Acceso</button>
-        </div>
-
         <!-- Mi proyecto: avance de las canciones y lo que hay para aprobar (canciones.js) -->
         <div id="projectCards" hidden></div>
 
@@ -1247,7 +1260,9 @@
   <script src="zgpass.js"></script>
   <script src="zgpass-eventos.js"></script>
   <script src="admin-home.js"></script>
-  <script src="perfil-nav.js"></script>
+  <script src="vista-artista.js"></script>
+  <script src="admin-avisos.js"></script>
+  <script src="deslizar.js"></script>
   <script src="/pass/pistas-card.js"></script>
   <script src="shows.js"></script>
   <script src="escena.js"></script>

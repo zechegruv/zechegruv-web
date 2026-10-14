@@ -17,6 +17,7 @@
 const { json, db, dbDetail, esc, sendMail, notifyEmail, serviceKey } = require("./_lib/pass");
 const { _findClient: findClient, _parsePageId: parsePageId, _notionQuery: notionQuery, _toSong: toSong, SONGS_DS } = require("./portal-songs");
 const { listAudio, matchAudio } = require("./_lib/song-audio");
+const { MANUAL } = require("./portal-songs");
 
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://zdstltihskdcartkmgii.supabase.co";
 const PUBLISHABLE_KEY = "sb_publishable_9M2gY0XZr7xIrV-1s9AiUA_XA1uNm0V";
@@ -96,7 +97,19 @@ exports.handler = async (event) => {
       const songs = pages.map(toSong);
       return ((matchAudio(songs, audios)[songs.find((x) => x.id.replace(/-/g, "") === songId.replace(/-/g, ""))?.id] || {})[kind]) || false;
     })().catch(() => null);
-    if (checked === false) return json(409, { error: kind === "mezcla" ? "La mezcla todavía está en proceso. Te avisamos apenas esté." : "El master todavía está en proceso. Te avisamos apenas esté." });
+    // Sin audio en la carpeta vale igual si Zeche lo marcó "Entregado"
+    // (botón del panel o Notion → Entrega), p. ej. si lo mandó por WhatsApp.
+    let marked = false;
+    if (checked === false) {
+      const manual = MANUAL[p.Entrega && p.Entrega.select && p.Entrega.select.name];
+      if (manual && manual[0] === kind) marked = true;
+      else {
+        const lastRow = await db(`song_approvals?song_id=eq.${songId}&kind=eq.${kind}&select=action,source&order=created_at.desc&limit=1`);
+        const r = lastRow.ok && lastRow.data && lastRow.data[0];
+        marked = !!(r && r.action === "entregada");
+      }
+    }
+    if (checked === false && !marked) return json(409, { error: kind === "mezcla" ? "La mezcla todavía está en proceso. Te avisamos apenas esté." : "El master todavía está en proceso. Te avisamos apenas esté." });
     if (checked) version = checked.name;
   }
   const title = plain(p["Canción"] && p["Canción"].title) || "Sin título";
@@ -120,6 +133,7 @@ exports.handler = async (event) => {
   const [mailed, commented] = await Promise.all([
     sendMail({
       to: notifyEmail(),
+      from: "ZG Portal <portal@zechegruv.com>",
       subject: `${who} ${verb} de «${title}»`,
       replyTo: me.email || undefined,
       html: `<div style="font-family:Helvetica,Arial,sans-serif;background:#241105;color:#FFF4DC;padding:28px;border-radius:18px;max-width:520px">
@@ -137,6 +151,11 @@ ${saved.ok ? "" : `<p style="margin:0 0 10px;font-size:12px;color:#FF9C7A">Ojo: 
       body: JSON.stringify({ parent: { page_id: songId }, rich_text: [{ type: "text", text: { content: [`Portal: ${who} ${verb}.${note ? ` «${note}»` : ""}`, ...marks.map((m) => `${clock(m.t)} — ${m.text}`)].join("\n").slice(0, 1900) } }] }),
     }).catch(() => null),
   ]);
+  // Aprobada: queda también en Notion (Canciones → Entrega), así el estado
+  // es el mismo en el portal, en Notion y en el panel.
+  // Cambios: se limpia, así el próximo "Entregado" (botón o Notion) vale como versión nueva.
+  const entrega = action === "aprobada" ? { name: kind === "mezcla" ? "Mezcla aprobada" : "Master aprobado" } : null;
+  await notion(`/pages/${songId}`, { method: "PATCH", body: JSON.stringify({ properties: { Entrega: { select: entrega } } }) }).catch(() => null);
   // Nada quedó en ningún lado: ahí sí, que lo vuelva a intentar.
   const reached = mailed !== false || (commented && commented.ok);
   if (!saved.ok && !reached) return json(500, { error: "No pudimos enviarlo. Tus notas siguen acá: probá de nuevo en un momento." });

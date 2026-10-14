@@ -1,0 +1,204 @@
+/* ZECHE GRUV — Panel de administrador: vista del artista, deslizar entre
+   pestañas, botones Entregado / Aprobado y "Hoy en el estudio" (tareas y
+   avisos). Curvas y tiempos iguales al resto del panel; todo se apaga con
+   "reducir movimiento". */
+
+/* Que el gesto de dos dedos no sea "atrás" del navegador dentro del portal */
+html:has(body.is-admin), html:has(body.is-artist), body.is-admin, body.is-artist { overscroll-behavior-x: none; }
+
+/* ---------- Barra de la vista del artista ---------- */
+.vw-bar { display: flex; flex-direction: column; gap: 14px; margin: 0 0 26px; }
+.vw-bar[hidden] { display: none; }
+.vw-bar.is-in { animation: zhRise 560ms cubic-bezier(.16, 1, .3, 1) both; }
+.vw-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.vw-back {
+  font: inherit; font-family: var(--body); font-size: 14px; font-weight: 600; color: var(--beige);
+  background: transparent; border: 0; padding: 8px 2px; cursor: pointer;
+  transition: color 200ms ease, transform 160ms cubic-bezier(.23, 1, .32, 1);
+}
+.vw-back:active { transform: translateX(-3px); }
+.vw-who { display: inline-flex; align-items: center; gap: 10px; font-size: 14px; color: var(--muted); }
+.vw-who b { color: var(--cream); font-weight: 600; }
+.vw-av { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+.vw-av-empty { display: inline-flex; align-items: center; justify-content: center; background: var(--orange); color: var(--brown-dark); font-family: var(--display); font-weight: 800; font-size: 14px; }
+.vw-av[hidden] { display: none; }
+.vw-tabs {
+  position: relative; display: flex; gap: 4px; padding: 5px;
+  background: #241105; border: 1px solid rgba(240, 224, 192, .1); border-radius: 999px;
+  overflow-x: auto; scrollbar-width: none; align-self: flex-start; max-width: 100%;
+}
+.vw-tabs::-webkit-scrollbar { display: none; }
+.vw-tab {
+  position: relative; z-index: 1; flex-shrink: 0;
+  font: inherit; font-family: var(--body); font-size: 14px; font-weight: 500; white-space: nowrap;
+  color: var(--muted); background: transparent; border: 0; border-radius: 999px; padding: 9px 16px; cursor: pointer;
+  transition: color 220ms ease, transform 160ms cubic-bezier(.23, 1, .32, 1);
+}
+.vw-tab:active { transform: scale(.96); }
+.vw-tab.is-active { color: var(--brown-dark); font-weight: 600; }
+.vw-tab-admin { margin-left: 6px; }
+.vw-tab-admin::before { content: ""; position: absolute; left: -5px; top: 9px; bottom: 9px; width: 1px; background: rgba(240, 224, 192, .16); }
+/* La pastilla naranja que se desliza hasta la pestaña elegida */
+.vw-ind {
+  position: absolute; z-index: 0; left: 0; top: 5px; bottom: 5px; width: 0;
+  border-radius: 999px; background: var(--orange);
+  transition: transform 420ms cubic-bezier(.32, .72, 0, 1), width 420ms cubic-bezier(.32, .72, 0, 1);
+}
+@media (hover: hover) and (pointer: fine) {
+  .vw-back:hover { color: var(--cream); }
+  .vw-tab:not(.is-active):hover { color: var(--cream); }
+}
+@media (min-width: 901px) {
+  body.is-artist-view .vw-bar { position: sticky; top: 0; z-index: 30; margin: -40px -48px 26px; padding: 22px 48px 14px; background: rgba(27, 13, 4, .96); border-bottom: 1px solid rgba(240, 224, 192, .06); }
+}
+@media (max-width: 900px) {
+  .vw-tabs { align-self: stretch; }
+}
+
+/* ---------- Qué se ve en cada pestaña de la vista ---------- */
+/* Lo del admin (datos internos, carpeta/Notion, acceso, borrar): solo en "Admin" */
+body.is-artist-view:not([data-atab="admin"]) :is(#accessZone, #dangerZone, #cfgOpen, #adminFields) { display: none !important; }
+body.is-artist-view:not([data-atab="admin"]) #panel-profile > .grid-2 { display: none !important; }
+body.is-artist-view[data-atab="admin"] :is(#welcomeCard, #projectCards, #showCards, #songsCard, .space-card, .atab-pane) { display: none !important; }
+body.is-artist-view[data-atab="admin"] #panel-profile > :is(.profile-head, .grid-2, #accessZone, #dangerZone) { animation: zhRise 600ms cubic-bezier(.16, 1, .3, 1) both; }
+body.is-artist-view[data-atab="admin"] #panel-profile > .grid-2 { animation-delay: 60ms; }
+body.is-artist-view[data-atab="admin"] #accessZone { animation-delay: 120ms; }
+body.is-artist-view[data-atab="admin"] #dangerZone { animation-delay: 180ms; }
+body.is-artist-view #backToArtists { display: none !important; }
+body.is-artist-view[data-atab="proyecto"] #projectCards { animation: zhRise 600ms cubic-bezier(.16, 1, .3, 1) both; }
+
+/* ---------- Cambio de pestaña deslizando (deslizar.js) ---------- */
+.zg-swap-next { animation: zgSwapNext 380ms cubic-bezier(.16, 1, .3, 1) both; }
+.zg-swap-prev { animation: zgSwapPrev 380ms cubic-bezier(.16, 1, .3, 1) both; }
+@keyframes zgSwapNext { from { opacity: 0; transform: translateX(32px); } }
+@keyframes zgSwapPrev { from { opacity: 0; transform: translateX(-32px); } }
+
+/* ---------- Entregado / Aprobado (admin, en cada canción) ---------- */
+.dv-admin { margin-top: 10px; display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.dv-admin-label { font-family: var(--mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-right: 2px; }
+.dv-mark {
+  display: inline-flex; align-items: center; gap: 7px;
+  font: inherit; font-family: var(--body); font-size: 13px; font-weight: 600;
+  padding: 8px 14px; border-radius: 999px; cursor: pointer;
+  background: transparent; color: var(--beige); border: 1px solid rgba(240, 224, 192, .22);
+  transition: background-color 220ms ease, color 220ms ease, border-color 220ms ease, transform 160ms cubic-bezier(.23, 1, .32, 1), opacity 200ms ease;
+}
+.dv-mark svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.dv-mark:active { transform: scale(.95); }
+.dv-mark[aria-pressed="true"] { background: rgba(240, 120, 0, .16); border-color: var(--orange); color: var(--cream); }
+.dv-mark.is-ok[aria-pressed="true"] { background: rgba(159, 212, 154, .16); border-color: #9FD49A; color: #CDEFC9; }
+.dv-mark:disabled { opacity: .55; cursor: progress; }
+.dv-mark.is-busy svg { animation: zgSpin 900ms linear infinite; }
+.dv-mark.is-pop { animation: zgPop 420ms cubic-bezier(.34, 1.56, .64, 1); }
+.dv-mark-msg { font-size: 13px; color: var(--muted); }
+.dv-mark-msg:empty { display: none; }
+@media (hover: hover) and (pointer: fine) { .dv-mark:not([aria-pressed="true"]):hover { border-color: var(--cream); color: var(--cream); } }
+@keyframes zgPop { 40% { transform: scale(1.08); } }
+@keyframes zgSpin { to { transform: rotate(360deg); } }
+.dv .review-actions .review-btn { display: inline-flex; align-items: center; gap: 6px; }
+.dv .review-actions .review-btn svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2.2; }
+.dv.is-aprobar .review-ghost { background: transparent; color: #241105; border-color: rgba(36, 17, 5, .5); }
+.dv.is-aprobar .review-form textarea { background: rgba(36, 17, 5, .12); border-color: rgba(36, 17, 5, .3); color: #241105; }
+.dv.is-aprobar .review-msg { color: #241105; font-size: 14px; }
+.dv[data-quick-song] { flex-direction: column; align-items: flex-start; }
+.dv[data-quick-song] .dv-text { flex: 0 0 auto; }
+
+/* ---------- Pastilla de avisos en "Inicio" ---------- */
+body.is-admin #tabs .tab .tab-badge {
+  margin-left: auto; min-width: 22px; box-sizing: border-box; text-align: center;
+  background: var(--orange); color: var(--brown-dark);
+  font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 999px;
+}
+body.is-admin #tabs .tab .tab-badge.is-pop { animation: zgPop 420ms cubic-bezier(.34, 1.56, .64, 1), zhPulse 1.6s ease-out 2; }
+@media (max-width: 900px) { body.is-admin #tabs .tab .tab-badge { margin-left: 6px; } }
+
+/* ---------- Hoy en el estudio: tareas y avisos ---------- */
+.zh-work { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 14px; align-items: start; }
+@media (max-width: 1000px) { .zh-work { grid-template-columns: 1fr; } }
+.zh-work .zh-box { animation-delay: 80ms; }
+.zh-work .zn-box { animation-delay: 160ms; }
+.zh-pill { font-family: var(--mono); font-size: 12px; letter-spacing: .06em; padding: 4px 10px; border-radius: 999px; }
+.zh-pill:empty, .zh-pill[hidden] { display: none; }
+.zh-pill.is-hot { background: rgba(214, 40, 40, .18); color: #FF9C7A; }
+.zh-pill.is-calm { background: rgba(240, 224, 192, .08); color: var(--muted); }
+.zt-empty { padding: 6px 0; }
+.zh-more { align-self: flex-start; font: inherit; font-family: var(--body); font-size: 14px; font-weight: 600; color: var(--orange-soft); background: none; border: 0; padding: 10px 2px 0; cursor: pointer; }
+
+.zt-list, .zn-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.zt-row, .zn-row {
+  display: flex; align-items: center; gap: 10px;
+  border-top: 1px solid rgba(240, 224, 192, .08);
+  animation: zhRise 560ms cubic-bezier(.16, 1, .3, 1) both;
+}
+.zt-main, .zn-main {
+  flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; text-align: left;
+  font: inherit; color: var(--cream); background: none; border: 0; padding: 14px 4px; cursor: pointer;
+  border-radius: 12px; transition: background-color 200ms ease;
+}
+.zt-top, .zn-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.zt-when { font-family: var(--mono); font-size: 13px; color: var(--orange-soft); }
+.zt-name { font-weight: 600; font-size: 15px; line-height: 1.3; }
+.zt-sub, .zn-sub { font-size: 13px; color: var(--muted); }
+.zt-urg {
+  font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  padding: 3px 8px; border-radius: 999px;
+}
+.zt-urg.is-vencida { background: var(--red); color: var(--cream); animation: zhPulseRed 1.8s ease-out infinite; }
+.zt-urg.is-hoy { background: var(--orange); color: var(--brown-dark); }
+.zt-urg.is-manana { background: rgba(240, 120, 0, .2); color: var(--orange-soft); }
+.zt-urg.is-pronto { background: rgba(245, 166, 35, .14); color: #F2CF7A; }
+.zt-row.is-vencida { box-shadow: inset 3px 0 0 var(--red); }
+.zt-row.is-hoy { box-shadow: inset 3px 0 0 var(--orange); }
+.zt-row.is-vencida .zt-main, .zt-row.is-hoy .zt-main { padding-left: 14px; }
+
+.zt-done, .zn-x {
+  flex-shrink: 0; width: 38px; height: 38px; border-radius: 50%; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: transparent; color: var(--muted); border: 1px solid rgba(240, 224, 192, .2);
+  transition: background-color 220ms ease, color 220ms ease, border-color 220ms ease, transform 160ms cubic-bezier(.23, 1, .32, 1);
+}
+.zt-done svg, .zn-x svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.zt-done:active, .zn-x:active { transform: scale(.9); }
+.zt-done svg path { stroke-dasharray: 24; stroke-dashoffset: 0; }
+.zt-row.is-checking .zt-done { border-color: #9FD49A; color: #9FD49A; }
+.zt-row.is-done .zt-done { background: #9FD49A; border-color: #9FD49A; color: var(--brown-dark); }
+.zt-row.is-done .zt-done svg path { animation: zgDraw 360ms cubic-bezier(.23, 1, .32, 1) both; }
+.zt-row.is-done .zt-name { text-decoration: line-through; text-decoration-color: rgba(240, 224, 192, .5); color: var(--muted); transition: color 300ms ease; }
+.zt-row.is-shake { animation: zgShake 420ms cubic-bezier(.36, .07, .19, .97); }
+.zn-x.is-strong { border-color: rgba(159, 212, 154, .5); color: #9FD49A; }
+
+.zn-tag { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; }
+.zn-ago { font-size: 12px; color: var(--muted); }
+.zn-text { font-size: 15px; line-height: 1.35; }
+.zn-text b { font-weight: 600; }
+.zn-row.is-cambios .zn-tag { background: var(--orange); color: var(--brown-dark); }
+.zn-row.is-ok .zn-tag { background: rgba(159, 212, 154, .16); color: #B9E4B4; }
+.zn-row.is-final .zn-tag { background: #9FD49A; color: var(--brown-dark); }
+.zn-row.is-cambios { box-shadow: inset 3px 0 0 var(--orange); }
+.zn-row.is-cambios .zn-main { padding-left: 14px; }
+
+/* Carga: barras suaves mientras llega Notion */
+.zh-skel { display: flex; flex-direction: column; gap: 10px; }
+.zh-skel i { height: 52px; border-radius: 14px; background: linear-gradient(90deg, rgba(240, 224, 192, .05), rgba(240, 224, 192, .1), rgba(240, 224, 192, .05)); background-size: 200% 100%; animation: zgShimmer 1.3s ease-in-out infinite; }
+
+@media (hover: hover) and (pointer: fine) {
+  .zt-main:hover, .zn-main:hover { background: rgba(240, 224, 192, .04); }
+  .zt-done:hover { border-color: #9FD49A; color: #9FD49A; }
+  .zn-x:hover { border-color: var(--cream); color: var(--cream); }
+  .zh-more:hover { color: var(--cream); }
+}
+@keyframes zgDraw { from { stroke-dashoffset: 24; } }
+@keyframes zgShake { 20%, 60% { transform: translateX(-5px); } 40%, 80% { transform: translateX(5px); } }
+@keyframes zgShimmer { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+@keyframes zhPulseRed { 0% { box-shadow: 0 0 0 0 rgba(214, 40, 40, .55); } 100% { box-shadow: 0 0 0 8px rgba(214, 40, 40, 0); } }
+
+@media (max-width: 640px) {
+  .zt-main, .zn-main { padding: 12px 2px; }
+  .zt-row.is-vencida .zt-main, .zt-row.is-hoy .zt-main, .zn-row.is-cambios .zn-main { padding-left: 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vw-bar.is-in, .vw-ind, .zg-swap-next, .zg-swap-prev, .dv-mark.is-pop, .dv-mark.is-busy svg,
+  .zt-row, .zn-row, .zt-urg.is-vencida, .zh-skel i, .zt-row.is-shake, .zt-row.is-done .zt-done svg path,
+  body.is-artist-view[data-atab] #panel-profile > *, body.is-admin #tabs .tab .tab-badge.is-pop { animation: none !important; transition: none !important; }
+}

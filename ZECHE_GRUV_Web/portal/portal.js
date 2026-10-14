@@ -50,6 +50,8 @@
     window.scrollTo(0, 0);
     // Menú del artista (artista.js): marca la pestaña de lo que se abrió.
     if (window.ZGArtistNav) window.ZGArtistNav.sync(name);
+    // Admin mirando a un artista (vista-artista.js): sigue o se cierra.
+    if (window.ZGArtistView) window.ZGArtistView.sync(name);
     // Medición: qué secciones usan los artistas (tu uso como admin no cuenta).
     if (me && me.role !== "admin" && window.zgTrack) window.zgTrack("portal_seccion", { seccion: name, tipo_cuenta: me.role });
   }
@@ -203,7 +205,7 @@
     }
     $("tabs").hidden = !admin;
     showView("app");
-    if (admin) openTab("home");
+    if (admin) { openTab("home"); }
     // Equipo de distribución: entra directo a los lanzamientos de todos.
     else if (me.role === "distribution") window.ZGDistribution.openList(null);
     else showProfile(me);
@@ -300,6 +302,11 @@
 
     showPanel("profile");
     $("backToArtists").hidden = !(admin && !own);
+    // El administrador ve al artista como lo ve él, con una pestaña Admin.
+    if (window.ZGArtistView) {
+      if (admin && !own && p.role === "artist") window.ZGArtistView.enter(p);
+      else window.ZGArtistView.leave();
+    }
 
     $("profileRole").textContent = p.role === "admin" ? "Administrador" : p.role === "distribution" ? "Equipo de distribución" : "Artista ZECHE GRUV";
     $("profileName").textContent = nameOf(p);
@@ -439,6 +446,7 @@
 
   // ---------- Administrador ----------
   function openTab(tab) {
+    if (window.ZGArtistView && tab !== "gruvi") window.ZGArtistView.leave();
     document.querySelectorAll("#tabs .tab").forEach((b) => b.classList.toggle("is-active", b.dataset.tab === tab));
     if (tab === "gruvi") { if (window.ZGHome && window.ZGHome.gruviUrl) window.open(window.ZGHome.gruviUrl, "_blank", "noopener"); else openTab("home"); return; }
     if (tab === "home") { if (window.ZGHome) window.ZGHome.open(); else showArtists(); return; }

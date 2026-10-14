@@ -104,6 +104,9 @@ function toSong(page) {
     done: stageName in DONE,
     release: dateOf(p["Fecha de lanzamiento"]),
     updated: page.last_edited_time || null,
+    // Estado a mano de la mezcla o el master (Notion → "Entrega"): lo marcan
+    // los botones Entregado / Aprobado del administrador, o se cambia en Notion.
+    entrega: (p.Entrega && p.Entrega.select && p.Entrega.select.name) || null,
   };
 }
 
@@ -118,23 +121,41 @@ function reviewOut(r) {
 }
 
 // proceso  -> Zeche está trabajando; todavía no hay audio entregado.
-// aprobar  -> hay un audio nuevo para escuchar y aprobar (o pedir cambios).
-// cambios  -> el artista pidió cambios sobre el último audio; Zeche los
-//             está haciendo. Cuando sube una versión nueva, vuelve a "aprobar".
-// aprobada -> el artista aprobó el último audio.
+// aprobar  -> hay algo nuevo para escuchar y aprobar (o pedir cambios): un
+//             audio nuevo en la carpeta o Zeche lo marcó "Entregado".
+// cambios  -> el artista pidió cambios; Zeche los está haciendo. Cuando sube
+//             una versión nueva (o vuelve a tocar "Entregado"), vuelve a "aprobar".
+// aprobada -> el artista lo aprobó, o Zeche lo marcó "Aprobado" (en el
+//             portal o en Notion → Entrega: "Mezcla aprobada" / "Master aprobado").
+// Gana lo último que pasó: el audio subido, lo que hizo el artista, el botón
+// del administrador o el cambio en Notion.
+const MANUAL = {
+  "Mezcla entregada": ["mezcla", "entregada"], "Mezcla aprobada": ["mezcla", "aprobada"],
+  "Master entregado": ["master", "entregada"], "Master aprobado": ["master", "aprobada"],
+};
+const STATE_OF = { aprobada: "aprobada", cambios: "cambios", entregada: "aprobar" };
+
 function deliveryOf(song, files, rows) {
   const kind = REVIEW_KIND[song.step] || (song.done ? "master" : null);
   if (!kind) return null;
-  const last = (rows || []).find((r) => sameId(r.song_id, song.id) && r.kind === kind) || null;
+  const mine = (rows || []).filter((r) => sameId(r.song_id, song.id) && r.kind === kind);
+  const last = mine[0] || null; // de cualquiera (artista o admin)
+  const lastArtist = mine.find((r) => (r.source || "artist") === "artist") || null;
   const file = (files[song.id] || {})[kind] || null;
+  const manual = MANUAL[song.entrega];
+  const manualHere = manual && manual[0] === kind ? manual[1] : null;
   let state;
-  if (song.done) state = "aprobada";
-  else if (!file) state = last && last.action === "cambios" ? "cambios" : "proceso";
-  else if (last && time(file.modified) <= time(last.created_at)) state = last.action === "aprobada" ? "aprobada" : "cambios";
-  else state = "aprobar";
-  // Mientras está en proceso no sale ningún audio: no hay nada para escuchar.
+  if (song.done || manualHere === "aprobada") state = "aprobada";
+  else {
+    const events = [];
+    if (file) events.push([time(file.modified), "aprobar"]);
+    if (last) events.push([time(last.created_at), STATE_OF[last.action] || "cambios"]);
+    if (manualHere === "entregada") events.push([time(song.updated), "aprobar"]);
+    events.sort((a, b) => b[0] - a[0]);
+    state = events.length ? events[0][1] : "proceso";
+  }
   const out = state === "proceso" || !file ? null : { name: file.name, url: file.url, modified: file.modified, size: file.size || 0 };
-  return { kind, state, file: out, review: reviewOut(last) };
+  return { kind, state, file: out, review: reviewOut(lastArtist), manual: manualHere, by: last ? last.source || "artist" : null };
 }
 
 function withDelivery(songs, files, rows) {
@@ -311,6 +332,10 @@ exports.handler = async (event) => {
 exports._toSong = toSong;
 exports._split = split;
 exports._withDelivery = withDelivery;
+exports._deliveryOf = deliveryOf;
+exports.MANUAL = MANUAL;
+exports.TASKS_DS = TASKS_DS;
+exports.CLIENTS_DS = CLIENTS_DS;
 exports._parsePageId = parsePageId;
 exports._nextSession = nextSession;
 exports._findClient = findClient;
