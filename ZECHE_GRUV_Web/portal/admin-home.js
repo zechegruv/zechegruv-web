@@ -188,7 +188,9 @@
       const dd = daysTo(ev.starts_at);
       evLabel.textContent = `${ev.name} · ${fmtDate(ev.starts_at).replace(/,? \d{4}$/, "")}`;
       evNum.textContent = dd <= 0 ? "Hoy" : dd === 1 ? "Mañana" : `${dd} días`;
-      evSub.textContent = `${s.issued || 0} entradas emitidas de ${s.capacity || "—"}${s.held ? ` · ${s.held} esperando pago` : ""}`;
+      // Se actualiza solo con cada venta: lo que entra por Mercado Pago (pass-mp-webhook) queda en ZG PASS.
+      const mp = (s.methods && s.methods.mercadopago) || { tickets: 0, amount: 0 };
+      evSub.textContent = `${s.issued || 0} de ${s.capacity || "—"} entradas · ${mp.tickets} por Mercado Pago (${fmtMoney(mp.amount)})${s.held ? ` · ${s.held} esperando pago` : ""}`;
       evRow.append(btn("zh-btn", dd <= 0 ? "Abrir la puerta" : "Ir a la puerta", () => openPass("door")));
       lead.textContent = dd <= 0 ? `Hoy es ${ev.name}. La puerta está a un toque.` : `${s.issued || 0} entradas emitidas y ${dd === 1 ? "mañana es" : `faltan ${dd} días para`} ${ev.name}.`;
 
