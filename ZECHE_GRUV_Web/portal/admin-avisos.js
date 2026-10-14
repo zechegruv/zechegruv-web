@@ -28,6 +28,7 @@
   const ICON = {
     check: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
     x: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17"/></svg>',
+    cal: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5.5" width="16" height="14" rx="3"/><path d="M8 3.5v4M16 3.5v4M4 10h16M12 13v3.5l2 1.2"/></svg>',
   };
   const iconBtn = (cls, label, svg) => { const b = el("button", cls); b.type = "button"; b.setAttribute("aria-label", label); b.title = label; b.innerHTML = svg; return b; };
 
@@ -132,7 +133,10 @@
     });
     // Las fechas de entrega se van solas cuando la mezcla o el master se
     // marca entregado o aprobado; las sesiones se tildan acá.
-    if (t.kind === "entrega") { li.append(main); return li; }
+    // Vencida: botón para reprogramarla (Notion + Google Calendar).
+    const move = t.urgency === "vencida" && window.ZGReprogramar ? iconBtn("zt-move", "Reprogramar", ICON.cal) : null;
+    if (move) move.addEventListener("click", () => window.ZGReprogramar.open({ ...t, whenText: whenTask(t).toLowerCase() }, reloadTasks));
+    if (t.kind === "entrega") { li.append(main); if (move) li.append(move); return li; }
     const done = iconBtn("zt-done", "Marcar como hecha", ICON.check);
     done.addEventListener("click", async () => {
       done.disabled = true;
@@ -148,11 +152,16 @@
         setTimeout(() => li.classList.remove("is-shake"), 500);
       }
     });
-    li.append(main, done);
+    li.append(main, ...(move ? [move] : []), done);
     return li;
   }
 
   let tasksCache = null, tasksBox = null, tasksHead = null, expanded = false;
+  // Después de reprogramar: se vuelve a leer la lista (la fila deja de estar vencida).
+  function reloadTasks() {
+    if (!tasksBox) return;
+    call("/.netlify/functions/admin-tasks").then((d) => { if (d.connected) paintTasks(d.tasks || [], tasksBox); }).catch(() => {});
+  }
   function paintTasksHead() {
     if (!tasksHead) return;
     const urgent = (tasksCache || []).filter((t) => t.urgency === "vencida" || t.urgency === "hoy").length;

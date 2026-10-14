@@ -173,3 +173,6 @@ exports.handler = async (event) => {
 
 exports._urgency = urgency;
 exports._daysFrom = daysFrom;
+exports._notion = notion;
+exports._isAdmin = isAdmin;
+exports._dayAR = dayAR;
