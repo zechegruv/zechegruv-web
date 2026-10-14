@@ -1,8 +1,10 @@
 // ZECHE GRUV — Panel de administrador: "Hoy en el estudio" en el Inicio.
 // Dos columnas:
-//   - Próximas tareas: de "Tareas Pendientes" en Notion (admin-tasks.js), por
-//     fecha y con cartel de urgencia (vencida · hoy · mañana · en 2-3 días).
-//     ✓ la marca COMPLETADO en Notion. Tocando la tarea se abre el artista.
+//   - Mezclas y masters (admin-tasks.js): solo las sesiones de mezcla y master
+//     y las fechas límite de entrega, por fecha y con cartel de urgencia
+//     (vencida · hoy · mañana · en 2-3 días). ✓ marca la sesión COMPLETADO en
+//     Notion; la entrega se va sola al marcarla entregada o aprobada.
+//     Tocando una fila se abre el artista.
 //   - Avisos: lo que los artistas aprobaron o pidieron cambiar de sus
 //     mezclas y masters (portal-reviews.js). Uno por canción, se reemplaza
 //     solo cuando la canción avanza o cuando tocás Entregado / Aprobado, y el
@@ -117,13 +119,20 @@
     const top = el("span", "zt-top");
     if (URG[t.urgency]) top.append(el("span", `zt-urg is-${t.urgency}`, t.urgency === "pronto" ? `En ${t.days} días` : URG[t.urgency]));
     top.append(el("span", "zt-when", whenTask(t)));
-    const sub = [t.artist, t.stage, t.song && !norm(t.name).includes(norm(t.song)) ? `«${t.song}»` : null].filter(Boolean).join(" · ");
-    main.append(top, el("span", "zt-name", t.name), sub ? el("span", "zt-sub", sub) : "");
+    // Sesión de mezcla/master o fecha límite de entrega.
+    const what = t.kind === "entrega" ? (t.stage === "Mezcla" ? "Entrega de la mezcla" : "Entrega del master") : (t.stage === "Mezcla" ? "Sesión de mezcla" : "Sesión de master");
+    top.append(el("span", `zt-kind is-${t.kind === "entrega" ? "entrega" : "sesion"}`, what));
+    const title = t.kind === "entrega" ? `«${t.name}»` : t.name;
+    const sub = [t.artist, t.kind === "sesion" && t.song && !norm(t.name).includes(norm(t.song)) ? `«${t.song}»` : null].filter(Boolean).join(" · ");
+    main.append(top, el("span", "zt-name", title), sub ? el("span", "zt-sub", sub) : "");
     main.addEventListener("click", async () => {
       const a = await artistByName(t.artist);
       if (a) openProfileId(a.id);
       else if (t.url) window.open(t.url, "_blank", "noopener");
     });
+    // Las fechas de entrega se van solas cuando la mezcla o el master se
+    // marca entregado o aprobado; las sesiones se tildan acá.
+    if (t.kind === "entrega") { li.append(main); return li; }
     const done = iconBtn("zt-done", "Marcar como hecha", ICON.check);
     done.addEventListener("click", async () => {
       done.disabled = true;
@@ -149,7 +158,7 @@
     const urgent = (tasksCache || []).filter((t) => t.urgency === "vencida" || t.urgency === "hoy").length;
     tasksHead.textContent = urgent ? `${urgent} ${urgent === 1 ? "urgente" : "urgentes"}` : (tasksCache && tasksCache.length ? "Al día" : "");
     tasksHead.className = `zh-pill${urgent ? " is-hot" : " is-calm"}`;
-    if (tasksCache && !tasksCache.length && tasksBox) tasksBox.replaceChildren(el("p", "zh-sub zt-empty", "Nada pendiente en las próximas 3 semanas. A producir."));
+    if (tasksCache && !tasksCache.length && tasksBox) tasksBox.replaceChildren(el("p", "zh-sub zt-empty", "Sin mezclas ni masters por delante en las próximas 3 semanas."));
   }
   function paintTasks(list, body) {
     tasksCache = list;
@@ -227,7 +236,7 @@
     const tBox = el("div", "zh-box zt-box");
     const tTop = el("div", "zh-top");
     tasksHead = el("span", "zh-pill");
-    tTop.append(el("h2", "zh-h2", "Próximas tareas"), tasksHead);
+    tTop.append(el("h2", "zh-h2", "Mezclas y masters"), tasksHead);
     tasksBox = el("div", "zt-body");
     tasksBox.append(skeleton(3));
     tBox.append(tTop, tasksBox);

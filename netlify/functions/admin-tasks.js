@@ -1,13 +1,17 @@
 // GET  /.netlify/functions/admin-tasks              -> próximas tareas
 // POST /.netlify/functions/admin-tasks { task }     -> marcarla como hecha
-// Para el Inicio del panel de administrador: las tareas de "Tareas
-// Pendientes" en Notion que no están completadas, por fecha (las vencidas
-// primero) y con su urgencia:
+// Para el Inicio del panel de administrador, solo lo de mezcla y master:
+//   - las sesiones de mezcla y master de "Tareas Pendientes" que no están
+//     completadas ("Tenés sesión de mezcla hoy"), y
+//   - las fechas límite de entrega de cada canción en mezcla o master
+//     (Canciones → Fecha de entrega), salvo que ya figure entregada o aprobada.
+// Las sesiones de estructura, producción y grabación no aparecen: son
+// presenciales, de todas las semanas. Todo por fecha, con su urgencia:
 //   vencida (rojo) · hoy / mañana (naranja) · en 2 o 3 días (amarillo) · el resto.
 // "Hecha" la pasa a COMPLETADO en Notion y desaparece de la lista.
 // Solo el administrador (sesión de Supabase en Authorization: Bearer).
 const { json, db } = require("./_lib/pass");
-const { TASKS_DS } = require("./portal-songs");
+const { TASKS_DS, SONGS_DS } = require("./portal-songs");
 
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://zdstltihskdcartkmgii.supabase.co";
 const PUBLISHABLE_KEY = "sb_publishable_9M2gY0XZr7xIrV-1s9AiUA_XA1uNm0V";
@@ -40,6 +44,7 @@ async function isAdmin(event) {
 }
 
 const dayAR = (d) => new Intl.DateTimeFormat("en-CA", { timeZone: TZ }).format(d);
+const dayKey = (start) => (/T/.test(start) ? dayAR(new Date(start)) : start.slice(0, 10));
 // Días entre hoy y la fecha de la tarea, en Buenos Aires (negativo = vencida).
 function daysFrom(start, now = new Date()) {
   const day = /T/.test(start) ? dayAR(new Date(start)) : start.slice(0, 10);
@@ -68,43 +73,87 @@ exports.handler = async (event) => {
   }
 
   const limit = new Date(Date.now() + AHEAD_DAYS * 86400000);
-  const q = await notion(`/data_sources/${TASKS_DS}/query`, {
-    method: "POST",
-    body: JSON.stringify({
-      filter: { and: [
-        { property: "Estado de Tarea", select: { does_not_equal: "COMPLETADO" } },
-        { property: "Fecha de Vencimiento", date: { on_or_before: dayAR(limit) } },
-      ] },
-      sorts: [{ property: "Fecha de Vencimiento", direction: "ascending" }],
-      page_size: 100,
+  // Solo lo de mezcla y master: el resto (estructura, producción, grabación)
+  // son sesiones presenciales de todas las semanas y no hace falta recordarlas.
+  const [q, sq] = await Promise.all([
+    notion(`/data_sources/${TASKS_DS}/query`, {
+      method: "POST",
+      body: JSON.stringify({
+        filter: { and: [
+          { property: "Estado de Tarea", select: { does_not_equal: "COMPLETADO" } },
+          { property: "Fecha de Vencimiento", date: { on_or_before: dayAR(limit) } },
+        ] },
+        sorts: [{ property: "Fecha de Vencimiento", direction: "ascending" }],
+        page_size: 100,
+      }),
     }),
-  });
+    // Fechas de entrega de las canciones que están en mezcla o en master.
+    notion(`/data_sources/${SONGS_DS}/query`, {
+      method: "POST",
+      body: JSON.stringify({
+        filter: { and: [
+          { or: [
+            { property: "Etapa actual", select: { equals: "Mix" } },
+            { property: "Etapa actual", select: { equals: "Master" } },
+          ] },
+          { property: "Fecha de entrega", date: { on_or_before: dayAR(limit) } },
+        ] },
+        sorts: [{ property: "Fecha de entrega", direction: "ascending" }],
+        page_size: 100,
+      }),
+    }),
+  ]);
   if (!q.ok) return json(502, { error: "No pudimos leer Tareas Pendientes en Notion." });
 
-  const raw = (q.data.results || []).slice(0, MAX).map((t) => {
+  const item = (date) => {
+    const days = daysFrom(date.start);
+    return { start: date.start, end: date.end || null, timed: /T/.test(date.start), days, urgency: urgency(days) };
+  };
+
+  // Sesiones de mezcla y master (Tareas Pendientes).
+  const sessions = (q.data.results || []).map((t) => {
     const p = t.properties || {};
     const date = p["Fecha de Vencimiento"] && p["Fecha de Vencimiento"].date;
     if (!date || !date.start) return null;
-    const days = daysFrom(date.start);
+    const etapa = p.Etapa && p.Etapa.select && p.Etapa.select.name;
+    const name = plain(p.Nombre && p.Nombre.title) || "Sin nombre";
+    const isMix = etapa === "Mix" || (!etapa && /^(mix|mezcla)\b/i.test(name));
+    const isMaster = etapa === "Master" || (!etapa && /^(master|mastering)\b/i.test(name));
+    if (!isMix && !isMaster) return null;
     return {
-      id: t.id,
-      url: t.url,
-      name: plain(p.Nombre && p.Nombre.title) || "Sin nombre",
-      start: date.start,
-      end: date.end || null,
-      timed: /T/.test(date.start),
-      days,
-      urgency: urgency(days),
+      id: t.id, kind: "sesion", url: t.url, name, ...item(date),
       state: (p["Estado de Tarea"] && p["Estado de Tarea"].select && p["Estado de Tarea"].select.name) || null,
-      stage: STAGE[p.Etapa && p.Etapa.select && p.Etapa.select.name] || null,
+      stage: isMix ? "Mezcla" : "Master",
       clientId: ((p.Cliente && p.Cliente.relation) || [])[0]?.id || null,
       songId: ((p["Canción"] && p["Canción"].relation) || [])[0]?.id || null,
     };
   }).filter(Boolean);
 
-  // Nombres de artista y de canción (una consulta de clientes + cada canción).
+  // Fechas límite de entrega (Canciones → Fecha de entrega). Si ya está
+  // entregada o aprobada (Canciones → Entrega), no se recuerda más.
+  const DONE = { Mix: ["Mezcla entregada", "Mezcla aprobada"], Master: ["Master entregado", "Master aprobado"] };
+  const deadlines = ((sq.ok && sq.data.results) || []).map((sp) => {
+    const p = sp.properties || {};
+    const date = p["Fecha de entrega"] && p["Fecha de entrega"].date;
+    const etapa = p["Etapa actual"] && p["Etapa actual"].select && p["Etapa actual"].select.name;
+    if (!date || !date.start || !DONE[etapa]) return null;
+    const entrega = p.Entrega && p.Entrega.select && p.Entrega.select.name;
+    if (DONE[etapa].includes(entrega)) return null;
+    return {
+      id: sp.id, kind: "entrega", url: sp.url, name: plain(p["Canción"] && p["Canción"].title) || "Sin título", ...item(date),
+      stage: etapa === "Mix" ? "Mezcla" : "Master",
+      clientId: ((p.Artista && p.Artista.relation) || [])[0]?.id || null,
+      songId: sp.id,
+    };
+  }).filter(Boolean)
+    // Si ese día ya hay una sesión de la misma canción y etapa, alcanza con la sesión.
+    .filter((d) => !sessions.some((s) => s.songId && s.songId.replace(/-/g, "") === d.songId.replace(/-/g, "") && s.stage === d.stage && dayKey(s.start) === dayKey(d.start)));
+
+  const raw = [...sessions, ...deadlines].sort((x, y) => x.days - y.days || Date.parse(x.start) - Date.parse(y.start)).slice(0, MAX);
+
+  // Nombres de artista y de canción (cada ficha, una vez).
   const clientIds = [...new Set(raw.map((t) => t.clientId).filter(Boolean))];
-  const songIds = [...new Set(raw.map((t) => t.songId).filter(Boolean))];
+  const songIds = [...new Set(raw.filter((t) => t.kind === "sesion").map((t) => t.songId).filter(Boolean))];
   const [clients, songs] = await Promise.all([
     Promise.all(clientIds.map((id) => notion(`/pages/${id}`))),
     Promise.all(songIds.map((id) => notion(`/pages/${id}`))),
@@ -117,7 +166,7 @@ exports.handler = async (event) => {
   };
   const cName = Object.fromEntries(clientIds.map((id, i) => [id, titleOf(clients[i])]));
   const sName = Object.fromEntries(songIds.map((id, i) => [id, titleOf(songs[i])]));
-  const tasks = raw.map(({ clientId, songId, ...t }) => ({ ...t, artist: cName[clientId] || null, song: sName[songId] || null, clientId }));
+  const tasks = raw.map(({ clientId, songId, ...t }) => ({ ...t, artist: cName[clientId] || null, song: t.kind === "entrega" ? t.name : sName[songId] || null, clientId }));
   return json(200, { connected: true, tasks });
 };
 
