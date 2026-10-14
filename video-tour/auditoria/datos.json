@@ -1,0 +1,3585 @@
+[
+  {
+    "kind": "desktop",
+    "screen": "login",
+    "name": "Ingreso (login)",
+    "shot": "capturas/desktop-login.png",
+    "errors": [],
+    "W": 1920,
+    "H": 1080,
+    "scrollHeight": 1080,
+    "issues": [
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span.nav-tag «PORTAL DE ARTISTAS»",
+        "detail": "Letra de 10px."
+      }
+    ]
+  },
+  {
+    "kind": "desktop",
+    "screen": "proyecto",
+    "name": "Mi proyecto",
+    "shot": "capturas/desktop-proyecto.png",
+    "errors": [],
+    "W": 1920,
+    "H": 1080,
+    "scrollHeight": 1080,
+    "issues": []
+  },
+  {
+    "kind": "desktop",
+    "screen": "canciones",
+    "name": "Canciones",
+    "shot": "capturas/desktop-canciones.png",
+    "errors": [],
+    "W": 1920,
+    "H": 1080,
+    "scrollHeight": 1113,
+    "issues": []
+  },
+  {
+    "kind": "desktop",
+    "screen": "revision",
+    "name": "Escuchar y aprobar (reproductor)",
+    "shot": "capturas/desktop-revision.png",
+    "errors": [],
+    "W": 1920,
+    "H": 1080,
+    "scrollHeight": 1113,
+    "issues": [
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "small «5»",
+        "detail": "Letra de 10px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "small «5»",
+        "detail": "Letra de 10px."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "a.nav-mark",
+        "detail": "Lo tapa div.rv-backdrop."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "button.tab «Mi proyecto»",
+        "detail": "Lo tapa div.rv-backdrop."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "button.tab.is-active «Canciones 1»",
+        "detail": "Lo tapa div.rv-backdrop."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "button.tab «Archivos»",
+        "detail": "Lo tapa div.rv-backdrop."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "button.tab «Invitá a un amigo»",
+        "detail": "Lo tapa div.rv-backdrop."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "button.tab «Distribución»",
+        "detail": "Lo tapa div.rv-backdrop."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "button.tab «Mi perfil»",
+        "detail": "Lo tapa div.rv-backdrop."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "button#logoutBtn.btn «Salir»",
+        "detail": "Lo tapa div.rv-backdrop."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "button.btn.dv-play «Escuchar y aprobar»",
+        "detail": "Lo tapa div.rv-backdrop."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "summary «Terminadas 1 CANCIÓN»",
+        "detail": "Lo tapa div.rv-backdrop."
+      }
+    ]
+  },
+  {
+    "kind": "desktop",
+    "screen": "nota",
+    "name": "Dejar una nota (formulario)",
+    "shot": "capturas/desktop-nota.png",
+    "errors": [],
+    "W": 1920,
+    "H": 1080,
+    "scrollHeight": 1113,
+    "issues": [
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "small «5»",
+        "detail": "Letra de 10px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "small «5»",
+        "detail": "Letra de 10px."
+      },
+      {
+        "type": "texto-cortado",
+        "sev": "media",
+        "el": "label.sr-only «Tu nota»",
+        "detail": "Muestra 1×1px de 46×17px."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "a.nav-mark",
+        "detail": "Lo tapa div.rv-backdrop."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "button.tab «Mi proyecto»",
+        "detail": "Lo tapa div.rv-backdrop."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "button.tab.is-active «Canciones 1»",
+        "detail": "Lo tapa div.rv-backdrop."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "button.tab «Archivos»",
+        "detail": "Lo tapa div.rv-backdrop."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "button.tab «Invitá a un amigo»",
+        "detail": "Lo tapa div.rv-backdrop."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "button.tab «Distribución»",
+        "detail": "Lo tapa div.rv-backdrop."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "button.tab «Mi perfil»",
+        "detail": "Lo tapa div.rv-backdrop."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "button#logoutBtn.btn «Salir»",
+        "detail": "Lo tapa div.rv-backdrop."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "button.btn.dv-play «Escuchar y aprobar»",
+        "detail": "Lo tapa div.rv-backdrop."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "summary «Terminadas 1 CANCIÓN»",
+        "detail": "Lo tapa button.btn.btn-primary «Aprobar la mezcla»."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "label.sr-only «Tu nota»",
+        "detail": "Lo tapa div.rv-compose-top «‹ 0:00 › ¿Qué pasa en este momento?»."
+      }
+    ]
+  },
+  {
+    "kind": "desktop",
+    "screen": "archivos",
+    "name": "Archivos (tu espacio)",
+    "shot": "capturas/desktop-archivos.png",
+    "errors": [],
+    "W": 1920,
+    "H": 1080,
+    "scrollHeight": 1080,
+    "issues": []
+  },
+  {
+    "kind": "desktop",
+    "screen": "letras",
+    "name": "Letras (cuaderno)",
+    "shot": "capturas/desktop-letras.png",
+    "errors": [],
+    "W": 1920,
+    "H": 1080,
+    "scrollHeight": 1080,
+    "issues": []
+  },
+  {
+    "kind": "desktop",
+    "screen": "letra",
+    "name": "Editor de una letra",
+    "shot": "capturas/desktop-letra.png",
+    "errors": [],
+    "W": 1920,
+    "H": 1080,
+    "scrollHeight": 1417,
+    "issues": []
+  },
+  {
+    "kind": "desktop",
+    "screen": "exports",
+    "name": "Exports (archivos abiertos)",
+    "shot": "capturas/desktop-exports.png",
+    "errors": [],
+    "W": 1920,
+    "H": 1080,
+    "scrollHeight": 1080,
+    "issues": []
+  },
+  {
+    "kind": "desktop",
+    "screen": "masters",
+    "name": "Masters",
+    "shot": "capturas/desktop-masters.png",
+    "errors": [],
+    "W": 1920,
+    "H": 1080,
+    "scrollHeight": 1080,
+    "issues": []
+  },
+  {
+    "kind": "desktop",
+    "screen": "distribucion",
+    "name": "Distribución (lanzamientos)",
+    "shot": "capturas/desktop-distribucion.png",
+    "errors": [],
+    "W": 1920,
+    "H": 1080,
+    "scrollHeight": 1080,
+    "issues": []
+  },
+  {
+    "kind": "desktop",
+    "screen": "lanzamiento",
+    "name": "Nuevo lanzamiento (formulario)",
+    "shot": "capturas/desktop-lanzamiento.png",
+    "errors": [],
+    "W": 1920,
+    "H": 1080,
+    "scrollHeight": 2219,
+    "issues": []
+  },
+  {
+    "kind": "desktop",
+    "screen": "invitar",
+    "name": "Invitá a un amigo",
+    "shot": "capturas/desktop-invitar.png",
+    "errors": [],
+    "W": 1920,
+    "H": 1080,
+    "scrollHeight": 1080,
+    "issues": []
+  },
+  {
+    "kind": "desktop",
+    "screen": "perfil",
+    "name": "Mi perfil",
+    "shot": "capturas/desktop-perfil.png",
+    "errors": [],
+    "W": 1920,
+    "H": 1080,
+    "scrollHeight": 1080,
+    "issues": []
+  },
+  {
+    "kind": "tablet",
+    "screen": "login",
+    "name": "Ingreso (login)",
+    "shot": "capturas/tablet-login.png",
+    "errors": [],
+    "W": 820,
+    "H": 1180,
+    "scrollHeight": 1180,
+    "issues": [
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span.nav-tag «PORTAL DE ARTISTAS»",
+        "detail": "Letra de 10px."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "a.nav-mark «ZECHE GRUV®»",
+        "detail": "132×36px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "media",
+        "el": "label «Mail»",
+        "detail": "303×18px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "media",
+        "el": "label «Contraseña»",
+        "detail": "303×18px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "media",
+        "el": "input#rememberMe",
+        "detail": "20×20px (se recomienda 44×44)."
+      }
+    ]
+  },
+  {
+    "kind": "tablet",
+    "screen": "proyecto",
+    "name": "Mi proyecto",
+    "shot": "capturas/tablet-proyecto.png",
+    "errors": [],
+    "W": 820,
+    "H": 1180,
+    "scrollHeight": 1180,
+    "issues": [
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab.is-active «Mi proyecto»",
+        "detail": "103×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Canciones1»",
+        "detail": "122×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Archivos»",
+        "detail": "83×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Invitá a un amigo»",
+        "detail": "137×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Distribución»",
+        "detail": "105×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Mi perfil»",
+        "detail": "79×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button#logoutBtn.btn «Salir»",
+        "detail": "69×42px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.btn.btn-primary «Ver mis canciones»",
+        "detail": "160×42px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "a «Escribinos por WhatsApp ↗»",
+        "detail": "162×18px (se recomienda 44×44)."
+      }
+    ]
+  },
+  {
+    "kind": "tablet",
+    "screen": "canciones",
+    "name": "Canciones",
+    "shot": "capturas/tablet-canciones.png",
+    "errors": [],
+    "W": 820,
+    "H": 1180,
+    "scrollHeight": 1211,
+    "issues": [
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span#songsCount.songs-count «5 CANCIONES EN PROCESO»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «ESTRUCTURA»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «PRODUCCIÓN»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «GRABACIÓN»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «MEZCLA»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «MASTER»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «ESTRUCTURA»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «PRODUCCIÓN»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «GRABACIÓN»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «MEZCLA»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «MASTER»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «ESTRUCTURA»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «PRODUCCIÓN»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «GRABACIÓN»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «MEZCLA»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «MASTER»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «ESTRUCTURA»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «PRODUCCIÓN»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «GRABACIÓN»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «MEZCLA»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «MASTER»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «ESTRUCTURA»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «PRODUCCIÓN»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «GRABACIÓN»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «MEZCLA»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «MASTER»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span#songsDoneCount.songs-count «1 CANCIÓN»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Mi proyecto»",
+        "detail": "103×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab.is-active «Canciones1»",
+        "detail": "122×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Archivos»",
+        "detail": "83×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Invitá a un amigo»",
+        "detail": "137×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Distribución»",
+        "detail": "105×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Mi perfil»",
+        "detail": "79×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button#logoutBtn.btn «Salir»",
+        "detail": "69×42px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.btn.dv-play «Escuchar y aprobar»",
+        "detail": "191×42px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "summary «Terminadas 1 CANCIÓN»",
+        "detail": "788×43px (se recomienda 44×44)."
+      }
+    ]
+  },
+  {
+    "kind": "tablet",
+    "screen": "revision",
+    "name": "Escuchar y aprobar (reproductor)",
+    "shot": "capturas/tablet-revision.png",
+    "errors": [],
+    "W": 820,
+    "H": 1180,
+    "scrollHeight": 1211,
+    "issues": [
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span#songsCount.songs-count «5 CANCIONES EN PROCESO»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «ESTRUCTURA»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «PRODUCCIÓN»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «GRABACIÓN»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «MEZCLA»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «MASTER»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «ESTRUCTURA»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «PRODUCCIÓN»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «GRABACIÓN»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «MEZCLA»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «MASTER»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «ESTRUCTURA»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «PRODUCCIÓN»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «GRABACIÓN»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «MEZCLA»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «MASTER»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «ESTRUCTURA»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «PRODUCCIÓN»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «GRABACIÓN»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «MEZCLA»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «MASTER»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «ESTRUCTURA»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «PRODUCCIÓN»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «GRABACIÓN»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «MEZCLA»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «MASTER»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span#songsDoneCount.songs-count «1 CANCIÓN»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "small «5»",
+        "detail": "Letra de 10px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "small «5»",
+        "detail": "Letra de 10px."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "a.nav-mark",
+        "detail": "Lo tapa div.rv-backdrop."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Mi proyecto»",
+        "detail": "103×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "button.tab «Mi proyecto»",
+        "detail": "Lo tapa div.rv-backdrop."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab.is-active «Canciones1»",
+        "detail": "122×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "button.tab.is-active «Canciones1»",
+        "detail": "Lo tapa div.rv-backdrop."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Archivos»",
+        "detail": "83×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "button.tab «Archivos»",
+        "detail": "Lo tapa div.rv-backdrop."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Invitá a un amigo»",
+        "detail": "137×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "button.tab «Invitá a un amigo»",
+        "detail": "Lo tapa div.rv-backdrop."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Distribución»",
+        "detail": "105×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "button.tab «Distribución»",
+        "detail": "Lo tapa div.rv-backdrop."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Mi perfil»",
+        "detail": "79×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "button.tab «Mi perfil»",
+        "detail": "Lo tapa div.rv-backdrop."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button#logoutBtn.btn «Salir»",
+        "detail": "69×42px (se recomienda 44×44)."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "button#logoutBtn.btn «Salir»",
+        "detail": "Lo tapa div.rv-backdrop."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.btn.dv-play «Escuchar y aprobar»",
+        "detail": "191×42px (se recomienda 44×44)."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "button.btn.dv-play «Escuchar y aprobar»",
+        "detail": "Lo tapa div#rvBanner.rv-banner «Mezcla lista. Escuchala con auriculares o en un bu»."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "summary «Terminadas 1 CANCIÓN»",
+        "detail": "788×43px (se recomienda 44×44)."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "summary «Terminadas 1 CANCIÓN»",
+        "detail": "Lo tapa div.rv-backdrop."
+      }
+    ]
+  },
+  {
+    "kind": "tablet",
+    "screen": "nota",
+    "name": "Dejar una nota (formulario)",
+    "shot": "capturas/tablet-nota.png",
+    "errors": [],
+    "W": 820,
+    "H": 1180,
+    "scrollHeight": 1211,
+    "issues": [
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span#songsCount.songs-count «5 CANCIONES EN PROCESO»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «ESTRUCTURA»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «PRODUCCIÓN»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «GRABACIÓN»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «MEZCLA»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «MASTER»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «ESTRUCTURA»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «PRODUCCIÓN»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «GRABACIÓN»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «MEZCLA»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «MASTER»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «ESTRUCTURA»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «PRODUCCIÓN»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «GRABACIÓN»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «MEZCLA»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «MASTER»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «ESTRUCTURA»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «PRODUCCIÓN»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «GRABACIÓN»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «MEZCLA»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «MASTER»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «ESTRUCTURA»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «PRODUCCIÓN»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «GRABACIÓN»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «MEZCLA»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «MASTER»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span#songsDoneCount.songs-count «1 CANCIÓN»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "small «5»",
+        "detail": "Letra de 10px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "small «5»",
+        "detail": "Letra de 10px."
+      },
+      {
+        "type": "texto-cortado",
+        "sev": "media",
+        "el": "label.sr-only «Tu nota»",
+        "detail": "Muestra 1×1px de 46×17px."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "a.nav-mark",
+        "detail": "Lo tapa div.rv-backdrop."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Mi proyecto»",
+        "detail": "103×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "button.tab «Mi proyecto»",
+        "detail": "Lo tapa div.rv-backdrop."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab.is-active «Canciones1»",
+        "detail": "122×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "button.tab.is-active «Canciones1»",
+        "detail": "Lo tapa div.rv-backdrop."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Archivos»",
+        "detail": "83×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "button.tab «Archivos»",
+        "detail": "Lo tapa div.rv-backdrop."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Invitá a un amigo»",
+        "detail": "137×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "button.tab «Invitá a un amigo»",
+        "detail": "Lo tapa div.rv-backdrop."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Distribución»",
+        "detail": "105×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "button.tab «Distribución»",
+        "detail": "Lo tapa div.rv-backdrop."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Mi perfil»",
+        "detail": "79×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "button.tab «Mi perfil»",
+        "detail": "Lo tapa div.rv-backdrop."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button#logoutBtn.btn «Salir»",
+        "detail": "69×42px (se recomienda 44×44)."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "button#logoutBtn.btn «Salir»",
+        "detail": "Lo tapa div.rv-backdrop."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.btn.dv-play «Escuchar y aprobar»",
+        "detail": "191×42px (se recomienda 44×44)."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "button.btn.dv-play «Escuchar y aprobar»",
+        "detail": "Lo tapa div.rv-player «0:00 5 5 0:48»."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "summary «Terminadas 1 CANCIÓN»",
+        "detail": "788×43px (se recomienda 44×44)."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "summary «Terminadas 1 CANCIÓN»",
+        "detail": "Lo tapa div.rv-backdrop."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button «‹»",
+        "detail": "36×36px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button «›»",
+        "detail": "36×36px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "media",
+        "el": "label.sr-only «Tu nota»",
+        "detail": "1×1px (se recomienda 44×44)."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "label.sr-only «Tu nota»",
+        "detail": "Lo tapa div.rv-compose-top «‹ 0:00 › ¿Qué pasa en este momento?»."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button «Subir la voz»",
+        "detail": "101×36px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button «Bajar la voz»",
+        "detail": "101×36px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button «Más graves»",
+        "detail": "100×36px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button «Menos efecto en la voz»",
+        "detail": "170×36px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button «Más fuerte acá»",
+        "detail": "121×36px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button «Me encanta esta parte»",
+        "detail": "167×36px (se recomienda 44×44)."
+      }
+    ]
+  },
+  {
+    "kind": "tablet",
+    "screen": "archivos",
+    "name": "Archivos (tu espacio)",
+    "shot": "capturas/tablet-archivos.png",
+    "errors": [],
+    "W": 820,
+    "H": 1180,
+    "scrollHeight": 1180,
+    "issues": [
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Mi proyecto»",
+        "detail": "103×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Canciones1»",
+        "detail": "122×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab.is-active «Archivos»",
+        "detail": "83×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Invitá a un amigo»",
+        "detail": "137×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Distribución»",
+        "detail": "105×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Mi perfil»",
+        "detail": "79×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button#logoutBtn.btn «Salir»",
+        "detail": "69×42px (se recomienda 44×44)."
+      }
+    ]
+  },
+  {
+    "kind": "tablet",
+    "screen": "letras",
+    "name": "Letras (cuaderno)",
+    "shot": "capturas/tablet-letras.png",
+    "errors": [],
+    "W": 820,
+    "H": 1180,
+    "scrollHeight": 1180,
+    "issues": [
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "i.k-verso «V1»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "i.k-estribillo «E»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "i.k-verso «V2»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "i.k-estribillo «E»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "i.k-verso «V»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "i.k-estribillo «E»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Mi proyecto»",
+        "detail": "103×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Canciones1»",
+        "detail": "122×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab.is-active «Archivos»",
+        "detail": "83×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Invitá a un amigo»",
+        "detail": "137×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Distribución»",
+        "detail": "105×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Mi perfil»",
+        "detail": "79×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button#logoutBtn.btn «Salir»",
+        "detail": "69×42px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button «Referencias»",
+        "detail": "136×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.is-active «Letras»",
+        "detail": "101×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button «Exports»",
+        "detail": "108×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button «Masters»",
+        "detail": "111×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button «Membresía»",
+        "detail": "131×40px (se recomienda 44×44)."
+      }
+    ]
+  },
+  {
+    "kind": "tablet",
+    "screen": "letra",
+    "name": "Editor de una letra",
+    "shot": "capturas/tablet-letra.png",
+    "errors": [],
+    "W": 820,
+    "H": 1180,
+    "scrollHeight": 1519,
+    "issues": [
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Mi proyecto»",
+        "detail": "103×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Canciones1»",
+        "detail": "122×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab.is-active «Archivos»",
+        "detail": "83×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Invitá a un amigo»",
+        "detail": "137×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Distribución»",
+        "detail": "105×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Mi perfil»",
+        "detail": "79×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button#logoutBtn.btn «Salir»",
+        "detail": "69×42px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button#lyricBack.le-btn.le-back «Letras»",
+        "detail": "91×42px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button#lyricRead.le-btn «Estudio»",
+        "detail": "105×42px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button#lyricCopy.le-btn «Copiar»",
+        "detail": "99×42px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "a.le-map-chip.k-verso «V1»",
+        "detail": "52×34px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "a.le-map-chip.k-estribillo «E»",
+        "detail": "44×34px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "a.le-map-chip.k-verso «V2»",
+        "detail": "52×34px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "a.le-map-chip.k-estribillo «E»",
+        "detail": "44×34px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.lp-kind «Verso 1»",
+        "detail": "111×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.lp-more «Opciones de Verso 1»",
+        "detail": "42×42px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.lp-kind «Estribillo»",
+        "detail": "122×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.lp-more «Opciones de Estribillo»",
+        "detail": "42×42px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.lp-kind «Verso 2»",
+        "detail": "114×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.lp-more «Opciones de Verso 2»",
+        "detail": "42×42px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.lp-kind «Estribillo»",
+        "detail": "122×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.lp-more «Opciones de Estribillo»",
+        "detail": "42×42px (se recomienda 44×44)."
+      }
+    ]
+  },
+  {
+    "kind": "tablet",
+    "screen": "exports",
+    "name": "Exports (archivos abiertos)",
+    "shot": "capturas/tablet-exports.png",
+    "errors": [],
+    "W": 820,
+    "H": 1180,
+    "scrollHeight": 1180,
+    "issues": [
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span.group-count «2 ARCHIVOS»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span.group-count «1 ARCHIVO»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Mi proyecto»",
+        "detail": "103×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Canciones1»",
+        "detail": "122×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab.is-active «Archivos»",
+        "detail": "83×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Invitá a un amigo»",
+        "detail": "137×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Distribución»",
+        "detail": "105×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Mi perfil»",
+        "detail": "79×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button#logoutBtn.btn «Salir»",
+        "detail": "69×42px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button «Referencias»",
+        "detail": "136×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button «Letras»",
+        "detail": "99×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.is-active «Exports»",
+        "detail": "110×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button «Masters»",
+        "detail": "111×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button «Membresía»",
+        "detail": "131×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button#filesToggleAll.btn «Ver solo los grupos»",
+        "detail": "167×42px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.sort-btn «Archivo ↕»",
+        "detail": "63×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.sort-btn «Creado ↕»",
+        "detail": "61×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.sort-btn.is-active «Modificado ↓»",
+        "detail": "83×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.sort-btn «Tamaño ↕»",
+        "detail": "65×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.play-btn «Escuchar Brisa de abril - Mix v2.mp3»",
+        "detail": "32×32px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "a.btn.download-btn «Descargar»",
+        "detail": "132×42px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.play-btn «Escuchar Brisa de abril - Mix v1.mp3»",
+        "detail": "32×32px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "a.btn.download-btn «Descargar»",
+        "detail": "132×42px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.sort-btn «Archivo ↕»",
+        "detail": "63×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.sort-btn «Creado ↕»",
+        "detail": "61×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.sort-btn.is-active «Modificado ↓»",
+        "detail": "83×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.sort-btn «Tamaño ↕»",
+        "detail": "65×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.play-btn «Escuchar Marea alta - Rec voces.mp3»",
+        "detail": "32×32px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "a.btn.download-btn «Descargar»",
+        "detail": "132×42px (se recomienda 44×44)."
+      }
+    ]
+  },
+  {
+    "kind": "tablet",
+    "screen": "masters",
+    "name": "Masters",
+    "shot": "capturas/tablet-masters.png",
+    "errors": [],
+    "W": 820,
+    "H": 1180,
+    "scrollHeight": 1180,
+    "issues": [
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span.group-count «1 ARCHIVO»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Mi proyecto»",
+        "detail": "103×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Canciones1»",
+        "detail": "122×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab.is-active «Archivos»",
+        "detail": "83×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Invitá a un amigo»",
+        "detail": "137×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Distribución»",
+        "detail": "105×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Mi perfil»",
+        "detail": "79×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button#logoutBtn.btn «Salir»",
+        "detail": "69×42px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button «Referencias»",
+        "detail": "136×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button «Letras»",
+        "detail": "99×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button «Exports»",
+        "detail": "108×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.is-active «Masters»",
+        "detail": "113×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button «Membresía»",
+        "detail": "131×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.sort-btn",
+        "detail": "63×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.sort-btn",
+        "detail": "61×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.sort-btn.is-active",
+        "detail": "83×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.sort-btn",
+        "detail": "65×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.play-btn «Escuchar Luz de enero - Master.wav»",
+        "detail": "32×32px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "a.btn.download-btn «Descargar Luz de enero - Master.wav»",
+        "detail": "132×42px (se recomienda 44×44)."
+      }
+    ]
+  },
+  {
+    "kind": "tablet",
+    "screen": "distribucion",
+    "name": "Distribución (lanzamientos)",
+    "shot": "capturas/tablet-distribucion.png",
+    "errors": [],
+    "W": 820,
+    "H": 1180,
+    "scrollHeight": 1180,
+    "issues": [
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Mi proyecto»",
+        "detail": "103×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Canciones1»",
+        "detail": "122×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Archivos»",
+        "detail": "83×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Invitá a un amigo»",
+        "detail": "137×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab.is-active «Distribución»",
+        "detail": "105×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Mi perfil»",
+        "detail": "79×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button#logoutBtn.btn «Salir»",
+        "detail": "69×42px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button#newReleaseBtn.btn.btn-primary «Nuevo lanzamiento»",
+        "detail": "166×42px (se recomienda 44×44)."
+      }
+    ]
+  },
+  {
+    "kind": "tablet",
+    "screen": "lanzamiento",
+    "name": "Nuevo lanzamiento (formulario)",
+    "shot": "capturas/tablet-lanzamiento.png",
+    "errors": [],
+    "W": 820,
+    "H": 1180,
+    "scrollHeight": 2390,
+    "issues": [
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "div#coverEmpty.cover-preview.cover-empty «SIN PORTADA»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «MAIN ARTIST»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «FEATURING»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «COMPOSER»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «LYRICIST»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «SONGWRITER»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «PRODUCER»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «MIXER»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «MASTERING ENGINEER»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «REMIXER»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Mi proyecto»",
+        "detail": "103×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Canciones1»",
+        "detail": "122×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Archivos»",
+        "detail": "83×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Invitá a un amigo»",
+        "detail": "137×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab.is-active «Distribución»",
+        "detail": "105×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Mi perfil»",
+        "detail": "79×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button#logoutBtn.btn «Salir»",
+        "detail": "69×42px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "media",
+        "el": "label «Título del lanzamiento»",
+        "detail": "738×17px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "media",
+        "el": "label «Formato»",
+        "detail": "361×17px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "media",
+        "el": "label «Fecha de salida»",
+        "detail": "361×17px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "media",
+        "el": "label «Género»",
+        "detail": "361×17px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "media",
+        "el": "label «Subgénero»",
+        "detail": "361×17px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "media",
+        "el": "label «Idioma»",
+        "detail": "361×17px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "media",
+        "el": "label «Territorio»",
+        "detail": "361×17px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "media",
+        "el": "label «UPC»",
+        "detail": "361×17px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "media",
+        "el": "label «Portada»",
+        "detail": "361×17px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button#coverBtn.btn «Subir portada»",
+        "detail": "130×42px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "media",
+        "el": "input#rPitch",
+        "detail": "20×20px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "media",
+        "el": "label «Notas»",
+        "detail": "738×17px (se recomienda 44×44)."
+      }
+    ]
+  },
+  {
+    "kind": "tablet",
+    "screen": "invitar",
+    "name": "Invitá a un amigo",
+    "shot": "capturas/tablet-invitar.png",
+    "errors": [],
+    "W": 820,
+    "H": 1180,
+    "scrollHeight": 1180,
+    "issues": [
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Mi proyecto»",
+        "detail": "103×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Canciones1»",
+        "detail": "122×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Archivos»",
+        "detail": "83×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab.is-active «Invitá a un amigo»",
+        "detail": "137×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Distribución»",
+        "detail": "105×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Mi perfil»",
+        "detail": "79×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button#logoutBtn.btn «Salir»",
+        "detail": "69×42px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button#ivCopy.btn.btn-primary «Copiar link»",
+        "detail": "111×42px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "a.btn «Mandar por WhatsApp»",
+        "detail": "188×42px (se recomienda 44×44)."
+      }
+    ]
+  },
+  {
+    "kind": "tablet",
+    "screen": "perfil",
+    "name": "Mi perfil",
+    "shot": "capturas/tablet-perfil.png",
+    "errors": [],
+    "W": 820,
+    "H": 1180,
+    "scrollHeight": 1180,
+    "issues": [
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Mi proyecto»",
+        "detail": "103×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Canciones1»",
+        "detail": "122×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Archivos»",
+        "detail": "83×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Invitá a un amigo»",
+        "detail": "137×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Distribución»",
+        "detail": "105×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab.is-active «Mi perfil»",
+        "detail": "79×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button#logoutBtn.btn «Salir»",
+        "detail": "69×42px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button#photoBtn.avatar-change",
+        "detail": "34×34px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "media",
+        "el": "label «Nombre artístico»",
+        "detail": "336×17px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.btn.btn-primary «Guardar cambios»",
+        "detail": "152×42px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "media",
+        "el": "label «Contraseña nueva»",
+        "detail": "336×17px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.btn «Cambiar contraseña»",
+        "detail": "173×42px (se recomienda 44×44)."
+      }
+    ]
+  },
+  {
+    "kind": "mobile",
+    "screen": "login",
+    "name": "Ingreso (login)",
+    "shot": "capturas/mobile-login.png",
+    "errors": [],
+    "W": 390,
+    "H": 844,
+    "scrollHeight": 1288,
+    "issues": [
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "a.nav-mark «ZECHE GRUV®»",
+        "detail": "132×36px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "media",
+        "el": "label «Mail»",
+        "detail": "312×18px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "media",
+        "el": "label «Contraseña»",
+        "detail": "312×18px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "media",
+        "el": "input#rememberMe",
+        "detail": "20×20px (se recomienda 44×44)."
+      }
+    ]
+  },
+  {
+    "kind": "mobile",
+    "screen": "proyecto",
+    "name": "Mi proyecto",
+    "shot": "capturas/mobile-proyecto.png",
+    "errors": [],
+    "W": 390,
+    "H": 844,
+    "scrollHeight": 1052,
+    "issues": [
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab.is-active «Mi proyecto»",
+        "detail": "103×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Canciones1»",
+        "detail": "122×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Archivos»",
+        "detail": "83×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Invitá a un amigo»",
+        "detail": "137×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Distribución»",
+        "detail": "105×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Mi perfil»",
+        "detail": "79×40px (se recomienda 44×44)."
+      }
+    ]
+  },
+  {
+    "kind": "mobile",
+    "screen": "canciones",
+    "name": "Canciones",
+    "shot": "capturas/mobile-canciones.png",
+    "errors": [],
+    "W": 390,
+    "H": 844,
+    "scrollHeight": 1245,
+    "issues": [
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Mi proyecto»",
+        "detail": "103×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab.is-active «Canciones1»",
+        "detail": "122×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Archivos»",
+        "detail": "83×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Invitá a un amigo»",
+        "detail": "137×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Distribución»",
+        "detail": "105×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Mi perfil»",
+        "detail": "79×40px (se recomienda 44×44)."
+      }
+    ]
+  },
+  {
+    "kind": "mobile",
+    "screen": "revision",
+    "name": "Escuchar y aprobar (reproductor)",
+    "shot": "capturas/mobile-revision.png",
+    "errors": [],
+    "W": 390,
+    "H": 844,
+    "scrollHeight": 1245,
+    "issues": [
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "small «5»",
+        "detail": "Letra de 10px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "small «5»",
+        "detail": "Letra de 10px."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Mi proyecto»",
+        "detail": "103×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "button.tab «Mi proyecto»",
+        "detail": "Lo tapa header.rv-head «MEZCLA Brisa de abril Brisa de abril - Mix v2.mp3»."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab.is-active «Canciones1»",
+        "detail": "122×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "button.tab.is-active «Canciones1»",
+        "detail": "Lo tapa header.rv-head «MEZCLA Brisa de abril Brisa de abril - Mix v2.mp3»."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Archivos»",
+        "detail": "83×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "button.tab «Archivos»",
+        "detail": "Lo tapa header.rv-head «MEZCLA Brisa de abril Brisa de abril - Mix v2.mp3»."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Invitá a un amigo»",
+        "detail": "137×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "button.tab «Invitá a un amigo»",
+        "detail": "Lo tapa header.rv-head «MEZCLA Brisa de abril Brisa de abril - Mix v2.mp3»."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Distribución»",
+        "detail": "105×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "button.tab «Distribución»",
+        "detail": "Lo tapa header.rv-head «MEZCLA Brisa de abril Brisa de abril - Mix v2.mp3»."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Mi perfil»",
+        "detail": "79×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "button.tab «Mi perfil»",
+        "detail": "Lo tapa header.rv-head «MEZCLA Brisa de abril Brisa de abril - Mix v2.mp3»."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "button.btn.dv-play «Escuchar y aprobar»",
+        "detail": "Lo tapa span «Dejar una nota en 0:00»."
+      }
+    ]
+  },
+  {
+    "kind": "mobile",
+    "screen": "nota",
+    "name": "Dejar una nota (formulario)",
+    "shot": "capturas/mobile-nota.png",
+    "errors": [],
+    "W": 390,
+    "H": 844,
+    "scrollHeight": 1245,
+    "issues": [
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "small «5»",
+        "detail": "Letra de 10px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "small «5»",
+        "detail": "Letra de 10px."
+      },
+      {
+        "type": "texto-cortado",
+        "sev": "media",
+        "el": "label.sr-only «Tu nota»",
+        "detail": "Muestra 1×1px de 46×17px."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "a.nav-mark",
+        "detail": "Lo tapa h2#rvTitle.rv-title «Brisa de abril»."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Mi proyecto»",
+        "detail": "103×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "button.tab «Mi proyecto»",
+        "detail": "Lo tapa header.rv-head «MEZCLA Brisa de abril Brisa de abril - Mix v2.mp3»."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab.is-active «Canciones1»",
+        "detail": "122×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "button.tab.is-active «Canciones1»",
+        "detail": "Lo tapa header.rv-head «MEZCLA Brisa de abril Brisa de abril - Mix v2.mp3»."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Archivos»",
+        "detail": "83×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "button.tab «Archivos»",
+        "detail": "Lo tapa header.rv-head «MEZCLA Brisa de abril Brisa de abril - Mix v2.mp3»."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Invitá a un amigo»",
+        "detail": "137×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "button.tab «Invitá a un amigo»",
+        "detail": "Lo tapa header.rv-head «MEZCLA Brisa de abril Brisa de abril - Mix v2.mp3»."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Distribución»",
+        "detail": "105×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "button.tab «Distribución»",
+        "detail": "Lo tapa header.rv-head «MEZCLA Brisa de abril Brisa de abril - Mix v2.mp3»."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Mi perfil»",
+        "detail": "79×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "button.tab «Mi perfil»",
+        "detail": "Lo tapa header.rv-head «MEZCLA Brisa de abril Brisa de abril - Mix v2.mp3»."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "button#logoutBtn.btn «Salir»",
+        "detail": "Lo tapa button.rv-icon.rv-x «Cerrar»."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "button.btn.dv-play «Escuchar y aprobar»",
+        "detail": "Lo tapa textarea#rvComposeText."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button «‹»",
+        "detail": "36×36px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button «›»",
+        "detail": "36×36px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "media",
+        "el": "label.sr-only «Tu nota»",
+        "detail": "1×1px (se recomienda 44×44)."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "label.sr-only «Tu nota»",
+        "detail": "Lo tapa div.rv-compose-top «‹ 0:00 › ¿Qué pasa en este momento?»."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button «Subir la voz»",
+        "detail": "101×36px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button «Bajar la voz»",
+        "detail": "101×36px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button «Más graves»",
+        "detail": "100×36px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button «Menos efecto en la voz»",
+        "detail": "170×36px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button «Más fuerte acá»",
+        "detail": "121×36px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button «Me encanta esta parte»",
+        "detail": "167×36px (se recomienda 44×44)."
+      }
+    ]
+  },
+  {
+    "kind": "mobile",
+    "screen": "archivos",
+    "name": "Archivos (tu espacio)",
+    "shot": "capturas/mobile-archivos.png",
+    "errors": [],
+    "W": 390,
+    "H": 844,
+    "scrollHeight": 844,
+    "issues": [
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Mi proyecto»",
+        "detail": "103×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Canciones1»",
+        "detail": "122×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab.is-active «Archivos»",
+        "detail": "83×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Invitá a un amigo»",
+        "detail": "137×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Distribución»",
+        "detail": "105×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Mi perfil»",
+        "detail": "79×40px (se recomienda 44×44)."
+      }
+    ]
+  },
+  {
+    "kind": "mobile",
+    "screen": "letras",
+    "name": "Letras (cuaderno)",
+    "shot": "capturas/mobile-letras.png",
+    "errors": [],
+    "W": 390,
+    "H": 844,
+    "scrollHeight": 1099,
+    "issues": [
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "i.k-verso «V1»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "i.k-estribillo «E»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "i.k-verso «V2»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "i.k-estribillo «E»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "i.k-verso «V»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "i.k-estribillo «E»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Mi proyecto»",
+        "detail": "103×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Canciones1»",
+        "detail": "122×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab.is-active «Archivos»",
+        "detail": "83×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Invitá a un amigo»",
+        "detail": "137×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Distribución»",
+        "detail": "105×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Mi perfil»",
+        "detail": "79×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button «Referencias»",
+        "detail": "132×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.is-active «Letras»",
+        "detail": "97×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button «Exports»",
+        "detail": "104×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button «Masters»",
+        "detail": "107×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button «Membresía»",
+        "detail": "127×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "button «Membresía»",
+        "detail": "Lo tapa use."
+      }
+    ]
+  },
+  {
+    "kind": "mobile",
+    "screen": "letra",
+    "name": "Editor de una letra",
+    "shot": "capturas/mobile-letra.png",
+    "errors": [],
+    "W": 390,
+    "H": 844,
+    "scrollHeight": 1481,
+    "issues": [
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Mi proyecto»",
+        "detail": "103×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Canciones1»",
+        "detail": "122×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab.is-active «Archivos»",
+        "detail": "83×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Invitá a un amigo»",
+        "detail": "137×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Distribución»",
+        "detail": "105×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Mi perfil»",
+        "detail": "79×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button#lyricBack.le-btn.le-back «Letras»",
+        "detail": "93×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button#lyricRead.le-btn «Estudio»",
+        "detail": "101×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button#lyricCopy.le-btn",
+        "detail": "42×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "a.le-map-chip.k-verso «V1»",
+        "detail": "52×34px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "a.le-map-chip.k-estribillo «E»",
+        "detail": "44×34px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "a.le-map-chip.k-verso «V2»",
+        "detail": "52×34px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "a.le-map-chip.k-estribillo «E»",
+        "detail": "44×34px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.lp-kind «Verso 1»",
+        "detail": "111×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.lp-more «Opciones de Verso 1»",
+        "detail": "42×42px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.lp-kind «Estribillo»",
+        "detail": "122×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.lp-more «Opciones de Estribillo»",
+        "detail": "42×42px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.lp-kind «Verso 2»",
+        "detail": "114×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.lp-more «Opciones de Verso 2»",
+        "detail": "42×42px (se recomienda 44×44)."
+      }
+    ]
+  },
+  {
+    "kind": "mobile",
+    "screen": "exports",
+    "name": "Exports (archivos abiertos)",
+    "shot": "capturas/mobile-exports.png",
+    "errors": [],
+    "W": 390,
+    "H": 844,
+    "scrollHeight": 1151,
+    "issues": [
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Mi proyecto»",
+        "detail": "103×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Canciones1»",
+        "detail": "122×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab.is-active «Archivos»",
+        "detail": "83×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Invitá a un amigo»",
+        "detail": "137×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Distribución»",
+        "detail": "105×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Mi perfil»",
+        "detail": "79×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button «Referencias»",
+        "detail": "132×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button «Letras»",
+        "detail": "95×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.is-active «Exports»",
+        "detail": "106×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button «Masters»",
+        "detail": "107×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button «Membresía»",
+        "detail": "127×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.sort-btn «Archivo ↕»",
+        "detail": "83×36px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.sort-btn «Creado ↕»",
+        "detail": "81×36px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.sort-btn.is-active «Modificado ↓»",
+        "detail": "103×36px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.sort-btn «Tamaño ↕»",
+        "detail": "85×36px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.play-btn «Escuchar Brisa de abril - Mix v2.mp3»",
+        "detail": "40×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.play-btn «Escuchar Brisa de abril - Mix v1.mp3»",
+        "detail": "40×40px (se recomienda 44×44)."
+      }
+    ]
+  },
+  {
+    "kind": "mobile",
+    "screen": "masters",
+    "name": "Masters",
+    "shot": "capturas/mobile-masters.png",
+    "errors": [],
+    "W": 390,
+    "H": 844,
+    "scrollHeight": 844,
+    "issues": [
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Mi proyecto»",
+        "detail": "103×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Canciones1»",
+        "detail": "122×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab.is-active «Archivos»",
+        "detail": "83×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Invitá a un amigo»",
+        "detail": "137×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Distribución»",
+        "detail": "105×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Mi perfil»",
+        "detail": "79×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button «Referencias»",
+        "detail": "132×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "tapado",
+        "sev": "media",
+        "el": "button «Referencias»",
+        "detail": "Lo tapa button «Letras»."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button «Letras»",
+        "detail": "95×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button «Exports»",
+        "detail": "104×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.is-active «Masters»",
+        "detail": "109×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button «Membresía»",
+        "detail": "127×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.sort-btn",
+        "detail": "83×36px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.sort-btn",
+        "detail": "81×36px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.sort-btn.is-active",
+        "detail": "103×36px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.sort-btn",
+        "detail": "85×36px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.play-btn «Escuchar Luz de enero - Master.wav»",
+        "detail": "40×40px (se recomienda 44×44)."
+      }
+    ]
+  },
+  {
+    "kind": "mobile",
+    "screen": "distribucion",
+    "name": "Distribución (lanzamientos)",
+    "shot": "capturas/mobile-distribucion.png",
+    "errors": [],
+    "W": 390,
+    "H": 844,
+    "scrollHeight": 918,
+    "issues": [
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Mi proyecto»",
+        "detail": "103×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Canciones1»",
+        "detail": "122×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Archivos»",
+        "detail": "83×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Invitá a un amigo»",
+        "detail": "137×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab.is-active «Distribución»",
+        "detail": "105×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Mi perfil»",
+        "detail": "79×40px (se recomienda 44×44)."
+      }
+    ]
+  },
+  {
+    "kind": "mobile",
+    "screen": "lanzamiento",
+    "name": "Nuevo lanzamiento (formulario)",
+    "shot": "capturas/mobile-lanzamiento.png",
+    "errors": [],
+    "W": 390,
+    "H": 844,
+    "scrollHeight": 3587,
+    "issues": [
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "div#coverEmpty.cover-preview.cover-empty «SIN PORTADA»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «MAIN ARTIST»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «FEATURING»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «COMPOSER»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «LYRICIST»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «SONGWRITER»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «PRODUCER»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «MIXER»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «MASTERING ENGINEER»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "texto-chico",
+        "sev": "baja",
+        "el": "span «REMIXER»",
+        "detail": "Letra de 11px."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Mi proyecto»",
+        "detail": "103×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Canciones1»",
+        "detail": "122×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Archivos»",
+        "detail": "83×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Invitá a un amigo»",
+        "detail": "137×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab.is-active «Distribución»",
+        "detail": "105×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Mi perfil»",
+        "detail": "79×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "media",
+        "el": "label «Título del lanzamiento»",
+        "detail": "320×17px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "media",
+        "el": "label «Formato»",
+        "detail": "320×17px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "media",
+        "el": "label «Fecha de salida»",
+        "detail": "320×17px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "media",
+        "el": "label «Género»",
+        "detail": "320×17px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "media",
+        "el": "label «Subgénero»",
+        "detail": "320×17px (se recomienda 44×44)."
+      }
+    ]
+  },
+  {
+    "kind": "mobile",
+    "screen": "invitar",
+    "name": "Invitá a un amigo",
+    "shot": "capturas/mobile-invitar.png",
+    "errors": [],
+    "W": 390,
+    "H": 844,
+    "scrollHeight": 1054,
+    "issues": [
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Mi proyecto»",
+        "detail": "103×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Canciones1»",
+        "detail": "122×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Archivos»",
+        "detail": "83×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab.is-active «Invitá a un amigo»",
+        "detail": "137×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Distribución»",
+        "detail": "105×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Mi perfil»",
+        "detail": "79×40px (se recomienda 44×44)."
+      }
+    ]
+  },
+  {
+    "kind": "mobile",
+    "screen": "perfil",
+    "name": "Mi perfil",
+    "shot": "capturas/mobile-perfil.png",
+    "errors": [],
+    "W": 390,
+    "H": 844,
+    "scrollHeight": 844,
+    "issues": [
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Mi proyecto»",
+        "detail": "103×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Canciones1»",
+        "detail": "122×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Archivos»",
+        "detail": "83×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Invitá a un amigo»",
+        "detail": "137×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab «Distribución»",
+        "detail": "105×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button.tab.is-active «Mi perfil»",
+        "detail": "79×40px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "baja",
+        "el": "button#photoBtn.avatar-change",
+        "detail": "34×34px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "media",
+        "el": "label «Nombre artístico»",
+        "detail": "320×17px (se recomienda 44×44)."
+      },
+      {
+        "type": "toque-chico",
+        "sev": "media",
+        "el": "label «Contraseña nueva»",
+        "detail": "320×17px (se recomienda 44×44)."
+      }
+    ]
+  }
+]

@@ -1,0 +1,26 @@
+{
+  "grabacion": "portal-desktop-2026-10-14T18-11-00.mp4",
+  "total": 24.099999999999998,
+  "clips": [
+    {
+      "archivo": "desktop-placa-apertura.mp4",
+      "inicio": 0,
+      "duracion": 2.6
+    },
+    {
+      "archivo": "desktop-parte-1.mp4",
+      "inicio": 2.1,
+      "duracion": 19.4
+    },
+    {
+      "archivo": "desktop-placa-cierre.mp4",
+      "inicio": 20.9,
+      "duracion": 3.2
+    }
+  ],
+  "transiciones": [
+    "fade",
+    "fade"
+  ],
+  "etiquetas": []
+}

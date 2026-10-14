@@ -1,0 +1,26 @@
+{
+  "grabacion": "portal-reel-2026-10-14T18-09-30.mp4",
+  "total": 28.366666999999996,
+  "clips": [
+    {
+      "archivo": "reel-placa-apertura.mp4",
+      "inicio": 0,
+      "duracion": 2.4
+    },
+    {
+      "archivo": "reel-parte-1.mp4",
+      "inicio": 1.9,
+      "duracion": 24.067
+    },
+    {
+      "archivo": "reel-placa-cierre.mp4",
+      "inicio": 25.367,
+      "duracion": 3
+    }
+  ],
+  "transiciones": [
+    "fade",
+    "fade"
+  ],
+  "etiquetas": []
+}

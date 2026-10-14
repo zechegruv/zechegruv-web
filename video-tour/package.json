@@ -1,0 +1,16 @@
+{
+  "name": "zechegruv-video-tour",
+  "private": true,
+  "description": "Tour grabado y auditoría responsive del portal del artista de ZECHE GRUV (Playwright + Chromium, modo demo). No forma parte de la web publicada.",
+  "scripts": {
+    "tour": "node tour.js",
+    "tour:desktop": "node tour.js desktop",
+    "tour:reel": "node tour.js reel",
+    "tour:mobile": "ZG_GRABADOR=playwright node tour.js mobile",
+    "editar": "node edicion/editar.js",
+    "auditoria": "node auditoria.js"
+  },
+  "devDependencies": {
+    "playwright": "1.56.0"
+  }
+}

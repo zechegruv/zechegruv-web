@@ -10,3 +10,7 @@ diseno/manuales/
 # Archivos temporales de pruebas
 .zg-tmp/
 *.new.mp4
+
+# Tour en video del portal (video-tour): dependencias y grabaciones pesadas
+video-tour/node_modules/
+video-tour/grabaciones/
