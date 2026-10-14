@@ -81,6 +81,7 @@ exports.handler = async (event) => {
       body: JSON.stringify({
         filter: { and: [
           { property: "Estado de Tarea", select: { does_not_equal: "COMPLETADO" } },
+          { property: "Estado de Tarea", select: { does_not_equal: "INACTIVA" } }, // proyectos en pausa
           { property: "Fecha de Vencimiento", date: { on_or_before: dayAR(limit) } },
         ] },
         sorts: [{ property: "Fecha de Vencimiento", direction: "ascending" }],
