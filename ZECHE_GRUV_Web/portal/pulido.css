@@ -1,0 +1,101 @@
+/* ZECHE GRUV — Portal: pulido responsive (auditoría del 14/10/2026,
+   video-tour/auditoria/INFORME-RESPONSIVE.md).
+   - Letra mínima legible en etiquetas y ayudas (antes 8–10 px).
+   - Toques de al menos 44 px en links de "volver", logo, guías y casillas.
+   - Atajos de nota: en compu bajan de línea; en el celu se deslizan con
+     un degradé que avisa que hay más.
+   - Menús que se deslizan (pestañas, carpetas): degradé en el borde que
+     todavía tiene más (pulido.js marca data-fade).
+   - Login y "elegir contraseña" con la piel nueva del portal.
+   No cambia la lógica ni el orden de nada: solo tamaños, toques y estilo. */
+
+/* ---------- 3) Letra legible ---------- */
+.stages li { font-size: 11px; letter-spacing: .08em; }
+.songs-count,
+.file-group .group-count { font-size: 11px; letter-spacing: .1em; }
+.rv-skip small { font-size: 10px; }
+.role span { font-size: 11px; letter-spacing: .06em; padding: 9px 12px; }
+.cover-empty { font-size: 11px; letter-spacing: .1em; }
+.avatar-change { font-size: 11px; letter-spacing: .08em; }
+.track-num { font-size: 12px; }
+.hint { font-size: 13px; }
+.password-toggle { font-size: 12px; }
+@media (max-width: 640px) {
+  .songs-count, .file-group .group-count { font-size: 12px; }
+  .hint { font-size: 13.5px; }
+}
+
+/* ---------- 4) Toques cómodos (44 px) sin mover el diseño ---------- */
+.back-link { display: inline-flex; align-items: center; min-height: 44px; margin-bottom: 18px; }
+.nav-mark { padding: 7px 0; margin: -7px 0; }
+details.card > summary { min-height: 44px; display: flex; align-items: center; gap: 8px; }
+.check { min-height: 44px; align-items: center; }
+.check input[type="checkbox"] { width: 20px; height: 20px; }
+@media (max-width: 900px) {
+  .nav-tabs .tab, .sub-nav button, .vw-tab { min-height: 40px; }
+}
+@media (pointer: coarse) {
+  .sort-btn { min-height: 40px; padding-top: 10px; padding-bottom: 10px; }
+}
+
+/* ---------- 2) Atajos de "Dejar una nota" ---------- */
+@media (min-width: 641px) {
+  .rv-quick { flex-wrap: wrap; overflow: visible; margin: 0; padding: 0; }
+}
+
+/* ---------- 5) Degradé en lo que se desliza de costado ---------- */
+[data-fade] { -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; }
+[data-fade="end"] { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 44px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 44px), transparent); }
+[data-fade="start"] { -webkit-mask-image: linear-gradient(to right, transparent, #000 44px); mask-image: linear-gradient(to right, transparent, #000 44px); }
+[data-fade="both"] { -webkit-mask-image: linear-gradient(to right, transparent, #000 44px, #000 calc(100% - 44px), transparent); mask-image: linear-gradient(to right, transparent, #000 44px, #000 calc(100% - 44px), transparent); }
+
+/* ---------- 6) Ingreso y contraseña con la piel nueva ---------- */
+body:has(#view-login:not([hidden])),
+body:has(#view-recovery:not([hidden])) { background: #1B0D04; }
+:is(#view-login, #view-recovery) {
+  --zl-display: "Bricolage Grotesque", "Manrope", sans-serif;
+  --zl-body: "Geist", "Manrope", system-ui, sans-serif;
+  --zl-mono: "Geist Mono", "DM Mono", monospace;
+  font-family: var(--zl-body);
+  padding-top: clamp(16px, 6vh, 72px);
+}
+#view-login { max-width: 1040px; }
+:is(#view-login, #view-recovery) .eyebrow { font-family: var(--zl-mono); font-size: 13px; letter-spacing: .14em; }
+:is(#view-login, #view-recovery) .title,
+:is(#view-login, #view-recovery) .card-title,
+#view-login .cta-title { font-family: var(--zl-display); letter-spacing: -.03em; }
+:is(#view-login, #view-recovery) .title { font-weight: 800; line-height: 1; }
+:is(#view-login, #view-recovery) .card-title { font-size: 24px; font-weight: 700; margin-bottom: 18px; }
+#view-login .login-lead { font-size: 17px; }
+:is(#view-login, #view-recovery) .card {
+  background: #2E1607; border: 1px solid rgba(240, 224, 192, .1); border-radius: 22px; padding: 28px;
+  animation: zhRise 700ms cubic-bezier(.16, 1, .3, 1) both;
+}
+#view-login .login-grid > .card:nth-child(2) { animation-delay: 90ms; }
+#view-login .cta-card { background: var(--orange); color: var(--brown-dark); border-color: transparent; position: relative; overflow: hidden; }
+#view-login .cta-card .eyebrow { color: var(--brown-dark); }
+#view-login .cta-card .cta-text { color: rgba(36, 17, 5, .82); font-size: 15px; }
+#view-login .cta-card .btn-cta { background: var(--brown-dark); border-color: var(--brown-dark); color: var(--cream); }
+:is(#view-login, #view-recovery) .field label {
+  font-family: var(--zl-body); font-size: 14px; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--beige);
+}
+:is(#view-login, #view-recovery) .field input { min-height: 48px; border-radius: 12px; font-size: 16px; font-family: var(--zl-body); border-color: rgba(240, 224, 192, .18); transition: border-color 200ms ease, box-shadow 200ms ease; }
+:is(#view-login, #view-recovery) .field input:focus { outline: none; border-color: var(--orange); box-shadow: 0 0 0 4px rgba(240, 120, 0, .18); }
+#view-login .password-toggle { font-family: var(--zl-body); font-size: 13px; font-weight: 600; letter-spacing: 0; text-transform: none; min-width: 56px; }
+:is(#view-login, #view-recovery) .btn {
+  font-family: var(--zl-body); font-size: 15px; font-weight: 600; letter-spacing: 0; text-transform: none;
+  border-radius: 999px; padding: 14px 22px; min-height: 50px;
+  transition: transform 160ms cubic-bezier(.23, 1, .32, 1), background-color 200ms ease, border-color 200ms ease, color 200ms ease;
+}
+:is(#view-login, #view-recovery) .btn:active { transform: scale(.97); }
+:is(#view-login, #view-recovery) form .btn-primary { width: 100%; justify-content: center; }
+#view-login .btn-cta { font-size: 15px; line-height: 1.3; padding: 15px 20px; }
+:is(#view-login, #view-recovery) .check { font-size: 14px; color: var(--beige); }
+:is(#view-login, #view-recovery) .link-btn { font-size: 14px; min-height: 44px; text-align: left; }
+#view-login > .muted.small { font-size: 14px; margin-top: 18px; }
+@media (max-width: 640px) {
+  :is(#view-login, #view-recovery) .card { padding: 22px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  :is(#view-login, #view-recovery) .card { animation: none; }
+}

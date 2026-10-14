@@ -230,7 +230,9 @@
       const x = i * (bw + gap) + gap / 2;
       g.fillStyle = (i + 0.5) / n <= pos ? "#F07800" : peaks ? "rgba(240,224,192,.26)" : "rgba(240,224,192,.16)";
       const y = (h - bh) / 2;
-      const r = Math.min(bw / 2, 3);
+      // Con barras muy finas el radio podía dar negativo y Chromium cortaba el dibujo.
+      const r = Math.max(0, Math.min(bw / 2, 3));
+      if (bw <= 0) continue;
       if (g.roundRect) { g.beginPath(); g.roundRect(x, y, bw, bh, r); g.fill(); } else g.fillRect(x, y, bw, bh);
     }
     $("rvLine").style.left = `${pos * 100}%`;
