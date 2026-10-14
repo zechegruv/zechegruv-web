@@ -44,6 +44,9 @@
     const i = c.list.indexOf(c.cur);
     const next = c.list[(i < 0 ? 0 : i) + dir];
     if (!next) { bump(dir); return false; }
+    // El menú nuevo entra desde arriba: se sube de una (queda tapado por la
+    // animación de entrada) en vez de recorrer la página nueva hacia arriba.
+    window.scrollTo({ top: 0, behavior: "instant" });
     c.go(next);
     if (!c.self) slide(dir); // la vista del artista ya lo anima sola
     return true;
