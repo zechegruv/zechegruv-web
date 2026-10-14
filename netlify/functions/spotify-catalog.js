@@ -161,7 +161,7 @@ exports.handler = async () => {
   if (cache.items && now - cache.fetchedAt < CACHE_TTL_MS) {
     return {
       statusCode: 200,
-      headers: { "Content-Type": "application/json", "Cache-Control": "public, max-age=300" },
+      headers: { "Content-Type": "application/json", "Cache-Control": "public, max-age=300, stale-while-revalidate=86400" },
       body: JSON.stringify({ updatedAt: cache.fetchedAt, items: cache.items }),
     };
   }
@@ -171,7 +171,7 @@ exports.handler = async () => {
     cache = { items, fetchedAt: now };
     return {
       statusCode: 200,
-      headers: { "Content-Type": "application/json", "Cache-Control": "public, max-age=300" },
+      headers: { "Content-Type": "application/json", "Cache-Control": "public, max-age=300, stale-while-revalidate=86400" },
       body: JSON.stringify({ updatedAt: now, items }),
     };
   } catch (err) {

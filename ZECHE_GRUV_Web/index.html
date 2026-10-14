@@ -35,6 +35,9 @@
   <!-- Tipografía del logo: versión liviana (41 KB, solo los caracteres que
        se usan) precargada. El título "ZECHE GRUV" espera a que esté lista y
        aparece con un fundido, así nunca se ve el cambio desde otra letra. -->
+  <!-- El catálogo de Spotify se empieza a pedir apenas abre la página, y las portadas desde ya -->
+  <link rel="preload" href="/.netlify/functions/spotify-catalog" as="fetch" crossorigin="anonymous">
+  <link rel="preconnect" href="https://i.scdn.co">
   <link rel="preload" href="assets/hero/hero-provisoria.webp" as="image" type="image/webp" media="(min-width: 801px)">
   <link rel="preload" href="assets/fonts/TANNIMBUS-latin-v1.woff" as="font" type="font/woff" crossorigin>
   <script>

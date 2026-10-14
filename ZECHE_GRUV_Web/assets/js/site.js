@@ -1016,6 +1016,7 @@ if (!savedLang()) {
 
 // ---------- Catálogo completo (discografía + "aparece en") ----------
 // Se pide a /.netlify/functions/spotify-catalog en cada carga de la
+// página (y se muestra antes lo último guardado, para que no haya espera)
 // página — así se mantiene al día solo mientras el sitio esté online,
 // sin tocar código para sumar un lanzamiento nuevo. Si la function
 // todavía no está desplegada (o falla), se muestra un aviso con link
@@ -1025,6 +1026,43 @@ if (!savedLang()) {
   const status = document.getElementById("fullCatalogueStatus");
   if (!grid || !status) return;
 
+  // Para que el catálogo aparezca al toque y sin saltos: la última versión
+  // queda guardada en el navegador y se muestra apenas abre la página;
+  // mientras tanto se pide la nueva a Spotify (ya arrancó en el <head> con
+  // un preload) y, si cambió algo, se vuelve a dibujar.
+  const CACHE_KEY = "zg_catalogo_v1";
+  let shown = "";
+
+  function render(items) {
+    const sig = JSON.stringify(items.map((i) => [i.id, i.cover]));
+    if (sig === shown) return;
+    shown = sig;
+    grid.innerHTML = items.map((item, n) => `
+      <a href="${item.url}" target="_blank" rel="noopener" class="release-card"
+         data-spotify-uri="spotify:${item.type === "track" ? "track" : "album"}:${item.id}" data-spotify-name="${item.name}">
+        <div class="release-art"><img src="${item.cover || ""}" alt="${item.name} — cover art" ${n < 8 ? 'fetchpriority="high"' : 'loading="lazy"'} decoding="async"></div>
+        <div class="card-info">
+          <div class="card-name">${item.name}</div>
+          <div class="card-meta">${item.artists}${item.appearsOn ? " · Aparece en" : ""}</div>
+        </div>
+      </a>
+    `).join("");
+
+    document.querySelectorAll("#fullCatalogueGrid [data-spotify-uri]").forEach((el) => {
+      el.addEventListener("click", (event) => {
+        if (event.defaultPrevented || event.button !== 0) return;
+        if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+        event.preventDefault();
+        openSpotifyPreview(el.dataset.spotifyUri, el.dataset.spotifyName);
+      });
+    });
+    if (status.isConnected) status.remove();
+  }
+
+  let cached = null;
+  try { cached = JSON.parse(localStorage.getItem(CACHE_KEY) || "null"); } catch (e) {}
+  if (cached && Array.isArray(cached.items) && cached.items.length) render(cached.items);
+
   fetch("/.netlify/functions/spotify-catalog")
     .then((res) => {
       if (!res.ok) throw new Error("bad response");
@@ -1032,30 +1070,12 @@ if (!savedLang()) {
     })
     .then(({ items }) => {
       if (!items || !items.length) throw new Error("empty");
-
-      grid.innerHTML = items.map((item) => `
-        <a href="${item.url}" target="_blank" rel="noopener" class="release-card"
-           data-spotify-uri="spotify:${item.type === "track" ? "track" : "album"}:${item.id}" data-spotify-name="${item.name}">
-          <div class="release-art"><img src="${item.cover || ""}" alt="${item.name} — cover art" loading="lazy" decoding="async"></div>
-          <div class="card-info">
-            <div class="card-name">${item.name}</div>
-            <div class="card-meta">${item.artists}${item.appearsOn ? " · Aparece en" : ""}</div>
-          </div>
-        </a>
-      `).join("");
-
-      document.querySelectorAll("#fullCatalogueGrid [data-spotify-uri]").forEach((el) => {
-        el.addEventListener("click", (event) => {
-          if (event.defaultPrevented || event.button !== 0) return;
-          if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-          event.preventDefault();
-          openSpotifyPreview(el.dataset.spotifyUri, el.dataset.spotifyName);
-        });
-      });
-
-      status.remove();
+      render(items);
+      try { localStorage.setItem(CACHE_KEY, JSON.stringify({ at: Date.now(), items })); } catch (e) {}
     })
     .catch(() => {
+      // Si ya se mostró lo guardado, queda eso: mejor que un error.
+      if (shown) return;
       status.removeAttribute("data-i18n");
       status.textContent = I18N[currentLang].full_catalogue_error;
       const link = document.createElement("a");
