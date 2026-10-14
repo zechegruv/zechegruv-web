@@ -14,7 +14,7 @@
 //   Zeche le llega un mail (Resend, a PASS_NOTIFY_EMAIL) y, si la
 //   integración de Notion tiene permiso para comentar, queda un comentario
 //   en la ficha de la canción. La etapa en Notion no se toca: la mueve Zeche.
-const { json, db, esc, sendMail, notifyEmail, serviceKey } = require("./_lib/pass");
+const { json, db, dbDetail, esc, sendMail, notifyEmail, serviceKey } = require("./_lib/pass");
 const { _findClient: findClient, _parsePageId: parsePageId, _notionQuery: notionQuery, _toSong: toSong, SONGS_DS } = require("./portal-songs");
 const { listAudio, matchAudio } = require("./_lib/song-audio");
 
@@ -108,14 +108,16 @@ exports.handler = async (event) => {
     const flat = [note, ...marks.map((m) => `${clock(m.t)} ${m.text}`)].filter(Boolean).join("\n").slice(0, 1000) || null;
     Object.assign(saved, await db("song_approvals", { method: "POST", prefer: "return=representation", body: { profile_id: me.id, song_id: songId, song_title: title, kind, action, note: flat } }));
   }
-  if (!saved.ok) return json(500, { error: saved.status === 404 ? "Falta correr supabase/020_aprobaciones.sql." : "No pudimos guardarlo. Probá de nuevo." });
-  const row = saved.data[0];
+  // Si la base no lo guarda (p. ej. falta el permiso de 022), las notas del
+  // artista no se pierden: igual le llegan a Zeche por mail y a Notion.
+  if (!saved.ok) console.error("song_approvals insert:", dbDetail(saved));
+  const row = (saved.ok && saved.data && saved.data[0]) || {};
 
   const who = me.display_name || me.full_name || me.email;
   const verb = action === "aprobada" ? `aprobó ${LABEL[kind]}` : `pidió cambios en ${LABEL[kind]}`;
   // Aviso a Zeche (mail) y comentario en la ficha de Notion. Si alguno
   // falla, la aprobación ya quedó guardada igual.
-  await Promise.all([
+  const [mailed, commented] = await Promise.all([
     sendMail({
       to: notifyEmail(),
       subject: `${who} ${verb} de «${title}»`,
@@ -126,6 +128,7 @@ exports.handler = async (event) => {
 ${note ? `<p style="margin:0 0 14px;padding:14px 16px;background:#2E1607;border-radius:12px;font-size:15px;line-height:1.5">${esc(note).replace(/\n/g, "<br>")}</p>` : ""}
 ${marks.length ? `<table role="presentation" style="width:100%;border-collapse:separate;border-spacing:0 6px;margin:0 0 14px">${marks.map((m) => `<tr><td style="width:64px;vertical-align:top;padding:12px 0 12px 14px;background:#2E1607;border-radius:12px 0 0 12px;font-family:'Courier New',monospace;font-size:15px;font-weight:700;color:#F5A623">${clock(m.t)}</td><td style="padding:12px 14px;background:#2E1607;border-radius:0 12px 12px 0;font-size:15px;line-height:1.45">${esc(m.text)}</td></tr>`).join("")}</table>` : ""}
 ${version ? `<p style="margin:0 0 10px;font-size:12px;color:#C9A980">Escuchó: ${esc(version)}</p>` : ""}
+${saved.ok ? "" : `<p style="margin:0 0 10px;font-size:12px;color:#FF9C7A">Ojo: no quedó guardado en el portal (${esc(dbDetail(saved))}). Las notas están solo en este mail y en Notion.</p>`}
 <p style="margin:0;font-size:13px;color:#C9A980">${action === "aprobada" && kind === "master" ? "Ya se puede pasar a Distribución en Notion." : action === "aprobada" ? "Ya podés arrancar con el master." : (marks.length ? "En el portal (su perfil → Canciones) tenés el audio con cada nota marcada: tocás una y salta a ese momento. " : "") + "Respondé este mail para hablar con el artista."}</p>
 </div>`,
     }).catch(() => false),
@@ -134,6 +137,9 @@ ${version ? `<p style="margin:0 0 10px;font-size:12px;color:#C9A980">Escuchó: $
       body: JSON.stringify({ parent: { page_id: songId }, rich_text: [{ type: "text", text: { content: [`Portal: ${who} ${verb}.${note ? ` «${note}»` : ""}`, ...marks.map((m) => `${clock(m.t)} — ${m.text}`)].join("\n").slice(0, 1900) } }] }),
     }).catch(() => null),
   ]);
+  // Nada quedó en ningún lado: ahí sí, que lo vuelva a intentar.
+  const reached = mailed !== false || (commented && commented.ok);
+  if (!saved.ok && !reached) return json(500, { error: "No pudimos enviarlo. Tus notas siguen acá: probá de nuevo en un momento." });
 
-  return json(200, { ok: true, review: { kind, action, note: row.note || null, marks: Array.isArray(row.marks) ? row.marks : marks, version: row.version || version, at: row.created_at } });
+  return json(200, { ok: true, review: { kind, action, note: row.note || null, marks: Array.isArray(row.marks) ? row.marks : marks, version: row.version || version, at: row.created_at || new Date().toISOString() }, saved: saved.ok });
 };
