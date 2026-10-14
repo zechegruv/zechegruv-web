@@ -77,7 +77,7 @@
               <tr>
                 <td><div class="file-name">${f.url && PLAYABLE.test(f.name)
                   ? `<button class="play-btn" type="button" data-play="${esc(f.url)}" data-name="${esc(f.name)}" aria-label="Escuchar ${esc(f.name)}">${PLAY_ICONS}</button>`
-                  : ""}<span>${esc(f.name)}</span></div></td>
+                  : ""}<span>${esc(f.name)}${tagHtml(f)}</span></div></td>
                 <td data-label="Creado">${fmtDate(f.created)}</td>
                 <td data-label="Modificado">${fmtDate(f.modified)}</td>
                 <td data-label="Tamaño">${fmtSize(f.size)}</td>
@@ -89,6 +89,18 @@
   }
 
   const countLabel = (n) => (n === 1 ? "1 archivo" : `${n} archivos`);
+
+  // Qué es cada archivo según su nombre (lo marca portal-files.js): una
+  // etiqueta chica al lado del nombre.
+  const TAG = { vivo: "Para vivo", master: "Master", mezcla: "Mezcla", rec: "Grabación" };
+  const tagHtml = (f) => (f.tag && TAG[f.tag] ? `<span class="file-tag t-${f.tag}">${TAG[f.tag]}</span>` : "");
+
+  // Masters: por un lado los masters y por otro las versiones para show en
+  // vivo (archivos con "vivo" en el nombre). Solo se separan a la vista.
+  const LIVE_KEY = "zg-portal-masters-vista";
+  let mastersView = "masters";
+  try { if (localStorage.getItem(LIVE_KEY) === "vivo") mastersView = "vivo"; } catch (e) {}
+  const isLive = (f) => f.tag === "vivo";
 
   // ---------- Caché de las carpetas ----------
   // OneDrive tarda en responder, así que cada sección se pide una sola vez y
@@ -142,6 +154,14 @@
     $("filesEyebrow").textContent = P.nameOf(who);
     $("filesTitle").textContent = TITLES[section];
     $("filesIcon").setAttribute("href", `#ic-${section}`);
+    // Menú de secciones: se pasa de una a otra sin volver atrás.
+    document.querySelectorAll("#filesNav [data-fsec]").forEach((b) => {
+      const on = b.dataset.fsec === section;
+      b.classList.toggle("is-active", on);
+      if (on) { b.setAttribute("aria-current", "page"); b.scrollIntoView({ inline: "center", block: "nearest" }); }
+      else b.removeAttribute("aria-current");
+    });
+    $("filesBack").textContent = who.id === P.me.id ? (P.me.role === "artist" ? "← Archivos" : "← Volver al perfil") : `← ${P.nameOf(who)}`;
     const chips = $("filesChips");
     chips.replaceChildren();
     if (section === "membresia" && who.format) {
@@ -222,16 +242,45 @@
   // desplegados siguen desplegados.
   function renderList() {
     const openGroups = new Set(groupsEls().filter((d) => d.open).map((d) => d.dataset.group));
-    const loose = listing.files.length ? tableHtml(listing.files) : "";
-    const groups = listing.groups.map((g) => `
+    let view = listing;
+    let switcher = "";
+    if (section === "masters") {
+      const keep = (f) => (mastersView === "vivo" ? isLive(f) : !isLive(f));
+      const count = (pick) => listing.files.filter(pick).length + listing.groups.reduce((n, g) => n + g.files.filter(pick).length, 0);
+      const nMasters = count((f) => !isLive(f));
+      const nLive = count(isLive);
+      view = {
+        files: listing.files.filter(keep),
+        groups: listing.groups.map((g) => ({ ...g, files: g.files.filter(keep) })).filter((g, i) => g.files.length || (mastersView === "masters" && !listing.groups[i].files.length)),
+      };
+      switcher = `
+        <div class="seg" role="tablist" aria-label="Masters o versiones para vivo">
+          <button type="button" role="tab" data-mview="masters" aria-selected="${mastersView === "masters"}"><b>Masters</b><span>${nMasters}</span></button>
+          <button type="button" role="tab" data-mview="vivo" aria-selected="${mastersView === "vivo"}"><b>Para <i class="seg-long">show en </i>vivo</b><span>${nLive}</span></button>
+        </div>
+        ${!view.files.length && !view.groups.length ? `<p class="seg-empty">${mastersView === "vivo"
+          ? "Todavía no hay versiones para vivo. Se separan solas: alcanza con que el archivo diga «vivo» en el nombre (por ejemplo «Tenés que aprender - Ebmin Vivo»)."
+          : "Todavía no hay masters cargados."}</p>` : ""}`;
+    }
+    const loose = view.files.length ? tableHtml(view.files) : "";
+    const groups = view.groups.map((g) => `
       <details class="file-group" data-group="${esc(g.name)}"${openGroups.has(g.name) ? " open" : ""}>
         <summary><span class="group-name">${esc(g.name)}</span><span class="group-count">${countLabel(g.files.length)}</span></summary>
         ${g.files.length ? tableHtml(g.files) : ""}
       </details>`).join("");
-    $("filesList").innerHTML = loose + groups;
+    $("filesList").innerHTML = switcher + loose + groups;
     syncToggle();
     syncPlayer();
   }
+
+  $("filesList").addEventListener("click", (event) => {
+    const b = event.target.closest("[data-mview]");
+    if (!b || !listing || b.dataset.mview === mastersView) return;
+    mastersView = b.dataset.mview;
+    try { localStorage.setItem(LIVE_KEY, mastersView); } catch (e) {}
+    renderList();
+    $("filesList").querySelector(`[data-mview="${mastersView}"]`)?.focus();
+  });
 
   // Tocar una columna ordena por ella; tocarla de nuevo invierte el orden.
   $("filesList").addEventListener("click", (event) => {
@@ -444,6 +493,10 @@
   $("filesList").addEventListener("toggle", syncToggle, true);
 
   $("filesBack").addEventListener("click", () => P.backToProfile(profile));
+  $("filesNav").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-fsec]");
+    if (b && b.dataset.fsec !== section) open(b.dataset.fsec, profile);
+  });
 
   window.ZGFiles = { open, prefetch };
 })();

@@ -80,9 +80,23 @@ const HIDDEN = /^(\.|~\$)|\.(asd|ini|tmp)$|^(thumbs\.db|icon\r?)$/i;
 const byName = (a, b) => a.name.localeCompare(b.name, "es", { numeric: true, sensitivity: "base" });
 const newestFirst = (a, b) => (b.modified || "").localeCompare(a.modified || "") || byName(a, b);
 
+// Qué es cada archivo según su nombre (sin importar mayúsculas):
+// "vivo" -> versión para show en vivo, "master", "mix"/"mezcla", "rec".
+// Si dice "vivo", es para vivo aunque también diga master. Solo se lee el
+// nombre: no se copia ni se mueve nada.
+function tagOf(name) {
+  const n = ` ${String(name || "").replace(/\.[a-z0-9]{2,5}$/i, "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim()} `;
+  if (/ (vivo|live) /.test(n)) return "vivo";
+  if (/ (master|mastered|mstr) /.test(n)) return "master";
+  if (/ (mix|mezcla|mixdown) /.test(n)) return "mezcla";
+  if (/ (rec|grabacion) /.test(n)) return "rec";
+  return null;
+}
+
 function toFile(item) {
   const fs = item.fileSystemInfo || {};
   return {
+    tag: tagOf(item.name),
     name: item.name,
     size: item.size || 0,
     created: fs.createdDateTime || item.createdDateTime || null,
@@ -180,3 +194,4 @@ exports.handler = async (event) => {
 
 // Para pruebas.
 exports._listSection = listSection;
+exports._tagOf = tagOf;

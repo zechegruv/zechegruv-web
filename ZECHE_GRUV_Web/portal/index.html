@@ -19,6 +19,8 @@
   <link rel="stylesheet" href="/pass/pass.css">
   <link rel="stylesheet" href="admin.css">
   <link rel="stylesheet" href="artista.css">
+  <link rel="stylesheet" href="revision.css">
+  <link rel="stylesheet" href="letras.css">
   <!-- Medición de visitas (Google Analytics 4) -->
   <script src="/assets/js/medicion.js?v=1"></script>
 </head>
@@ -163,6 +165,13 @@
           <!-- Solo administrador, en el perfil de un artista: carpeta y Notion -->
           <button class="btn cfg-open" type="button" id="cfgOpen" hidden>⚙ Configuración</button>
         </header>
+        <!-- Admin mirando a un artista: saltar a cada parte de su perfil -->
+        <div class="sub-nav pf-nav" id="profileNav" role="navigation" aria-label="Partes del perfil" hidden>
+          <button type="button" data-pf="songsCard">Canciones</button>
+          <button type="button" data-pf="spaceCard">Carpeta y letras</button>
+          <button type="button" data-pf="profileForm">Datos</button>
+          <button type="button" data-pf="accessZone">Acceso</button>
+        </div>
 
         <!-- Mi proyecto: avance de las canciones y lo que hay para aprobar (canciones.js) -->
         <div id="projectCards" hidden></div>
@@ -197,7 +206,7 @@
           </details>
         </div>
 
-        <div class="card space-card">
+        <div class="card space-card" id="spaceCard">
           <h2 class="card-title" id="spaceTitle">Tu espacio</h2>
           <ul class="sections" id="sectionsList">
             <li><button class="section-btn" type="button" data-section="referencias">
@@ -384,21 +393,33 @@
             <h1 class="title title-sm" id="filesTitle"></h1>
           </div>
         </header>
+        <div class="sub-nav" id="filesNav" role="navigation" aria-label="Secciones de la carpeta">
+          <button type="button" data-fsec="referencias"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-referencias"/></svg>Referencias</button>
+          <button type="button" data-fsec="letras"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-letras"/></svg>Letras</button>
+          <button type="button" data-fsec="exports"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-exports"/></svg>Exports</button>
+          <button type="button" data-fsec="masters"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-masters"/></svg>Masters</button>
+          <button type="button" data-fsec="membresia"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-membresia"/></svg>Membresía</button>
+        </div>
         <div class="chips" id="filesChips"></div>
 
         <!-- Cuaderno de letras (solo en Letras, letras.js) -->
-        <div class="card lyrics-card" id="lyricsCard" hidden>
-          <div class="lyrics-head">
-            <h2 class="card-title">Cuaderno de letras</h2>
-            <button class="btn btn-primary" type="button" id="lyricsNew">+ Nueva letra</button>
+        <section class="nb" id="lyricsCard" hidden>
+          <div class="nb-head">
+            <h2 class="nb-title">Cuaderno de letras</h2>
+            <p class="nb-sub" id="lyricsSub"></p>
           </div>
-          <p class="hint lyrics-sub" id="lyricsSub"></p>
           <p class="msg" id="lyricsMsg" role="status"></p>
-          <p class="muted" id="lyricsStatus"></p>
-          <ul class="lyrics-list" id="lyricsList"></ul>
-        </div>
+          <p class="nb-status" id="lyricsStatus"></p>
+          <div class="nb-grid">
+            <button class="nb-new" type="button" id="lyricsNew">
+              <span class="nb-new-plus" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span>
+              <b>Nueva letra</b>
+              <small>Un título, un verso, una idea suelta</small>
+            </button>
+            <ul class="nb-list" id="lyricsList"></ul>
+          </div>
+        </section>
 
-        <!-- Links de YouTube (solo en Referencias, referencias-youtube.js) -->
         <div class="card ref-links-card" id="refLinksCard" hidden>
           <h2 class="card-title">Links de YouTube</h2>
           <p class="hint lyrics-sub" id="refLinksSub"></p>
@@ -461,19 +482,25 @@
 
       <!-- Editor de una letra del cuaderno (letras.js) -->
       <div id="panel-lyric" class="lyric-editor" hidden>
-        <button class="link-btn back-link" type="button" id="lyricBack">← Volver a Letras</button>
-        <div class="eyebrow" id="lyricEyebrow"></div>
-        <input class="lyric-title" type="text" id="lyricTitle" maxlength="120" placeholder="Título de la canción" aria-label="Título de la canción" list="lyricSongs" autocomplete="off">
-        <datalist id="lyricSongs"></datalist>
-        <div class="lyric-bar">
+        <div class="le-bar">
+          <button class="le-btn le-back" type="button" id="lyricBack"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 6.5L9 12l5.5 5.5"/></svg><span>Letras</span></button>
           <span class="lyric-save" id="lyricSave" role="status"></span>
-          <button class="btn" type="button" id="lyricCopy">Copiar letra</button>
+          <button class="le-btn" type="button" id="lyricRead" aria-pressed="false" title="Modo estudio: la letra grande y la pantalla prendida para leer mientras grabás"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12s3.2-6 9-6 9 6 9 6-3.2 6-9 6-9-6-9-6z"/><circle cx="12" cy="12" r="2.6"/></svg><span>Estudio</span></button>
+          <button class="le-btn" type="button" id="lyricCopy"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="11" height="12" rx="2"/><path d="M5 15V6a2 2 0 012-2h8"/></svg><span>Copiar</span></button>
         </div>
-        <div class="lyric-parts" id="lyricSections"></div>
-        <div class="lyric-add-label">Agregar parte</div>
-        <div class="lyric-add" id="lyricAdd"></div>
-        <div class="lyric-foot">
-          <button class="link-btn lyric-delete" type="button" id="lyricDelete">Borrar esta letra</button>
+        <div class="le-paper">
+          <div class="eyebrow le-eyebrow" id="lyricEyebrow"></div>
+          <input class="lyric-title" type="text" id="lyricTitle" maxlength="120" placeholder="Título de la canción" aria-label="Título de la canción" list="lyricSongs" autocomplete="off">
+          <datalist id="lyricSongs"></datalist>
+          <div class="le-map" id="lyricMap" role="navigation" aria-label="Estructura de la canción"></div>
+          <div class="lyric-parts" id="lyricSections"></div>
+          <div class="le-add">
+            <button class="le-add-btn" type="button" id="lyricAddBtn" aria-expanded="false" aria-controls="lyricAdd"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Agregar parte</span></button>
+            <div class="le-picker" id="lyricAdd" hidden></div>
+          </div>
+          <div class="lyric-foot">
+            <button class="link-btn lyric-delete" type="button" id="lyricDelete">Borrar esta letra</button>
+          </div>
         </div>
       </div>
 
@@ -1210,6 +1237,7 @@
   <script src="portal.js"></script>
   <script src="distribucion.js"></script>
   <script src="archivos.js"></script>
+  <script src="revision.js"></script>
   <script src="canciones.js"></script>
   <script src="artista.js"></script>
   <script src="letras.js"></script>
@@ -1219,6 +1247,7 @@
   <script src="zgpass.js"></script>
   <script src="zgpass-eventos.js"></script>
   <script src="admin-home.js"></script>
+  <script src="perfil-nav.js"></script>
   <script src="/pass/pistas-card.js"></script>
   <script src="shows.js"></script>
   <script src="escena.js"></script>

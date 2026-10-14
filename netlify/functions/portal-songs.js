@@ -14,11 +14,14 @@
 //   artista ve en qué etapa está cada canción, no los plazos internos (los
 //   maneja el estudio). Tampoco salen las Notas, las tareas, los pagos ni
 //   los datos personales de la ficha.
-// - Aprobar mezcla y master (portal-review.js): cada canción en Mezcla o
-//   Master trae si ya se puede aprobar ("ready") y lo último que dijo el
-//   artista ("review": aprobada o cambios). El master se puede aprobar
-//   cuando ya no tiene fecha de entrega en Notion (al terminarlo, Zeche la
-//   borra: solo falta que el artista lo apruebe). La fecha en sí no sale.
+// - Aprobar mezcla y master (portal-review.js): la mezcla o el master se
+//   detectan solos en la carpeta de OneDrive del artista (un audio con
+//   "mix"/"mezcla" o "master" en el nombre, ver _lib/song-audio.js). Cada
+//   canción en Mezcla o Master trae "delivery": en qué está (proceso,
+//   aprobar, cambios o aprobada), el audio entregado para escucharlo y lo
+//   último que dijo el artista (con sus notas marcadas en el tiempo).
+//   Mientras Zeche mezcla y todavía no subió el audio, la canción figura
+//   "en proceso de mezcla" y no hay nada que aprobar.
 //
 // Variables de entorno en Netlify:
 //   SUPABASE_SERVICE_ROLE_KEY (secreta)
@@ -38,6 +41,7 @@ const SONGS_DS = process.env.NOTION_SONGS_DS || "6682afe6-bf6d-47e6-9029-168199a
 const TASKS_DS = process.env.NOTION_TASKS_DS || "0b31e043-55b6-82df-ab70-074084ffacba";
 const CLIENTS_DS = process.env.NOTION_CLIENTS_DS || "d291e043-55b6-83fc-a0c7-0759bf96279f";
 const TZ = "America/Argentina/Buenos_Aires";
+const { listAudio, matchAudio } = require("./_lib/song-audio");
 
 // Etapas tal como están en Notion ("Etapa actual") -> cómo se ven en el
 // portal. Las del proceso van en orden; desde Distribución el master ya
@@ -100,22 +104,48 @@ function toSong(page) {
     done: stageName in DONE,
     release: dateOf(p["Fecha de lanzamiento"]),
     updated: page.last_edited_time || null,
-    // Mezcla: se aprueba mientras está en Mezcla. Master: cuando ya se
-    // entregó (sin fecha de entrega pendiente).
-    ready: step === 3 || (step === 4 && !dateOf(p["Fecha de entrega"])),
   };
 }
 
-// Lo último que dijo el artista sobre la etapa actual de cada canción.
+// ---------- Mezcla y master entregados ----------
+// Qué se aprueba en cada etapa: en Mezcla la mezcla, en Master el master.
 const REVIEW_KIND = { 3: "mezcla", 4: "master" };
-function withReviews(songs, rows) {
+const sameId = (a, b) => String(a || "").replace(/-/g, "") === String(b || "").replace(/-/g, "");
+const time = (iso) => Date.parse(iso || "") || 0;
+
+function reviewOut(r) {
+  return r ? { action: r.action, note: r.note || null, marks: Array.isArray(r.marks) ? r.marks : [], version: r.version || null, at: r.created_at } : null;
+}
+
+// proceso  -> Zeche está trabajando; todavía no hay audio entregado.
+// aprobar  -> hay un audio nuevo para escuchar y aprobar (o pedir cambios).
+// cambios  -> el artista pidió cambios sobre el último audio; Zeche los
+//             está haciendo. Cuando sube una versión nueva, vuelve a "aprobar".
+// aprobada -> el artista aprobó el último audio.
+function deliveryOf(song, files, rows) {
+  const kind = REVIEW_KIND[song.step] || (song.done ? "master" : null);
+  if (!kind) return null;
+  const last = (rows || []).find((r) => sameId(r.song_id, song.id) && r.kind === kind) || null;
+  const file = (files[song.id] || {})[kind] || null;
+  let state;
+  if (song.done) state = "aprobada";
+  else if (!file) state = last && last.action === "cambios" ? "cambios" : "proceso";
+  else if (last && time(file.modified) <= time(last.created_at)) state = last.action === "aprobada" ? "aprobada" : "cambios";
+  else state = "aprobar";
+  // Mientras está en proceso no sale ningún audio: no hay nada para escuchar.
+  const out = state === "proceso" || !file ? null : { name: file.name, url: file.url, modified: file.modified, size: file.size || 0 };
+  return { kind, state, file: out, review: reviewOut(last) };
+}
+
+function withDelivery(songs, files, rows) {
   return songs.map((song) => {
-    const kind = REVIEW_KIND[song.step] || (song.done ? "master" : null);
-    const last = kind && (rows || []).find((r) => r.song_id.replace(/-/g, "") === song.id.replace(/-/g, "") && r.kind === kind);
+    const delivery = deliveryOf(song, files || {}, rows);
     return {
       ...song,
-      ready: !song.done && song.ready,
-      review: last ? { kind, action: last.action, note: last.note || null, at: last.created_at } : null,
+      delivery,
+      // Lo de siempre (Mi proyecto, el menú): hay algo para aprobar.
+      ready: !!delivery && delivery.state === "aprobar",
+      review: delivery && delivery.review ? { kind: delivery.kind, ...delivery.review } : null,
     };
   });
 }
@@ -238,7 +268,7 @@ exports.handler = async (event) => {
 
   if (!notionToken()) return json(500, { error: "Falta NOTION_TOKEN en las variables de entorno de Netlify." });
   const [rows, profile] = await Promise.all([
-    supabase(`/rest/v1/artist_private?profile_id=eq.${artistId}&select=notion_page_id`, serviceKey),
+    supabase(`/rest/v1/artist_private?profile_id=eq.${artistId}&select=notion_page_id,onedrive_link,onedrive_edit_link`, serviceKey),
     supabase(`/rest/v1/profiles?id=eq.${artistId}&select=email,display_name,full_name`, serviceKey),
   ]);
   if (!profile || !profile[0]) return json(500, { error: BAD_KEY });
@@ -257,10 +287,16 @@ exports.handler = async (event) => {
         { property: "Fecha de Vencimiento", date: { on_or_after: todayAR() } },
       ] }).catch(() => []),
     ]);
-    // Aprobaciones (supabase/020_aprobaciones.sql). Si la tabla todavía no
-    // existe, las canciones se muestran igual, sin aprobaciones.
-    const reviews = await supabase(`/rest/v1/song_approvals?profile_id=eq.${artistId}&select=song_id,kind,action,note,created_at&order=created_at.desc&limit=300`, serviceKey);
-    const songs = withReviews(songPages.map(toSong), Array.isArray(reviews) ? reviews : []);
+    const base = songPages.map(toSong);
+    // Aprobaciones (020 y 021_notas_en_el_tiempo.sql) y los audios de mezcla
+    // y master de su carpeta de OneDrive. Si falta alguno (la tabla todavía
+    // no existe, OneDrive no responde), las canciones se muestran igual.
+    const folder = rows && rows[0] && (rows[0].onedrive_edit_link || rows[0].onedrive_link);
+    const [reviews, audios] = await Promise.all([
+      supabase(`/rest/v1/song_approvals?profile_id=eq.${artistId}&select=*&order=created_at.desc&limit=300`, serviceKey),
+      folder ? listAudio(folder).catch(() => []) : Promise.resolve([]),
+    ]);
+    const songs = withDelivery(base, matchAudio(base, audios), Array.isArray(reviews) ? reviews : []);
     return json(200, { configured: true, ...split(songs), next: nextSession(tasks, songs) });
   } catch (err) {
     // 404: la integración no tiene acceso a la base (hay que conectarla en Notion).
@@ -274,7 +310,9 @@ exports.handler = async (event) => {
 // Para pruebas.
 exports._toSong = toSong;
 exports._split = split;
-exports._withReviews = withReviews;
+exports._withDelivery = withDelivery;
 exports._parsePageId = parsePageId;
 exports._nextSession = nextSession;
 exports._findClient = findClient;
+exports._notionQuery = notionQuery;
+exports.SONGS_DS = SONGS_DS;

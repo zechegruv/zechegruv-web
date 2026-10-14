@@ -69,102 +69,80 @@
       </li>`;
   }
 
-  // ---------- Aprobar mezcla y master ----------
-  // Mezcla: mientras la canción está en Mezcla. Master: cuando ya se lo
-  // mandamos (en Notion ya no tiene fecha de entrega). El artista aprueba o
-  // pide cambios con una nota; a Zeche le llega el aviso.
-  const KIND = { 3: "mezcla", 4: "master" };
+  // ---------- Mezcla y master: escuchar y aprobar ----------
+  // El audio se detecta solo en la carpeta del artista (portal-songs.js):
+  // mientras Zeche mezcla, la canción figura "en proceso" y no hay nada que
+  // aprobar; cuando sube el archivo, aparece para escuchar, dejar notas en
+  // el segundo exacto y aprobar (revision.js).
   const WHAT = { mezcla: "la mezcla", master: "el master" };
-  const NOUN = { mezcla: "mezcla", master: "master" };
-  const WHERE = { mezcla: "Escuchala en Archivos → Exports.", master: "Escuchalo en Archivos → Masters." };
-  const approved = (song) => !!(song.review && song.review.action === "aprobada");
-  const kindOf = (song) => KIND[song.step] || null;
+  const NOUN = { mezcla: "Mezcla", master: "Master" };
+  const approved = (song) => !!(song.delivery && song.delivery.state === "aprobada");
+  const IC = {
+    play: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13a1 1 0 001.5.86l10.6-6.5a1 1 0 000-1.72L9.5 4.64A1 1 0 008 5.5z"/></svg>',
+    check: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+    notes: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14v10H9l-4 4z"/><path d="M9 9h6M9 12h4"/></svg>',
+  };
+  const eq = '<span class="dv-eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span>';
 
   function reviewHtml(song) {
-    const kind = kindOf(song);
-    if (!kind) return "";
+    const d = song.delivery;
+    if (!d || song.done) return "";
     const own = viewingOwn;
-    const r = song.review;
+    const r = d.review;
     const day = r ? fmtDay(new Date(r.at)) : "";
-    if (approved(song)) {
-      return `<div class="song-review is-ok"><span class="review-state">✓ ${own ? "Aprobaste" : "Aprobó"} ${WHAT[kind]} el ${esc(day)}</span></div>`;
+    const notes = r && r.marks ? r.marks.length : 0;
+    const ao = d.kind === "mezcla" ? "a" : "o";
+    const notesTxt = notes ? `${notes} ${notes === 1 ? "nota" : "notas"}` : "";
+    const open = (label, cls = "btn") => `<button class="${cls} dv-play" type="button" data-listen="${esc(song.id)}">${IC.play}<span>${label}</span></button>`;
+    if (d.state === "proceso") {
+      return `<div class="dv is-proceso"><span class="dv-ico">${eq}</span><span class="dv-text"><b>${NOUN[d.kind]} en proceso</b><span>${own
+        ? `Zeche está trabajando en ${WHAT[d.kind]}. Cuando esté, te aparece acá para escucharl${ao} y aprobarl${ao}.`
+        : `Todavía no subiste ${WHAT[d.kind]}: el artista no ve nada para aprobar. Subí un audio con "${d.kind === "mezcla" ? "mix" : "master"}" en el nombre a su carpeta y aparece solo.`}</span></span></div>`;
     }
-    const asked = r && r.action === "cambios"
-      ? `<p class="review-asked">${own ? "Pediste cambios" : "Pidió cambios"} el ${esc(day)}: «${esc(r.note || "")}»</p>`
-      : "";
-    if (!own) {
-      const state = song.ready ? `Falta que apruebe ${WHAT[kind]}` : "Master en proceso";
-      return `<div class="song-review">${asked}<span class="review-state is-wait">${state}</span></div>`;
-    }
-    if (!song.ready) {
-      return `<div class="song-review">${asked}<button class="btn review-btn" type="button" disabled>Aprobar master · cuando te lo mandemos</button></div>`;
-    }
-    const again = r ? "¿Ya escuchaste la nueva versión? " : "";
-    return `
-      <div class="song-review" data-kind="${kind}">
-        ${asked}
-        <p class="review-hint">${again}${WHERE[kind]}</p>
-        <div class="review-actions">
-          <button class="btn btn-primary review-btn" type="button" data-review="aprobada">Aprobar ${NOUN[kind]}</button>
-          <button class="btn review-btn review-ghost" type="button" data-review="open">Pedir cambios</button>
-        </div>
-        <form class="review-form" hidden>
-          <label class="sr-only" for="rv-${esc(song.id)}">Qué te gustaría cambiar</label>
-          <textarea id="rv-${esc(song.id)}" rows="3" maxlength="1000" placeholder="Ej.: en el estribillo subiría un poco la voz"></textarea>
-          <div class="review-actions">
-            <button class="btn btn-primary review-btn" type="submit">Enviar a Zeche</button>
-            <button class="btn review-btn review-ghost" type="button" data-review="close">Cancelar</button>
-          </div>
-        </form>
-        <p class="msg review-msg" role="status"></p>
-      </div>`;
-  }
-
-  async function sendReview(li, kind, action, note) {
-    const msg = li.querySelector(".review-msg");
-    const buttons = li.querySelectorAll(".review-btn");
-    buttons.forEach((b) => { b.disabled = true; });
-    P.setMsg(msg, "Enviando…");
-    try {
-      const { data: { session } } = await db.auth.getSession();
-      const res = await fetch("/.netlify/functions/portal-review", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
-        body: JSON.stringify({ song: li.dataset.song, kind, action, note }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || "No pudimos enviarlo. Probá de nuevo.");
-      // Se actualiza lo guardado y se vuelve a pintar.
-      const hit = cache.get(P.me.id);
-      if (hit && hit.data) {
-        (hit.data.active || []).forEach((s) => { if (s.id === li.dataset.song) s.review = data.review; });
-        paint(P.me, hit.data);
+    if (d.state === "aprobar") {
+      const drafts = own && window.ZGReview ? window.ZGReview.drafts(song) : 0;
+      const again = r && r.action === "cambios";
+      if (!own) {
+        return `<div class="dv is-espera"><span class="dv-ico">${IC.play}</span><span class="dv-text"><b>${NOUN[d.kind]} entregad${ao}${again ? " · versión nueva" : ""}</b><span>Esperando que l${ao} escuche y l${ao} apruebe.${again && notesTxt ? ` Antes había dejado ${notesTxt}.` : ""}</span></span>${open("Escuchar")}</div>`;
       }
-      if (window.zgTrack) window.zgTrack("portal_aprobacion", { etapa: kind, accion: action });
-    } catch (err) {
-      buttons.forEach((b) => { b.disabled = false; });
-      P.setMsg(msg, err.message, true);
+      return `<div class="dv is-aprobar"><span class="dv-ico">${IC.play}</span><span class="dv-text"><b>${again ? "Versión nueva de " + WHAT[d.kind] : NOUN[d.kind] + " para aprobar"}</b><span>${drafts ? `Tenés ${drafts} ${drafts === 1 ? "nota guardada" : "notas guardadas"} sin mandar.` : `Escuchal${ao}, dejá notas en el momento exacto o aprobal${ao}.`}</span></span>${open(drafts ? "Seguir escuchando" : "Escuchar y aprobar", "btn")}</div>`;
     }
+    if (d.state === "cambios") {
+      return `<div class="dv is-cambios"><span class="dv-ico">${IC.notes}</span><span class="dv-text"><b>${own ? "Pediste cambios" : "Pidió cambios"} el ${esc(day)}${notesTxt ? ` · ${notesTxt}` : ""}</b><span>${own ? "Zeche los está trabajando. Cuando suba la versión nueva, te aparece acá." : "Tocá «Ver notas» y el audio salta a cada momento."}</span></span>${d.file ? open(own ? "Ver mis notas" : "Ver notas", "btn btn-ghost") : ""}</div>`;
+    }
+    // aprobada
+    return `<div class="dv is-aprobada"><span class="dv-ico">${IC.check}</span><span class="dv-text"><b>${own ? "Aprobaste" : "Aprobó"} ${WHAT[d.kind]}${day ? ` el ${esc(day)}` : ""}</b><span>${d.kind === "mezcla" ? "Sigue el master." : "Lista para salir."}</span></span>${d.file ? open("Volver a escuchar", "btn btn-ghost") : ""}</div>`;
   }
 
-  $("songsList").addEventListener("click", (e) => {
-    const b = e.target.closest("[data-review]");
-    if (!b) return;
-    const li = b.closest("li.song");
-    const box = li.querySelector(".song-review");
-    const form = box.querySelector(".review-form");
-    const actions = box.querySelector(".review-actions");
-    if (b.dataset.review === "open") { form.hidden = false; actions.hidden = true; form.querySelector("textarea").focus(); return; }
-    if (b.dataset.review === "close") { form.hidden = true; actions.hidden = false; return; }
-    if (b.dataset.review === "aprobada") sendReview(li, box.dataset.kind, "aprobada", null);
-  });
-  $("songsList").addEventListener("submit", (e) => {
-    e.preventDefault();
-    const li = e.target.closest("li.song");
-    const box = li.querySelector(".song-review");
-    const note = e.target.querySelector("textarea").value.trim();
-    if (!note) { P.setMsg(box.querySelector(".review-msg"), "Contanos qué te gustaría cambiar.", true); return; }
-    sendReview(li, box.dataset.kind, "cambios", note);
+  // Busca la canción en lo que ya está cargado (propio o del artista que se mira).
+  function findSong(id) {
+    for (const hit of cache.values()) {
+      const all = hit && hit.data ? [...(hit.data.active || []), ...(hit.data.done || [])] : [];
+      const s = all.find((x) => x.id === id);
+      if (s) return { song: s, data: hit.data };
+    }
+    return null;
+  }
+
+  function listen(id) {
+    const found = findSong(id);
+    if (!found || !window.ZGReview) return;
+    const { song } = found;
+    window.ZGReview.open(song, {
+      own: viewingOwn,
+      onSent(review) {
+        // La canción pasa a aprobada o a "cambios" sin esperar a Notion.
+        song.delivery = { ...song.delivery, state: review.action === "aprobada" ? "aprobada" : "cambios", review };
+        song.review = { kind: song.delivery.kind, ...review };
+        song.ready = false;
+        if (shownProfile) paint(shownProfile, found.data);
+      },
+    });
+  }
+
+  document.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-listen]");
+    if (b) { e.preventDefault(); listen(b.dataset.listen); }
   });
 
   // ---------- Mi proyecto (portal nuevo del artista) ----------
@@ -222,14 +200,17 @@
     }
 
     // Lista: lo que hay para aprobar; si no hay nada, cómo va cada canción.
+    const TAG = { proceso: "en proceso", aprobar: "para aprobar", cambios: "cambios pedidos", aprobada: "aprobada" };
     const rows = (pending.length ? pending : active).map((s, i) => {
       const stage = s.step >= 0 ? STAGES[s.step][1] : "Por arrancar";
-      const tag = pending.length ? "Para aprobar" : approved(s) ? `${s.step === 4 ? "Master" : "Mezcla"} aprobada` : "En proceso";
-      return `<li><button type="button" class="ap-row" data-go="canciones" style="animation-delay:${300 + i * 80}ms">
+      const d = s.delivery;
+      const tag = pending.length ? "Escuchar" : d ? `${d.kind === "mezcla" ? "Mezcla" : "Master"} ${TAG[d.state]}`.replace("Master aprobada", "Master aprobado") : "En proceso";
+      const act = pending.length ? `data-listen="${esc(s.id)}"` : 'data-go="canciones"';
+      return `<li><button type="button" class="ap-row" ${act} style="animation-delay:${300 + i * 80}ms">
         <span class="ap-dot${i === 0 && pending.length ? " is-now" : ""}" aria-hidden="true"></span>
         <span class="ap-stage">${esc(stage)}</span>
         <span class="ap-what">${esc(s.title)}${s.feat ? ` <small>feat. ${esc(s.feat)}</small>` : ""}</span>
-        <span class="ap-tag">${tag}</span>
+        <span class="ap-tag${pending.length ? " is-go" : ""}">${tag}</span>
       </button></li>`;
     }).join("");
     const list = rows ? `
@@ -255,7 +236,7 @@
 
   function doneSong(song) {
     const when = dateLine(song);
-    const tag = song.stage === "publicada" ? "Publicada" : approved(song) ? `Master aprobado el ${fmtDay(new Date(song.review.at))}` : "Master aprobado";
+    const tag = song.stage === "publicada" ? "Publicada" : approved(song) && song.review ? `Master aprobado el ${fmtDay(new Date(song.review.at))}` : "Master aprobado";
     return `
       <li class="song song-finished">
         <div class="song-name">${titleHtml(song)}</div>
@@ -397,7 +378,21 @@
     paint(profile, data);
   }
 
+  let shownProfile = null; // perfil cuyas canciones están a la vista
+  let wantOpen = null;     // { profileId, songId }: abrir esa canción apenas cargue
+  function openWhenReady(profileId, songId) { wantOpen = { profileId, songId }; }
   function paint(profile, data) {
+    shownProfile = profile;
+    if (wantOpen && wantOpen.profileId === profile.id) {
+      const id = String(wantOpen.songId).replace(/-/g, "");
+      wantOpen = null;
+      setTimeout(() => {
+        const s = [...(data.active || []), ...(data.done || [])].find((x) => String(x.id).replace(/-/g, "") === id);
+        if (!s) return;
+        document.querySelector(`#songsList [data-song="${s.id}"]`)?.scrollIntoView({ block: "center", behavior: "smooth" });
+        if (s.delivery && s.delivery.file) listen(s.id);
+      }, 60);
+    }
     const admin = P.me.role === "admin";
     const own = profile.id === P.me.id;
     const card = $("songsCard");
@@ -436,5 +431,17 @@
     return [...(data.active || []), ...(data.done || [])].map((s) => s.title).filter(Boolean);
   }
 
-  window.ZGSongs = { load, titles };
+  // Etapa de la canción con ese título (el cuaderno de letras la muestra).
+  function find(profileId, normTitle) {
+    const hit = cache.get(profileId);
+    const data = hit && hit.data;
+    if (!data || !data.configured) return null;
+    const clean = (t) => String(t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+    const s = [...(data.active || []), ...(data.done || [])].find((x) => clean(x.title) === normTitle);
+    if (!s) return null;
+    if (s.done) return s.stage === "publicada" ? "Publicada" : "Terminada";
+    return s.step >= 0 ? `En ${STAGES[s.step][1].toLowerCase()}` : "Por arrancar";
+  }
+
+  window.ZGSongs = { load, titles, find, openWhenReady };
 })();
