@@ -185,13 +185,27 @@ async function onMaster(song, log) {
   return out;
 }
 
+// ¿El artista de este cliente de Notion distribuye con ZECHE GRUV?
+// (028_distribuye.sql; si no se encuentra el perfil, se asume que sí.)
+async function distributesWithUs(clientId) {
+  if (!clientId) return true;
+  const priv = await db(`artist_private?notion_page_id=eq.${clientId}&select=profile_id`);
+  const id = priv.ok && priv.data[0] && priv.data[0].profile_id;
+  if (!id) return true;
+  const prof = await db(`profiles?id=eq.${id}&select=distributes`);
+  return !(prof.ok && prof.data[0] && prof.data[0].distributes === false);
+}
+
 async function onDistribution(song) {
   const out = { song: song.title, stage: "Distribución", actions: [] };
   const artist = await artistName(song.clientId);
+  const ours = await distributesWithUs(song.clientId).catch(() => true);
   // Lo que quedaba abierto de mezcla y master ya no corre.
   const left = await openTasks(song.id, ["Mix", "Master"]);
   await Promise.all(left.map((t) => notion(`/pages/${t.id}`, { method: "PATCH", body: JSON.stringify({ properties: { "Estado de Tarea": { select: { name: "COMPLETADO" } } } }) })));
   if (left.length) out.actions.push(`cerradas ${left.length}`);
+  // Si distribuye por su cuenta: ni tarea ni aviso al equipo.
+  if (!ours) { out.actions.push("no distribuye con ZG"); return out; }
   const already = await openTasks(song.id, ["Distribución"]);
   if (!already.length) {
     const t = await createTask({ name: `Distribución ${song.title}${artist ? ` ${artist}` : ""}`, etapa: "Distribución", song, description: "Creada sola al aprobarse el master. Portada, créditos, fecha de lanzamiento y carga en la distribuidora." });

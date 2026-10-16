@@ -359,6 +359,11 @@
     // Activo / inactivo: también solo el administrador, sobre artistas.
     $("accessZone").hidden = !(admin && !own && p.role !== "admin");
     paintAccess(p);
+    // Distribuye con ZECHE GRUV: el administrador lo cambia en cada artista;
+    // si no distribuye, el artista no ve la sección Distribución.
+    $("distZone").hidden = !(admin && !own && p.role === "artist");
+    paintDist(p);
+    $("openDistribution").closest("li").hidden = p.role === "artist" && p.distributes === false && !admin;
 
     setMsg($("profileMsg"), "");
     setMsg($("passwordMsg"), "");
@@ -479,6 +484,31 @@
     if (btn) openTab(btn.dataset.tab);
   });
   $("backToArtists").addEventListener("click", () => openTab("artists"));
+
+  // ---------- Distribuye con ZECHE GRUV ----------
+  function paintDist(p) {
+    const on = p.distributes !== false;
+    $("distState").textContent = on ? "Sí" : "No";
+    $("distState").className = `chip ${on ? "chip-on" : "chip-off"}`;
+    $("distHint").textContent = on
+      ? "Ve la sección Distribución, puede cargar sus lanzamientos y, al aprobar un master, se arma solo el paso a Distribución."
+      : "No ve la sección Distribución y sus masters aprobados no generan tarea de Distribución ni se pueden mandar a ZIL.";
+    $("distBtn").textContent = on ? "No distribuye con ZECHE GRUV" : "Distribuye con ZECHE GRUV";
+    $("distBtn").className = on ? "btn" : "btn btn-primary";
+    setMsg($("distMsg"), "");
+  }
+
+  $("distBtn").addEventListener("click", async () => {
+    const target = viewing;
+    const next = target.distributes === false;
+    $("distBtn").disabled = true;
+    setMsg($("distMsg"), "Guardando…");
+    const { data, error } = await db.from("profiles").update({ distributes: next }).eq("id", target.id).select().single();
+    $("distBtn").disabled = false;
+    if (error || !data) { setMsg($("distMsg"), "No pudimos guardarlo. ¿Corriste supabase/028_distribuye.sql?", true); return; }
+    if (viewing && viewing.id === target.id) { viewing = data; paintDist(data); }
+    setMsg($("distMsg"), next ? `${nameOf(target)} distribuye con ZECHE GRUV.` : `Listo: ${nameOf(target)} no distribuye con ZECHE GRUV.`);
+  });
 
   // ---------- Activo / inactivo ----------
   // Inactivo: la cuenta queda bloqueada y no entra al portal, pero no se

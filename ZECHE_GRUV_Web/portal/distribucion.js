@@ -6,7 +6,7 @@
   const P = window.ZGPortal;
   const { db, $, setMsg } = P;
 
-  const STATUS_LABEL = { draft: "Borrador", submitted: "Enviado", loaded: "Cargado", published: "Publicado" };
+  const STATUS_LABEL = { draft: "Borrador", submitted: "Enviado", loaded: "En camino a las tiendas", published: "Publicado" };
   // Roles y versiones tal cual figuran en la planilla de distribución.
   const ROLES = ["Main Artist", "Featuring", "Composer", "Lyricist", "Songwriter", "Producer", "Mixer", "Mastering Engineer", "Remixer"];
   const VERSIONS = ["Acoustic", "Clean", "Clean Edit", "Clean Version", "Cover", "Dub Edit", "Dub Mix", "Extended", "Extended Mix", "Instrumental", "Live", "Radio Edit", "Radio Mix", "Remastered", "Remix", "Stripped", "VIP Edit", "VIP Mix"];
@@ -125,6 +125,7 @@
       ? `ZECHE GRUV te pidió ajustar esto antes de mandarlo a las tiendas: ${release.review_note}`
       : "Este lanzamiento ya fue enviado a ZECHE GRUV y no se puede editar. Si hay que corregir algo, escribinos.";
     $("rReviewNote").value = "";
+    renderStores();
 
     $("rTitle").value = release.title || "";
     $("rType").value = release.release_type || "single";
@@ -141,6 +142,7 @@
 
     $("releaseFields").disabled = !editable;
     $("releaseAdmin").hidden = !admin;
+    document.querySelector("#releaseAdmin .zil-admin").hidden = !isAdmin() || owner.distributes === false;
     $("releaseActions").hidden = !editable;
     $("saveDraftBtn").hidden = admin;
     $("submitReleaseBtn").hidden = admin;
@@ -537,6 +539,67 @@
     } finally {
       btn.disabled = false;
     }
+  });
+
+  // ---------- Tiendas (ZIL) ----------
+  // Lo que ve el artista (y vos): en qué está su lanzamiento y, cuando ya
+  // salió, el link con todas las plataformas. Lo actualiza zil-sync.js cada hora.
+  function renderStores() {
+    const box = $("storeStatus");
+    const z = release.zil_status || {};
+    const show = release.status === "loaded" || release.status === "published";
+    box.hidden = !show;
+    if (!show) return;
+    const live = z.live || 0, total = z.total || 0;
+    const line = release.status === "published"
+      ? "¡Ya está en las plataformas!"
+      : total ? `En revisión en las tiendas · ${live} de ${total} ya lo publicaron` : "Enviado a las tiendas. Cada tienda lo revisa antes de publicarlo; suele tardar unos días.";
+    box.innerHTML = `<p class="store-line"><b>${esc(line)}</b></p>`
+      + (release.smart_link ? `<p><a class="btn btn-primary" href="${esc(release.smart_link)}" target="_blank" rel="noopener">Escuchar y compartir</a></p>` : "")
+      + (z.checked_at ? `<p class="hint">Actualizado ${fmtDate(z.checked_at)}</p>` : "");
+  }
+
+  async function zil(action) {
+    const { data: { session } } = await db.auth.getSession();
+    const res = await fetch("/.netlify/functions/zil-admin", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+      body: JSON.stringify({ action, id: release && release.id }),
+    });
+    const data = await res.json().catch(() => ({}));
+    return { ok: res.ok, data };
+  }
+
+  function zilShow(text) { const out = $("zilOut"); out.hidden = !text; out.textContent = text || ""; }
+
+  async function zilRun(btn, action, label) {
+    btn.disabled = true;
+    zilShow(`${label}…`);
+    try {
+      const { ok, data } = await zil(action);
+      const lines = [];
+      if (data.error) lines.push(`✕ ${data.error}`);
+      if (data.problems && data.problems.length) lines.push("Falta resolver:", ...data.problems.map((x) => `• ${x}`));
+      if (ok && action === "preview" && data.ok) lines.push(`✓ Está todo para mandar (entorno: ${data.entorno}).`, "", ...(data.resumen.canciones || []).map((c) => `• ${c}`));
+      if (ok && action === "publish") lines.push(`✓ Enviado a revisión de las tiendas${data.dev ? " (entorno de PRUEBAS: no llega a ninguna tienda real)" : ""}.`);
+      if (ok && action === "sync") lines.push(data.ok ? `✓ ${data.live || 0} de ${(data.stores || []).length} tiendas lo publicaron.` : `✕ ${data.error}`);
+      if (ok && action === "diagnose") lines.push(JSON.stringify(data, null, 2));
+      zilShow(lines.join("\n"));
+      if (ok && (action === "publish" || action === "sync")) await openRelease(release.id);
+    } catch (err) {
+      zilShow("✕ No pudimos hablar con el servidor. Probá de nuevo.");
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  $("zilDiagBtn").addEventListener("click", (e) => zilRun(e.currentTarget, "diagnose", "Probando la conexión con ZIL"));
+  $("zilPreviewBtn").addEventListener("click", (e) => zilRun(e.currentTarget, "preview", "Revisando el lanzamiento"));
+  $("zilSyncBtn").addEventListener("click", (e) => zilRun(e.currentTarget, "sync", "Consultando las tiendas"));
+  $("zilPublishBtn").addEventListener("click", (e) => {
+    if (release.status !== "submitted") { zilShow("Solo se publica un lanzamiento que el artista envió (estado Recibido). Guardá los cambios primero."); return; }
+    if (!confirm(`¿Mandar "${release.title}" a las tiendas?\n\nSe carga en ZIL y pasa a revisión de las tiendas. Revisá antes que la fecha, la portada y los masters estén bien.`)) return;
+    zilRun(e.currentTarget, "publish", "Cargando en ZIL y enviando a las tiendas");
   });
 
   // ---------- Exportar a Excel (administrador) ----------

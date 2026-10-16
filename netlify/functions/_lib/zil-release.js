@@ -55,12 +55,13 @@ async function masterLinks(shareLink, names) {
 
 // Junta todo y revisa que no falte nada. No escribe nada en ZIL.
 async function prepare(releaseId) {
-  const r = await db(`releases?id=eq.${releaseId}&select=*,profiles(id,display_name,full_name,email,apple_id,spotify_artist_id)`);
+  const r = await db(`releases?id=eq.${releaseId}&select=*,profiles(id,display_name,full_name,email,apple_id,spotify_artist_id,distributes)`);
   const rel = r.ok && r.data[0];
   if (!rel) throw new Error("No encontramos el lanzamiento.");
   const owner = rel.profiles || {};
   const priv = (await db(`artist_private?profile_id=eq.${rel.artist_id}&select=*`)).data || [];
   const p = priv[0] || {};
+  if (owner.distributes === false) throw new Error("Este artista no distribuye con ZECHE GRUV (se cambia en su perfil).");
   const tracks = Array.isArray(rel.tracks) ? rel.tracks : [];
   const problems = [];
   if (!rel.title) problems.push("Falta el título del lanzamiento.");

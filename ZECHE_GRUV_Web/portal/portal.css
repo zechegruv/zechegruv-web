@@ -2734,3 +2734,8 @@ body:has(.escena-bar.is-on) nav { top: 44px; }
   .nav-tabs .tab { white-space: nowrap; }
   .nav-tabs:not([hidden]) + .nav-right .nav-tag { display: none; }
 }
+
+/* Estado del lanzamiento en las tiendas (ZIL) */
+.store-status { margin: 16px 0 0; padding: 16px 18px; border-radius: 16px; background: rgba(245, 166, 35, .1); border: 1px solid rgba(245, 166, 35, .35); display: grid; gap: 10px; }
+.store-status p { margin: 0; }
+.store-status .store-line b { color: var(--cream); font-size: 15px; }

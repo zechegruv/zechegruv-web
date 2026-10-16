@@ -319,6 +319,16 @@
           <button class="btn" type="button" id="accessBtn"></button>
         </div>
 
+        <!-- Solo administrador: si el artista distribuye con ZECHE GRUV -->
+        <div class="access-zone" id="distZone" hidden>
+          <div>
+            <h2 class="card-title">Distribución con ZECHE GRUV <span class="chip" id="distState"></span></h2>
+            <p class="hint" id="distHint"></p>
+            <p class="msg" id="distMsg" role="status"></p>
+          </div>
+          <button class="btn" type="button" id="distBtn"></button>
+        </div>
+
         <div class="danger-zone" id="dangerZone" hidden>
           <div>
             <h2 class="card-title">Borrar perfil</h2>
@@ -1001,6 +1011,7 @@
         <h1 class="title title-sm" id="releaseHeading">Nuevo lanzamiento</h1>
         <div class="chips" id="releaseChips"></div>
         <p class="notice" id="releaseNotice" hidden></p>
+        <div class="store-status" id="storeStatus" hidden></div>
 
         <form id="releaseForm" novalidate>
           <fieldset id="releaseFields">
@@ -1101,6 +1112,17 @@
               <p class="hint">Vuelve a Borrador para que el artista lo corrija y le llega un mail con esta nota.</p>
             </div>
             <button class="btn" type="button" id="requestChangesBtn">Devolver al artista</button>
+            <div class="zil-admin" style="margin-top:22px;display:grid;gap:10px">
+              <h3 class="card-title" style="font-size:16px">Tiendas (ZIL)</h3>
+              <p class="hint" id="zilHint">Revisá el envío y, si está todo bien, mandalo a las tiendas. Nada se publica sin que lo toques acá.</p>
+              <div class="actions" style="flex-wrap:wrap">
+                <button class="btn" type="button" id="zilPreviewBtn">Revisar envío</button>
+                <button class="btn btn-primary" type="button" id="zilPublishBtn">Publicar en tiendas</button>
+                <button class="btn" type="button" id="zilSyncBtn">Actualizar estado</button>
+                <button class="link-btn" type="button" id="zilDiagBtn">Probar conexión con ZIL</button>
+              </div>
+              <pre class="zil-out" id="zilOut" hidden style="white-space:pre-wrap;font-size:12px;max-height:320px;overflow:auto;background:rgba(0,0,0,.25);padding:12px;border-radius:12px"></pre>
+            </div>
           </div>
 
           <ul class="msg-list" id="releaseErrors" role="alert"></ul>

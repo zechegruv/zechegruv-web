@@ -42,10 +42,13 @@
     $("sideWhoSub").textContent = FORMAT_SUB[me.format] || "Artista ZECHE GRUV";
     P.paintAvatar($("sideWhoImg"), $("sideWhoEmpty"), me);
     $("sideWhoEmpty").hidden = !$("sideWhoImg").hidden;
+    // Si no distribuye con ZECHE GRUV (lo define el administrador), no ve Distribución.
+    const tabBtn = document.querySelector('#artistTabs [data-atab="distribucion"]');
+    if (tabBtn) tabBtn.hidden = me.distributes === false;
   }
 
   function go(tab) {
-    if (!TABS.includes(tab)) tab = "proyecto";
+    if (!TABS.includes(tab) || (tab === "distribucion" && P.me && P.me.distributes === false)) tab = "proyecto";
     if (tab === "distribucion") { mark(tab); window.ZGDistribution.openList(P.me); return; }
     mark(tab);
     if (tab === "escena") { renderSceneTab(); seenScene(); }
