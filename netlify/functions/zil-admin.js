@@ -38,18 +38,16 @@ exports.handler = async (event) => {
   try {
     if (body.action === "diagnose") {
       // Cada consulta por separado (solo lectura), para ver qué permite el token.
-      const z = client();
+      const z = client(undefined, { timeoutMs: 8000 });
       const out = { entorno: isDev() ? "pruebas (dev)" : "real", url: base(), token: `cargado (${token().length} caracteres)` };
       const tryCall = async (label, path) => {
         try { const d = await z.call(label, "GET", path); out[label] = `OK · ${sample(d)}`; return d; }
         catch (e) { out[label] = `✕ ${e.status}${e.detail ? ` (${e.detail})` : ""}`; return null; }
       };
-      await tryCall("perfil", "/me");
-      await tryCall("cuentas", "/users");
-      await tryCall("generos", "/genres");
-      await tryCall("tiendas", "/dsps");
-      await tryCall("proyectos", "/projects");
-      const albums = await tryCall("lanzamientos", "/albums");
+      const [, , , , , albums] = await Promise.all([
+        tryCall("perfil", "/me"), tryCall("cuentas", "/users"), tryCall("generos", "/genres"),
+        tryCall("tiendas", "/dsps"), tryCall("proyectos", "/projects"), tryCall("lanzamientos", "/albums"),
+      ]);
       if (albums) out.lanzamientos = `OK · ${listOf(albums).length} lanzamientos`;
       return json(200, { ok: true, ...out });
     }

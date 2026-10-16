@@ -20,15 +20,21 @@ class ZilError extends Error {
   }
 }
 
-function client(startToken) {
+function client(startToken, { timeoutMs = 9000 } = {}) {
   let current = startToken || token();
   async function call(step, method, path, body) {
     if (!current) throw new ZilError(step, "sin token", "falta ZIL_API_TOKEN en Netlify");
-    const res = await fetch(`${base()}${path}`, {
-      method,
-      headers: { Authorization: `Bearer ${current}`, "Content-Type": "application/json", Accept: "application/json" },
-      body: body === undefined ? undefined : JSON.stringify(body),
-    });
+    let res;
+    try {
+      res = await fetch(`${base()}${path}`, {
+        method,
+        headers: { Authorization: `Bearer ${current}`, "Content-Type": "application/json", Accept: "application/json" },
+        body: body === undefined ? undefined : JSON.stringify(body),
+        signal: AbortSignal.timeout(timeoutMs),
+      });
+    } catch (err) {
+      throw new ZilError(step, "sin respuesta", err.name === "TimeoutError" ? `ZIL no contestó en ${timeoutMs / 1000} s` : err.message);
+    }
     const text = await res.text();
     let data = null;
     try { data = text ? JSON.parse(text) : null; } catch (e) { data = { raw: text.slice(0, 300) }; }
