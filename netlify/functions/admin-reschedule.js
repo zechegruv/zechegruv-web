@@ -162,7 +162,7 @@ exports.handler = async (event) => {
       const r = await gc.patchEvent(ev.id, { ...when, description: note(ev.description, `↻ Reprogramada desde el portal (antes: ${before}).`) });
       calendar = r.ok ? "movido" : "error";
     } else {
-      const r = await gc.createEvent({ ...when, summary: `${t.stage === "Master" ? "Master" : "Mix"} – ${t.song || t.name}${t.artist ? ` (${t.artist})` : ""}`, colorId: "5", description: "Agendada desde el portal de ZECHE GRUV." });
+      const r = await gc.createEvent({ ...when, summary: `${t.stage === "Master" ? "Master" : "Mix"} – ${t.song || t.name}${t.artist ? ` (${t.artist})` : ""}`, colorId: t.stage === "Master" ? "8" : "7", description: "Agendada desde el portal de ZECHE GRUV." });
       calendar = r.ok ? "creado" : "error";
     }
   }
@@ -179,3 +179,7 @@ exports.handler = async (event) => {
 };
 
 exports._freeSlots = freeSlots;
+exports._moveDelivery = moveDelivery;
+exports._at = at;
+exports._addDays = addDays;
+exports._fmtDay = fmtDay;

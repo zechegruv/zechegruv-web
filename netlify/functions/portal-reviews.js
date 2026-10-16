@@ -1,5 +1,7 @@
 // GET  /.netlify/functions/portal-reviews  -> avisos del Inicio del panel
 // POST /.netlify/functions/portal-reviews  { song } -> borra el aviso (✕)
+// POST /.netlify/functions/portal-reviews  { resolve: { id, i, done } } -> tilda
+//      la nota i del artista como resuelta (checklist de la mezcla, 025)
 // Solo para el administrador: lo que dijeron los artistas sobre sus mezclas
 // y masters desde el portal (aprobaciones y pedidos de cambios con sus notas
 // en el tiempo). Ordenado y sin que se acumule:
@@ -66,6 +68,20 @@ exports.handler = async (event) => {
   if (event.httpMethod === "POST") {
     let body;
     try { body = JSON.parse(event.body || "{}"); } catch (e) { return json(400, { error: "Pedido inválido." }); }
+    // Checklist: tildar / destildar una nota del artista ya resuelta en la mezcla.
+    if (body.resolve) {
+      const id = String(body.resolve.id || "").replace(/[^0-9a-f-]/gi, "");
+      const i = Number(body.resolve.i);
+      if (!id || !Number.isInteger(i) || i < 0 || i > 59) return json(400, { error: "Pedido inválido." });
+      const cur = await db(`song_approvals?id=eq.${id}&select=resolved,marks`);
+      if (!cur.ok || !cur.data || !cur.data[0]) return json(cur.status === 400 ? 500 : 404, { error: cur.status === 400 ? "Falta correr 025_automatizaciones.sql en Supabase." : "No encontramos esas notas." });
+      const set = new Set(Array.isArray(cur.data[0].resolved) ? cur.data[0].resolved : []);
+      if (body.resolve.done) set.add(i); else set.delete(i);
+      const resolved = [...set].filter((n) => n < (cur.data[0].marks || []).length).sort((a, b) => a - b);
+      const up = await db(`song_approvals?id=eq.${id}`, { method: "PATCH", body: { resolved } });
+      if (!up.ok) return json(500, { error: "No pudimos guardarlo." });
+      return json(200, { ok: true, resolved });
+    }
     const song = String(body.song || "").replace(/[^0-9a-f-]/gi, "");
     if (!song) return json(400, { error: "Pedido inválido." });
     const res = await db(`song_approvals?song_id=eq.${song}&dismissed_at=is.null`, { method: "PATCH", body: { dismissed_at: new Date().toISOString() } });
@@ -96,7 +112,11 @@ exports.handler = async (event) => {
     kind: r.kind,
     action: r.action,
     final: r.kind === "master" && r.action === "aprobada",
+    id: r.id,
     notes: Array.isArray(r.marks) ? r.marks.length : 0,
+    // Checklist de la mezcla: cada nota del artista y cuáles ya resolviste.
+    marks: r.action === "cambios" && Array.isArray(r.marks) ? r.marks.map((m) => ({ t: m.t, text: m.text })) : [],
+    resolved: Array.isArray(r.resolved) ? r.resolved : [],
     note: r.note || null,
     at: r.created_at,
   }));

@@ -126,6 +126,12 @@
     const title = t.kind === "entrega" ? `«${t.name}»` : t.name;
     const sub = [t.artist, t.kind === "sesion" && t.song && !norm(t.name).includes(norm(t.song)) ? `«${t.song}»` : null].filter(Boolean).join(" · ");
     main.append(top, el("span", "zt-name", title), sub ? el("span", "zt-sub", sub) : "");
+    // Regla de 15 días (desde las voces finales): cuánto le queda al master.
+    if (t.rule) {
+      const left = Math.round((Date.parse(`${t.rule}T12:00:00Z`) - Date.parse(`${new Intl.DateTimeFormat("en-CA", { timeZone: TZ }).format(new Date())}T12:00:00Z`)) / 86400000);
+      const txt = left < 0 ? `Regla de 15 días: se pasó ${-left} ${-left === 1 ? "día" : "días"}` : left === 0 ? "Regla de 15 días: el master vence hoy" : `Regla de 15 días: quedan ${left} ${left === 1 ? "día" : "días"} para el master`;
+      main.append(el("span", `zt-rule${left <= 2 ? " is-hot" : ""}`, txt));
+    }
     main.addEventListener("click", async () => {
       const a = await artistByName(t.artist);
       if (a) openProfileId(a.id);
@@ -186,6 +192,7 @@
   }
 
   // ---------- Avisos ----------
+  const clockOf = (t) => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, "0")}`;
   function noticeRow(r, i, onGone) {
     const what = r.kind === "mezcla" ? "la mezcla" : "el master";
     const kind = r.action === "cambios" ? "is-cambios" : r.final ? "is-final" : "is-ok";
@@ -204,6 +211,57 @@
       : r.final ? "Listo para Distribución." : "Ya podés arrancar con el master.";
     if (hint) main.append(el("span", "zn-sub", hint));
     main.addEventListener("click", () => openProfileId(r.profile_id, r.song_id));
+    // Checklist: cada nota que marcó el artista, para tildarla mientras mezclás.
+    let checklist = null;
+    if (r.action === "cambios" && (r.marks || []).length) {
+      const done = new Set(r.resolved || []);
+      const box = el("div", "zc-box");
+      const head = el("div", "zc-head");
+      const bar = el("span", "zc-bar");
+      const fill = el("i");
+      bar.append(fill);
+      const count = el("span", "zc-count");
+      head.append(el("span", "zc-title", "Checklist de la mezcla"), count, bar);
+      const ul = el("ul", "zc-list");
+      const paint = () => {
+        const n = r.marks.length, d = [...done].filter((i) => i < n).length;
+        count.textContent = `${d}/${n}`;
+        fill.style.transform = `scaleX(${n ? d / n : 0})`;
+        box.classList.toggle("is-all", d === n);
+      };
+      r.marks.forEach((m, i) => {
+        const li = el("li", `zc-item${done.has(i) ? " is-done" : ""}`);
+        const b = el("button", "zc-check");
+        b.type = "button";
+        b.setAttribute("role", "checkbox");
+        b.setAttribute("aria-checked", done.has(i) ? "true" : "false");
+        b.innerHTML = ICON.check;
+        const t = el("span", "zc-time", clockOf(m.t));
+        const tx = el("span", "zc-text", m.text);
+        b.addEventListener("click", async () => {
+          const on = !done.has(i);
+          on ? done.add(i) : done.delete(i);
+          li.classList.toggle("is-done", on);
+          b.setAttribute("aria-checked", on ? "true" : "false");
+          paint();
+          try { await call("/.netlify/functions/portal-reviews", { resolve: { id: r.id, i, done: on } }); }
+          catch (e) {
+            on ? done.delete(i) : done.add(i);
+            li.classList.toggle("is-done", !on);
+            b.setAttribute("aria-checked", !on ? "true" : "false");
+            paint();
+            li.classList.add("is-shake");
+            setTimeout(() => li.classList.remove("is-shake"), 500);
+          }
+        });
+        li.append(b, t, tx);
+        ul.append(li);
+      });
+      paint();
+      box.append(head, ul);
+      checklist = box;
+      li.classList.add("has-check");
+    }
     const x = iconBtn(`zn-x${r.final ? " is-strong" : ""}`, "Borrar aviso", ICON.x);
     x.addEventListener("click", async () => {
       x.disabled = true;
@@ -212,6 +270,7 @@
       catch (e) { await gone; onGone(null); } // si falló, vuelve a aparecer en la próxima actualización
     });
     li.append(main, x);
+    if (checklist) li.append(checklist);
     return li;
   }
 

@@ -194,9 +194,12 @@ function nextSession(tasks, songs, now = new Date()) {
     const p = task.properties || {};
     const date = p["Fecha de Vencimiento"] && p["Fecha de Vencimiento"].date;
     const state = p["Estado de Tarea"] && p["Estado de Tarea"].select && p["Estado de Tarea"].select.name;
-    if (!date || !date.end || !/T/.test(date.start) || state === "COMPLETADO") return null;
+    if (!date || !date.end || !/T/.test(date.start) || state === "COMPLETADO" || state === "INACTIVA") return null;
     if (new Date(date.end) <= now) return null;
     const stageName = p.Etapa && p.Etapa.select ? p.Etapa.select.name : null;
+    // Mezcla, master y distribución los hace Zeche solo (aunque tengan
+    // horario, p. ej. agendadas solas): no son una sesión con el artista.
+    if (["Mix", "Master", "Distribución"].includes(stageName)) return null;
     const song = ((p["Canción"] && p["Canción"].relation) || []).map((r) => titles[r.id.replace(/-/g, "")]).find(Boolean) || null;
     return { start: date.start, end: date.end, stage: STAGE_KEY[stageName] || null, song };
   }).filter(Boolean).sort((a, b) => new Date(a.start) - new Date(b.start));

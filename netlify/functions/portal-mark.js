@@ -12,7 +12,7 @@
 // - "Entregado": al artista le aparece para escuchar y aprobar aunque el
 //   audio no esté en su carpeta (p. ej. si se lo mandaste por WhatsApp).
 // - "Master aprobado": se borra la fecha de entrega de la canción (ya no hay
-//   nada que entregar). La etapa no se toca: la mueve Zeche.
+//   nada que entregar) y la canción pasa sola a Distribución.
 const { json, db, dbDetail, serviceKey } = require("./_lib/pass");
 const { _parsePageId: parsePageId } = require("./portal-songs");
 
@@ -64,7 +64,9 @@ exports.handler = async (event) => {
   const title = plain(p["Canción"] && p["Canción"].title) || "Sin título";
 
   const props = { Entrega: { select: { name: LABEL[kind][action] } } };
-  if (kind === "master" && action === "aprobada") props["Fecha de entrega"] = { date: null };
+  // Master aprobado: pasa solo a Distribución (la función programada crea
+  // la tarea de distribución y le avisa al equipo).
+  if (kind === "master" && action === "aprobada") { props["Fecha de entrega"] = { date: null }; props["Etapa actual"] = { select: { name: "Distribución" } }; }
   const upd = await notion(`/pages/${songId}`, { method: "PATCH", body: JSON.stringify({ properties: props }) });
   if (!upd.ok) {
     const hint = upd.status === 400 ? "Falta la columna «Entrega» en Canciones o la integración no puede editar." : "Notion no dejó guardarlo.";

@@ -10,6 +10,7 @@
 //   corresponde (Mezcla o Master) y cuando el audio ya está entregado: un
 //   archivo con "mix"/"master" en el nombre en su carpeta de OneDrive
 //   (_lib/song-audio.js). Mientras Zeche mezcla, no hay nada que aprobar.
+// - Master aprobado: la canción pasa sola a Distribución (Notion → Etapa).
 // - Queda guardado en song_approvals (supabase/020_aprobaciones.sql), a
 //   Zeche le llega un mail (Resend, a PASS_NOTIFY_EMAIL) y, si la
 //   integración de Notion tiene permiso para comentar, queda un comentario
@@ -143,7 +144,7 @@ ${note ? `<p style="margin:0 0 14px;padding:14px 16px;background:#2E1607;border-
 ${marks.length ? `<table role="presentation" style="width:100%;border-collapse:separate;border-spacing:0 6px;margin:0 0 14px">${marks.map((m) => `<tr><td style="width:64px;vertical-align:top;padding:12px 0 12px 14px;background:#2E1607;border-radius:12px 0 0 12px;font-family:'Courier New',monospace;font-size:15px;font-weight:700;color:#F5A623">${clock(m.t)}</td><td style="padding:12px 14px;background:#2E1607;border-radius:0 12px 12px 0;font-size:15px;line-height:1.45">${esc(m.text)}</td></tr>`).join("")}</table>` : ""}
 ${version ? `<p style="margin:0 0 10px;font-size:12px;color:#C9A980">Escuchó: ${esc(version)}</p>` : ""}
 ${saved.ok ? "" : `<p style="margin:0 0 10px;font-size:12px;color:#FF9C7A">Ojo: no quedó guardado en el portal (${esc(dbDetail(saved))}). Las notas están solo en este mail y en Notion.</p>`}
-<p style="margin:0;font-size:13px;color:#C9A980">${action === "aprobada" && kind === "master" ? "Ya se puede pasar a Distribución en Notion." : action === "aprobada" ? "Ya podés arrancar con el master." : (marks.length ? "En el portal (su perfil → Canciones) tenés el audio con cada nota marcada: tocás una y salta a ese momento. " : "") + "Respondé este mail para hablar con el artista."}</p>
+<p style="margin:0;font-size:13px;color:#C9A980">${action === "aprobada" && kind === "master" ? "Ya pasó sola a Distribución en Notion y le avisamos al equipo de distribución." : action === "aprobada" ? "Ya podés arrancar con el master." : (marks.length ? "En el portal (su perfil → Canciones) tenés el audio con cada nota marcada: tocás una y salta a ese momento. " : "") + "Respondé este mail para hablar con el artista."}</p>
 </div>`,
     }).catch(() => false),
     notion("/comments", {
@@ -155,7 +156,11 @@ ${saved.ok ? "" : `<p style="margin:0 0 10px;font-size:12px;color:#FF9C7A">Ojo: 
   // es el mismo en el portal, en Notion y en el panel.
   // Cambios: se limpia, así el próximo "Entregado" (botón o Notion) vale como versión nueva.
   const entrega = action === "aprobada" ? { name: kind === "mezcla" ? "Mezcla aprobada" : "Master aprobado" } : null;
-  await notion(`/pages/${songId}`, { method: "PATCH", body: JSON.stringify({ properties: { Entrega: { select: entrega } } }) }).catch(() => null);
+  // Master aprobado: la canción pasa sola a Distribución y se borra la fecha
+  // de entrega (ya no hay nada que entregar). La función programada se
+  // encarga del resto (tarea de distribución y aviso al equipo).
+  const finalProps = kind === "master" && action === "aprobada" ? { "Etapa actual": { select: { name: "Distribución" } }, "Fecha de entrega": { date: null } } : {};
+  await notion(`/pages/${songId}`, { method: "PATCH", body: JSON.stringify({ properties: { Entrega: { select: entrega }, ...finalProps } }) }).catch(() => null);
   // Nada quedó en ningún lado: ahí sí, que lo vuelva a intentar.
   const reached = mailed !== false || (commented && commented.ok);
   if (!saved.ok && !reached) return json(500, { error: "No pudimos enviarlo. Tus notas siguen acá: probá de nuevo en un momento." });

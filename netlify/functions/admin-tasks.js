@@ -174,7 +174,9 @@ exports.handler = async (event) => {
   };
   const cName = Object.fromEntries(clientIds.map((id, i) => [id, titleOf(clients[i])]));
   const sName = Object.fromEntries(songIds.map((id, i) => [id, titleOf(songs[i])]));
-  const tasks = raw.map(({ clientId, songId, ...t }) => ({ ...t, artist: cName[clientId] || null, song: t.kind === "entrega" ? t.name : sName[songId] || null, clientId }));
+  // Regla de 15 días (025_automatizaciones.sql): día límite del master de cada canción.
+  const rules = await require("./_lib/auto-etapas").ruleLimits().catch(() => ({}));
+  const tasks = raw.map(({ clientId, songId, ...t }) => ({ ...t, artist: cName[clientId] || null, song: t.kind === "entrega" ? t.name : sName[songId] || null, clientId, rule: (songId && rules[songId.replace(/-/g, "")]) || null }));
   return json(200, { connected: true, tasks });
 };
 
