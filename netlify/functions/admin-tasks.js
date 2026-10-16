@@ -1,5 +1,6 @@
 // GET  /.netlify/functions/admin-tasks              -> próximas tareas
-// POST /.netlify/functions/admin-tasks { task }     -> marcarla como hecha
+// POST /.netlify/functions/admin-tasks { task }     -> marcarla como hecha (devuelve { prev })
+// POST /.netlify/functions/admin-tasks { task, undo: true, state } -> deshacer el tilde
 // POST /.netlify/functions/admin-tasks { sync: true } -> revisa ya las carpetas
 //      y marca solas las mezclas y masters subidos (_lib/auto-entregas.js);
 //      lo mismo que hace la función programada cada 15 minutos.
@@ -23,6 +24,8 @@ const NOTION_VERSION = "2025-09-03";
 const TZ = "America/Argentina/Buenos_Aires";
 const AHEAD_DAYS = 21;
 const MAX = 20;
+// Estados a los que puede volver una tarea al deshacer el tilde.
+const UNDO_STATES = ["PENDIENTE", "SIN EMPEZAR", "EN PROCESO"];
 const notionToken = () => (process.env.NOTION_TOKEN || "").replace(/[\s"'“”‘’]/g, "");
 const plain = (rich) => (rich || []).map((t) => t.plain_text || "").join("").trim();
 const STAGE = { Estructura: "Estructura", Prod: "Producción", Rec: "Grabación", Mix: "Mezcla", Master: "Master", "Distribución": "Distribución" };
@@ -74,9 +77,20 @@ exports.handler = async (event) => {
     }
     const id = String(body.task || "").replace(/[^0-9a-f-]/gi, "");
     if (!id) return json(400, { error: "Pedido inválido." });
-    const res = await notion(`/pages/${id}`, { method: "PATCH", body: JSON.stringify({ properties: { "Estado de Tarea": { select: { name: "COMPLETADO" } } } }) });
+    const setState = (name) => notion(`/pages/${id}`, { method: "PATCH", body: JSON.stringify({ properties: { "Estado de Tarea": { select: { name } } } }) });
+    // Deshacer: vuelve la tarea al estado que tenía antes del tilde.
+    if (body.undo) {
+      const prev = UNDO_STATES.includes(body.state) ? body.state : "PENDIENTE";
+      const res = await setState(prev);
+      if (!res.ok) return json(502, { error: "Notion no dejó deshacerla. Probá de nuevo." });
+      return json(200, { ok: true, state: prev });
+    }
+    // Antes de tildar se guarda el estado actual, para poder deshacer.
+    const cur = await notion(`/pages/${id}`);
+    const was = (cur.ok && cur.data && cur.data.properties && cur.data.properties["Estado de Tarea"] && cur.data.properties["Estado de Tarea"].select && cur.data.properties["Estado de Tarea"].select.name) || null;
+    const res = await setState("COMPLETADO");
     if (!res.ok) return json(502, { error: "Notion no dejó marcarla. Probá de nuevo." });
-    return json(200, { ok: true });
+    return json(200, { ok: true, prev: UNDO_STATES.includes(was) ? was : "PENDIENTE" });
   }
 
   const limit = new Date(Date.now() + AHEAD_DAYS * 86400000);

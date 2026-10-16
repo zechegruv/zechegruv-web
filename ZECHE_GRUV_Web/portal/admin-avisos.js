@@ -3,7 +3,7 @@
 //   - Mezclas y masters (admin-tasks.js): solo las sesiones de mezcla y master
 //     y las fechas límite de entrega, por fecha y con cartel de urgencia
 //     (vencida · hoy · mañana · en 2-3 días). ✓ marca la sesión COMPLETADO en
-//     Notion; la entrega se va sola al marcarla entregada o aprobada.
+//     Notion (con "Deshacer" unos segundos, o ⌘Z / Ctrl+Z); la entrega se va sola al marcarla entregada o aprobada.
 //     Tocando una fila se abre el artista.
 //   - Avisos: lo que los artistas aprobaron o pidieron cambiar de sus
 //     mezclas y masters (portal-reviews.js). Uno por canción, se reemplaza
@@ -113,7 +113,8 @@
 
   // ---------- Próximas tareas ----------
   function taskRow(t, i) {
-    const li = el("li", `zt-row is-${t.urgency}`);
+    const li = el("li", `zt-row is-${t.urgency}${t.id === restoredId ? " is-back" : ""}`);
+    if (t.id === restoredId) setTimeout(() => { restoredId = null; }, 0);
     li.style.animationDelay = `${120 + i * 60}ms`;
     const main = el("button", "zt-main");
     main.type = "button";
@@ -148,9 +149,10 @@
       done.disabled = true;
       li.classList.add("is-checking");
       try {
-        await call("/.netlify/functions/admin-tasks", { task: t.id });
+        const out = await call("/.netlify/functions/admin-tasks", { task: t.id });
         li.classList.add("is-done");
         setTimeout(() => removeRow(li, 1).then(() => { tasksCache = (tasksCache || []).filter((x) => x.id !== t.id); paintTasksHead(); }), reduced() ? 0 : 380);
+        offerUndo(t, out.prev);
       } catch (e) {
         li.classList.remove("is-checking");
         done.disabled = false;
@@ -161,6 +163,82 @@
     li.append(main, ...(move ? [move] : []), done);
     return li;
   }
+
+  // ---------- Deshacer el tilde ----------
+  // Al tildar una sesión aparece abajo un aviso con "Deshacer" durante unos
+  // segundos (la barrita muestra cuánto queda; si pasás el mouse o el dedo
+  // por encima, se frena). También funciona con ⌘Z / Ctrl+Z. La tarea vuelve
+  // en Notion al estado que tenía y reaparece en la lista resaltada.
+  const UNDO_MS = 8000;
+  let undoBox = null, undoTimer = null, undoLeft = 0, undoStarted = 0, undoAction = null, restoredId = null;
+  function closeUndo() {
+    clearTimeout(undoTimer); undoTimer = null; undoAction = null;
+    const box = undoBox; undoBox = null;
+    if (!box) return;
+    box.classList.remove("is-in");
+    setTimeout(() => box.remove(), reduced() ? 0 : 380);
+  }
+  function runUndoTimer() {
+    clearTimeout(undoTimer);
+    undoStarted = Date.now();
+    undoTimer = setTimeout(closeUndo, undoLeft);
+    const bar = undoBox && undoBox.querySelector(".zu-bar i");
+    if (bar) { bar.style.transition = "none"; bar.style.transform = `scaleX(${undoLeft / UNDO_MS})`; void bar.offsetWidth; bar.style.transition = `transform ${undoLeft}ms linear`; bar.style.transform = "scaleX(0)"; }
+  }
+  function pauseUndoTimer() {
+    if (!undoTimer) return;
+    clearTimeout(undoTimer); undoTimer = null;
+    undoLeft = Math.max(1500, undoLeft - (Date.now() - undoStarted));
+    const bar = undoBox && undoBox.querySelector(".zu-bar i");
+    if (bar) { bar.style.transition = "none"; bar.style.transform = `scaleX(${undoLeft / UNDO_MS})`; }
+  }
+  function offerUndo(t, prev) {
+    if (undoBox) { undoBox.remove(); undoBox = null; }
+    clearTimeout(undoTimer);
+    const what = t.stage === "Mezcla" ? "Sesión de mezcla" : "Sesión de master";
+    const box = el("div", "zu-toast");
+    box.setAttribute("role", "status");
+    const txt = el("span", "zu-text");
+    txt.append(el("b", "", "Hecha · "), document.createTextNode(`${what}${t.artist ? ` de ${t.artist}` : ""}`));
+    const btn = el("button", "zu-btn", "Deshacer");
+    btn.type = "button";
+    const kbd = el("kbd", "zu-kbd", /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent) ? "⌘Z" : "Ctrl+Z");
+    const bar = el("span", "zu-bar"); bar.append(el("i"));
+    box.append(txt, btn, kbd, bar);
+    document.body.append(box);
+    undoBox = box;
+    undoLeft = UNDO_MS;
+    undoAction = async () => {
+      if (btn.disabled) return;
+      btn.disabled = true; box.classList.add("is-busy"); pauseUndoTimer();
+      try {
+        await call("/.netlify/functions/admin-tasks", { task: t.id, undo: true, state: prev });
+        restoredId = t.id;
+        reloadTasks();
+        box.classList.remove("is-busy"); box.classList.add("is-undone");
+        txt.replaceChildren(el("b", "", "Listo · "), document.createTextNode("volvió a la lista"));
+        btn.remove(); kbd.remove();
+        undoAction = null;
+        undoTimer = setTimeout(closeUndo, 1800);
+      } catch (e) {
+        btn.disabled = false; box.classList.remove("is-busy");
+        box.classList.add("is-shake"); setTimeout(() => box.classList.remove("is-shake"), 500);
+        txt.replaceChildren(el("b", "", "No se pudo deshacer · "), document.createTextNode("probá de nuevo"));
+        runUndoTimer();
+      }
+    };
+    btn.addEventListener("click", () => undoAction && undoAction());
+    box.addEventListener("pointerenter", pauseUndoTimer);
+    box.addEventListener("pointerleave", () => { if (undoAction && !undoTimer) runUndoTimer(); });
+    requestAnimationFrame(() => { box.classList.add("is-in"); runUndoTimer(); });
+  }
+  document.addEventListener("keydown", (e) => {
+    if (!undoAction || !(e.metaKey || e.ctrlKey) || e.shiftKey || e.key.toLowerCase() !== "z") return;
+    const a = document.activeElement;
+    if (a && (a.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))) return; // el ⌘Z de un campo de texto es del texto
+    e.preventDefault();
+    undoAction();
+  });
 
   let tasksCache = null, tasksBox = null, tasksHead = null, expanded = false;
   // Después de reprogramar: se vuelve a leer la lista (la fila deja de estar vencida).
@@ -179,6 +257,8 @@
     tasksCache = list;
     if (!list.length) { paintTasksHead(); return; }
     const ul = el("ul", "zt-list");
+    // Si la que se deshizo quedó más abajo de las primeras, se abre la lista para que se vea.
+    if (restoredId && list.findIndex((t) => t.id === restoredId) >= SHOW_TASKS) expanded = true;
     const shown = expanded ? list : list.slice(0, SHOW_TASKS);
     shown.forEach((t, i) => ul.append(taskRow(t, i)));
     body.replaceChildren(ul);
