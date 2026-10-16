@@ -506,4 +506,4 @@ body:is(.is-artist, .is-artist-view) .ap-dark, body:is(.is-artist, .is-artist-vi
 @media (max-width: 520px) { .kit-grid { grid-template-columns: 1fr; } .kit-cover { max-width: 220px; } }
 @media (prefers-reduced-motion: reduce) { .kit-body, .kit-ico, .kit-file, .kit-cover img { animation: none; transition: none; } }
 .song-finished:has(.kit) { flex-wrap: wrap; }
-.song-finished .kit { flex: 1 1 100%%; }
+.song-finished .kit { flex: 1 1 100%; }
