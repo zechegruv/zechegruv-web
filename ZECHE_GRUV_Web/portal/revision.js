@@ -37,7 +37,11 @@
     pin: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
     check: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
     trash: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12"/></svg>',
+    mic: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3.5" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0013 0M12 18v2.5"/></svg>',
+    stop: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6.5" y="6.5" width="11" height="11" rx="2.5"/></svg>',
+    wave: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h1.5M8 8v8M11.5 5v14M15 9v6M18.5 11v2"/></svg>',
   };
+  const VOICE_MAX_S = 60;
 
   // ---------- La hoja (se arma una sola vez) ----------
   const root = document.createElement("div");
@@ -72,6 +76,8 @@
             <span class="rv-time rv-total" id="rvTotal">0:00</span>
           </div>
           <p class="rv-loading" id="rvLoading" role="status"></p>
+          <div class="rv-ab" id="rvAB" role="group" aria-label="Comparar versiones" hidden></div>
+          <p class="rv-ab-hint" id="rvABHint" role="status" hidden></p>
         </div>
 
         <button class="rv-mark" type="button" id="rvMark" hidden>
@@ -86,6 +92,11 @@
           </div>
           <label class="sr-only" for="rvComposeText">Tu nota</label>
           <textarea id="rvComposeText" rows="2" maxlength="500" placeholder="Ej.: acá la voz queda tapada por la guitarra"></textarea>
+          <div class="rv-voice" id="rvVoice" hidden>
+            <button class="rv-rec" type="button" data-rv="rec" id="rvRec">${ICON.mic}<span>O grabala con tu voz</span></button>
+            <span class="rv-rec-time" id="rvRecTime" aria-live="polite"></span>
+            <audio class="rv-rec-prev" id="rvRecPrev" controls hidden></audio>
+          </div>
           <div class="rv-quick" id="rvQuick">${QUICK.map((q) => `<button type="button" data-quick="${esc(q)}">${esc(q)}</button>`).join("")}</div>
           <div class="rv-compose-actions">
             <button class="btn" type="button" data-rv="cancel">Cancelar</button>
@@ -108,8 +119,10 @@
   const $ = (id) => root.querySelector(`#${id}`);
   const audio = $("rvAudio");
 
-  let cur = null; // { song, kind, own, mode, file, notes, sentMarks, key, onSent }
+  let cur = null; // { song, kind, own, mode, file, notes, sentMarks, key, onSent, sources, srcIdx }
   let peaks = null;
+  const rmsCache = new Map(); // url -> nivel promedio (para igualar el volumen al comparar)
+  let pendingSeek = null;     // al cambiar de versión: seguir en el mismo segundo
   let lastFocus = null;
   let composeAt = 0;
   let activeNote = -1;
@@ -128,6 +141,13 @@
       notes: mode === "review" ? (store.get(key) || []) : ((review && review.marks) || []).map((m) => ({ ...m })),
       general: mode === "review" ? (store.get(key + ":g") || "") : ((review && review.note) || ""),
     };
+    // Para comparar: esta versión, las anteriores (A/B) y la maqueta (antes y después).
+    const total = (d.versions || []).length + 1;
+    cur.sources = [{ label: total > 1 ? "Nueva" : NOUN[d.kind], file: d.file, kind: "now" }]
+      .concat((d.versions || []).map((v, i) => ({ label: total === 2 ? "Anterior" : `Versión ${total - 1 - i}`, file: v, kind: "old" })))
+      .concat(d.demo ? [{ label: "Maqueta", file: d.demo, kind: "demo" }] : []);
+    cur.srcIdx = 0;
+    cur.lastOther = 1;
     lastFocus = document.activeElement;
     $("rvEyebrow").textContent = `${NOUN[d.kind]}${song.feat ? ` · feat. ${song.feat}` : ""}`;
     $("rvTitle").textContent = song.title;
@@ -140,9 +160,11 @@
     paintNotes();
     paintFoot();
     loadAudio(d.file);
+    paintAB();
     root.hidden = false;
     document.documentElement.classList.add("rv-lock");
-    requestAnimationFrame(() => { root.classList.add("is-open"); resize(); });
+    root.classList.remove("is-other");
+    requestAnimationFrame(() => { root.classList.add("is-open"); resize(); glide(); });
     $("rvPlay").focus({ preventScroll: true });
     if (window.zgTrack && own) window.zgTrack("portal_escuchar", { etapa: d.kind });
   }
@@ -150,6 +172,8 @@
   function close() {
     if (root.hidden) return;
     audio.pause();
+    stopVoice();
+    stopRec(true);
     root.classList.remove("is-open");
     document.documentElement.classList.remove("rv-lock");
     setTimeout(() => { root.hidden = true; audio.removeAttribute("src"); audio.load(); }, 260);
@@ -161,6 +185,8 @@
   function loadAudio(file) {
     peaks = null;
     activeNote = -1;
+    pendingSeek = null;
+    audio.volume = 1;
     audio.src = file.url;
     audio.currentTime = 0;
     $("rvNow").textContent = "0:00";
@@ -168,20 +194,31 @@
     $("rvLoading").textContent = "";
     setPlaying(false);
     draw();
+    loadPeaks(file).then(() => {
+      // Con la onda de esta versión lista, se miden las otras (para igualar el volumen).
+      if (cur && cur.sources && cur.sources.length > 1) cur.sources.slice(1).reduce((p, s) => p.then(() => loadPeaks(s.file)), Promise.resolve()).then(applyLevel);
+    });
+  }
+
+  // Onda y nivel promedio de un audio. La onda se dibuja con el audio real
+  // cuando el archivo no es enorme y OneDrive deja leerlo; si no, queda una
+  // línea y se escucha igual.
+  function loadPeaks(file) {
     const known = peakCache.get(file.url);
-    if (known) { peaks = known; draw(); return; }
-    // La onda se dibuja con el audio real cuando el archivo no es enorme y
-    // OneDrive deja leerlo; si no, queda una línea y se escucha igual.
-    if (file.size && file.size > WAVE_MAX_BYTES) return;
+    if (known) { if (cur && audio.src === file.url) { peaks = known; draw(); } return Promise.resolve(); }
+    if (file.size && file.size > WAVE_MAX_BYTES) return Promise.resolve();
     const Ctx = window.AudioContext || window.webkitAudioContext;
-    if (!Ctx) return;
+    if (!Ctx) return Promise.resolve();
     const url = file.url;
-    fetch(url).then((r) => (r.ok ? r.arrayBuffer() : Promise.reject()))
+    return fetch(url).then((r) => (r.ok ? r.arrayBuffer() : Promise.reject()))
       .then((buf) => new Promise((ok, no) => { const ctx = new Ctx(); ctx.decodeAudioData(buf, (b) => { ok(b); ctx.close && ctx.close(); }, no); }))
       .then((buffer) => {
         const data = buffer.getChannelData(0);
         const step = Math.max(1, Math.floor(data.length / BARS));
         const out = [];
+        let sum = 0, count = 0;
+        for (let j = 0; j < data.length; j += 64) { sum += data[j] * data[j]; count++; }
+        if (count) rmsCache.set(url, Math.sqrt(sum / count));
         for (let i = 0; i < BARS; i++) {
           let max = 0;
           for (let j = i * step, end = Math.min(data.length, j + step); j < end; j += 16) { const v = Math.abs(data[j]); if (v > max) max = v; }
@@ -190,9 +227,74 @@
         const top = Math.max(...out) || 1;
         const norm = out.map((v) => Math.max(0.06, Math.pow(v / top, 0.8)));
         peakCache.set(url, norm);
-        if (cur && cur.file.url === url) { peaks = norm; draw(); }
+        if (cur && audio.src === url) { peaks = norm; draw(); }
+        applyLevel();
       })
       .catch(() => {});
+  }
+
+  // ---------- Comparar versiones (A/B) y antes y después ----------
+  // Se cambia de versión en el mismo segundo, sin cortar. Si las ondas están
+  // medidas, el volumen se iguala (la más fuerte se baja un poco) para que
+  // se compare el sonido y no cuál suena más alto.
+  function applyLevel() {
+    if (!cur || !cur.sources || cur.sources.length < 2) { audio.volume = 1; paintABHint(); return; }
+    const levels = cur.sources.map((s) => rmsCache.get(s.file.url)).filter(Boolean);
+    const mine = rmsCache.get(cur.sources[cur.srcIdx].file.url);
+    let v = 1;
+    if (mine && levels.length >= 2) v = Math.min(1, Math.max(0.05, Math.min(...levels) / mine));
+    try { audio.volume = v; } catch (e) { /* algunos celulares no dejan */ }
+    cur.leveled = levels.length >= 2;
+    paintABHint();
+  }
+  function paintAB() {
+    const box = $("rvAB");
+    const list = (cur && cur.sources) || [];
+    box.hidden = list.length < 2;
+    if (box.hidden) { $("rvABHint").hidden = true; return; }
+    box.innerHTML = list.map((s, i) => `<button type="button" class="rv-ab-btn${s.kind === "demo" ? " is-demo" : ""}" data-src="${i}" aria-pressed="${i === cur.srcIdx}">${s.kind === "now" ? ICON.wave : ""}<span>${esc(s.label)}</span></button>`).join("") + '<span class="rv-ab-glide" aria-hidden="true"></span>';
+    glide();
+    paintABHint();
+  }
+  function glide() {
+    const box = $("rvAB");
+    const on = box.querySelector('[aria-pressed="true"]');
+    const g = box.querySelector(".rv-ab-glide");
+    if (!on || !g) return;
+    g.style.width = `${on.offsetWidth}px`;
+    g.style.transform = `translateX(${on.offsetLeft}px)`;
+  }
+  function paintABHint() {
+    const h = $("rvABHint");
+    if (!cur || !cur.sources || cur.sources.length < 2) { h.hidden = true; return; }
+    const s = cur.sources[cur.srcIdx];
+    const level = cur.leveled ? ' <span class="rv-ab-level">Volumen igualado</span>' : "";
+    let txt;
+    if (s.kind === "demo") txt = `<b>Antes y después.</b> Estás escuchando la maqueta: así arrancó «${esc(cur.song.title)}». Volvé a «Nueva» en el mismo segundo.`;
+    else if (s.kind === "old") txt = `<b>Versión anterior.</b> Compará en el mismo segundo. ${cur.mode === "review" ? "Las notas se dejan sobre la nueva." : ""}`;
+    else txt = `<b>Compará.</b> Tocá ${cur.sources.length === 2 ? `«${esc(cur.sources[1].label)}»` : "otra versión"} y seguís en el mismo segundo${window.matchMedia("(hover: hover)").matches ? " (o apretá A)" : ""}.`;
+    h.innerHTML = txt + level;
+    h.hidden = false;
+  }
+  function switchSource(i) {
+    if (!cur || !cur.sources[i] || i === cur.srcIdx) return;
+    pendingSeek = { t: audio.currentTime, play: !audio.paused };
+    if (i !== 0) cur.lastOther = i;
+    cur.srcIdx = i;
+    const f = cur.sources[i].file;
+    $("rvFile").textContent = f.name;
+    root.classList.toggle("is-other", i !== 0);
+    peaks = peakCache.get(f.url) || null;
+    audio.src = f.url;
+    draw();
+    loadPeaks(f);
+    applyLevel();
+    $("rvMark").hidden = cur.mode !== "review" || i !== 0;
+    if (i !== 0 && !$("rvCompose").hidden) closeCompose();
+    $("rvAB").querySelectorAll("[data-src]").forEach((b) => b.setAttribute("aria-pressed", String(+b.dataset.src === i)));
+    glide();
+    paintABHint();
+    if (window.zgTrack) window.zgTrack("portal_comparar", { version: cur.sources[i].kind });
   }
 
   function setPlaying(on) {
@@ -212,7 +314,7 @@
     draw();
     paintPins();
   }
-  window.addEventListener("resize", () => { if (!root.hidden) resize(); });
+  window.addEventListener("resize", () => { if (!root.hidden) { resize(); glide(); } });
 
   function draw() {
     const c = $("rvCanvas");
@@ -242,7 +344,17 @@
     wave.setAttribute("aria-valuetext", `${clock(audio.currentTime)} de ${clock(dur)}`);
   }
 
-  audio.addEventListener("loadedmetadata", () => { $("rvTotal").textContent = clock(duration()); paintPins(); draw(); });
+  audio.addEventListener("loadedmetadata", () => {
+    $("rvTotal").textContent = clock(duration());
+    if (pendingSeek) {
+      const { t, play } = pendingSeek;
+      pendingSeek = null;
+      audio.currentTime = Math.min(t, Math.max(0, duration() - 0.1));
+      if (play) audio.play().catch(() => {});
+    }
+    paintPins();
+    draw();
+  });
   audio.addEventListener("timeupdate", () => {
     $("rvNow").textContent = clock(audio.currentTime);
     $("rvMarkAt").textContent = clock(audio.currentTime);
@@ -306,7 +418,7 @@
     $("rvNotes").innerHTML = list.map((n, i) => `
       <li class="rv-note${i === activeNote ? " is-on" : ""}" data-i="${i}">
         <button class="rv-note-time" type="button" data-jump="${i}" aria-label="Escuchar desde ${clock(n.t)}"><span class="rv-note-n">${i + 1}</span>${clock(n.t)}</button>
-        <p class="rv-note-text">${esc(n.text)}</p>
+        <p class="rv-note-text">${n.voice ? `<button class="rv-note-voice" type="button" data-voice="${i}">${ICON.play}<span>Nota de voz</span></button>` : ""}${n.voice && n.text === "Nota de voz" ? "" : esc(n.text)}</p>
         ${cur.mode === "review" ? `<button class="rv-icon rv-note-del" type="button" data-del="${i}" aria-label="Borrar nota de ${clock(n.t)}">${ICON.trash}</button>` : ""}
       </li>`).join("");
     let empty = "";
@@ -348,21 +460,40 @@
     composeAt = Math.max(0, audio.currentTime - 0.5);
     $("rvComposeAt").textContent = clock(composeAt);
     $("rvComposeText").value = "";
+    resetRec();
+    $("rvVoice").hidden = !canRecord();
     $("rvCompose").hidden = false;
     $("rvMark").hidden = true;
     $("rvComposeText").focus();
     $("rvCompose").scrollIntoView({ block: "nearest", behavior: "smooth" });
   }
   function closeCompose() {
+    stopRec(true);
+    resetRec();
     $("rvCompose").hidden = true;
     $("rvMark").hidden = !cur || cur.mode !== "review";
   }
 
-  $("rvCompose").addEventListener("submit", (e) => {
+  $("rvCompose").addEventListener("submit", async (e) => {
     e.preventDefault();
     const text = $("rvComposeText").value.trim();
-    if (!text) { $("rvComposeText").focus(); return; }
-    cur.notes.push({ t: Math.round(composeAt * 10) / 10, text: text.slice(0, 500) });
+    if (rec && rec.state === "recording") { stopRec(); return; }
+    if (!text && !recBlob) { $("rvComposeText").focus(); return; }
+    const note = { t: Math.round(composeAt * 10) / 10, text: (text || "Nota de voz").slice(0, 500) };
+    if (recBlob) {
+      const btn = $("rvCompose").querySelector('[type="submit"]');
+      btn.disabled = true;
+      btn.textContent = "Subiendo tu voz…";
+      const type = (recBlob.type || "audio/webm").split(";")[0];
+      const ext = /mp4|aac|m4a/.test(type) ? "m4a" : /ogg/.test(type) ? "ogg" : "webm";
+      const path = `${P.me.id}/${String(cur.song.id).replace(/-/g, "").slice(0, 12)}-${Date.now()}.${ext}`;
+      const { error } = await db.storage.from("notas-voz").upload(path, recBlob, { contentType: type });
+      btn.disabled = false;
+      btn.textContent = "Guardar nota";
+      if (error) { $("rvRecTime").textContent = "No pudimos subir la nota de voz. Probá de nuevo o escribila."; return; }
+      note.voice = path;
+    }
+    cur.notes.push(note);
     sortNotes();
     saveDraft();
     closeCompose();
@@ -377,6 +508,79 @@
     box.value = box.value.trim() ? `${box.value.trim()}. ${b.dataset.quick.toLowerCase()}` : b.dataset.quick;
     box.focus();
   });
+
+  // ---------- Notas de voz ----------
+  // El artista graba lo que quiere (tararear, explicar un sonido) en vez de
+  // escribirlo: hasta 1 minuto, queda en un espacio privado (026_notas_de_voz.sql)
+  // y Zeche la escucha en el portal o desde el mail.
+  let rec = null, recBlob = null, recStream = null, recTimer = null, recChunks = [];
+  const canRecord = () => !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder);
+  function resetRec() {
+    recBlob = null;
+    const prev = $("rvRecPrev");
+    if (prev.src) URL.revokeObjectURL(prev.src);
+    prev.removeAttribute("src");
+    prev.hidden = true;
+    $("rvRecTime").textContent = "";
+    $("rvRec").classList.remove("is-on");
+    $("rvRec").querySelector("span").textContent = "O grabala con tu voz";
+    $("rvRec").innerHTML = `${ICON.mic}<span>O grabala con tu voz</span>`;
+  }
+  async function startRec() {
+    audio.pause();
+    stopVoice();
+    try { recStream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: false } }); }
+    catch (e) { $("rvRecTime").textContent = "Para grabar, permití el micrófono en el navegador."; return; }
+    const mime = ["audio/webm;codecs=opus", "audio/mp4", "audio/webm", "audio/ogg;codecs=opus"].find((m) => MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(m)) || "";
+    recChunks = [];
+    rec = new MediaRecorder(recStream, mime ? { mimeType: mime } : undefined);
+    rec.ondataavailable = (e) => { if (e.data && e.data.size) recChunks.push(e.data); };
+    rec.onstop = () => {
+      clearInterval(recTimer);
+      if (recStream) recStream.getTracks().forEach((t) => t.stop());
+      recStream = null;
+      if (rec && rec._discard) { rec = null; return; }
+      recBlob = new Blob(recChunks, { type: (rec && rec.mimeType) || mime || "audio/webm" });
+      rec = null;
+      const prev = $("rvRecPrev");
+      prev.src = URL.createObjectURL(recBlob);
+      prev.hidden = false;
+      $("rvRec").classList.remove("is-on");
+      $("rvRec").innerHTML = `${ICON.mic}<span>Grabar de nuevo</span>`;
+      $("rvRecTime").textContent = "Escuchala y guardá la nota.";
+    };
+    const started = Date.now();
+    rec.start();
+    $("rvRec").classList.add("is-on");
+    $("rvRec").innerHTML = `${ICON.stop}<span>Terminar</span>`;
+    $("rvRecPrev").hidden = true;
+    recTimer = setInterval(() => {
+      const s = Math.floor((Date.now() - started) / 1000);
+      $("rvRecTime").innerHTML = `<i class="rv-rec-dot"></i>Grabando ${clock(s)} / ${clock(VOICE_MAX_S)}`;
+      if (s >= VOICE_MAX_S) stopRec();
+    }, 250);
+  }
+  function stopRec(discard) {
+    if (!rec) return;
+    if (discard) rec._discard = true;
+    if (rec.state !== "inactive") rec.stop();
+    else if (discard) rec = null;
+  }
+  let voicePlayer = null;
+  function stopVoice() { if (voicePlayer) { voicePlayer.pause(); voicePlayer = null; } root.querySelectorAll(".rv-note-voice.is-on").forEach((b) => b.classList.remove("is-on")); }
+  async function playVoice(i, btn) {
+    const n = cur && cur.notes[i];
+    if (!n || !n.voice) return;
+    if (btn.classList.contains("is-on")) { stopVoice(); return; }
+    stopVoice();
+    audio.pause();
+    btn.classList.add("is-on");
+    const { data, error } = await db.storage.from("notas-voz").createSignedUrl(n.voice, 3600);
+    if (error || !data) { btn.classList.remove("is-on"); return; }
+    voicePlayer = new Audio(data.signedUrl);
+    voicePlayer.addEventListener("ended", stopVoice);
+    voicePlayer.play().catch(stopVoice);
+  }
 
   // ---------- Banner y botones de abajo ----------
   function paintBanner() {
@@ -484,6 +688,10 @@
     if (pin) { jump(+pin.dataset.pin); return; }
     const j = e.target.closest("[data-jump]");
     if (j) { jump(+j.dataset.jump); return; }
+    const src = e.target.closest("[data-src]");
+    if (src) { switchSource(+src.dataset.src); return; }
+    const vo = e.target.closest("[data-voice]");
+    if (vo) { playVoice(+vo.dataset.voice, vo); return; }
     const del = e.target.closest("[data-del]");
     if (del) { cur.notes.splice(+del.dataset.del, 1); saveDraft(); paintNotes(); paintFoot(); return; }
     const b = e.target.closest("[data-rv]");
@@ -493,6 +701,7 @@
     else if (act === "back") seek(audio.currentTime - 5);
     else if (act === "fwd") seek(audio.currentTime + 5);
     else if (act === "cancel") closeCompose();
+    else if (act === "rec") { if (rec) stopRec(); else startRec(); }
     else if (act === "nudge") { composeAt = Math.min(Math.max(0, composeAt + +b.dataset.d), duration() || composeAt + 2); $("rvComposeAt").textContent = clock(composeAt); seek(composeAt); }
     else if (act === "send") send("cambios");
     else if (act === "approve") { if (armApprove(b)) send("aprobada"); }
@@ -506,7 +715,9 @@
     const typing = /^(TEXTAREA|INPUT)$/.test(document.activeElement && document.activeElement.tagName);
     if (typing) return;
     if (e.key === " " && !(document.activeElement && document.activeElement.tagName === "BUTTON")) { e.preventDefault(); toggle(); }
-    if ((e.key === "n" || e.key === "N") && cur && cur.mode === "review") { e.preventDefault(); openCompose(); }
+    if ((e.key === "n" || e.key === "N") && cur && cur.mode === "review" && cur.srcIdx === 0) { e.preventDefault(); openCompose(); }
+    // A: alternar entre la nueva y la que se estaba comparando.
+    if ((e.key === "a" || e.key === "A") && cur && cur.sources && cur.sources.length > 1) { e.preventDefault(); switchSource(cur.srcIdx === 0 ? cur.lastOther || 1 : 0); }
   });
   // Foco atrapado dentro de la hoja.
   root.addEventListener("keydown", (e) => {

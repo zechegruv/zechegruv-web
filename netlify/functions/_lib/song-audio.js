@@ -24,7 +24,7 @@ const ONEDRIVE_TOKEN_URL = "https://api-badgerp.svc.ms/v1.0/token";
 const ONEDRIVE_APP_ID = "5cbed6ac-a083-4e14-b191-b4ba07653de2";
 
 const AUDIO = /\.(mp3|wav|m4a)$/i;
-const FOLDERS = ["exports", "masters"];
+const FOLDERS = ["exports", "masters", "maquetas", "maqueta", "demos", "demo"];
 // Desde cuándo se detectan solos (hora de Buenos Aires). Se puede cambiar
 // con la variable AUDIO_AUTO_SINCE en Netlify (p. ej. 2026-10-01). Hoy arranca el 13 de octubre de 2026..
 const AUTO_SINCE = Date.parse(process.env.AUDIO_AUTO_SINCE ? `${process.env.AUDIO_AUTO_SINCE}T00:00:00-03:00` : "2026-10-13T00:00:00-03:00");
@@ -71,23 +71,35 @@ function kindOf(name) {
   if (/ (mix|mezcla|mixdown) /.test(n)) return "mezcla";
   return null;
 }
+// Además de mezcla y master: la maqueta / demo (para el "antes y después") y
+// la versión para show en vivo (para el kit de lanzamiento). Estas no se
+// aprueban ni se entregan: solo se escuchan y se descargan.
+function extraKindOf(name) {
+  const n = ` ${norm(String(name).replace(AUDIO, ""))} `;
+  if (/ (vivo|live) /.test(n)) return "vivo";
+  if (/ (maqueta|demo) /.test(n)) return "demo";
+  return null;
+}
+const anyKind = (name) => kindOf(name) || extraKindOf(name);
 
 const toAudio = (item, folder) => {
   const fs = item.fileSystemInfo || {};
   return {
     name: item.name,
     folder: folder || null,
-    kind: kindOf(item.name),
+    kind: anyKind(item.name),
     modified: fs.lastModifiedDateTime || item.lastModifiedDateTime || null,
     size: item.size || 0,
     url: item["@content.downloadUrl"] || null,
   };
 };
 
+// fresh: subido desde AUTO_SINCE. Solo esos cuentan como entrega para
+// aprobar; los anteriores sirven igual para comparar versiones y para el kit.
 const audioOf = (items, folder) => items
-  .filter((i) => i.file && AUDIO.test(i.name) && kindOf(i.name))
+  .filter((i) => i.file && AUDIO.test(i.name) && anyKind(i.name))
   .map((i) => toAudio(i, folder))
-  .filter((a) => (Date.parse(a.modified || "") || 0) >= AUTO_SINCE);
+  .map((a) => ({ ...a, fresh: (Date.parse(a.modified || "") || 0) >= AUTO_SINCE }));
 
 // Todos los audios de mezcla y master de la carpeta del artista.
 async function listAudio(shareLink) {
@@ -111,13 +123,19 @@ async function listAudio(shareLink) {
 
 // Le asigna a cada canción su último audio de mezcla y de master.
 // songs: [{ id, title, step }] (step 3 = Mezcla, 4 = Master).
-// Devuelve { [songId]: { mezcla?: audio, master?: audio } }.
+// Devuelve { [songId]: { mezcla?, master?, demo?, vivo?, versions: { mezcla: [], master: [] } } }:
+//   mezcla / master -> la entrega más nueva (solo subidas desde AUTO_SINCE)
+//   demo / vivo     -> la maqueta y la versión en vivo más nuevas (de cuando sea)
+//   versions        -> todas las versiones de mezcla y master, de la más nueva
+//                      a la más vieja (para comparar A/B y para el kit).
 function matchAudio(songs, audios) {
   const titled = songs.map((s) => ({ id: s.id, step: s.step, key: norm(s.title) })).filter((s) => s.key)
     .sort((a, b) => b.key.length - a.key.length); // "Seu amor" antes que "Amor"
   const out = {};
   const put = (id, a) => {
-    const slot = (out[id] = out[id] || {});
+    const slot = (out[id] = out[id] || { versions: { mezcla: [], master: [] } });
+    if (slot.versions[a.kind]) slot.versions[a.kind].push(a);
+    if ((a.kind === "mezcla" || a.kind === "master") && !a.fresh) return;
     const prev = slot[a.kind];
     if (!prev || (a.modified || "") > (prev.modified || "")) slot[a.kind] = a;
   };
@@ -125,7 +143,7 @@ function matchAudio(songs, audios) {
   audios.forEach((a) => {
     const hay = ` ${norm(`${a.folder || ""} ${a.name.replace(AUDIO, "")}`)} `;
     const song = titled.find((s) => hay.includes(` ${s.key} `));
-    if (song) put(song.id, a); else loose.push(a);
+    if (song) put(song.id, a); else if (a.fresh && (a.kind === "mezcla" || a.kind === "master")) loose.push(a);
   });
   // Sin título en el nombre: si hay una sola canción en esa etapa, es suya.
   const STEP = { mezcla: 3, master: 4 };
@@ -133,7 +151,10 @@ function matchAudio(songs, audios) {
     const candidates = songs.filter((s) => s.step === STEP[a.kind]);
     if (candidates.length === 1) put(candidates[0].id, a);
   });
+  Object.values(out).forEach((slot) => {
+    Object.values(slot.versions).forEach((list) => list.sort((x, y) => (y.modified || "").localeCompare(x.modified || "")));
+  });
   return out;
 }
 
-module.exports = { listAudio, matchAudio, kindOf, norm };
+module.exports = { listAudio, matchAudio, kindOf, extraKindOf, norm };

@@ -29,14 +29,33 @@ const LABEL = { mezcla: "la mezcla", master: "el master" };
 // "1:05" a partir de 65 segundos.
 const clock = (t) => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, "0")}`;
 
-// Notas en el tiempo: hasta 60, ordenadas, con segundo y texto.
-function cleanMarks(list) {
+// Notas en el tiempo: hasta 60, ordenadas, con segundo y texto. Si la nota
+// es de voz (026_notas_de_voz.sql), "voice" es la ruta del audio en el
+// espacio privado notas-voz, siempre dentro de la carpeta del artista.
+function cleanMarks(list, ownerId) {
   if (!Array.isArray(list)) return [];
+  const voiceOk = (v) => typeof v === "string" && ownerId && new RegExp(`^${ownerId}/[A-Za-z0-9._-]{1,120}$`).test(v);
   return list
-    .map((m) => ({ t: Math.round(Number(m && m.t) * 10) / 10, text: String((m && m.text) || "").trim().slice(0, 500) }))
+    .map((m) => {
+      const out = { t: Math.round(Number(m && m.t) * 10) / 10, text: String((m && m.text) || "").trim().slice(0, 500) };
+      if (voiceOk(m && m.voice)) { out.voice = m.voice; if (!out.text) out.text = "Nota de voz"; }
+      return out;
+    })
     .filter((m) => Number.isFinite(m.t) && m.t >= 0 && m.t <= 4 * 3600 && m.text)
     .sort((a, b) => a.t - b.t)
     .slice(0, 60);
+}
+
+// Link para escuchar una nota de voz desde el mail (vale 14 días).
+async function voiceLink(path) {
+  const res = await fetch(`${SUPABASE_URL}/storage/v1/object/sign/notas-voz/${path.split("/").map(encodeURIComponent).join("/")}`, {
+    method: "POST",
+    headers: { apikey: serviceKey(), Authorization: `Bearer ${serviceKey()}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ expiresIn: 14 * 86400 }),
+  }).catch(() => null);
+  const data = res && res.ok ? await res.json().catch(() => null) : null;
+  const signed = data && (data.signedURL || data.signedUrl);
+  return signed ? `${SUPABASE_URL}/storage/v1${signed.startsWith("/") ? "" : "/"}${signed}` : null;
 }
 
 const notionToken = () => (process.env.NOTION_TOKEN || "").replace(/[\s"'“”‘’]/g, "");
@@ -59,10 +78,9 @@ exports.handler = async (event) => {
   try { body = JSON.parse(event.body || "{}"); } catch (e) { return json(400, { error: "Pedido inválido." }); }
   const kind = body.kind, action = body.action;
   const note = String(body.note || "").trim().slice(0, 1000) || null;
-  const marks = cleanMarks(body.marks);
+  let marks = [];
   const songId = parsePageId(body.song);
   if (!songId || !STAGE_OF[kind] || !["aprobada", "cambios"].includes(action)) return json(400, { error: "Pedido inválido." });
-  if (action === "cambios" && !note && !marks.length) return json(400, { error: "Contanos qué te gustaría cambiar." });
 
   // Quién es.
   const auth = (event.headers && (event.headers.authorization || event.headers.Authorization)) || "";
@@ -75,6 +93,9 @@ exports.handler = async (event) => {
   if (!me) return json(500, { error: "No pudimos leer tu perfil." });
   if (me.role !== "artist") return json(403, { error: "Solo el artista puede aprobar sus canciones." });
   if (me.active === false) return json(403, { error: "Tu acceso al portal está pausado. Si querés retomar, escribinos por WhatsApp." });
+  marks = cleanMarks(body.marks, me.id);
+  if (action === "cambios" && !note && !marks.length) return json(400, { error: "Contanos qué te gustaría cambiar." });
+  const voiceLinks = await Promise.all(marks.map((m) => (m.voice ? voiceLink(m.voice) : null)));
 
   // La canción tiene que ser suya y estar en la etapa que corresponde.
   const priv = await db(`artist_private?profile_id=eq.${me.id}&select=notion_page_id`);
@@ -141,7 +162,7 @@ exports.handler = async (event) => {
 <p style="margin:0 0 6px;font-family:'Courier New',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#F5A623">Portal de artistas · ${kind === "mezcla" ? "Mezcla" : "Master"}</p>
 <p style="margin:0 0 14px;font-size:22px;font-weight:700">${esc(who)} ${esc(verb)} de «${esc(title)}»</p>
 ${note ? `<p style="margin:0 0 14px;padding:14px 16px;background:#2E1607;border-radius:12px;font-size:15px;line-height:1.5">${esc(note).replace(/\n/g, "<br>")}</p>` : ""}
-${marks.length ? `<table role="presentation" style="width:100%;border-collapse:separate;border-spacing:0 6px;margin:0 0 14px">${marks.map((m) => `<tr><td style="width:64px;vertical-align:top;padding:12px 0 12px 14px;background:#2E1607;border-radius:12px 0 0 12px;font-family:'Courier New',monospace;font-size:15px;font-weight:700;color:#F5A623">${clock(m.t)}</td><td style="padding:12px 14px;background:#2E1607;border-radius:0 12px 12px 0;font-size:15px;line-height:1.45">${esc(m.text)}</td></tr>`).join("")}</table>` : ""}
+${marks.length ? `<table role="presentation" style="width:100%;border-collapse:separate;border-spacing:0 6px;margin:0 0 14px">${marks.map((m) => `<tr><td style="width:64px;vertical-align:top;padding:12px 0 12px 14px;background:#2E1607;border-radius:12px 0 0 12px;font-family:'Courier New',monospace;font-size:15px;font-weight:700;color:#F5A623">${clock(m.t)}</td><td style="padding:12px 14px;background:#2E1607;border-radius:0 12px 12px 0;font-size:15px;line-height:1.45">${esc(m.text)}${voiceLinks[marks.indexOf(m)] ? ` <a href="${voiceLinks[marks.indexOf(m)]}" style="color:#F5A623;font-weight:700;text-decoration:none">▶ Escuchar nota de voz</a>` : ""}</td></tr>`).join("")}</table>` : ""}
 ${version ? `<p style="margin:0 0 10px;font-size:12px;color:#C9A980">Escuchó: ${esc(version)}</p>` : ""}
 ${saved.ok ? "" : `<p style="margin:0 0 10px;font-size:12px;color:#FF9C7A">Ojo: no quedó guardado en el portal (${esc(dbDetail(saved))}). Las notas están solo en este mail y en Notion.</p>`}
 <p style="margin:0;font-size:13px;color:#C9A980">${action === "aprobada" && kind === "master" ? "Ya pasó sola a Distribución en Notion y le avisamos al equipo de distribución." : action === "aprobada" ? "Ya podés arrancar con el master." : (marks.length ? "En el portal (su perfil → Canciones) tenés el audio con cada nota marcada: tocás una y salta a ese momento. " : "") + "Respondé este mail para hablar con el artista."}</p>
@@ -149,7 +170,7 @@ ${saved.ok ? "" : `<p style="margin:0 0 10px;font-size:12px;color:#FF9C7A">Ojo: 
     }).catch(() => false),
     notion("/comments", {
       method: "POST",
-      body: JSON.stringify({ parent: { page_id: songId }, rich_text: [{ type: "text", text: { content: [`Portal: ${who} ${verb}.${note ? ` «${note}»` : ""}`, ...marks.map((m) => `${clock(m.t)} — ${m.text}`)].join("\n").slice(0, 1900) } }] }),
+      body: JSON.stringify({ parent: { page_id: songId }, rich_text: [{ type: "text", text: { content: [`Portal: ${who} ${verb}.${note ? ` «${note}»` : ""}`, ...marks.map((m) => `${clock(m.t)} — ${m.text}${m.voice ? " (🎙 nota de voz, escuchala en el portal)" : ""}`)].join("\n").slice(0, 1900) } }] }),
     }).catch(() => null),
   ]);
   // Aprobada: queda también en Notion (Canciones → Entrega), así el estado

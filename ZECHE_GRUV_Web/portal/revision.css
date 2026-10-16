@@ -246,3 +246,34 @@ html.rv-lock, html.rv-lock body { overflow: hidden; }
 .rv-done > :not(.rv-done-sun) { position: relative; }
 .rv-done-sun { position: absolute; width: 520px; max-width: none; left: 50%; top: 50%; transform: translate(-50%, -62%); opacity: .07; pointer-events: none; animation: rvSpin 60s linear infinite; }
 @keyframes rvSpin { to { transform: translate(-50%, -62%) rotate(360deg); } }
+
+/* ---------- Comparar versiones (A/B) y antes y después ---------- */
+.rv-ab { position: relative; display: flex; gap: 2px; margin: 14px auto 0; padding: 4px; width: max-content; max-width: 100%; overflow-x: auto; scrollbar-width: none; border-radius: 999px; background: rgba(240, 224, 192, .07); border: 1px solid rgba(240, 224, 192, .1); }
+.rv-ab::-webkit-scrollbar { display: none; }
+.rv-ab-btn { position: relative; z-index: 1; display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 16px; border: 0; border-radius: 999px; background: none; color: var(--muted, #C9A980); font: inherit; font-size: 14px; font-weight: 600; white-space: nowrap; cursor: pointer; transition: color .25s ease; }
+.rv-ab-btn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+.rv-ab-btn[aria-pressed="true"] { color: #241105; }
+.rv-ab-glide { position: absolute; z-index: 0; top: 4px; left: 0; height: calc(100% - 8px); border-radius: 999px; background: #F07800; box-shadow: 0 6px 16px rgba(240, 120, 0, .3); transition: transform .42s cubic-bezier(.34, 1.3, .64, 1), width .42s cubic-bezier(.34, 1.3, .64, 1), background-color .3s ease; }
+.rv.is-other .rv-ab-glide { background: #F5A623; }
+.rv-ab-btn.is-demo[aria-pressed="true"] ~ .rv-ab-glide { background: #F0E0C0; }
+.rv-ab-hint { margin: 10px auto 0; max-width: 46ch; text-align: center; font-size: 13.5px; line-height: 1.45; color: var(--muted, #C9A980); animation: rvFade .35s ease both; }
+.rv-ab-hint b { color: var(--cream, #FFF4DC); font-weight: 600; }
+.rv-ab-level { display: inline-block; margin-left: 4px; padding: 1px 8px; border-radius: 999px; font-family: var(--mono, monospace); font-size: 11px; letter-spacing: .04em; background: rgba(159, 212, 154, .14); color: #B9E4B4; }
+.rv.is-other .rv-wave canvas { filter: saturate(.75); }
+@keyframes rvFade { from { opacity: 0; transform: translateY(4px); } }
+
+/* ---------- Notas de voz ---------- */
+.rv-voice { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; margin-top: 8px; }
+.rv-rec { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; border-radius: 999px; border: 1px solid rgba(240, 224, 192, .2); background: rgba(240, 224, 192, .05); color: var(--cream, #FFF4DC); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: background-color .2s ease, border-color .2s ease, transform .15s ease; }
+.rv-rec svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+.rv-rec:active { transform: scale(.96); }
+.rv-rec.is-on { background: #D62828; border-color: #D62828; color: #FFF4DC; }
+.rv-rec.is-on svg { fill: currentColor; stroke: none; }
+.rv-rec-time { font-family: var(--mono, monospace); font-size: 13px; color: var(--muted, #C9A980); display: inline-flex; align-items: center; gap: 8px; }
+.rv-rec-dot { width: 8px; height: 8px; border-radius: 50%; background: #D62828; animation: rvRecBlink 1s ease-in-out infinite; }
+@keyframes rvRecBlink { 50% { opacity: .25; } }
+.rv-rec-prev { flex: 1 1 220px; height: 40px; max-width: 100%; }
+.rv-note-voice { display: inline-flex; align-items: center; gap: 6px; margin: 0 8px 4px 0; padding: 6px 12px 6px 8px; border-radius: 999px; border: 0; background: rgba(240, 120, 0, .16); color: #F5A623; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; vertical-align: middle; transition: background-color .2s ease; }
+.rv-note-voice svg { width: 14px; height: 14px; fill: currentColor; }
+.rv-note-voice.is-on { background: #F07800; color: #241105; animation: rvRecBlink 1.4s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .rv-ab-glide, .rv-ab-hint, .rv-rec-dot, .rv-note-voice.is-on { transition: none; animation: none; } }

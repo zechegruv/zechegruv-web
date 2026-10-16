@@ -115,7 +115,7 @@ exports.handler = async (event) => {
     id: r.id,
     notes: Array.isArray(r.marks) ? r.marks.length : 0,
     // Checklist de la mezcla: cada nota del artista y cuáles ya resolviste.
-    marks: r.action === "cambios" && Array.isArray(r.marks) ? r.marks.map((m) => ({ t: m.t, text: m.text })) : [],
+    marks: r.action === "cambios" && Array.isArray(r.marks) ? r.marks.map((m) => ({ t: m.t, text: m.text, ...(m.voice ? { voice: m.voice } : {}) })) : [],
     resolved: Array.isArray(r.resolved) ? r.resolved : [],
     note: r.note || null,
     at: r.created_at,

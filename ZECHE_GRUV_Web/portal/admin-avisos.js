@@ -255,6 +255,23 @@
           }
         });
         li.append(b, t, tx);
+        // Nota de voz del artista: se escucha acá mismo.
+        if (m.voice) {
+          const v = el("button", "zc-voice");
+          v.type = "button";
+          v.setAttribute("aria-label", `Escuchar nota de voz de ${clockOf(m.t)}`);
+          v.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg><span>Voz</span>';
+          v.addEventListener("click", async () => {
+            if (v._a) { v._a.pause(); v._a = null; v.classList.remove("is-on"); return; }
+            v.classList.add("is-on");
+            const { data } = await db.storage.from("notas-voz").createSignedUrl(m.voice, 3600);
+            if (!data) { v.classList.remove("is-on"); return; }
+            v._a = new Audio(data.signedUrl);
+            v._a.addEventListener("ended", () => { v._a = null; v.classList.remove("is-on"); });
+            v._a.play().catch(() => { v._a = null; v.classList.remove("is-on"); });
+          });
+          li.append(v);
+        }
         ul.append(li);
       });
       paint();

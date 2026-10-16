@@ -155,7 +155,14 @@ function deliveryOf(song, files, rows) {
     state = events.length ? events[0][1] : "proceso";
   }
   const out = state === "proceso" || !file ? null : { name: file.name, url: file.url, modified: file.modified, size: file.size || 0 };
-  return { kind, state, file: out, review: reviewOut(lastArtist), manual: manualHere, by: last ? last.source || "artist" : null };
+  const slot = files[song.id] || {};
+  const pub = (a) => (a ? { name: a.name, url: a.url, modified: a.modified, size: a.size || 0 } : null);
+  // Para comparar: las versiones anteriores de esta misma etapa (A/B) y la
+  // maqueta (antes y después). Solo si hay algo entregado para escuchar.
+  const versions = out ? ((slot.versions && slot.versions[kind]) || []).filter((a) => a.name !== out.name || a.modified !== out.modified).slice(0, 3).map(pub) : [];
+  // Kit de lanzamiento (canción terminada): el master final y la versión en vivo, de cuando sean.
+  const kit = song.done ? { master: pub(file || (slot.versions && slot.versions.master[0])), vivo: pub(slot.vivo) } : null;
+  return { kind, state, file: out, versions, demo: out ? pub(slot.demo) : null, kit, review: reviewOut(lastArtist), manual: manualHere, by: last ? last.source || "artist" : null };
 }
 
 function withDelivery(songs, files, rows) {
