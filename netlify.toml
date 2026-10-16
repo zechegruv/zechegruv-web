@@ -15,6 +15,12 @@
 [functions."auto-entregas"]
   schedule = "*/15 * * * *"
 
+# Estado de los lanzamientos en las tiendas (ZIL): cada hora, al minuto 23.
+# Mantiene al artista al tanto y le avisa cuando ya está publicado
+# (netlify/functions/zil-sync.js).
+[functions."zil-sync"]
+  schedule = "23 * * * *"
+
 # Link corto para compartir: lleva a la venta de entradas de ZG PASS
 # (si hay un solo evento a la venta, abre directo su compra).
 [[redirects]]

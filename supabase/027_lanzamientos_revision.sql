@@ -15,3 +15,10 @@ alter table public.releases
   add column if not exists sent_to_stores_at timestamptz;
 
 notify pgrst, 'reload schema';
+
+-- Id del artista en ZIL (se crea solo la primera vez que se publica algo
+-- suyo). Va en artist_private: solo lo ve el administrador.
+alter table public.artist_private
+  add column if not exists zil_artist_id text;
+
+notify pgrst, 'reload schema';
