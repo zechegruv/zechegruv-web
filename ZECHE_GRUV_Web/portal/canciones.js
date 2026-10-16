@@ -82,8 +82,6 @@
     check: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
     notes: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14v10H9l-4 4z"/><path d="M9 9h6M9 12h4"/></svg>',
     send: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12l15-7-5 15-3-6z"/></svg>',
-    kit: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="7" width="16" height="13" rx="2.5"/><path d="M9 7V5.5A1.5 1.5 0 0110.5 4h3A1.5 1.5 0 0115 5.5V7M4 12h16"/></svg>',
-    down: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7.5 10.5L12 15l4.5-4.5M5 19h14"/></svg>',
   };
   const eq = '<span class="dv-eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span>';
 
@@ -438,98 +436,8 @@
       <li class="song song-finished">
         <div class="song-name">${titleHtml(song)}</div>
         <span class="song-meta">${when ? `${esc(when)} · ` : ""}<span class="song-ok">${tag}</span></span>
-        <details class="kit" data-kit="${esc(song.id)}">
-          <summary><span class="kit-ico" aria-hidden="true">${IC.kit}</span><span>Kit de lanzamiento</span><small>Master, portada, créditos y textos</small></summary>
-          <div class="kit-body"><p class="kit-loading">Armando tu kit…</p></div>
-        </details>
       </li>`;
   }
-
-  // ---------- Kit de lanzamiento ----------
-  // Todo lo que el artista necesita el día que sale la canción, en un lugar:
-  // el master final y la versión en vivo para descargar, la portada, los
-  // datos del lanzamiento (fecha, ISRC, UPC) y los créditos y un texto para
-  // redes listos para copiar. Sale de su carpeta (portal-songs.js) y de su
-  // ficha de Distribución (releases), sin cargar nada a mano.
-  const norm2 = (v) => String(v || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
-  const ROLE = { producer: "Producción", productor: "Producción", composer: "Composición", compositor: "Composición", lyricist: "Letra", autor: "Letra", performer: "Intérprete", interprete: "Intérprete", mixing: "Mezcla", mastering: "Master" };
-  const releasesCache = new Map();
-  async function releasesOf(profileId) {
-    if (!releasesCache.has(profileId)) {
-      releasesCache.set(profileId, db.from("releases").select("title,release_date,upc,cover_link,tracks,status").eq("artist_id", profileId)
-        .then(({ data }) => data || []).catch(() => []));
-    }
-    return releasesCache.get(profileId);
-  }
-  function creditsText(song, track) {
-    const lines = [];
-    const by = {};
-    ((track && track.credits) || []).forEach((c) => {
-      const who = c.artist_name || c.full_name;
-      if (!who) return;
-      (c.roles && c.roles.length ? c.roles : ["Créditos"]).forEach((r) => { const k = ROLE[norm2(r)] || r; (by[k] = by[k] || []).push(who); });
-    });
-    Object.entries(by).forEach(([k, v]) => lines.push(`${k}: ${[...new Set(v)].join(", ")}`));
-    if (!Object.keys(by).some((k) => /mezcla|master|producci/i.test(k))) lines.push("Producción, mezcla y master: ZECHE GRUV");
-    return `«${song.title}»${song.feat ? ` feat. ${song.feat}` : ""}\n${lines.join("\n")}`;
-  }
-  async function fillKit(box, song, profile) {
-    const body = box.querySelector(".kit-body");
-    const kit = (song.delivery && song.delivery.kit) || {};
-    const rels = await releasesOf(profile.id);
-    const key = norm2(song.title);
-    let release = null, track = null;
-    rels.forEach((r) => (r.tracks || []).forEach((t) => { if (!track && norm2(t.title) === key) { release = r; track = t; } }));
-    if (!release) release = rels.find((r) => norm2(r.title) === key) || null;
-    let cover = null;
-    if (release && release.cover_link) {
-      if (/^https?:/.test(release.cover_link)) cover = release.cover_link;
-      else { const { data } = await db.storage.from("covers").createSignedUrl(release.cover_link, 3600).catch(() => ({})); cover = data && data.signedUrl; }
-    }
-    const date = release && release.release_date ? dayOf(release.release_date) : dayOf(song.release);
-    const credits = creditsText(song, track);
-    const caption = date && date > today()
-      ? `El ${date.toLocaleDateString("es-AR", { day: "numeric", month: "long" })} sale «${song.title}». La hicimos de cero en ZECHE GRUV y ya no veo la hora de que la escuches. Activá el recordatorio 🔔`
-      : `«${song.title}» ya está en todas las plataformas. La hicimos de cero en ZECHE GRUV: escuchala y contame cuál es tu parte favorita.`;
-    const dl = (a, label, sub) => (a && a.url ? `<a class="kit-file" href="${esc(a.url)}" download="${esc(a.name)}" rel="noopener"><span class="kit-file-ico" aria-hidden="true">${IC.down}</span><span><b>${label}</b><small>${esc(sub || a.name)}</small></span></a>` : "");
-    const files = [dl(kit.master, "Master final", kit.master && kit.master.name), dl(kit.vivo, "Versión para show en vivo", kit.vivo && kit.vivo.name)].join("");
-    const facts = [
-      date ? ["Lanzamiento", date.toLocaleDateString("es-AR", { day: "numeric", month: "long", year: "numeric" })] : null,
-      track && track.isrc ? ["ISRC", track.isrc] : null,
-      release && release.upc ? ["UPC", release.upc] : null,
-    ].filter(Boolean);
-    body.innerHTML = `
-      <div class="kit-grid">
-        ${cover ? `<a class="kit-cover" href="${esc(cover)}" target="_blank" rel="noopener" download><img src="${esc(cover)}" alt="Portada de ${esc(song.title)}" loading="lazy"><span>Descargar portada</span></a>` : ""}
-        <div class="kit-side">
-          ${files || '<p class="kit-empty">El master todavía no está en tu carpeta. Apenas lo subamos, aparece acá para descargar.</p>'}
-          ${facts.length ? `<dl class="kit-facts">${facts.map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>` : ""}
-        </div>
-      </div>
-      <div class="kit-copy">
-        <div class="kit-copy-head"><b>Créditos</b><button class="btn kit-copy-btn" type="button" data-copy="credits">Copiar</button></div>
-        <pre class="kit-text" data-text="credits">${esc(credits)}</pre>
-      </div>
-      <div class="kit-copy">
-        <div class="kit-copy-head"><b>Texto para tus redes</b><button class="btn kit-copy-btn" type="button" data-copy="caption">Copiar</button></div>
-        <p class="kit-text" data-text="caption">${esc(caption)}</p>
-        <small class="kit-tip">Cambialo con tus palabras: lo que más conecta es contar qué te pasó haciendo la canción.</small>
-      </div>`;
-    box.dataset.ready = "1";
-  }
-  document.addEventListener("toggle", (e) => {
-    const box = e.target;
-    if (!box.matches || !box.matches("details.kit") || !box.open || box.dataset.ready) return;
-    const found = findSong(box.dataset.kit);
-    if (found && shownProfile) fillKit(box, found.song, shownProfile).catch(() => { box.querySelector(".kit-body").innerHTML = '<p class="kit-empty">No pudimos armar el kit ahora. Probá de nuevo en un momento.</p>'; });
-    if (window.zgTrack) window.zgTrack("portal_kit", {});
-  }, true);
-  document.addEventListener("click", async (e) => {
-    const b = e.target.closest("[data-copy]");
-    if (!b) return;
-    const text = b.closest(".kit-copy").querySelector("[data-text]").textContent;
-    try { await navigator.clipboard.writeText(text); b.textContent = "¡Copiado!"; b.classList.add("is-ok"); setTimeout(() => { b.textContent = "Copiar"; b.classList.remove("is-ok"); }, 1800); } catch (err) { /* nada */ }
-  });
 
   // ---------- Bienvenida: la próxima sesión ----------
   // Lo primero que ve el artista al entrar. Si la próxima sesión está
