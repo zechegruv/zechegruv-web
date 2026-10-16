@@ -238,6 +238,18 @@
     body.replaceChildren(ul);
   }
 
+  // Cartel que se va solo: "✓ Mix Seu amor · Pazz — entregado solo".
+  function autoNote(list, box) {
+    const note = el("div", "zt-auto");
+    note.setAttribute("role", "status");
+    const names = list.slice(0, 3).map((d) => `${d.kind === "master" ? "Master" : "Mix"} ${d.song}${d.artist ? ` · ${d.artist}` : ""}`);
+    const more = list.length > 3 ? ` y ${list.length - 3} más` : "";
+    note.append(el("strong", null, list.length === 1 ? "Entregado solo" : `${list.length} entregas marcadas solas`), el("span", null, `${names.join(", ")}${more}. Ya está en Notion y el artista lo puede aprobar.`));
+    box.querySelector(".zt-auto")?.remove();
+    box.querySelector(".zh-top").after(note);
+    setTimeout(() => { note.classList.add("is-out"); setTimeout(() => note.remove(), reduced() ? 0 : 420); }, 9000);
+  }
+
   // ---------- Armado ----------
   let timer = null;
   function mount(slot) {
@@ -272,6 +284,15 @@
       }).catch(() => { if (first) nBody.replaceChildren(el("p", "zh-sub", "No pudimos cargar los avisos.")); });
     };
     load(true);
+    // Entregas automáticas: al abrir el Inicio se revisan ya las carpetas
+    // (además de cada 15 minutos). Si subiste una mezcla o un master, se
+    // marca entregado solo, su sesión se cierra y la lista se vuelve a leer.
+    call("/.netlify/functions/admin-tasks", { sync: true }).then((d) => {
+      const list = (d && d.delivered) || [];
+      if (!list.length || !wrap.isConnected) return;
+      load(false);
+      autoNote(list, tBox);
+    }).catch(() => {});
     clearInterval(timer);
     timer = setInterval(() => { if (!document.hidden && wrap.isConnected && !document.getElementById("panel-home").hidden) load(false); }, REFRESH_MS);
   }

@@ -1,5 +1,8 @@
 // GET  /.netlify/functions/admin-tasks              -> próximas tareas
 // POST /.netlify/functions/admin-tasks { task }     -> marcarla como hecha
+// POST /.netlify/functions/admin-tasks { sync: true } -> revisa ya las carpetas
+//      y marca solas las mezclas y masters subidos (_lib/auto-entregas.js);
+//      lo mismo que hace la función programada cada 15 minutos.
 // Para el Inicio del panel de administrador, solo lo de mezcla y master:
 //   - las sesiones de mezcla y master de "Tareas Pendientes" que no están
 //     completadas ("Tenés sesión de mezcla hoy"), y
@@ -65,6 +68,10 @@ exports.handler = async (event) => {
   if (event.httpMethod === "POST") {
     let body;
     try { body = JSON.parse(event.body || "{}"); } catch (e) { return json(400, { error: "Pedido inválido." }); }
+    if (body.sync) {
+      const r = await require("./_lib/auto-entregas").syncAll();
+      return json(200, { ok: r.ok, delivered: (r.delivered || []).map(({ artist, song, kind, tasks }) => ({ artist, song, kind, tasks: (tasks || []).length })), errors: (r.errors || []).length });
+    }
     const id = String(body.task || "").replace(/[^0-9a-f-]/gi, "");
     if (!id) return json(400, { error: "Pedido inválido." });
     const res = await notion(`/pages/${id}`, { method: "PATCH", body: JSON.stringify({ properties: { "Estado de Tarea": { select: { name: "COMPLETADO" } } } }) });

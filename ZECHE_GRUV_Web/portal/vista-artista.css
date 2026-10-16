@@ -204,3 +204,12 @@ body.is-admin #tabs .tab .tab-badge.is-pop { animation: zgPop 420ms cubic-bezier
   .zt-row, .zn-row, .zt-urg.is-vencida, .zh-skel i, .zt-row.is-shake, .zt-row.is-done .zt-done svg path,
   body.is-artist-view[data-atab] #panel-profile > *, body.is-admin #tabs .tab .tab-badge.is-pop { animation: none !important; transition: none !important; }
 }
+
+/* Entregas automáticas: cartel breve arriba de "Mezclas y masters". */
+.zt-auto { display: grid; gap: 2px; margin: 0 0 12px; padding: 12px 14px 12px 40px; position: relative; border-radius: 14px; background: rgba(240, 120, 0, .12); border: 1px solid rgba(240, 120, 0, .28); color: var(--cream, #F0E0C0); font-size: 14px; line-height: 1.4; animation: ztAutoIn .5s cubic-bezier(.2, .8, .2, 1) both; transition: opacity .4s ease, transform .4s ease; }
+.zt-auto::before { content: "✓"; position: absolute; left: 14px; top: 11px; width: 18px; height: 18px; border-radius: 50%; background: #F07800; color: #241105; font-size: 12px; font-weight: 800; display: grid; place-items: center; animation: zhPulse 1.4s ease-out 2; }
+.zt-auto strong { font-family: var(--display, inherit); font-weight: 700; }
+.zt-auto span { color: var(--beige, #D8C3A0); }
+.zt-auto.is-out { opacity: 0; transform: translateY(-6px); }
+@keyframes ztAutoIn { from { opacity: 0; transform: translateY(-8px) scale(.98); } }
+@media (prefers-reduced-motion: reduce) { .zt-auto, .zt-auto::before { animation: none; } .zt-auto { transition: none; } }

@@ -9,6 +9,12 @@
 [functions]
   node_bundler = "esbuild"
 
+# Entregas automáticas: cada 15 minutos revisa las carpetas de los artistas
+# y, si subiste una mezcla o un master, la marca entregada en Notion, cierra
+# su sesión y avisa al artista (netlify/functions/_lib/auto-entregas.js).
+[functions."auto-entregas"]
+  schedule = "*/15 * * * *"
+
 # Link corto para compartir: lleva a la venta de entradas de ZG PASS
 # (si hay un solo evento a la venta, abre directo su compra).
 [[redirects]]
