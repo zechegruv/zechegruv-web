@@ -15,7 +15,14 @@ const WORLD = /todo el mundo|mundial|world|global|todos/i;
 // ZIL_LABEL_EMAIL si está cargada, o la única cuenta de tipo sello.
 async function labelSession() {
   const z = client();
-  const users = listOf(await z.call("Leer cuentas", "GET", "/users?role=LABEL"));
+  let users = [];
+  try {
+    users = listOf(await z.call("Leer cuentas", "GET", "/users?role=LABEL"));
+  } catch (err) {
+    // Sin permiso para listar cuentas: el token ya es de la cuenta del sello.
+    if (err.status === 403 || err.status === 401) return z;
+    throw err;
+  }
   const wanted = (process.env.ZIL_LABEL_EMAIL || "").trim().toLowerCase();
   const label = wanted ? users.find((u) => String(u.email || "").toLowerCase() === wanted) : (users.length === 1 ? users[0] : null);
   if (!label) {
