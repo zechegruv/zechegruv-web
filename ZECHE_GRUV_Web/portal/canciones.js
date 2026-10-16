@@ -257,6 +257,93 @@
   const capFirst = (t) => t.charAt(0).toUpperCase() + t.slice(1);
   const listJoin = (a) => (a.length > 1 ? `${a.slice(0, -1).join(", ")} y ${a[a.length - 1]}` : a[0] || "");
 
+  // ---------- Avisos: mezclas y masters para aprobar ----------
+  // Apenas entra, arriba de todo en Mi proyecto: una fila por cada mezcla o
+  // master listo para escuchar (como los avisos del panel de Zeche). Tocando
+  // la fila se abre el reproductor para aprobar o marcar cambios en el
+  // segundo exacto. Con ✕ se oculta hasta la próxima vez que entra; si
+  // llega una versión nueva, vuelve a aparecer.
+  const HIDE_KEY = "zg-avisos-ocultos";
+  const noticeKey = (s) => `${s.id}|${(s.delivery && s.delivery.file && s.delivery.file.modified) || s.updated || ""}`;
+  const hiddenSet = () => { try { return new Set(JSON.parse(sessionStorage.getItem(HIDE_KEY) || "[]")); } catch (e) { return new Set(); } };
+  const hiddenNotice = (s) => hiddenSet().has(noticeKey(s));
+  function hideNotice(key) {
+    const set = hiddenSet();
+    set.add(key);
+    try { sessionStorage.setItem(HIDE_KEY, JSON.stringify([...set].slice(-50))); } catch (e) { /* nada */ }
+  }
+  function agoText(iso) {
+    const t = Date.parse(iso || "");
+    if (!t) return "";
+    const min = Math.max(0, Math.round((Date.now() - t) / 60000));
+    if (min < 2) return "recién";
+    if (min < 60) return `hace ${min} min`;
+    const h = Math.round(min / 60);
+    if (h < 24) return `hace ${h} h`;
+    const d = Math.round(h / 24);
+    return d === 1 ? "ayer" : `hace ${d} días`;
+  }
+  // Pestaña del navegador: "(1) Portal de artistas — ZECHE GRUV".
+  const BASE_TITLE = document.title.replace(/^\(\d+\)\s*/, "");
+  function pendingTitle(n) { document.title = n ? `(${n}) ${BASE_TITLE}` : BASE_TITLE; }
+
+  function noticeHtml(s, i) {
+    const d = s.delivery || {};
+    const master = d.kind === "master";
+    const again = d.review && d.review.action === "cambios"; // ya había pedido cambios: es la versión nueva
+    const head = master ? (again ? "Nueva versión del master" : "Master para aprobar") : (again ? "Nueva versión de la mezcla" : "Mezcla para aprobar");
+    const text = master ? `El master de «${s.title}» está listo.` : `Tu mezcla de «${s.title}» está lista.`;
+    const sub = master
+      ? "Es la versión final, la que va a sonar en todas las plataformas. Escuchalo y aprobalo, o marcá el segundo exacto que querés ajustar."
+      : again ? "Ya están tus cambios. Escuchala de nuevo y contanos si quedó como la imaginabas."
+        : "Escuchala con auriculares y contanos qué sentís: aprobala o marcá el segundo exacto que querés cambiar.";
+    const when = agoText(d.file && d.file.modified);
+    return `<li class="apn-row${master ? " is-master" : ""}" data-notice="${esc(noticeKey(s))}" style="animation-delay:${180 + i * 90}ms">
+        <button type="button" class="apn-main" data-listen="${esc(s.id)}">
+          <span class="apn-play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z"/></svg></span>
+          <span class="apn-body">
+            <span class="apn-top"><span class="apn-tag">${esc(head)}</span>${when ? `<span class="apn-ago">${esc(when)}</span>` : ""}</span>
+            <span class="apn-text">${esc(text)}</span>
+            <span class="apn-sub">${esc(sub)}</span>
+          </span>
+        </button>
+        <button type="button" class="apn-x" data-hide-notice aria-label="Ocultar aviso" title="Ocultar hasta la próxima vez"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17"/></svg></button>
+      </li>`;
+  }
+  function noticesHtml(pending, own) {
+    const list = own ? pending.filter((s) => !hiddenNotice(s)) : pending;
+    if (!list.length) return "";
+    const n = list.length;
+    return `
+      <section class="ap-card apn" aria-label="Avisos" role="status">
+        <div class="apn-head">
+          <h2 class="ap-h2">${n === 1 ? "Tenés algo para escuchar" : `Tenés ${n} cosas para escuchar`}</h2>
+          <span class="apn-count">${n}</span>
+        </div>
+        <ul class="apn-list">${list.map(noticeHtml).join("")}</ul>
+      </section>`;
+  }
+  document.addEventListener("click", (e) => {
+    const x = e.target.closest("[data-hide-notice]");
+    if (!x) return;
+    const row = x.closest(".apn-row");
+    const card = row && row.closest(".apn");
+    if (!row) return;
+    hideNotice(row.dataset.notice);
+    const left = card.querySelectorAll(".apn-row:not(.is-out)").length - 1;
+    pendingTitle(Math.max(0, left));
+    row.classList.add("is-out");
+    const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    setTimeout(() => {
+      if (left <= 0) card.remove();
+      else {
+        row.remove();
+        card.querySelector(".apn-count").textContent = String(left);
+        card.querySelector(".ap-h2").textContent = left === 1 ? "Tenés algo para escuchar" : `Tenés ${left} cosas para escuchar`;
+      }
+    }, reduce ? 0 : 380);
+  });
+
   function renderProject(profile, data) {
     const box = $("projectCards");
     const own = profile.id === P.me.id;
@@ -303,23 +390,25 @@
         </section>`;
     }
 
-    // Lista: lo que hay para aprobar; si no hay nada, cómo va cada canción.
+    // Lista: cómo va cada canción. Las que tienen algo para aprobar se abren
+    // directo en el reproductor (el aviso de arriba ya las destaca).
     const TAG = { proceso: "en proceso", aprobar: "para aprobar", cambios: "cambios pedidos", aprobada: "aprobada" };
-    const rows = (pending.length ? pending : active).map((s, i) => {
+    const rows = active.map((s, i) => {
       const stage = s.step >= 0 ? STAGES[s.step][1] : "Por arrancar";
       const d = s.delivery;
-      const tag = pending.length ? "Escuchar" : d ? `${d.kind === "mezcla" ? "Mezcla" : "Master"} ${TAG[d.state]}`.replace("Master aprobada", "Master aprobado") : "En proceso";
-      const act = pending.length ? `data-listen="${esc(s.id)}"` : 'data-go="canciones"';
+      const go = pending.includes(s);
+      const tag = go ? "Escuchar" : d ? `${d.kind === "mezcla" ? "Mezcla" : "Master"} ${TAG[d.state]}`.replace("Master aprobada", "Master aprobado") : "En proceso";
+      const act = go ? `data-listen="${esc(s.id)}"` : 'data-go="canciones"';
       return `<li><button type="button" class="ap-row" ${act} style="animation-delay:${300 + i * 80}ms">
-        <span class="ap-dot${i === 0 && pending.length ? " is-now" : ""}" aria-hidden="true"></span>
+        <span class="ap-dot${go ? " is-now" : ""}" aria-hidden="true"></span>
         <span class="ap-stage">${esc(stage)}</span>
         <span class="ap-what">${esc(s.title)}${s.feat ? ` <small>feat. ${esc(s.feat)}</small>` : ""}</span>
-        <span class="ap-tag${pending.length ? " is-go" : ""}">${tag}</span>
+        <span class="ap-tag${go ? " is-go" : ""}">${tag}</span>
       </button></li>`;
     }).join("");
     const list = rows ? `
-      <section class="ap-card ap-list" aria-label="${pending.length ? "Para escuchar y aprobar" : "Tus canciones"}">
-        <h2 class="ap-h2">${pending.length ? "Para escuchar y aprobar" : "Tus canciones"}</h2>
+      <section class="ap-card ap-list" aria-label="Tus canciones">
+        <h2 class="ap-h2">Tus canciones</h2>
         <ol>${rows}</ol>
       </section>` : "";
 
@@ -332,9 +421,11 @@
         </div>
         ${total ? '<button class="btn btn-primary ap-cta" type="button" data-go="canciones">Ver mis canciones</button>' : ""}
       </header>
+      ${noticesHtml(pending, own)}
       <div class="ap-grid">${ring}<div id="apScene" class="ap-scene-slot"></div></div>
       ${list}`;
     box.hidden = false;
+    if (own) pendingTitle(pending.filter((s) => !hiddenNotice(s)).length);
     if (window.ZGArtistNav) window.ZGArtistNav.fillScene($("apScene"), "small");
   }
 
