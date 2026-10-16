@@ -20,6 +20,10 @@
   let listProfile = null; // perfil cuyos lanzamientos se listan; null = todos (administrador)
   let release = null;     // lanzamiento abierto en la ficha
   let owner = null;       // perfil del artista dueño de ese lanzamiento
+  // Masters de la carpeta del artista (OneDrive), para elegir de una lista.
+  // null = todavía no se pidió o no se pudo leer (queda el campo de texto).
+  let masters = null;
+  let mastersOwner = null;
 
   const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
   const isAdmin = () => P.me.role === "admin";
@@ -114,8 +118,13 @@
       + (release.submitted_at ? `<span class="chip">Enviado el ${fmtDate(release.submitted_at)}</span>` : "");
 
     const notice = $("releaseNotice");
-    notice.hidden = editable;
-    notice.textContent = "Este lanzamiento ya fue enviado a ZECHE GRUV y no se puede editar. Si hay que corregir algo, escribinos.";
+    const changes = release.status === "draft" && release.review_note;
+    notice.hidden = editable && !changes;
+    notice.classList.toggle("notice-changes", !!changes);
+    notice.textContent = changes
+      ? `ZECHE GRUV te pidió ajustar esto antes de mandarlo a las tiendas: ${release.review_note}`
+      : "Este lanzamiento ya fue enviado a ZECHE GRUV y no se puede editar. Si hay que corregir algo, escribinos.";
+    $("rReviewNote").value = "";
 
     $("rTitle").value = release.title || "";
     $("rType").value = release.release_type || "single";
@@ -138,6 +147,7 @@
     $("adminSaveBtn").hidden = !admin;
 
     renderTracks();
+    loadMasters();
     syncPitch();
     $("releaseErrors").replaceChildren();
     setMsg($("releaseMsg"), "");
@@ -259,8 +269,7 @@
           </div>
         </div>
         <div class="row">
-          <div class="field"><label>Máster a usar</label><input type="text" data-t="master" maxlength="200" placeholder="Ej: Sol v3" value="${esc(t.master)}">
-            <p class="hint">El nombre de la versión final aprobada, tal como figura en Masters.</p></div>
+          <div class="field"><label>Máster a usar</label>${masterField(t.master)}</div>
           <div class="field"><label>ISRC</label><input type="text" data-t="isrc" maxlength="20" value="${esc(t.isrc)}">
             <p class="hint">Solo si la canción ya estaba publicada.</p></div>
         </div>
@@ -275,6 +284,47 @@
           <span class="split-total" data-total></span>
         </div>
       </div>`;
+  }
+
+  // Lista de masters de la carpeta del artista; si no se pudo leer, el
+  // campo de texto de siempre.
+  function masterField(value) {
+    if (!masters || !masters.length) {
+      return `<input type="text" data-t="master" maxlength="200" placeholder="Ej: Sol v3" value="${esc(value)}">
+            <p class="hint">El nombre de la versión final aprobada, tal como figura en Masters.</p>`;
+    }
+    const known = masters.includes(value);
+    return `<select data-t="master">
+              <option value="">Elegí el máster…</option>
+              ${!known && value ? `<option selected>${esc(value)}</option>` : ""}
+              ${masters.map((m) => `<option${m === value ? " selected" : ""}>${esc(m)}</option>`).join("")}
+            </select>
+            <p class="hint">Los audios de tu carpeta Masters (sin las versiones para vivo).</p>`;
+  }
+
+  async function loadMasters() {
+    if (!owner || !owner.id || !release) return;
+    if (mastersOwner === owner.id) return;
+    mastersOwner = owner.id;
+    masters = null;
+    const forId = owner.id;
+    try {
+      const { data: { session } } = await db.auth.getSession();
+      const params = new URLSearchParams({ section: "masters" });
+      if (forId !== P.me.id) params.set("artist", forId);
+      const res = await fetch(`/.netlify/functions/portal-files?${params}`, { headers: { Authorization: `Bearer ${session.access_token}` } });
+      const data = await res.json();
+      if (!res.ok || !data.exists) return;
+      const files = [...(data.files || []), ...(data.groups || []).flatMap((g) => g.files || [])];
+      const list = [...new Set(files
+        .filter((f) => /\.(wav|aiff?|flac|mp3)$/i.test(f.name) && f.tag !== "vivo")
+        .map((f) => f.name))];
+      if (!list.length || !owner || owner.id !== forId) return;
+      masters = list;
+      if (!$("releaseFields").disabled) { collect(); renderTracks(); }
+    } catch (err) {
+      // Sin lista: queda el campo de texto.
+    }
   }
 
   function renderTracks() {
@@ -403,6 +453,7 @@
       territory: release.territory || null, upc: release.upc || null, cover_link: release.cover_link || null,
       pitch: release.pitch, notes: release.notes || null, tracks: release.tracks, status,
     };
+    if (status === "submitted") row.review_note = null;
     const query = release.id
       ? db.from("releases").update(row).eq("id", release.id)
       : db.from("releases").insert(row);
@@ -425,6 +476,21 @@
     }
   }
 
+  // Aviso por mail (release-notify.js). Si falla, lo guardado queda igual.
+  async function notify(kind) {
+    try {
+      const { data: { session } } = await db.auth.getSession();
+      const res = await fetch("/.netlify/functions/release-notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify({ id: release.id, event: kind }),
+      });
+      return res.ok;
+    } catch (err) {
+      return false;
+    }
+  }
+
   $("saveDraftBtn").addEventListener("click", (event) => {
     collect();
     showIssues([], []);
@@ -438,7 +504,8 @@
     if (errors.length) { setMsg($("releaseMsg"), "Completá lo que falta para poder enviarlo.", true); return; }
     const extra = warnings.length ? `\n\nAvisos:\n- ${warnings.join("\n- ")}` : "";
     if (!confirm(`¿Enviar "${release.title}" a ZECHE GRUV? Después de enviarlo no vas a poder editarlo.${extra}`)) return;
-    run(event.currentTarget, () => save("submitted"), "Lanzamiento enviado. Te avisamos cuando esté cargado.");
+    run(event.currentTarget, async () => { await save("submitted"); await notify("submitted"); },
+      "¡Listo! Lo recibimos y lo vamos a revisar. Te avisamos cuando salga a las tiendas.");
   });
 
   $("adminSaveBtn").addEventListener("click", (event) => {
@@ -446,6 +513,30 @@
     const { errors, warnings } = validate();
     showIssues(errors, warnings);
     run(event.currentTarget, () => save($("rStatus").value), "Cambios guardados.");
+  });
+
+  // Devolverle el lanzamiento al artista con una nota: vuelve a borrador,
+  // él lo puede editar y le llega un mail con lo que hay que corregir.
+  $("requestChangesBtn").addEventListener("click", async (event) => {
+    const note = $("rReviewNote").value.trim();
+    if (!note) { setMsg($("releaseMsg"), "Escribí qué tiene que corregir el artista.", true); $("rReviewNote").focus(); return; }
+    if (!confirm(`¿Devolverle "${release.title || "el lanzamiento"}" al artista con esta nota?\n\n${note}`)) return;
+    collect();
+    const btn = event.currentTarget;
+    btn.disabled = true;
+    setMsg($("releaseMsg"), "Guardando…");
+    try {
+      const { data, error } = await db.from("releases").update({ status: "draft", review_note: note }).eq("id", release.id).select().single();
+      if (error) throw new Error("No pudimos guardar. ¿Corriste supabase/027_lanzamientos_revision.sql?");
+      release = data;
+      const sent = await notify("changes");
+      renderRelease();
+      setMsg($("releaseMsg"), sent ? "Devuelto al artista. Le llegó un mail con tu nota." : "Devuelto al artista, pero el mail no salió. Avisale por WhatsApp.", !sent);
+    } catch (err) {
+      setMsg($("releaseMsg"), err.message, true);
+    } finally {
+      btn.disabled = false;
+    }
   });
 
   // ---------- Exportar a Excel (administrador) ----------
@@ -500,5 +591,5 @@
     }
   });
 
-  window.ZGDistribution = { openList };
+  window.ZGDistribution = { openList, openRelease };
 })();

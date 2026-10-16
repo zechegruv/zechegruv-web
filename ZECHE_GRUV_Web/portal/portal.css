@@ -732,6 +732,13 @@ a.chip:hover { border-color: var(--orange-soft); color: var(--orange-soft); }
   line-height: 1.5;
 }
 
+.notice-changes {
+  border-color: var(--orange);
+  background: rgba(240, 120, 0, .1);
+  color: var(--cream);
+  font-size: 14px;
+}
+
 .notice-login {
   margin: 0 0 16px;
   border-color: var(--border);

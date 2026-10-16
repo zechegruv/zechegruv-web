@@ -205,7 +205,13 @@
     }
     $("tabs").hidden = !admin;
     showView("app");
-    if (admin) { openTab("home"); }
+    // Link del mail de "nuevo lanzamiento para revisar": abre esa ficha.
+    const deep = /^#lanzamiento-([0-9a-f-]{36})$/i.exec(location.hash);
+    if (deep && (admin || me.role === "distribution")) {
+      history.replaceState(null, "", location.pathname);
+      window.ZGDistribution.openRelease(deep[1]);
+    }
+    else if (admin) { openTab("home"); }
     // Equipo de distribución: entra directo a los lanzamientos de todos.
     else if (me.role === "distribution") window.ZGDistribution.openList(null);
     else showProfile(me);
