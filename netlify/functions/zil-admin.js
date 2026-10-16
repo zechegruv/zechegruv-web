@@ -7,7 +7,7 @@
 //   "sync":     consulta ya mismo el estado en las tiendas (zil-sync.js).
 const { SUPABASE_URL, json, db } = require("./_lib/pass");
 const { client, listOf, base, token, isDev } = require("./_lib/zil");
-const { prepare, publish, labelSession, genreCode, allDsps } = require("./_lib/zil-release");
+const { prepare, publish, labelSession, genreCode, allDsps, artistIndex } = require("./_lib/zil-release");
 const { syncRelease } = require("./zil-sync");
 
 const PUBLISHABLE_KEY = "sb_publishable_9M2gY0XZr7xIrV-1s9AiUA_XA1uNm0V";
@@ -44,15 +44,26 @@ exports.handler = async (event) => {
         try { const d = await z.call(label, "GET", path); out[label] = `OK · ${sample(d)}`; return d; }
         catch (e) { out[label] = `✕ ${e.status}${e.detail ? ` (${e.detail})` : ""}`; return null; }
       };
-      const [, , , , , albums] = await Promise.all([
-        tryCall("perfil", "/me"), tryCall("cuentas", "/users"), tryCall("generos", "/genres"),
-        tryCall("tiendas", "/dsps"), tryCall("proyectos", "/projects"), tryCall("lanzamientos", "/albums"),
+      await Promise.all([
+        tryCall("perfil", "/me"), tryCall("generos", "/genres"), tryCall("tiendas", "/dsps"), tryCall("invitados", "/guestArtists"),
       ]);
-      if (albums) out.lanzamientos = `OK · ${listOf(albums).length} lanzamientos`;
+      try {
+        const idx = await artistIndex(z, {});
+        out.artistas = `OK · ${Object.keys(idx).length} artistas ya cargados en ZIL`;
+      } catch (e) { out.artistas = `✕ ${e.status}${e.detail ? ` (${e.detail})` : ""}`; }
       return json(200, { ok: true, ...out });
     }
     if (body.action === "preview") {
       const p = await prepare(id);
+      // El género tiene que existir en ZIL: si no coincide, se sugieren los parecidos.
+      if (p.rel.genre) {
+        const g = await genreCode(await labelSession(), p.rel.genre).catch(() => null);
+        if (g && !g.code) {
+          const words = p.rel.genre.toLowerCase().split(/[^a-z0-9]+/).filter((w) => w.length > 2);
+          const near = g.options.filter((o) => words.some((w) => o.toLowerCase().includes(w))).slice(0, 12);
+          p.problems.push(`El género «${p.rel.genre}» no existe en ZIL. Escribí en Género uno de estos: ${(near.length ? near : g.options.slice(0, 15)).join(" · ")}`);
+        }
+      }
       return json(200, {
         ok: !p.problems.length, problems: p.problems, entorno: isDev() ? "pruebas (dev)" : "real",
         resumen: { titulo: p.rel.title, salida: p.rel.release_date, genero: p.rel.genre, canciones: p.tracks.map((t) => `${t.title} · máster: ${t.master}`) },

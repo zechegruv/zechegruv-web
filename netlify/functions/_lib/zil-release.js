@@ -89,9 +89,13 @@ async function prepare(releaseId) {
 }
 
 async function genreCode(z, text) {
-  const list = listOf(await z.call("Leer géneros", "GET", "/genres"));
+  const raw = await z.call("Leer géneros", "GET", "/genres");
   const want = norm(text);
-  const opts = list.map((g) => (typeof g === "string" ? { code: g, name: g } : { code: g.code || g.id || g.value || g._id || g.key, name: g.name || g.label || g.title || g.code || "" }));
+  // ZIL los manda como { codigo: "NOMBRE" }; por las dudas acepta también listas.
+  const list = listOf(raw);
+  const opts = list.length
+    ? list.map((g) => (typeof g === "string" ? { code: g, name: g } : { code: g.code || g.id || g.value || g._id || g.key, name: g.name || g.label || g.title || g.code || "" }))
+    : Object.entries(raw || {}).filter(([, v]) => typeof v === "string").map(([code, name]) => ({ code, name }));
   const hit = opts.find((g) => norm(g.code) === want || norm(g.name) === want) || opts.find((g) => norm(g.name).includes(want) || want.includes(norm(g.name)) && norm(g.name).length > 2);
   return { code: hit ? hit.code : null, options: opts.slice(0, 80).map((g) => `${g.name} (${g.code})`) };
 }
@@ -100,16 +104,36 @@ async function allDsps(z) {
   return listOf(await z.call("Leer tiendas", "GET", "/dsps")).map((d) => (typeof d === "string" ? d : d.code || d.id || d.key || d.name)).filter(Boolean);
 }
 
+// Todos los artistas que ya existen en ZIL (de los proyectos del sello y
+// los invitados), para no crear duplicados: { nombre normalizado: id }.
+async function artistIndex(z, cache) {
+  if (cache.index) return cache.index;
+  const index = {};
+  const add = (a) => { const n = norm(a && (a.artisticName || a.name)); const id = idOf(a); if (n && id && !index[n]) index[n] = id; };
+  const projects = listOf(await z.call("Leer proyectos", "GET", "/projects"));
+  projects.forEach((p) => listOf(p.albums || []).forEach((al) => {
+    (al.artists || []).forEach((x) => add(x.artist && typeof x.artist === "object" ? x.artist : x));
+    listOf(al.tracks || []).forEach((t) => (t.artists || []).forEach((x) => add(x.artist && typeof x.artist === "object" ? x.artist : x)));
+  }));
+  const guests = await z.call("Leer invitados", "GET", "/guestArtists").catch(() => null);
+  listOf(guests).forEach(add);
+  cache.index = index;
+  cache.projects = projects;
+  return index;
+}
+
 async function guestId(z, name, cache) {
   const key = norm(name);
   if (!key) return null;
-  if (!cache.list) cache.list = listOf(await z.call("Leer invitados", "GET", "/guestArtists"));
+  const index = await artistIndex(z, cache);
+  if (index[key]) return index[key];
+  if (!cache.list) cache.list = [];
   const found = cache.list.find((g) => norm(g.artisticName || g.name) === key);
   if (found) return idOf(found);
   const created = await z.call(`Crear artista invitado «${name}»`, "POST", "/guestArtists", { artisticName: name, isGuest: true });
   const id = idOf(created);
   if (!id) throw new ZilError(`Crear artista invitado «${name}»`, "sin id", "la respuesta no trajo id");
-  cache.list.push({ artisticName: name, _id: id });
+  cache.index[key] = id;
   return id;
 }
 
@@ -125,8 +149,15 @@ async function publish(releaseId) {
   const note = (step) => save(rel.id, { zil_status: Object.assign({}, rel.zil_status, { progress, step, at: new Date().toISOString() }) });
   const z = await labelSession();
 
-  // 1. Artista principal en ZIL (se crea una sola vez y se guarda).
+  // 1. Artista principal en ZIL: si ya existe (por nombre) se usa ese; si no,
+  // se crea una sola vez. El id queda guardado para la próxima.
+  const cache = {};
   let mainId = priv.zil_artist_id;
+  if (!mainId) {
+    const index = await artistIndex(z, cache);
+    mainId = index[norm(owner.display_name)] || index[norm(owner.full_name)] || null;
+    if (mainId) await db(`artist_private?profile_id=eq.${rel.artist_id}`, { method: "PATCH", body: { zil_artist_id: mainId } });
+  }
   if (!mainId) {
     const created = await z.call("Crear artista principal", "POST", "/artists", {
       artisticName: owner.display_name || owner.full_name, email: owner.email, fullName: owner.full_name || owner.display_name,
@@ -139,7 +170,6 @@ async function publish(releaseId) {
 
   // 2. Ids de todos los que figuran en los créditos.
   const ownerNames = [owner.display_name, owner.full_name].map(norm).filter(Boolean);
-  const cache = {};
   const idFor = async (c) => {
     if ((c.email && owner.email && c.email.toLowerCase() === owner.email.toLowerCase()) || ownerNames.includes(norm(c.artist_name)) || ownerNames.includes(norm(c.full_name))) return mainId;
     return guestId(z, c.artist_name || c.full_name, cache);
@@ -236,4 +266,4 @@ async function publish(releaseId) {
   return { ok: true, dev: isDev() };
 }
 
-module.exports = { prepare, publish, labelSession, genreCode, allDsps };
+module.exports = { prepare, publish, labelSession, genreCode, allDsps, artistIndex };

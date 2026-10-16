@@ -10,7 +10,7 @@ const { listOf, token, isDev } = require("./_lib/zil");
 const PORTAL_URL = process.env.PORTAL_URL || "https://zechegruv.com/portal/";
 const FROM = "ZECHE GRUV <portal@zechegruv.com>";
 const LIVE = /deliver|live|publish|online|distributed|available|released|entregad|publicad/i;
-const BAD = /reject|error|fail|takendown|taken_down|rechaz/i;
+const BAD = /reject|error|fail|takendown|taken_down|rechaz|pendingModification/i;
 
 // [{ store, status }] a partir de la respuesta, venga como venga.
 function storesOf(data) {
@@ -27,11 +27,21 @@ async function syncRelease(id, { force } = {}) {
   if (!rel || !rel.zil_album_id) return { ok: false, error: "Ese lanzamiento todavía no está en ZIL." };
   if (rel.status === "published" && rel.smart_link && !force) return { ok: true, unchanged: true };
   const z = await labelSession();
-  const stores = storesOf(await z.call("Estado en las tiendas", "GET", `/albums/${rel.zil_album_id}/distributionStatus`));
+  const stores = storesOf(await z.call("Estado en las tiendas", "GET", `/albums/${rel.zil_album_id}/distributionStatus`).catch(() => null));
+  // Estado general del lanzamiento (draft, pendingApproval, confirmed,
+  // confirmedPartially, delivered, rejected…), leído desde su proyecto.
+  let albumStatus = null;
+  if (rel.zil_project_id) {
+    const proj = await z.call("Leer proyecto", "GET", `/projects/${rel.zil_project_id}/`).catch(() => null);
+    const albums = listOf((proj && (proj.albums || (proj.project && proj.project.albums))) || []);
+    const al = albums.find((a) => String(a._id || a.id) === String(rel.zil_album_id)) || albums[0];
+    albumStatus = al && al.status ? String(al.status) : null;
+  }
+  if (albumStatus && !stores.length) stores.push({ store: "ZIL", status: albumStatus });
   const live = stores.filter((s) => LIVE.test(s.status));
   const bad = stores.filter((s) => BAD.test(s.status));
   const prev = rel.zil_status || {};
-  const next = Object.assign({}, prev, { stores, live: live.length, total: stores.length, checked_at: new Date().toISOString() });
+  const next = Object.assign({}, prev, { album_status: albumStatus, stores, live: live.length, total: stores.length, checked_at: new Date().toISOString() });
   const patch = { zil_status: next };
 
   if (live.length && !rel.smart_link) {
