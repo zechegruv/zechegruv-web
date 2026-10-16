@@ -43,6 +43,7 @@
     $("releasesBack").hidden = all;
     $("releasesEyebrow").textContent = all ? (isAdmin() ? "Administrador" : "Equipo de distribución") : `Distribución · ${P.nameOf(profile)}`;
     $("newReleaseBtn").hidden = !own;
+    $("zilDiagListBtn").hidden = !(all && isAdmin());
     $("releasesTable").classList.toggle("show-artist", all);
     const status = $("releasesStatus");
     const tbody = $("releasesTable").querySelector("tbody");
@@ -592,6 +593,18 @@
       btn.disabled = false;
     }
   }
+
+  // Desde la lista de lanzamientos (sin abrir ninguno): solo lee.
+  $("zilDiagListBtn").addEventListener("click", async (e) => {
+    const btn = e.currentTarget, out = $("zilDiagListOut");
+    btn.disabled = true; out.hidden = false; out.textContent = "Probando la conexión con ZIL…";
+    try {
+      const { data } = await zil("diagnose");
+      out.textContent = data.error ? `✕ ${data.error}` : JSON.stringify(data, null, 2);
+    } catch (err) {
+      out.textContent = "✕ No pudimos hablar con el servidor. Probá de nuevo.";
+    } finally { btn.disabled = false; }
+  });
 
   $("zilDiagBtn").addEventListener("click", (e) => zilRun(e.currentTarget, "diagnose", "Probando la conexión con ZIL"));
   $("zilPreviewBtn").addEventListener("click", (e) => zilRun(e.currentTarget, "preview", "Revisando el lanzamiento"));
