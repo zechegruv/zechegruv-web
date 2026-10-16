@@ -132,6 +132,7 @@
     $("rType").value = release.release_type || "single";
     $("rDate").value = release.release_date || "";
     $("rGenre").value = release.genre || "";
+    if (window.ZGGenres) window.ZGGenres.refresh();
     $("rSubgenre").value = release.subgenre || "";
     $("rLanguage").value = release.language || "";
     $("rTerritory").value = release.territory || "";
@@ -407,6 +408,7 @@
     if (!release.title) errors.push("Falta el título del lanzamiento.");
     if (!release.release_date) errors.push("Falta la fecha de salida.");
     if (!release.genre) errors.push("Falta el género.");
+    else if (window.ZGGenres && !window.ZGGenres.isValid(release.genre)) errors.push("Elegí el género de la lista (son los que acepta la distribuidora).");
     if (!release.language) errors.push("Falta el idioma del lanzamiento.");
     if (!release.cover_link) errors.push("Falta subir la portada.");
     if (release.release_type === "ep" && release.tracks.length < 3) errors.push("Un EP lleva al menos 3 canciones.");
