@@ -11,6 +11,16 @@
 // debajo de cada parte cuántos versos y sílabas tiene, y el "Modo
 // estudio" deja la letra grande y la pantalla prendida para leerla en la
 // cabina mientras graba.
+//
+// Feats: desde el menú de cada parte (el de Subir / Bajar), «Quién canta»
+// elige qué voz canta esa parte: el artista, los del feat (salen del Feat
+// de la canción en Notion), «Todos juntos» o una voz nueva que se escribe
+// ahí. Se guarda en la parte ({ kind, text, voice }) y aparece en el
+// encabezado, en el mapa, en el Modo estudio y al copiar la letra.
+//
+// Orden: cada parte tiene a la izquierda una manija (seis puntitos) para
+// agarrarla y arrastrarla adonde quieras; las demás se corren solas para
+// hacerle lugar. Con el teclado, la manija se mueve con ↑ / ↓.
 (() => {
   const P = window.ZGPortal;
   const { db, $ } = P;
@@ -47,6 +57,8 @@
     dup: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="11" height="12" rx="2"/><path d="M5 15V6a2 2 0 012-2h8"/></svg>',
     del: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12"/></svg>',
     more: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5.5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="18.5" cy="12" r="1.6"/></svg>',
+    mic: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0013 0M12 17.5V21"/></svg>',
+    grip: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg>',
     chev: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10l5 5 5-5"/></svg>',
   };
 
@@ -57,8 +69,36 @@
   let timer = null;
   let saving = null;
   let dirty = false;
-  let openPop = null;  // { i, what: "kind" | "more" }
+  let openPop = null;  // { i, what: "kind" | "more" | "voice" }
+  let extraVoices = []; // voces sumadas a mano en esta letra que todavía no cantan ninguna parte
 
+  // ---------- Quién canta (feats) ----------
+  const ALL = "todos";
+  const voiceName = (v) => (v === ALL ? "Todos juntos" : v);
+  const cleanVoice = (v) => String(v || "").replace(/\s+/g, " ").trim().slice(0, 40);
+  // Voces posibles: el dueño del cuaderno, los del feat de la canción en
+  // Notion, las que ya cantan alguna parte y las sumadas a mano.
+  function voices() {
+    const out = [];
+    const add = (v) => { v = cleanVoice(v); if (v && v !== ALL && !out.some((x) => norm(x) === norm(v))) out.push(v); };
+    add(P.nameOf(profile));
+    const feat = window.ZGSongs && window.ZGSongs.feat ? window.ZGSongs.feat(profile.id, norm(doc.title)) : null;
+    if (feat) feat.split(/\s*(?:,|&|\+|\/|\by\b|\bx\b|\bft\.?|\bfeat\.?)\s*/i).forEach(add);
+    doc.sections.forEach((x) => add(x.voice));
+    extraVoices.forEach(add);
+    return out;
+  }
+  // Cada voz con su color (siempre el mismo para el mismo nombre).
+  const VOICE_COLORS = ["#F5A623", "#9FD49A", "#8EC5E8", "#E8A0C8", "#F0E0C0", "#D9963A"];
+  function voiceColor(v) {
+    if (v === ALL) return "#FFF4DC";
+    const list = voices();
+    const i = list.findIndex((x) => norm(x) === norm(v));
+    return VOICE_COLORS[(i < 0 ? list.length : i) % VOICE_COLORS.length];
+  }
+  const initials = (v) => v === ALL ? "★" : cleanVoice(v).split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+
+  const reduced = () => window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
   const fmtDate = (iso) => new Date(iso).toLocaleDateString("es-AR", { day: "numeric", month: "short" }).replace(".", "");
   const isEmpty = (l) => !String(l.title || "").trim() && !(l.sections || []).some((s) => String(s.text || "").trim());
@@ -197,7 +237,8 @@
 
   // ---------- Editor ----------
   function openEditor(item, isNew) {
-    doc = { id: item.id, title: item.title || "", sections: (item.sections || []).map((s) => ({ kind: KIND_LABEL[s.kind] ? s.kind : "otra", text: String(s.text || "") })) };
+    doc = { id: item.id, title: item.title || "", sections: (item.sections || []).map((s) => ({ kind: KIND_LABEL[s.kind] ? s.kind : "otra", text: String(s.text || ""), voice: cleanVoice(s.voice) })) };
+    extraVoices = [];
     dirty = false;
     openPop = null;
     setReading(false);
@@ -220,22 +261,36 @@
     el.classList.toggle("is-saving", !isError && !idle && /Guardando/.test(text));
   }
 
+  function voicePop(s) {
+    const list = voices();
+    const chip = (v) => `<button type="button" class="lp-chip lp-vchip${norm(s.voice) === norm(v) ? " is-on" : ""}" data-voice="${esc(v)}" aria-pressed="${norm(s.voice) === norm(v)}" style="--k:${voiceColor(v)}"><b aria-hidden="true">${esc(initials(v))}</b>${esc(voiceName(v))}</button>`;
+    return `<div class="lp-pop lp-voices" role="group" aria-label="Quién canta esta parte">
+      <span class="lp-pop-label">${IC.mic}¿Quién canta esta parte?</span>
+      ${list.map(chip).join("")}
+      ${list.length > 1 ? chip(ALL) : ""}
+      <form class="lp-vadd" data-act="voice-add"><input type="text" maxlength="40" placeholder="${list.length > 1 ? "Otra voz…" : "¿Con quién es el feat?"}" aria-label="Sumar otra voz" autocomplete="off" enterkeyhint="done"><button type="submit" aria-label="Sumar voz">+</button></form>
+      ${s.voice ? `<button type="button" class="lp-vnone" data-voice="">Sacar</button>` : ""}
+    </div>`;
+  }
+
   function partHtml(s, i, label, count) {
     const pop = openPop && openPop.i === i ? openPop.what : null;
     const m = meter(s.text);
     return `
       <section class="lp k-${s.kind}${pop ? " has-pop" : ""}" data-i="${i}" id="lp-${i}">
         <header class="lp-head">
+          <button class="lp-grip" type="button" aria-label="Mover ${esc(label)}: arrastrá, o usá las flechas ↑ ↓" title="Arrastrá para mover">${IC.grip}</button>
           <button class="lp-kind" type="button" data-act="kind" aria-expanded="${pop === "kind"}" aria-label="${esc(label)}: cambiar tipo de parte"><i aria-hidden="true"></i><span>${esc(label)}</span>${IC.chev}</button>
+          ${s.voice ? `<button class="lp-voice" type="button" data-act="voice" style="--v:${voiceColor(s.voice)}" aria-expanded="${pop === "voice"}" aria-label="La canta ${esc(voiceName(s.voice))}: cambiar"><b aria-hidden="true">${esc(initials(s.voice))}</b><span>${esc(voiceName(s.voice))}</span></button>` : ""}
           <button class="lp-more" type="button" data-act="more" aria-expanded="${pop === "more"}" aria-label="Opciones de ${esc(label)}">${IC.more}</button>
         </header>
         ${pop === "kind" ? `<div class="lp-pop" role="group" aria-label="Tipo de parte">${KINDS.map(([k, name]) => `<button type="button" class="lp-chip k-${k}${k === s.kind ? " is-on" : ""}" data-kind="${k}" aria-pressed="${k === s.kind}"><i aria-hidden="true"></i>${name}</button>`).join("")}</div>` : ""}
         ${pop === "more" ? `<div class="lp-pop lp-menu" role="group" aria-label="Opciones">
-          <button type="button" data-act="up"${i === 0 ? " disabled" : ""}>${IC.up}Subir</button>
-          <button type="button" data-act="down"${i === count - 1 ? " disabled" : ""}>${IC.down}Bajar</button>
+          <button type="button" data-act="voice">${IC.mic}${s.voice ? "Cambiar quién canta" : "Quién canta"}</button>
           <button type="button" data-act="dup">${IC.dup}Duplicar</button>
           <button type="button" data-act="remove" class="is-danger">${IC.del}<span>Quitar</span></button>
         </div>` : ""}
+        ${pop === "voice" ? voicePop(s) : ""}
         <textarea class="lyric-text" rows="1" spellcheck="true" aria-label="${esc(label)}" placeholder="${esc(PLACEHOLDER[s.kind])}">${esc(s.text)}</textarea>
         <span class="lp-meta" aria-live="off">${esc(m)}</span>
       </section>`;
@@ -244,7 +299,7 @@
   function renderMap() {
     const names = shortLabels(doc.sections);
     const full = labels(doc.sections);
-    $("lyricMap").innerHTML = doc.sections.map((s, i) => `<a class="le-map-chip k-${s.kind}" href="#lp-${i}" data-jump="${i}" title="${esc(full[i])}"><i aria-hidden="true"></i>${esc(names[i])}</a>`).join("");
+    $("lyricMap").innerHTML = doc.sections.map((s, i) => `<a class="le-map-chip k-${s.kind}" href="#lp-${i}" data-jump="${i}" title="${esc(full[i])}${s.voice ? ` · ${esc(voiceName(s.voice))}` : ""}"><i aria-hidden="true"></i>${esc(names[i])}${s.voice ? `<b class="le-map-v" style="--v:${voiceColor(s.voice)}" aria-hidden="true">${esc(initials(s.voice))}</b>` : ""}</a>`).join("");
     $("lyricMap").hidden = doc.sections.length < 2;
   }
 
@@ -290,6 +345,17 @@
     const part = event.target.closest(".lp");
     if (!part) return;
     const i = +part.dataset.i;
+    const vchip = event.target.closest("[data-voice]");
+    if (vchip) {
+      doc.sections[i].voice = vchip.dataset.voice;
+      openPop = null;
+      renderParts();
+      part.classList.remove("is-flash");
+      document.querySelector(`#lyricSections [data-i="${i}"]`)?.classList.add("is-flash");
+      schedule();
+      return;
+    }
+    if (event.target.closest(".lp-vadd")) return; // el formulario se maneja en submit
     const chip = event.target.closest("[data-kind]");
     if (chip) {
       doc.sections[i].kind = chip.dataset.kind;
@@ -302,7 +368,12 @@
     const btn = event.target.closest("[data-act]");
     if (!btn) return;
     const act = btn.dataset.act;
-    if (act === "kind" || act === "more") { togglePop(i, act); return; }
+    if (act === "kind" || act === "more" || act === "voice") {
+      togglePop(i, act);
+      // Si todavía no hay feat, directo a escribir con quién es.
+      if (act === "voice" && openPop && voices().length < 2) document.querySelector(`#lyricSections [data-i="${i}"] .lp-vadd input`)?.focus({ preventScroll: true });
+      return;
+    }
     if (act === "remove") {
       // Si la parte tiene texto, se pide un segundo toque.
       if (doc.sections[i].text.trim() && !btn.classList.contains("is-armed")) {
@@ -328,6 +399,128 @@
       if (again) again.focus({ preventScroll: true });
       document.querySelector(`#lyricSections [data-i="${j}"]`)?.scrollIntoView({ block: "nearest", behavior: "smooth" });
     }
+    schedule();
+  });
+
+  // ---------- Arrastrar para ordenar ----------
+  // Pointer events: anda igual con el dedo y con el mouse. La parte que
+  // agarrás se levanta y sigue al dedo; las otras se corren con una
+  // transición suave; cerca del borde de la pantalla la página se desplaza.
+  let drag = null;
+  const pageY = (e) => e.clientY + window.scrollY;
+  function movePart(from, to) {
+    if (from === to) return;
+    const [moved] = doc.sections.splice(from, 1);
+    doc.sections.splice(to, 0, moved);
+    openPop = null;
+    renderParts();
+    const el = document.querySelector(`#lyricSections [data-i="${to}"]`);
+    if (el) { el.classList.remove("is-flash"); void el.offsetWidth; el.classList.add("is-flash"); }
+    schedule();
+  }
+  function dragTarget() {
+    const center = drag.rects[drag.from].top + drag.dy + drag.rects[drag.from].height / 2;
+    let to = drag.from;
+    drag.rects.forEach((r, j) => {
+      const mid = r.top + r.height / 2;
+      if (j < drag.from && center < mid) to = Math.min(to, j);
+      if (j > drag.from && center > mid) to = Math.max(to, j);
+    });
+    return to;
+  }
+  function paintDrag() {
+    const { from, to, parts, rects, gap } = drag;
+    const shift = rects[from].height + gap;
+    parts.forEach((el, j) => {
+      if (j === from) { el.style.transform = `translateY(${drag.dy}px) scale(1.02)`; return; }
+      const off = from < to && j > from && j <= to ? -shift : from > to && j >= to && j < from ? shift : 0;
+      el.style.transform = off ? `translateY(${off}px)` : "";
+    });
+  }
+  function autoScroll() {
+    if (!drag) return;
+    const edge = 90, y = drag.clientY, h = window.innerHeight;
+    const v = y < edge ? -Math.ceil((edge - y) / 6) : y > h - edge ? Math.ceil((y - (h - edge)) / 6) : 0;
+    if (v) {
+      window.scrollBy(0, v);
+      drag.dy = drag.clientY + window.scrollY - drag.startY;
+      drag.to = dragTarget();
+      paintDrag();
+    }
+    drag.raf = requestAnimationFrame(autoScroll);
+  }
+  $("lyricSections").addEventListener("pointerdown", (event) => {
+    const grip = event.target.closest(".lp-grip");
+    if (!grip || document.body.classList.contains("le-reading") || (event.pointerType === "mouse" && event.button !== 0)) return;
+    event.preventDefault();
+    if (openPop) { openPop = null; renderParts(); }
+    const parts = [...document.querySelectorAll("#lyricSections .lp")];
+    const from = +grip.closest(".lp").dataset.i;
+    if (parts.length < 2) return;
+    const rects = parts.map((el) => { const r = el.getBoundingClientRect(); return { top: r.top + window.scrollY, height: r.height }; });
+    const gap = parts.length > 1 ? rects[1].top - (rects[0].top + rects[0].height) : 12;
+    const g = parts[from].querySelector(".lp-grip");
+    g.setPointerCapture(event.pointerId);
+    drag = { from, to: from, parts, rects, gap, startY: pageY(event), clientY: event.clientY, dy: 0, id: event.pointerId };
+    document.body.classList.add("lp-sorting");
+    parts.forEach((el, j) => el.classList.add(j === from ? "is-dragging" : "is-shifting"));
+    if (navigator.vibrate) navigator.vibrate(8);
+    paintDrag();
+    drag.raf = requestAnimationFrame(autoScroll);
+  });
+  $("lyricSections").addEventListener("pointermove", (event) => {
+    if (!drag || event.pointerId !== drag.id) return;
+    drag.clientY = event.clientY;
+    drag.dy = pageY(event) - drag.startY;
+    const to = dragTarget();
+    if (to !== drag.to && navigator.vibrate) navigator.vibrate(4);
+    drag.to = to;
+    paintDrag();
+  });
+  function endDrag(event) {
+    if (!drag || (event && event.pointerId !== drag.id)) return;
+    const { from, to, parts, rects, gap } = drag;
+    cancelAnimationFrame(drag.raf);
+    drag = null;
+    // La parte se acomoda en su lugar nuevo y recién ahí se reordena.
+    const dest = from < to ? rects[to].top + rects[to].height - rects[from].height : rects[to].top;
+    const el = parts[from];
+    el.classList.add("is-dropping");
+    el.style.transform = `translateY(${dest - rects[from].top}px)`;
+    const done = () => {
+      document.body.classList.remove("lp-sorting");
+      parts.forEach((p) => { p.classList.remove("is-dragging", "is-shifting", "is-dropping"); p.style.transform = ""; });
+      if (from !== to) movePart(from, to);
+    };
+    if (reduced()) done(); else setTimeout(done, 220);
+  }
+  $("lyricSections").addEventListener("pointerup", endDrag);
+  $("lyricSections").addEventListener("pointercancel", endDrag);
+  // Teclado: la manija con ↑ / ↓.
+  $("lyricSections").addEventListener("keydown", (event) => {
+    const grip = event.target.closest(".lp-grip");
+    if (!grip || (event.key !== "ArrowUp" && event.key !== "ArrowDown")) return;
+    event.preventDefault();
+    const i = +grip.closest(".lp").dataset.i;
+    const j = event.key === "ArrowUp" ? i - 1 : i + 1;
+    if (j < 0 || j >= doc.sections.length) return;
+    movePart(i, j);
+    document.querySelector(`#lyricSections [data-i="${j}"] .lp-grip`)?.focus({ preventScroll: true });
+  });
+
+  // Sumar una voz nueva (alguien del feat que no está en Notion).
+  $("lyricSections").addEventListener("submit", (event) => {
+    const form = event.target.closest(".lp-vadd");
+    if (!form) return;
+    event.preventDefault();
+    const v = cleanVoice(form.querySelector("input").value);
+    if (!v) return;
+    const i = +form.closest(".lp").dataset.i;
+    if (!voices().some((x) => norm(x) === norm(v))) extraVoices.push(v);
+    doc.sections[i].voice = voices().find((x) => norm(x) === norm(v)) || v;
+    openPop = null;
+    renderParts();
+    document.querySelector(`#lyricSections [data-i="${i}"]`)?.classList.add("is-flash");
     schedule();
   });
 
@@ -424,7 +617,7 @@
     if (!doc || !dirty) return true;
     dirty = false;
     const id = doc.id;
-    const changes = { title: doc.title.trim(), sections: doc.sections.map((s) => ({ kind: s.kind, text: s.text })) };
+    const changes = { title: doc.title.trim(), sections: doc.sections.map((s) => (s.voice ? { kind: s.kind, text: s.text, voice: s.voice } : { kind: s.kind, text: s.text })) };
     let ok = true;
     saving = (async () => {
       const { data, error } = await db.from("lyrics").update(changes).eq("id", id).select("updated_at").single();
@@ -483,7 +676,7 @@
   // pegar en un mensaje o en el formulario de distribución.
   $("lyricCopy").addEventListener("click", async () => {
     const names = labels(doc.sections);
-    const body = doc.sections.map((s, i) => [s, names[i]]).filter(([s]) => s.text.trim()).map(([s, name]) => `[${name}]\n${s.text.trim()}`).join("\n\n");
+    const body = doc.sections.map((s, i) => [s, names[i]]).filter(([s]) => s.text.trim()).map(([s, name]) => `[${name}${s.voice ? ` · ${voiceName(s.voice)}` : ""}]\n${s.text.trim()}`).join("\n\n");
     const text = [doc.title.trim(), body].filter(Boolean).join("\n\n");
     const label = $("lyricCopy").querySelector("span");
     try {

@@ -638,5 +638,15 @@
     return s.step >= 0 ? `En ${STAGES[s.step][1].toLowerCase()}` : "Por arrancar";
   }
 
-  window.ZGSongs = { load, titles, find, openWhenReady };
+  // Feat de la canción con ese título (el cuaderno de letras lo usa para «Quién canta»).
+  function feat(profileId, normTitle) {
+    const hit = cache.get(profileId);
+    const data = hit && hit.data;
+    if (!data || !data.configured || !normTitle) return null;
+    const clean = (t) => String(t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+    const s = [...(data.active || []), ...(data.done || [])].find((x) => clean(x.title) === normTitle);
+    return (s && s.feat) || null;
+  }
+
+  window.ZGSongs = { load, titles, find, feat, openWhenReady };
 })();

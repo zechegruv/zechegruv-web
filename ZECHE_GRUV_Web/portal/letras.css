@@ -326,3 +326,61 @@ body.le-reading .le-map { top: calc(var(--nav-h, 0px) + 60px); }
   .sub-nav { max-width: none; width: calc(100% + 32px); }
   .seg-long { display: none; }
 }
+
+/* ---------- Quién canta (feats) ---------- */
+.lp-voice {
+  display: inline-flex; align-items: center; gap: 7px; min-height: 34px; padding: 0 12px 0 4px;
+  border: 0; border-radius: 999px; cursor: pointer; font: 500 13px/1 var(--lt-body); color: #FFF4DC;
+  background: color-mix(in srgb, var(--v) 14%, transparent);
+  animation: lpIn 240ms cubic-bezier(.16, 1, .3, 1) both;
+  transition: background-color 180ms ease, transform 160ms cubic-bezier(.23, 1, .32, 1);
+}
+.lp-voice:active { transform: scale(.96); }
+.lp-voice b, .lp-vchip b, .le-map-v {
+  display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%;
+  font: 700 11px/1 var(--lt-mono, monospace); letter-spacing: .02em; color: #241105; background: var(--v, var(--k));
+}
+.lp-vchip b { width: 24px; height: 24px; margin-left: -6px; }
+.lp-voice span { max-width: 14ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lp-voices { align-items: center; }
+.lp-pop-label { flex-basis: 100%; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: #C9A980; padding: 0 0 2px 4px; }
+.lp-pop-label svg, .lp-menu svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.lp-vadd { display: inline-flex; align-items: center; min-height: 38px; border: 1px dashed rgba(240, 224, 192, .28); border-radius: 999px; padding: 0 4px 0 14px; transition: border-color 180ms ease; }
+.lp-vadd:focus-within { border-color: #F5A623; border-style: solid; }
+.lp-vadd input { width: 15ch; font: 500 14px/1 var(--lt-body); color: #FFF4DC; background: transparent; border: 0; outline: 0; padding: 8px 0; }
+.lp-vadd input::placeholder { color: #8F7356; }
+.lp-vadd button { width: 30px; height: 30px; border: 0; border-radius: 50%; background: rgba(240, 224, 192, .1); color: #FFF4DC; font: 600 18px/1 var(--lt-body); cursor: pointer; }
+.lp-vnone { min-height: 38px; padding: 0 12px; border: 0; background: transparent; color: #C9A980; font: 500 13px/1 var(--lt-body); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.le-map-v { width: 18px; height: 18px; font-size: 9px; margin-left: 2px; }
+@media (hover: hover) and (pointer: fine) { .lp-voice:hover { background: color-mix(in srgb, var(--v) 24%, transparent); } }
+/* En el Modo estudio, quién canta queda bien visible para la cabina. */
+body.le-reading .lp-voice { pointer-events: none; background: transparent; padding: 0; min-height: 28px; font: 600 15px/1 var(--lt-body); color: var(--v); }
+body.le-reading .lp-voice b { width: 24px; height: 24px; }
+
+/* ---------- Arrastrar para ordenar ---------- */
+.lp-grip {
+  flex-shrink: 0; width: 34px; height: 42px; margin-right: -6px; border: 0; border-radius: 10px; background: transparent;
+  color: #8F7356; cursor: grab; display: inline-flex; align-items: center; justify-content: center;
+  touch-action: none; -webkit-user-select: none; user-select: none; transition: color 180ms ease, background-color 180ms ease;
+}
+.lp-grip svg { width: 18px; height: 18px; fill: currentColor; }
+.lp-grip:active { cursor: grabbing; }
+@media (hover: hover) and (pointer: fine) { .lp-grip:hover { color: #FFF4DC; background: rgba(240, 224, 192, .06); } }
+body.lp-sorting { cursor: grabbing; -webkit-user-select: none; user-select: none; }
+.lp.is-shifting { transition: transform 260ms cubic-bezier(.2, .8, .2, 1); }
+.lp.is-dragging {
+  position: relative; z-index: 20; transition: box-shadow 200ms ease;
+  border-color: color-mix(in srgb, var(--k) 60%, transparent);
+  box-shadow: 0 22px 50px rgba(0, 0, 0, .5), 0 0 0 1px color-mix(in srgb, var(--k) 40%, transparent);
+}
+.lp.is-dragging .lp-grip { color: var(--k); }
+.lp.is-dropping { transition: transform 220ms cubic-bezier(.2, .8, .2, 1), box-shadow 220ms ease; box-shadow: none; }
+body.le-reading .lp-grip { display: none; }
+@media (prefers-reduced-motion: reduce) {
+  .lp-voice { animation: none; }
+  .lp.is-shifting, .lp.is-dropping { transition: none; }
+}
+
+/* Manija · tipo · quién canta a la izquierda; el menú a la derecha. */
+.lp-head { justify-content: flex-start; gap: 6px; }
+.lp-more { margin-left: auto; }
