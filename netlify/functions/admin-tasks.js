@@ -12,6 +12,9 @@
 // Las sesiones de estructura, producción y grabación no aparecen: son
 // presenciales, de todas las semanas. Todo por fecha, con su urgencia:
 //   vencida (rojo) · hoy / mañana (naranja) · en 2 o 3 días (amarillo) · el resto.
+//   Si la mezcla o el master ya se entregó y espera al artista, nunca figura
+//   vencida: urgencia "espera" ("Esperando aprobación de <artista>"). Si ya
+//   está aprobada (o la canción pasó de etapa), no aparece.
 // "Hecha" la pasa a COMPLETADO en Notion y desaparece de la lista.
 // Solo el administrador (sesión de Supabase en Authorization: Bearer).
 const { json, db } = require("./_lib/pass");
@@ -151,34 +154,76 @@ exports.handler = async (event) => {
     };
   }).filter(Boolean);
 
-  // Fechas límite de entrega (Canciones → Fecha de entrega). Si ya está
-  // entregada o aprobada (Canciones → Entrega), no se recuerda más.
-  const DONE = { Mix: ["Mezcla entregada", "Mezcla aprobada"], Master: ["Master entregado", "Master aprobado"] };
+  // ¿En qué está la mezcla / el master de cada canción? (Canciones → Entrega
+  // y lo último registrado en song_approvals.)
+  //   cerrada  -> ya aprobada o la canción ya pasó de etapa: no se muestra.
+  //   espera   -> entregada, esperando que el artista apruebe: nunca "vencida",
+  //               el cartel dice "Esperando aprobación de <artista>".
+  //   abierta  -> todavía hay que hacerla: urgencia normal (vencida, hoy…).
+  const ORDER = ["Estructura", "Prod", "Rec", "Mix", "Master", "Distribución", "Publicada"];
+  const ETAPA = { Mezcla: "Mix", Master: "Master" };
+  const LABELS = { Mezcla: ["Mezcla entregada", "Mezcla aprobada"], Master: ["Master entregado", "Master aprobado"] };
+  const KIND = { Mezcla: "mezcla", Master: "master" };
+  const key = (id) => String(id || "").replace(/-/g, "");
+  const songPages = Object.fromEntries(((sq.ok && sq.data.results) || []).map((sp) => [key(sp.id), sp]));
+  const missing = [...new Set(sessions.map((x) => x.songId).filter((id) => id && !songPages[key(id)]))];
+  const fetched = await Promise.all(missing.map((id) => notion(`/pages/${id}`)));
+  missing.forEach((id, i) => { if (fetched[i].ok) songPages[key(id)] = fetched[i].data; });
+  const allSongs = Object.values(songPages).map((sp) => sp.id);
+  const appr = allSongs.length ? await db(`song_approvals?song_id=in.(${allSongs.join(",")})&select=song_id,kind,action,created_at&order=created_at.desc&limit=500`) : { ok: false };
+  const lastOf = (songId, stage) => ((appr.ok && appr.data) || []).find((r) => key(r.song_id) === key(songId) && r.kind === KIND[stage]) || null;
+  function stateOf(songId, stage) {
+    const sp = songPages[key(songId)];
+    if (!sp) return "abierta"; // sin canción vinculada: como siempre
+    const p = sp.properties || {};
+    const etapa = p["Etapa actual"] && p["Etapa actual"].select && p["Etapa actual"].select.name;
+    const entrega = p.Entrega && p.Entrega.select && p.Entrega.select.name;
+    const [delivered, approved] = LABELS[stage];
+    if (entrega === approved) return "cerrada";
+    if (ORDER.indexOf(etapa) > ORDER.indexOf(ETAPA[stage])) return "cerrada";
+    if (entrega === delivered) return "espera";
+    const last = lastOf(songId, stage);
+    if (!entrega && last && last.action === "entregada") return "espera";
+    return "abierta";
+  }
+  const waiting = (t) => ({ ...t, urgency: "espera", waiting: true });
+
+  // Sesiones: las de canciones ya aprobadas no se muestran; las entregadas, en espera.
+  const liveSessions = sessions
+    .map((x) => ({ x, st: x.songId ? stateOf(x.songId, x.stage) : "abierta" }))
+    .filter(({ st }) => st !== "cerrada")
+    .map(({ x, st }) => (st === "espera" ? waiting(x) : x));
+
+  // Fechas límite de entrega (Canciones → Fecha de entrega).
   const deadlines = ((sq.ok && sq.data.results) || []).map((sp) => {
     const p = sp.properties || {};
     const date = p["Fecha de entrega"] && p["Fecha de entrega"].date;
     const etapa = p["Etapa actual"] && p["Etapa actual"].select && p["Etapa actual"].select.name;
-    if (!date || !date.start || !DONE[etapa]) return null;
-    const entrega = p.Entrega && p.Entrega.select && p.Entrega.select.name;
-    if (DONE[etapa].includes(entrega)) return null;
-    return {
+    if (!date || !date.start || !["Mix", "Master"].includes(etapa)) return null;
+    const stage = etapa === "Mix" ? "Mezcla" : "Master";
+    const st = stateOf(sp.id, stage);
+    if (st === "cerrada") return null;
+    const row = {
       id: sp.id, kind: "entrega", url: sp.url, name: plain(p["Canción"] && p["Canción"].title) || "Sin título", ...item(date),
-      stage: etapa === "Mix" ? "Mezcla" : "Master",
+      stage,
       clientId: ((p.Artista && p.Artista.relation) || [])[0]?.id || null,
       songId: sp.id,
     };
+    return st === "espera" ? waiting(row) : row;
   }).filter(Boolean)
-    // Si ese día ya hay una sesión de la misma canción y etapa, alcanza con la sesión.
-    .filter((d) => !sessions.some((s) => s.songId && s.songId.replace(/-/g, "") === d.songId.replace(/-/g, "") && s.stage === d.stage && dayKey(s.start) === dayKey(d.start)));
+    // Si ya hay una sesión de la misma canción y etapa ese día (o en espera), alcanza con la sesión.
+    .filter((d) => !liveSessions.some((s) => s.songId && key(s.songId) === key(d.songId) && s.stage === d.stage && (dayKey(s.start) === dayKey(d.start) || s.waiting || d.waiting)));
 
-  const raw = [...sessions, ...deadlines].sort((x, y) => x.days - y.days || Date.parse(x.start) - Date.parse(y.start)).slice(0, MAX);
+  // Lo que espera al artista va después de lo que hay que hacer.
+  const raw = [...liveSessions, ...deadlines].sort((x, y) => (x.waiting ? 1 : 0) - (y.waiting ? 1 : 0) || x.days - y.days || Date.parse(x.start) - Date.parse(y.start)).slice(0, MAX);
 
   // Nombres de artista y de canción (cada ficha, una vez).
   const clientIds = [...new Set(raw.map((t) => t.clientId).filter(Boolean))];
   const songIds = [...new Set(raw.filter((t) => t.kind === "sesion").map((t) => t.songId).filter(Boolean))];
   const [clients, songs] = await Promise.all([
     Promise.all(clientIds.map((id) => notion(`/pages/${id}`))),
-    Promise.all(songIds.map((id) => notion(`/pages/${id}`))),
+    // Las canciones ya se leyeron arriba (estado de entrega): no se piden de nuevo.
+    Promise.all(songIds.map((id) => (songPages[key(id)] ? { ok: true, data: songPages[key(id)] } : notion(`/pages/${id}`)))),
   ]);
   const titleOf = (res) => {
     if (!res.ok || !res.data) return null;

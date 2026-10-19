@@ -149,6 +149,7 @@ body.is-admin #tabs .tab .tab-badge.is-pop { animation: zgPop 420ms cubic-bezier
 .zt-urg.is-hoy { background: var(--orange); color: var(--brown-dark); }
 .zt-urg.is-manana { background: rgba(240, 120, 0, .2); color: var(--orange-soft); }
 .zt-urg.is-pronto { background: rgba(245, 166, 35, .14); color: #F2CF7A; }
+.zt-urg.is-espera { background: rgba(240, 224, 192, .08); color: var(--beige); text-transform: none; letter-spacing: .01em; }
 .zt-row.is-vencida { box-shadow: inset 3px 0 0 var(--red); }
 .zt-row.is-hoy { box-shadow: inset 3px 0 0 var(--orange); }
 .zt-row.is-vencida .zt-main, .zt-row.is-hoy .zt-main { padding-left: 14px; }

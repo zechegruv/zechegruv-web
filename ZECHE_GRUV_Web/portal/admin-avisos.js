@@ -57,7 +57,9 @@
     }
     return hour ? `${day} · ${hour}` : day;
   }
-  const URG = { vencida: "Vencida", hoy: "Hoy", manana: "Mañana", pronto: "Pronto", normal: "" };
+  const URG = { vencida: "Vencida", hoy: "Hoy", manana: "Mañana", pronto: "Pronto", normal: "", espera: "Esperando aprobación" };
+  // Entregada y esperando al artista (admin-tasks.js): nunca "vencida".
+  const urgText = (t) => (t.urgency === "espera" ? `Esperando aprobación de ${t.artist || "el artista"}` : t.urgency === "pronto" ? `En ${t.days} días` : URG[t.urgency]);
   function ago(iso) {
     const m = Math.round((Date.now() - Date.parse(iso)) / 60000);
     if (m < 1) return "recién";
@@ -119,7 +121,7 @@
     const main = el("button", "zt-main");
     main.type = "button";
     const top = el("span", "zt-top");
-    if (URG[t.urgency]) top.append(el("span", `zt-urg is-${t.urgency}`, t.urgency === "pronto" ? `En ${t.days} días` : URG[t.urgency]));
+    if (URG[t.urgency]) top.append(el("span", `zt-urg is-${t.urgency}`, urgText(t)));
     top.append(el("span", "zt-when", whenTask(t)));
     // Sesión de mezcla/master o fecha límite de entrega.
     const what = t.kind === "entrega" ? (t.stage === "Mezcla" ? "Entrega de la mezcla" : "Entrega del master") : (t.stage === "Mezcla" ? "Sesión de mezcla" : "Sesión de master");
