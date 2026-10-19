@@ -31,6 +31,29 @@
   const linkToken = linkQuery.get("token_hash");
   const linkType = linkQuery.get("type") || linkParams.get("type"); // "invite" | "recovery" | null
   let linkError = linkParams.get("error_description");              // p. ej. link vencido
+
+  // Sin conexión: en lugar de "Cargando…" para siempre, un aviso claro con
+  // "Reintentar" (en la misma pantalla de carga). onRetry: qué hacer al
+  // tocarlo (por defecto, volver a cargar la página).
+  function showRetry(text, onRetry) {
+    ["loading", "login", "recovery", "app"].forEach((v) => { const el = document.getElementById(`view-${v}`); if (el) el.hidden = v !== "loading"; });
+    const box = document.getElementById("view-loading");
+    box.innerHTML = '<div class="load-retry" role="alert"><p class="muted"></p><button class="btn btn-primary" type="button">Reintentar</button></div>';
+    box.querySelector("p").textContent = text;
+    box.querySelector("button").addEventListener("click", () => {
+      if (!onRetry) { location.reload(); return; }
+      box.innerHTML = '<p class="muted">Cargando…</p>';
+      onRetry();
+    });
+  }
+
+  // La librería de Supabase viene de un CDN: si no cargó (sin conexión o el
+  // CDN caído), no hay forma de entrar.
+  if (!window.supabase || !window.supabase.createClient) {
+    const go = () => showRetry("No pudimos conectarnos con el portal. Revisá tu conexión a internet y probá de nuevo.");
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", go); else go();
+    return;
+  }
   const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { storage: sessionStore } });
 
   const $ = (id) => document.getElementById(id);

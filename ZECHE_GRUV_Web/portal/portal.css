@@ -253,6 +253,18 @@ main {
 }
 
 .msg:empty { display: none; }
+
+/* Sin conexión al cargar el portal (portal.js → showRetry). */
+.load-retry {
+  display: grid;
+  gap: 14px;
+  justify-items: start;
+  max-width: 440px;
+  animation: load-retry-in 220ms cubic-bezier(.23, 1, .32, 1) both;
+}
+.load-retry p { margin: 0; line-height: 1.5; }
+@keyframes load-retry-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .load-retry { animation: none; } }
 .msg.is-error { color: #ff9a8a; }
 
 .btn {
