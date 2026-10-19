@@ -14,10 +14,16 @@
 //         calendario. La fecha de entrega de la mezcla queda en la semana
 //         de la regla (o el día de la sesión, si cae después).
 //       · Te llega un mail con el día y la hora.
-//   → Master: la fecha de entrega pasa al día 15 de la regla.
+//       · Sin Google Calendar conectado no se agenda nada a medias (ni la
+//         tarea sola ni la fecha sola): te llega un mail y, apenas lo
+//         conectás, la próxima pasada la agenda completa (portal_reminders,
+//         kind "pendiente-google").
+//   → Master: la fecha de entrega pasa al día 15 de la regla. Si la cambiaste
+//     a mano en Notion, también se completan las tareas de Mix que quedaban
+//     abiertas y sus eventos quedan tildados en el calendario.
 //   → Distribución: se crea la tarea "Distribución <canción> <artista>",
-//     se cierran las sesiones de Mix/Master que quedaban abiertas y le llega
-//     un mail al equipo de distribución.
+//     se cierran las sesiones de Mix/Master que quedaban abiertas (también en
+//     el calendario, con ✓) y le llega un mail al equipo de distribución.
 //
 // La primera vez que corre solo toma nota de dónde está cada canción (no
 // agenda nada de golpe).
@@ -25,6 +31,8 @@ const { db, sendMail, notifyEmail, esc } = require("./pass");
 const gc = require("./gcal");
 const ps = () => require("../portal-songs");
 const rs = () => require("../admin-reschedule");
+const ce = () => require("./cierre-etapa");
+const ae = () => require("./auto-entregas");
 
 const NOTION_API = "https://api.notion.com/v1";
 const NOTION_VERSION = "2025-09-03";
@@ -129,19 +137,39 @@ async function onMix(song, log) {
   let slot = null;
   if (!existing.length) {
     slot = await firstSlot();
+    // Sin Google Calendar no se agenda a medias: queda pendiente y se agenda
+    // completa (tarea + evento + entrega) apenas se conecte.
+    if (slot && !slot.google) {
+      const mark = await db("portal_reminders?on_conflict=key", { method: "POST", prefer: "resolution=ignore-duplicates,return=representation", body: { key: `pendiente-google|${song.id}`, kind: "pendiente-google", song_id: song.id } });
+      const fresh = mark.ok && mark.data && mark.data[0];
+      // Ya existía (otra vuelta por Mezcla): se vuelve a dejar pendiente.
+      if (!fresh) await db(`portal_reminders?key=eq.${encodeURIComponent(`pendiente-google|${song.id}`)}`, { method: "PATCH", body: { kind: "pendiente-google" } });
+      if (fresh) {
+        await sendMail({
+          to: notifyEmail(), from: "ZG Portal <portal@zechegruv.com>",
+          subject: `«${song.title}»${artist ? ` (${artist})` : ""} pasó a Mezcla: falta conectar Google Calendar`,
+          html: mailBox("Portal · Mezcla sin agendar", `${esc(song.title)}${artist ? ` · ${esc(artist)}` : ""} pasó a Mezcla`,
+            `<p style="margin:0 0 10px">No agendé la sesión porque Google Calendar no está conectado (así no queda Notion por un lado y el calendario por otro).</p><p style="margin:0;color:#C9A980">Conectalo desde el Inicio del panel y en menos de 15 minutos se agenda sola en el primer hueco libre.</p>`,
+            ["Abrir el panel", PORTAL]),
+        }).catch(() => false);
+      }
+      out.actions.push("esperando-google");
+      return out;
+    }
     if (slot) {
       const name = `Mix ${song.title}${artist ? ` ${artist}` : ""}`;
-      const t = await createTask({ name, etapa: "Mix", song, start: slot.start, end: slot.end, description: `Agendada sola al pasar a Mezcla (voces finales: ${vocals}). Regla de 15 días: master hasta el ${rule}.` });
-      out.actions.push(t.ok ? "tarea" : `tarea-error ${t.status}`);
-      if (slot.google) {
-        const ev = await gc.createEvent({
-          start: { dateTime: slot.start, timeZone: TZ }, end: { dateTime: slot.end, timeZone: TZ },
-          summary: `Mix – ${song.title}${artist ? ` (${artist})` : ""}`, colorId: COLOR.Mix,
-          description: `Agendada sola por el portal al pasar a Mezcla. Si no te sirve, movela desde el Inicio del panel (Reprogramar).\nRegla de 15 días: master hasta el ${fmtDay(rule)}.`,
-          reminders: { useDefault: false, overrides: [{ method: "popup", minutes: 60 }] },
-        });
-        out.actions.push(ev.ok ? "calendario" : "calendario-error");
-      }
+      // Primero el evento y después la tarea: si uno falla, no queda el otro solo.
+      const ev = await gc.createEvent({
+        start: { dateTime: slot.start, timeZone: TZ }, end: { dateTime: slot.end, timeZone: TZ },
+        summary: `Mix – ${song.title}${artist ? ` (${artist})` : ""}`, colorId: COLOR.Mix,
+        description: `Agendada sola por el portal al pasar a Mezcla. Si no te sirve, movela desde el Inicio del panel (Reprogramar).\nRegla de 15 días: master hasta el ${fmtDay(rule)}.`,
+        reminders: { useDefault: false, overrides: [{ method: "popup", minutes: 60 }] },
+      });
+      out.actions.push(ev.ok ? "calendario" : "calendario-error");
+      const t = ev.ok ? await createTask({ name, etapa: "Mix", song, start: slot.start, end: slot.end, description: `Agendada sola al pasar a Mezcla (voces finales: ${vocals}). Regla de 15 días: master hasta el ${rule}.` }) : null;
+      out.actions.push(t && t.ok ? "tarea" : `tarea-error ${t ? t.status : "sin-evento"}`);
+      if (ev.ok && !(t && t.ok)) await gc.patchEvent(ev.data.id, { summary: `✗ ${ev.data.summary}`, transparency: "transparent", description: `${ev.data.description}\n\n✗ Notion no dejó crear la tarea: agendala desde el Inicio del panel.` }).catch(() => null);
+      if (!(t && t.ok)) slot = null; // no se agendó: el mail no lo anuncia
     }
   }
   // Fecha de entrega de la mezcla: la semana de la regla (o el día de la sesión si cae después).
@@ -185,6 +213,39 @@ async function onMaster(song, log) {
   return out;
 }
 
+// Pasó a Master desde Notion (a mano): lo de mezcla que quedaba abierto se
+// completa (Notion y calendario), y después la fecha del master como siempre.
+async function onMasterFromNotion(song, log) {
+  const closed = await ae()._closeTasks(song, "mezcla", song.clientId, Infinity).catch(() => []);
+  const cal = await ce().tickCalendar(song, "mezcla", song.delivery, new Date(), "La canción pasó a Master").catch(() => "error");
+  const out = await onMaster(song, log);
+  if (closed.length) out.actions.push(`cerradas ${closed.length}`);
+  if (/^tildados/.test(cal)) out.actions.push(`calendario ${cal}`);
+  return out;
+}
+
+// Mezclas que quedaron sin agendar porque Google Calendar no estaba
+// conectado: apenas se conecta, se agendan completas.
+async function retryPendingGoogle() {
+  const g = await gc.status().catch(() => ({ connected: false }));
+  if (!g.connected) return [];
+  const rows = await db("portal_reminders?kind=eq.pendiente-google&select=key,song_id");
+  const out = [];
+  for (const r of (rows.ok && rows.data) || []) {
+    const page = await notion(`/pages/${r.song_id}`);
+    const song = page.ok ? songInfo(page.data) : null;
+    // Ya no hace falta (avanzó o ya tiene sesión): se da por resuelto.
+    const claim = await db(`portal_reminders?key=eq.${encodeURIComponent(r.key)}&kind=eq.pendiente-google`, { method: "PATCH", prefer: "return=representation", body: { kind: "pendiente-google-hecho" } });
+    if (!claim.ok || !claim.data || !claim.data[0] || !song || song.stage !== "Mix") continue;
+    const logRow = await db(`song_stage_log?song_id=eq.${encodeURIComponent(song.id)}&select=*`);
+    const res = await onMix(song, (logRow.ok && logRow.data && logRow.data[0]) || {}).catch((e) => ({ song: song.title, error: e.message }));
+    // Si justo se desconectó otra vez, onMix lo vuelve a dejar pendiente.
+    if (res.actions && res.actions.includes("esperando-google")) await db(`portal_reminders?key=eq.${encodeURIComponent(r.key)}`, { method: "PATCH", body: { kind: "pendiente-google" } });
+    out.push(res);
+  }
+  return out;
+}
+
 // ¿El artista de este cliente de Notion distribuye con ZECHE GRUV?
 // (028_distribuye.sql; si no se encuentra el perfil, se asume que sí.)
 async function distributesWithUs(clientId) {
@@ -204,6 +265,11 @@ async function onDistribution(song) {
   const left = await openTasks(song.id, ["Mix", "Master"]);
   await Promise.all(left.map((t) => notion(`/pages/${t.id}`, { method: "PATCH", body: JSON.stringify({ properties: { "Estado de Tarea": { select: { name: "COMPLETADO" } } } }) })));
   if (left.length) out.actions.push(`cerradas ${left.length}`);
+  // Y en el calendario: las entregas y sesiones por venir de mezcla y master, con ✓.
+  for (const kind of ["mezcla", "master"]) {
+    const c = await ce().tickCalendar(song, kind, song.delivery, new Date(), "La canción pasó a Distribución").catch(() => "error");
+    if (/^tildados/.test(c)) out.actions.push(`calendario ${kind} ${c}`);
+  }
   // Si distribuye por su cuenta: ni tarea ni aviso al equipo.
   if (!ours) { out.actions.push("no distribuye con ZG"); return out; }
   const already = await openTasks(song.id, ["Distribución"]);
@@ -256,12 +322,13 @@ async function watchStages() {
     if (!row || !forward) continue; // volvió para atrás: solo se anota
     try {
       if (enteringMix) done.push(await onMix(song, row));
-      else if (song.stage === "Master") done.push(await onMaster(song, row));
+      else if (song.stage === "Master") done.push(await onMasterFromNotion(song, row));
       else if (song.stage === "Distribución") done.push(await onDistribution(song));
     } catch (e) {
       done.push({ song: song.title, error: String(e && e.message).slice(0, 80) });
     }
   }
+  done.push(...(await retryPendingGoogle().catch(() => [])));
   return { ok: true, firstRun, songs: pages.length, done };
 }
 
