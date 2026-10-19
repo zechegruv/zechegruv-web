@@ -149,13 +149,13 @@ function remindMail({ name, song, kind, step, since }) {
   const day = new Intl.DateTimeFormat("es-AR", { timeZone: TZ_AR, weekday: "long", day: "numeric", month: "long" }).format(new Date(since)).replace(",", "");
   const subject = step === 0
     ? (master ? `El master de «${song}» te está esperando` : `Tu mezcla de «${song}» te está esperando`)
-    : `«${song}» sigue esperando tu oído`;
+    : (master ? `El master de «${song}» sigue esperando tu aprobación` : `Tu mezcla de «${song}» sigue esperando tu aprobación`);
   const lead = step === 0
-    ? `${capFirst(what)} está ${master ? "listo" : "lista"} desde el ${day}. Ponete los auriculares, ${master ? "escuchalo" : "escuchala"} de punta a punta y contanos qué sentís.`
-    : `Para que tu canción siga avanzando, necesitamos tu oído: ${what} sigue esperando desde el ${day}.`;
+    ? `${capFirst(what)} está ${master ? "listo" : "lista"} en el portal desde el ${day}. Cuando puedas, ${master ? "escuchalo" : "escuchala"} y contame qué te parece.`
+    : `Te recuerdo que ${what} está en el portal desde el ${day}. Para seguir avanzando con la canción, necesito que ${master ? "lo" : "la"} escuches y me digas si ${master ? "lo" : "la"} aprobás o querés cambiar algo.`;
   const next = master
-    ? "Si lo aprobás, pasa a distribución y empieza a acercarse el día del lanzamiento. Si algo no te cierra, marcá el segundo exacto y lo ajustamos."
-    : "Si la aprobás, arrancamos con el master. Si algo no te cierra, marcá el segundo exacto en el audio y lo ajustamos.";
+    ? "Si lo aprobás, la canción queda terminada y empezamos a prepararla para salir. Si algo no te cierra, marcá el segundo exacto (también con nota de voz) y lo ajustamos."
+    : "Si te gusta cómo quedó, aprobala y pasamos al master. Si querés cambiar algo, marcá el segundo exacto (también con nota de voz) y lo ajustamos.";
   const html = `<div style="font-family:Helvetica,Arial,sans-serif;background:#241105;color:#FFF4DC;padding:28px;border-radius:18px;max-width:520px">
 <p style="margin:0 0 6px;font-family:'Courier New',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#F5A623">ZECHE GRUV · ${master ? "Master" : "Mezcla"} para escuchar</p>
 <p style="margin:0 0 14px;font-size:22px;font-weight:700;line-height:1.25">${name ? `${esc(name)}, ` : ""}${esc(lead.charAt(0).toLowerCase() + lead.slice(1))}</p>

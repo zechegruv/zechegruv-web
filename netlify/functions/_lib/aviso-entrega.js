@@ -14,8 +14,8 @@ const PORTAL = "https://www.zechegruv.com/portal/";
 const SUN = "https://www.zechegruv.com/assets/mail/sol.png";
 const firstName = (n) => String(n || "").trim().split(/\s+/)[0] || "";
 
-// Textos: concretos, en la voz del estudio, con el artista y su canción al
-// centro. Cuatro casos: mezcla, corrección de mezcla, master, corrección de master.
+// Textos: formales pero cercanos, directos y en primera persona (Zeche),
+// sin frases poéticas. Cuatro casos: mezcla, corrección de mezcla, master, corrección de master.
 function deliveryMail({ name, song, kind, again, notes }) {
   const master = kind === "master";
   const hi = name ? `${esc(name)}, ` : "";
@@ -36,13 +36,13 @@ function deliveryMail({ name, song, kind, again, notes }) {
     : again
       ? { subject: `Ya están tus cambios en «${song}»`, eyebrow: "Mezcla · versión nueva",
           title: `${hi ? `${hi}${notesTxt}` : notesTxt.charAt(0).toUpperCase() + notesTxt.slice(1)} ya ${notes > 1 || !notes ? "están" : "está"} en la mezcla de ${s}`,
-          body: "Volvé a escucharla con auriculares, tranqui y de punta a punta. Fijate si ahora suena como la imaginabas cuando la escribiste.",
-          next: "Si está, aprobala y arrancamos con el master. Si todavía falta algo, marcá el segundo exacto (podés dejar una nota de voz) y lo seguimos puliendo.",
+          body: `Terminé las modificaciones que me pediste en «${song}». Ya podés escuchar la versión nueva en el portal.`,
+          next: "Decime si querés cambiar algo más o si pasamos al master: si está bien, aprobala; si falta algo, marcá el segundo exacto (podés dejar una nota de voz) y lo ajustamos.",
           cta: "Escuchar la mezcla" }
       : { subject: `Tu mezcla de «${song}» está lista para escuchar`, eyebrow: "Mezcla lista",
           title: `${hi}ya podés escuchar la mezcla de ${s}`,
-          body: "Cada voz, cada golpe y cada silencio ya tienen su lugar. Ahora falta lo más importante: tu oído. Ponete auriculares y escuchala de punta a punta, sin apuro.",
-          next: "Si la aprobás, arrancamos con el master. Si algo no te cierra, marcá el segundo exacto en el reproductor (también con nota de voz) y lo ajustamos sin vueltas.",
+          body: `Terminé la mezcla de «${song}». Ya la podés escuchar en el portal.`,
+          next: "Si te gusta cómo quedó, aprobala y pasamos al master. Si querés cambiar algo, marcá el segundo exacto (también con nota de voz) y lo ajustamos.",
           cta: "Escuchar la mezcla" };
   const html = `<div style="background:#241105;padding:32px 16px;font-family:Helvetica,Arial,sans-serif">
 <div style="max-width:520px;margin:0 auto;background:#2E1607;border-radius:18px;padding:28px;color:#FFF4DC">
