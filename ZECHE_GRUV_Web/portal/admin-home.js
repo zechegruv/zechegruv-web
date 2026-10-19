@@ -19,6 +19,9 @@
   const btn = (cls, text, fn) => { const b = el("button", cls, text); b.type = "button"; b.addEventListener("click", fn); return b; };
   const reduced = () => window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const TZ = "America/Argentina/Buenos_Aires";
+  // Una fecha sola ("2026-11-06") se lee como medianoche en Londres y en
+  // Buenos Aires quedaba el día anterior. Se toma al mediodía de acá.
+  const fmtDay = (d) => fmtDate(/^\d{4}-\d{2}-\d{2}$/.test(String(d || "")) ? `${d}T12:00:00-03:00` : d);
 
   function countUp(node, to, format) {
     const f = format || ((v) => String(v));
@@ -222,7 +225,7 @@
       rels.forEach((r) => {
         const li = el("li");
         const who = r.profiles ? (r.profiles.display_name || r.profiles.full_name || "") : "";
-        li.append(el("span", "zh-dot"), el("span", "zh-date", fmtDate(r.release_date).replace(/,? \d{4}$/, "")), el("span", "zh-what", `${r.title || "Sin título"}${who ? " · " + who : ""}`), el("span", "zh-tag", { draft: "Borrador", submitted: "Enviado", loaded: "Cargado", published: "Publicado" }[r.status] || "Lanzamiento"));
+        li.append(el("span", "zh-dot"), el("span", "zh-date", fmtDay(r.release_date).replace(/,? \d{4}$/, "")), el("span", "zh-what", `${r.title || "Sin título"}${who ? " · " + who : ""}`), el("span", "zh-tag", { draft: "Borrador", submitted: "Enviado", loaded: "Cargado", published: "Publicado" }[r.status] || "Lanzamiento"));
         ul.append(li);
       });
       relBody.replaceWith(ul);
