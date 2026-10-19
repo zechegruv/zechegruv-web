@@ -106,9 +106,21 @@ async function busy(fromISO, toISO) {
   const cal = r.data && r.data.calendars && Object.values(r.data.calendars)[0];
   return ((cal && cal.busy) || []).map((b) => ({ start: Date.parse(b.start), end: Date.parse(b.end) }));
 }
+// Todos los eventos entre dos momentos. Google los da de a páginas (hasta
+// 250 por pedido): se recorren todas, así ningún evento queda afuera en
+// semanas cargadas. Si alguna página falla, null (mejor no decidir con la
+// lista a medias). Tope de 20 páginas por las dudas.
 async function events(fromISO, toISO, q) {
-  const r = await gcal(`${calPath()}/events`, { query: { timeMin: fromISO, timeMax: toISO, singleEvents: "true", orderBy: "startTime", maxResults: "100", ...(q ? { q } : {}) } });
-  return r.ok ? (r.data.items || []) : null;
+  const items = [];
+  let pageToken = null;
+  for (let i = 0; i < 20; i++) {
+    const r = await gcal(`${calPath()}/events`, { query: { timeMin: fromISO, timeMax: toISO, singleEvents: "true", orderBy: "startTime", maxResults: "250", ...(q ? { q } : {}), ...(pageToken ? { pageToken } : {}) } });
+    if (!r.ok) return null;
+    items.push(...((r.data && r.data.items) || []));
+    pageToken = r.data && r.data.nextPageToken;
+    if (!pageToken) break;
+  }
+  return items;
 }
 const patchEvent = (id, body) => gcal(`${calPath()}/events/${encodeURIComponent(id)}`, { method: "PATCH", body });
 const createEvent = (body) => gcal(`${calPath()}/events`, { method: "POST", body });
