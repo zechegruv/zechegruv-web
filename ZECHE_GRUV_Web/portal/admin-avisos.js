@@ -115,13 +115,18 @@
 
   // ---------- Próximas tareas ----------
   function taskRow(t, i) {
-    const li = el("li", `zt-row is-${t.urgency}${t.id === restoredId ? " is-back" : ""}`);
+    const li = el("li", `zt-row is-${t.urgency}${t.late && t.urgency !== "espera" ? " is-late" : ""}${t.id === restoredId ? " is-back" : ""}`);
     if (t.id === restoredId) setTimeout(() => { restoredId = null; }, 0);
     li.style.animationDelay = `${120 + i * 60}ms`;
     const main = el("button", "zt-main");
     main.type = "button";
     const top = el("span", "zt-top");
     if (URG[t.urgency]) top.append(el("span", `zt-urg is-${t.urgency}`, urgText(t)));
+    // Reprogramada estando vencida: el día nuevo, pero avisando desde cuándo vas atrasado.
+    if (t.late && t.urgency !== "espera") {
+      const was = new Intl.DateTimeFormat("es-AR", { timeZone: TZ, weekday: "short", day: "numeric" }).format(new Date(t.late)).replace(",", "").replace(".", "");
+      top.append(el("span", "zt-urg is-atrasada", `Atrasada · era el ${was}`));
+    }
     top.append(el("span", "zt-when", whenTask(t)));
     // Sesión de mezcla/master o fecha límite de entrega.
     const what = t.kind === "entrega" ? (t.stage === "Mezcla" ? "Entrega de la mezcla" : "Entrega del master") : (t.stage === "Mezcla" ? "Sesión de mezcla" : "Sesión de master");
@@ -250,7 +255,7 @@
   }
   function paintTasksHead() {
     if (!tasksHead) return;
-    const urgent = (tasksCache || []).filter((t) => t.urgency === "vencida" || t.urgency === "hoy").length;
+    const urgent = (tasksCache || []).filter((t) => t.urgency === "vencida" || t.urgency === "hoy" || (t.late && t.urgency !== "espera")).length;
     tasksHead.textContent = urgent ? `${urgent} ${urgent === 1 ? "urgente" : "urgentes"}` : (tasksCache && tasksCache.length ? "Al día" : "");
     tasksHead.className = `zh-pill${urgent ? " is-hot" : " is-calm"}`;
     if (tasksCache && !tasksCache.length && tasksBox) tasksBox.replaceChildren(el("p", "zh-sub zt-empty", "Sin mezclas ni masters por delante en las próximas 3 semanas."));

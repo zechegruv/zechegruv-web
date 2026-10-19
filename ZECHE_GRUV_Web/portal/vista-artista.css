@@ -149,6 +149,9 @@ body.is-admin #tabs .tab .tab-badge.is-pop { animation: zgPop 420ms cubic-bezier
 .zt-urg.is-hoy { background: var(--orange); color: var(--brown-dark); }
 .zt-urg.is-manana { background: rgba(240, 120, 0, .2); color: var(--orange-soft); }
 .zt-urg.is-pronto { background: rgba(245, 166, 35, .14); color: #F2CF7A; }
+.zt-urg.is-atrasada { background: rgba(214, 40, 40, .18); color: #FF9C7A; text-transform: none; letter-spacing: .01em; }
+.zt-row.is-late:not(.is-vencida):not(.is-hoy) { box-shadow: inset 3px 0 0 rgba(214, 40, 40, .55); }
+.zt-row.is-late:not(.is-vencida):not(.is-hoy) .zt-main { padding-left: 14px; }
 .zt-urg.is-espera { background: rgba(240, 224, 192, .08); color: var(--beige); text-transform: none; letter-spacing: .01em; }
 .zt-row.is-vencida { box-shadow: inset 3px 0 0 var(--red); }
 .zt-row.is-hoy { box-shadow: inset 3px 0 0 var(--orange); }
@@ -197,7 +200,7 @@ body.is-admin #tabs .tab .tab-badge.is-pop { animation: zgPop 420ms cubic-bezier
 
 @media (max-width: 640px) {
   .zt-main, .zn-main { padding: 12px 2px; }
-  .zt-row.is-vencida .zt-main, .zt-row.is-hoy .zt-main, .zn-row.is-cambios .zn-main { padding-left: 12px; }
+  .zt-row.is-vencida .zt-main, .zt-row.is-hoy .zt-main, .zt-row.is-late .zt-main, .zn-row.is-cambios .zn-main { padding-left: 12px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

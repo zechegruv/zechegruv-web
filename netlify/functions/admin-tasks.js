@@ -224,6 +224,55 @@ exports.handler = async (event) => {
     .filter(({ st }) => st !== "cerrada")
     .map(({ x, st }) => (st === "espera" ? waiting(x) : x));
 
+  // ---------- Reprogramadas: el día nuevo, avisando que vas atrasado ----------
+  // 1) Si una sesión vencida en Notion ya tiene su evento movido a otro día en
+  //    Google Calendar (p. ej. lo corriste directo en el calendario), manda
+  //    el calendario: se muestra ese día y hora, y Notion (tarea y fecha de
+  //    entrega) se pone igual, así las tres fuentes dicen lo mismo.
+  // 2) Cada sesión que se reprogramó estando vencida lleva "late": desde qué
+  //    día estás atrasado (029_reprogramadas.sql). Se ve como
+  //    "Atrasada · era el sáb 17" junto al día nuevo.
+  const titleOfPage = (pg) => { const t = pg && Object.values(pg.properties || {}).find((x) => x && x.type === "title"); return t ? plain(t.title) : ""; };
+  const lateRows = liveSessions.length ? await db(`task_reschedules?task_id=in.(${liveSessions.map((x) => x.id).join(",")})&select=task_id,original_due`) : { ok: false };
+  const lateOk = lateRows.ok; // sin 029 se muestra igual, pero no se escribe nada en Notion
+  const lateOf = Object.fromEntries(((lateOk && lateRows.data) || []).map((r) => [key(r.task_id), r.original_due]));
+  const overdue = liveSessions.filter((x) => x.days < 0 && !x.waiting && x.timed && x.songId && songPages[key(x.songId)]);
+  if (overdue.length) {
+    const gc = require("./_lib/gcal");
+    const rs = require("./admin-reschedule");
+    const g = await gc.status().catch(() => ({ connected: false }));
+    const from = overdue.map((x) => dayKey(x.start)).sort()[0];
+    const list = g.connected ? await gc.events(`${from}T00:00:00-03:00`, `${dayAR(new Date(Date.now() + AHEAD_DAYS * 86400000))}T23:59:00-03:00`).catch(() => null) : null;
+    const nrm = (v) => String(v || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+    for (const x of list ? overdue : []) {
+      const song = nrm(titleOfPage(songPages[key(x.songId)]));
+      const stageRe = x.stage === "Master" ? /master/i : /\b(mix|mezcla)/i;
+      const after = list.filter((e) => e.start && e.start.dateTime && !/^[✓✗]/.test(e.summary || "") && stageRe.test(e.summary || "")
+        && song && nrm(e.summary).includes(song) && Date.parse(e.start.dateTime) > Date.parse(x.start) + 30 * 60000);
+      if (!after.length) continue;
+      const ahead = after.filter((e) => Date.parse(e.end.dateTime) > Date.now()).sort((a, b) => Date.parse(a.start.dateTime) - Date.parse(b.start.dateTime));
+      const ev = ahead[0] || after.sort((a, b) => Date.parse(b.start.dateTime) - Date.parse(a.start.dateTime))[0];
+      const original = x.start;
+      if (lateOk) {
+        // Notion se pone igual que el calendario (tarea + fecha de entrega).
+        const upd = await notion(`/pages/${x.id}`, { method: "PATCH", body: JSON.stringify({ properties: { "Fecha de Vencimiento": { date: { start: ev.start.dateTime, end: ev.end.dateTime } } } }) });
+        if (upd.ok) {
+          await rs._rememberLate({ taskId: x.id, songId: x.songId, stage: x.stage, original, current: ev.start.dateTime }).catch(() => null);
+          const sp = songPages[key(x.songId)].properties || {};
+          const fe = sp["Fecha de entrega"] && sp["Fecha de entrega"].date && sp["Fecha de entrega"].date.start;
+          const newDay = dayAR(new Date(ev.start.dateTime));
+          if (fe && fe.slice(0, 10) < newDay) {
+            await rs._moveDelivery({ songId: x.songId, song: titleOfPage(songPages[key(x.songId)]), artist: "", stage: x.stage }, fe.slice(0, 10), newDay).catch(() => null);
+            sp["Fecha de entrega"] = { date: { start: newDay } };
+          }
+        }
+      }
+      if (!lateOf[key(x.id)]) lateOf[key(x.id)] = original;
+      Object.assign(x, item({ start: ev.start.dateTime, end: ev.end.dateTime }), { fromCalendar: true });
+    }
+  }
+  liveSessions.forEach((x) => { if (lateOf[key(x.id)]) x.late = lateOf[key(x.id)]; });
+
   // Fechas límite de entrega (Canciones → Fecha de entrega).
   const deadlines = ((sq.ok && sq.data.results) || []).map((sp) => {
     const p = sp.properties || {};
