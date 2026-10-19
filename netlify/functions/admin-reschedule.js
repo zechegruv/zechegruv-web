@@ -161,6 +161,9 @@ exports.handler = async (event) => {
   const startMin = +time.slice(0, 2) * 60 + +time.slice(3);
   const dur = Math.min(8 * 60, Math.max(30, +body.dur || 120));
   const startISO = at(date, startMin), endISO = at(date, Math.min(24 * 60 - 1, startMin + dur));
+  // Hoy, solo de ahora en adelante (el navegador ya ofrece desde ahora + 15
+  // min; esto frena un pedido viejo, p. ej. con la ventana abierta hace rato).
+  if (Date.parse(startISO) <= Date.now()) return json(400, { error: "Ese horario ya pasó. Elegí uno de ahora en adelante." });
 
   // Sin Google Calendar no se mueve nada: nunca Notion por un lado y el calendario por otro.
   const g = await gc.status();
