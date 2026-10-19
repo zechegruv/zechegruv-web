@@ -128,6 +128,28 @@
   let activeNote = -1;
   const peakCache = new Map();
 
+  // Las notas sin mandar se guardan por canción, archivo y fecha del audio.
+  // Antes esa fecha era la del archivo en la compu de Zeche; ahora es la de
+  // subida a OneDrive (_lib/song-audio.js). Si quedaron guardadas con la
+  // fecha vieja, se pasan a la nueva para que no se pierdan.
+  function draftKey(song) {
+    const f = song.delivery.file;
+    const key = `zg-notas:${song.id}:${f.name}:${f.modified || ""}`;
+    try {
+      if (localStorage.getItem(key) == null) {
+        const prefix = `zg-notas:${song.id}:${f.name}:`;
+        const old = Object.keys(localStorage).find((k) => k.startsWith(prefix) && k !== key && !k.endsWith(":g"));
+        if (old) {
+          localStorage.setItem(key, localStorage.getItem(old));
+          if (localStorage.getItem(`${old}:g`) != null) localStorage.setItem(`${key}:g`, localStorage.getItem(`${old}:g`));
+          localStorage.removeItem(old);
+          localStorage.removeItem(`${old}:g`);
+        }
+      }
+    } catch (e) { /* sin almacenamiento: no hay nada que pasar */ }
+    return key;
+  }
+
   // ---------- Abrir y cerrar ----------
   // mode: "review" (el artista puede dejar notas y aprobar), "view" (solo escuchar y leer).
   function open(song, { own = false, onSent = null } = {}) {
@@ -135,7 +157,7 @@
     if (!d || !d.file) return;
     const review = d.review || null;
     const mode = own && d.state === "aprobar" ? "review" : "view";
-    const key = `zg-notas:${song.id}:${d.file.name}:${d.file.modified || ""}`;
+    const key = draftKey(song);
     cur = {
       song, kind: d.kind, own, mode, file: d.file, key, onSent, state: d.state, review,
       notes: mode === "review" ? (store.get(key) || []) : ((review && review.marks) || []).map((m) => ({ ...m })),
@@ -733,7 +755,7 @@
   function drafts(song) {
     const d = song.delivery;
     if (!d || !d.file) return 0;
-    const n = store.get(`zg-notas:${song.id}:${d.file.name}:${d.file.modified || ""}`);
+    const n = store.get(draftKey(song));
     return Array.isArray(n) ? n.length : 0;
   }
 

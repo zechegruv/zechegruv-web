@@ -15,7 +15,8 @@
 // «Estoy vivo - Mix v2.wav» es una mezcla y la maqueta de «Mix de emociones»
 // es la maqueta.
 //
-// Solo cuentan los audios subidos desde que existe esto (AUTO_SINCE): los
+// Solo cuentan los audios subidos desde que existe esto (AUTO_SINCE, según
+// la fecha en que llegaron a OneDrive): los
 // archivos viejos con esos nombres no aparecen de golpe para aprobar.
 // Nada se copia ni se mueve: el portal solo lee los nombres.
 //
@@ -108,15 +109,25 @@ function extraKindOf(name, title, folder) {
 }
 const anyKind = (name, title, folder) => kindOf(name, title, folder) || extraKindOf(name, title, folder);
 
+// Fecha del audio: cuándo llegó a OneDrive (la del servidor: se subió o se
+// reemplazó, la más nueva), no la del archivo en la compu de Zeche
+// (fileSystemInfo). Una mezcla exportada antes de que el artista pida
+// cambios y subida después es nueva igual: lo que importa es cuándo la puede
+// escuchar el artista.
+const serverDate = (item) => {
+  const dates = [item.lastModifiedDateTime, item.createdDateTime].filter((d) => Date.parse(d || ""));
+  if (!dates.length) return (item.fileSystemInfo || {}).lastModifiedDateTime || null;
+  return dates.sort((a, b) => Date.parse(b) - Date.parse(a))[0];
+};
+
 const toAudio = (item, folder) => {
-  const fs = item.fileSystemInfo || {};
   return {
     name: item.name,
     folder: folder || null,
     // Provisorio: al saber de qué canción es, se vuelve a mirar sin su
     // título (matchAudio).
     kind: anyKind(item.name, null, folder),
-    modified: fs.lastModifiedDateTime || item.lastModifiedDateTime || null,
+    modified: serverDate(item),
     size: item.size || 0,
     url: item["@content.downloadUrl"] || null,
   };
