@@ -25,23 +25,23 @@ function deliveryMail({ name, song, kind, again, notes }) {
       ? { subject: `Ya están tus cambios en el master de «${song}»`, eyebrow: "Master · versión nueva",
           title: `${hi ? `${hi}ya` : "Ya"} están hechas las modificaciones que pediste en el master de ${s}`,
           body: "Escuchalo de nuevo en los lugares donde escuchás música todos los días: auriculares, el celu, el auto. Fijate si ahora suena como la tenías en la cabeza.",
-          next: "Si está, aprobalo y tu canción queda terminada. Si todavía falta algo, marcá el segundo exacto (podés dejar una nota de voz) y lo ajustamos.",
+          next: "Si está, aprobalo y tu canción queda terminada. Si todavía falta algo, dejá tu corrección en el segundo exacto (también podés grabarla en audio) y lo ajusto.",
           cta: "Escuchar el master" }
       : { subject: `El master de «${song}» está listo`, eyebrow: "Master listo",
           title: `${hi}esta es la versión de ${s} que va a escuchar todo el mundo`,
           body: "El master es el último paso: es como va a sonar tu canción en Spotify, en YouTube y en cada lugar donde alguien le dé play. Escuchalo en auriculares, en el celu y en el auto, de punta a punta.",
-          next: "Si lo aprobás, la canción queda terminada y empezamos a prepararla para salir. Si algo no te cierra, marcá el segundo exacto (también con nota de voz) y lo ajustamos.",
+          next: "Si lo aprobás, la canción queda terminada y empezamos a prepararla para salir. Si algo no te cierra, dejá tu corrección en el segundo exacto (también podés grabarla en audio) y lo ajusto.",
           cta: "Escuchar el master" }
     : again
       ? { subject: `Ya están tus cambios en «${song}»`, eyebrow: "Mezcla · versión nueva",
           title: `${hi ? `${hi}ya` : "Ya"} están hechas las modificaciones que pediste en ${s}`,
           body: "Ya podés escuchar la versión nueva en el portal.",
-          next: "Decime si querés cambiar algo más o si pasamos al master: si está bien, aprobala; si falta algo, marcá el segundo exacto (podés dejar una nota de voz) y lo ajustamos.",
+          next: "Decime si querés cambiar algo más o si pasamos al master: si está bien, aprobala; si falta algo, dejá tu corrección en el segundo exacto (también podés grabarla en audio) y lo ajusto.",
           cta: "Escuchar la mezcla" }
       : { subject: `Tu mezcla de «${song}» está lista para escuchar`, eyebrow: "Mezcla lista",
           title: `${hi}ya podés escuchar la mezcla de ${s}`,
           body: `Terminé la mezcla de «${song}». Ya la podés escuchar en el portal.`,
-          next: "Si te gusta cómo quedó, aprobala y pasamos al master. Si querés cambiar algo, marcá el segundo exacto (también con nota de voz) y lo ajustamos.",
+          next: "Si te gusta cómo quedó, aprobala y pasamos al master. Si querés cambiar algo, dejá tu corrección en el segundo exacto (también podés grabarla en audio) y lo ajusto.",
           cta: "Escuchar la mezcla" };
   const html = `<div style="background:#241105;padding:32px 16px;font-family:Helvetica,Arial,sans-serif">
 <div style="max-width:520px;margin:0 auto;background:#2E1607;border-radius:18px;padding:28px;color:#FFF4DC">
