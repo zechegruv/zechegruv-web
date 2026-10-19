@@ -143,7 +143,9 @@ async function settlePayment(paymentId, base) {
   if (result === "no_capacity" || result === "amount_mismatch" || result === "not_payable") {
     await refund(p.id, orderId, result);
   }
-  if (result === "paid") await sendTickets(orderId, base);
+  // También con "already_paid": si el mail falló al confirmar, el aviso
+  // repetido lo reintenta (sendTickets lo manda una sola vez igual).
+  if (result === "paid" || result === "already_paid") await sendTickets(orderId, base);
   return { result, orderId };
 }
 
