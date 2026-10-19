@@ -107,10 +107,21 @@ const tickCalendar = (song, kind, deliveryDate, file) =>
   require("./cierre-etapa").tickCalendar(song, kind, deliveryDate, new Date(), `${LABEL[kind].entregada} (se marcó solo al subir «${file.name}» a la carpeta)`);
 
 async function deliver({ profileId, clientId, song, kind, file, deliveryDate }) {
+  // Turno: el Inicio del panel y la función programada pueden encontrar el
+  // mismo audio a la vez. Antes de tocar nada, cada una intenta anotarlo en
+  // portal_reminders con una clave única por archivo; solo la que lo anota
+  // sigue (así no quedan dos filas «entregada», dos mails ni dos ✓).
+  const claimKey = `entrega|${song.id}|${kind}|${file.name}|${file.modified}`.slice(0, 500);
+  const claim = await db("portal_reminders?on_conflict=key", { method: "POST", prefer: "resolution=ignore-duplicates,return=representation", body: { key: claimKey, kind: "entrega", profile_id: profileId, song_id: song.id } });
+  if (!claim.ok || !claim.data || !claim.data[0]) return null; // ya la está procesando (o la procesó) otra pasada
   const props = { Entrega: { select: { name: LABEL[kind].entregada } } };
   if (kind === "master") props["Fecha de entrega"] = { date: null };
   const upd = await notion(`/pages/${song.id}`, { method: "PATCH", body: JSON.stringify({ properties: props }) });
-  if (!upd.ok) return { song: song.title, kind, error: `notion ${upd.status}` }; // se reintenta en la próxima pasada
+  if (!upd.ok) {
+    // Se suelta el turno para que la próxima pasada lo reintente.
+    await db(`portal_reminders?key=eq.${encodeURIComponent(claimKey)}`, { method: "DELETE" }).catch(() => null);
+    return { song: song.title, kind, error: `notion ${upd.status}` };
+  }
 
   const uploadedAt = time(file.modified);
   const [saved, tasks, calendar] = await Promise.all([
@@ -217,7 +228,8 @@ async function syncArtist({ profileId, pageId, folder, songPages, audios, remind
     if (last && time(last.created_at) >= time(file.modified)) continue; // ya procesado (o el artista ya respondió)
     const p = (raw[song.id] && raw[song.id].properties) || {};
     const deliveryDate = p["Fecha de entrega"] && p["Fecha de entrega"].date && p["Fecha de entrega"].date.start;
-    out.push(await deliver({ profileId, clientId: pageId, song, kind, file, deliveryDate: deliveryDate ? deliveryDate.slice(0, 10) : null }));
+    const r = await deliver({ profileId, clientId: pageId, song, kind, file, deliveryDate: deliveryDate ? deliveryDate.slice(0, 10) : null });
+    if (r) out.push(r);
   }
   return out;
 }

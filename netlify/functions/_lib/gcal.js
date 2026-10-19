@@ -124,6 +124,7 @@ async function events(fromISO, toISO, q) {
 }
 const patchEvent = (id, body) => gcal(`${calPath()}/events/${encodeURIComponent(id)}`, { method: "PATCH", body });
 const createEvent = (body) => gcal(`${calPath()}/events`, { method: "POST", body });
+const getEvent = (id) => gcal(`${calPath()}/events/${encodeURIComponent(id)}`);
 // Borrar un evento: solo para deshacer uno que el mismo pedido acaba de crear
 // (p. ej. reprogramar que falló a mitad de camino). Si ya no existe, cuenta como borrado.
 async function deleteEvent(id) {
@@ -194,4 +195,4 @@ function eventMatch(e, { id, title, artist }, stage, kind) {
   return null;
 }
 
-module.exports = { configured, status, authUrl, validState, exchangeCode, busy, events, patchEvent, createEvent, deleteEvent, tag, eventMatch };
+module.exports = { configured, status, authUrl, validState, exchangeCode, busy, events, patchEvent, createEvent, getEvent, deleteEvent, tag, eventMatch };

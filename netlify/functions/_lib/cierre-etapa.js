@@ -64,10 +64,18 @@ async function tickCalendar(song, kind, refDate, now = new Date(), why = `${LABE
     const delivery = mine.filter((e) => e.start && e.start.date);
     const sessions = mine.filter((e) => e.start && e.start.dateTime && Date.parse(e.end && e.end.dateTime || e.start.dateTime) > now.getTime());
     const text = `✓ ${why}`;
+    // Nunca dos ✓: se vuelve a leer el evento justo antes de tildarlo (si otra
+    // pasada ya lo tildó, se deja como está) y el título lleva un solo ✓.
+    const tick = async (e, extra, tail) => {
+      const cur = await gc.getEvent(e.id).catch(() => null);
+      const fresh = cur && cur.ok && cur.data ? cur.data : e;
+      if (/^\s*✓/.test(fresh.summary || "")) return { ok: true };
+      return gc.patchEvent(e.id, { summary: `✓ ${String(fresh.summary || "").replace(/^(\s*✓\s*)+/, "")}`, ...extra, description: `${fresh.description ? `${fresh.description}\n\n` : ""}${text}${tail}` });
+    };
     const res = await Promise.all([
-      ...delivery.map((e) => gc.patchEvent(e.id, { summary: `✓ ${e.summary}`, description: `${e.description ? `${e.description}\n\n` : ""}${text}.` })),
+      ...delivery.map((e) => tick(e, {}, ".")),
       // La sesión ya no hace falta: queda a la vista con ✓ y libera el horario.
-      ...sessions.map((e) => gc.patchEvent(e.id, { summary: `✓ ${e.summary}`, transparency: "transparent", description: `${e.description ? `${e.description}\n\n` : ""}${text}: esta sesión ya no hace falta.` })),
+      ...sessions.map((e) => tick(e, { transparency: "transparent" }, ": esta sesión ya no hace falta.")),
     ]);
     if (res.some((r) => !r.ok)) return "error";
     return res.length ? `tildados ${res.length}` : "sin-evento";
