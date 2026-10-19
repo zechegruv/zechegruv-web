@@ -171,7 +171,12 @@
       return;
     }
     lyrics = data || [];
+    // Lo que quedó sin guardar en este dispositivo (p. ej. se cortó la
+    // conexión y se cerró el portal): se muestra y se vuelve a mandar.
+    const waiting = pendingList();
+    lyrics.forEach((l) => { if (waiting[l.id]) Object.assign(l, waiting[l.id].changes); });
     renderList();
+    if (Object.keys(waiting).length) flushPending();
   }
 
   function previewLines(l) {
@@ -603,6 +608,73 @@
   }
 
   // ---------- Guardado ----------
+  // Lo que todavía no se pudo guardar (sin conexión) queda en este
+  // dispositivo hasta que la base lo confirma: aunque se salga del editor,
+  // se cambie de letra o se cierre el portal, se reintenta solo y, al
+  // volver a entrar, se recupera. Si el navegador no deja guardar nada
+  // (modo privado), se sigue reintentando mientras la página esté abierta.
+  const PENDING_KEY = "zg-letras-pendientes"; // { id de la letra: { artist, changes, at } }
+  function pendingAll() {
+    try { return JSON.parse(localStorage.getItem(PENDING_KEY) || "{}") || {}; } catch (e) { return {}; }
+  }
+  function pendingWrite(all) {
+    try { if (Object.keys(all).length) localStorage.setItem(PENDING_KEY, JSON.stringify(all)); else localStorage.removeItem(PENDING_KEY); } catch (e) { /* nada */ }
+  }
+  const memoryPending = {}; // por si el dispositivo no deja guardar
+  function setPending(id, changes) {
+    const entry = { artist: profile && profile.id, changes, at: Date.now() };
+    memoryPending[id] = entry;
+    const all = pendingAll();
+    all[id] = entry;
+    pendingWrite(all);
+  }
+  // Se borra solo si lo que se confirmó es lo último que había pendiente.
+  function clearPending(id, changes) {
+    const same = (e) => e && JSON.stringify(e.changes) === JSON.stringify(changes);
+    if (same(memoryPending[id])) delete memoryPending[id];
+    const all = pendingAll();
+    if (same(all[id])) { delete all[id]; pendingWrite(all); }
+  }
+  const pendingList = () => ({ ...memoryPending, ...pendingAll() });
+
+  // Manda los cambios de una letra a la base (de a uno por vez, en orden).
+  async function push(id, changes) {
+    while (saving) await saving;
+    setPending(id, changes);
+    let ok = true;
+    saving = (async () => {
+      const { data, error } = await db.from("lyrics").update(changes).eq("id", id).select("updated_at").single();
+      if (error || !data) { ok = false; return; }
+      clearPending(id, changes);
+      const item = lyrics.find((l) => l.id === id);
+      if (item) Object.assign(item, changes, { updated_at: data.updated_at });
+    })();
+    await saving;
+    saving = null;
+    if (!ok) retrySoon();
+    return ok;
+  }
+
+  // Reintento de todo lo pendiente (también de letras que ya no están abiertas).
+  let retryTimer = null;
+  function retrySoon() {
+    clearTimeout(retryTimer);
+    retryTimer = setTimeout(flushPending, 5000);
+  }
+  async function flushPending() {
+    clearTimeout(retryTimer);
+    retryTimer = null;
+    const all = pendingList();
+    for (const [id, entry] of Object.entries(all)) {
+      // La letra abierta con cambios nuevos se guarda por su cuenta (save).
+      if (doc && doc.id === id && dirty) continue;
+      const ok = await push(id, entry.changes);
+      if (!ok) return; // sigue sin conexión: retrySoon ya quedó programado
+      if (doc && doc.id === id && !dirty) setSave("Guardado", false, true);
+    }
+  }
+  window.addEventListener("online", () => { if (Object.keys(pendingList()).length) flushPending(); });
+
   function schedule() {
     dirty = true;
     setSave("Guardando…");
@@ -614,29 +686,26 @@
     clearTimeout(timer);
     timer = null;
     while (saving) await saving;
-    if (!doc || !dirty) return true;
+    if (!doc) return true;
+    if (!dirty) {
+      // Sin cambios nuevos, pero con algo que no se pudo guardar antes: se reintenta ya.
+      const waiting = pendingList()[doc.id];
+      if (!waiting) return true;
+      const ok = await push(doc.id, waiting.changes);
+      if (ok && doc && !dirty) setSave("Guardado", false, true);
+      return ok;
+    }
     dirty = false;
     const id = doc.id;
     const changes = { title: doc.title.trim(), sections: doc.sections.map((s) => (s.voice ? { kind: s.kind, text: s.text, voice: s.voice } : { kind: s.kind, text: s.text })) };
-    let ok = true;
-    saving = (async () => {
-      const { data, error } = await db.from("lyrics").update(changes).eq("id", id).select("updated_at").single();
-      if (error) {
-        ok = false;
-        if (doc && doc.id === id) {
-          dirty = true;
-          setSave("Sin conexión: lo volvemos a intentar solo", true);
-          clearTimeout(timer);
-          timer = setTimeout(save, 5000);
-        }
-        return;
-      }
-      const item = lyrics.find((l) => l.id === id);
-      if (item) Object.assign(item, changes, { updated_at: data.updated_at });
-      if (doc && doc.id === id && !dirty) setSave("Guardado", false, true);
-    })();
-    await saving;
-    saving = null;
+    // La lista ya muestra lo último escrito, aunque todavía no se haya guardado.
+    const item = lyrics.find((l) => l.id === id);
+    if (item) Object.assign(item, changes);
+    const ok = await push(id, changes);
+    if (doc && doc.id === id && !dirty) {
+      if (ok) setSave("Guardado", false, true);
+      else setSave("Sin conexión: lo volvemos a intentar solo", true);
+    }
     return ok;
   }
 
@@ -699,9 +768,11 @@
       navigator.wakeLock.request("screen").then((l) => { wakeLock = l; }).catch(() => {});
     }
   });
-  // Si se sale del editor por otro lado (pestañas, cerrar sesión), se guarda igual.
+  // Si se sale del editor por otro lado (pestañas, cerrar sesión), se guarda
+  // igual. El editor se vacía solo si se guardó bien; si no, lo pendiente
+  // queda en el dispositivo y se reintenta solo (flushPending).
   new MutationObserver(() => {
-    if ($("panel-lyric").hidden && doc) { const d = doc; setReading(false); save().then(() => { if (doc === d) doc = null; }); }
+    if ($("panel-lyric").hidden && doc) { const d = doc; setReading(false); save().then((ok) => { if (ok && doc === d) doc = null; }); }
   }).observe($("panel-lyric"), { attributes: true, attributeFilter: ["hidden"] });
 
   // Alto de la barra de arriba del portal cuando queda fija (celu): las
