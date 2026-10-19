@@ -227,6 +227,8 @@ async function moveAll(t, { date, time, startISO, endISO }) {
 }
 
 exports._freeSlots = freeSlots;
+exports._loadTask = loadTask;
+exports._findEvent = findEvent;
 exports._moveDelivery = moveDelivery;
 exports._at = at;
 exports._addDays = addDays;

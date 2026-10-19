@@ -15,7 +15,8 @@
 //   Si la mezcla o el master ya se entregó y espera al artista, nunca figura
 //   vencida: urgencia "espera" ("Esperando aprobación de <artista>"). Si ya
 //   está aprobada (o la canción pasó de etapa), no aparece.
-// "Hecha" la pasa a COMPLETADO en Notion y desaparece de la lista.
+// "Hecha" la pasa a COMPLETADO en Notion, tilda su evento en Google Calendar
+// con ✓ y desaparece de la lista. "Deshacer" vuelve las dos cosas atrás.
 // Solo el administrador (sesión de Supabase en Authorization: Bearer).
 const { json, db } = require("./_lib/pass");
 const { TASKS_DS, SONGS_DS } = require("./portal-songs");
@@ -67,6 +68,33 @@ function urgency(days) {
   return "normal";
 }
 
+// ✓ / Deshacer de una sesión: el evento de Google Calendar acompaña a Notion.
+//   done = true  -> "✓ Mix – …" (si todavía no pasó, además libera el horario)
+//   done = false -> vuelve a su nombre y vuelve a ocupar el horario.
+async function tickSessionEvent(taskId, done) {
+  try {
+    const gc = require("./_lib/gcal");
+    if (!(await gc.status()).connected) return "sin-google";
+    const rs = require("./admin-reschedule");
+    const t = await rs._loadTask(taskId, "sesion");
+    if (!t || !t.song) return "sin-evento";
+    const start = t.date && t.date.start;
+    const ref = start ? dayKey(start) : dayAR(new Date());
+    const stageRe = t.stage === "Master" ? /master/i : /\b(mix|mezcla)/i;
+    const ev = await rs._findEvent(t, `${rs._addDays(ref, -2)}T00:00:00-03:00`, `${rs._addDays(ref, 3)}T00:00:00-03:00`,
+      (e) => !!(e.start && e.start.dateTime) && stageRe.test(e.summary || "") && (done ? !/^✓/.test(e.summary || "") : /^✓/.test(e.summary || "")));
+    if (!ev) return "sin-evento";
+    const future = Date.parse((ev.end && ev.end.dateTime) || ev.start.dateTime) > Date.now();
+    const body = done
+      ? { summary: `✓ ${ev.summary}`, ...(future ? { transparency: "transparent" } : {}) }
+      : { summary: ev.summary.replace(/^✓\s*/, ""), transparency: "opaque" };
+    const r = await gc.patchEvent(ev.id, body);
+    return r.ok ? (done ? "tildado" : "destildado") : "error";
+  } catch (e) {
+    return "error";
+  }
+}
+
 exports.handler = async (event) => {
   if (!notionToken()) return json(200, { connected: false, tasks: [] });
   if (!(await isAdmin(event))) return json(403, { error: "Solo para el administrador." });
@@ -86,14 +114,16 @@ exports.handler = async (event) => {
       const prev = UNDO_STATES.includes(body.state) ? body.state : "PENDIENTE";
       const res = await setState(prev);
       if (!res.ok) return json(502, { error: "Notion no dejó deshacerla. Probá de nuevo." });
-      return json(200, { ok: true, state: prev });
+      const calendar = await tickSessionEvent(id, false);
+      return json(200, { ok: true, state: prev, calendar });
     }
     // Antes de tildar se guarda el estado actual, para poder deshacer.
     const cur = await notion(`/pages/${id}`);
     const was = (cur.ok && cur.data && cur.data.properties && cur.data.properties["Estado de Tarea"] && cur.data.properties["Estado de Tarea"].select && cur.data.properties["Estado de Tarea"].select.name) || null;
     const res = await setState("COMPLETADO");
     if (!res.ok) return json(502, { error: "Notion no dejó marcarla. Probá de nuevo." });
-    return json(200, { ok: true, prev: UNDO_STATES.includes(was) ? was : "PENDIENTE" });
+    const calendar = await tickSessionEvent(id, true);
+    return json(200, { ok: true, prev: UNDO_STATES.includes(was) ? was : "PENDIENTE", calendar });
   }
 
   const limit = new Date(Date.now() + AHEAD_DAYS * 86400000);
