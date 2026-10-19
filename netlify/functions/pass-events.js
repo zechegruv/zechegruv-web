@@ -18,7 +18,11 @@ exports.handler = async (event) => {
   if (slug) filters.push(`slug=eq.${slug}`);
   else filters.push(`starts_at=gte.${new Date(Date.now() - 6 * 3600 * 1000).toISOString()}`);
   const res = await dbWithLineup(`pass_events?${filters.join("&")}`);
-  if (!res.ok) return json(502, { error: "No pudimos cargar los eventos. Probá de nuevo en un rato.", detail: dbDetail(res) });
+  // El detalle técnico del fallo queda en el registro de Netlify, nunca en la respuesta.
+  if (!res.ok) {
+    console.error("ZG PASS: no se pudieron leer los eventos", dbDetail(res));
+    return json(502, { error: "No pudimos cargar los eventos. Probá de nuevo en un rato." });
+  }
 
   const now = Date.now();
   const events = await Promise.all(res.data.map(async (e) => {

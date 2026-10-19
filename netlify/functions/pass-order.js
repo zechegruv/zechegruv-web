@@ -23,7 +23,11 @@ exports.handler = async (event) => {
   if (!/^[0-9a-f]{64}$/.test(token)) return json(404, { error: "No encontramos esa orden." });
 
   let res = await load(token);
-  if (!res.ok) return json(502, { error: "No pudimos cargar tu orden. Probá de nuevo en un rato.", detail: dbDetail(res) });
+  // El detalle técnico del fallo queda en el registro de Netlify, nunca en la respuesta.
+  if (!res.ok) {
+    console.error("ZG PASS: no se pudo leer la orden", dbDetail(res));
+    return json(502, { error: "No pudimos cargar tu orden. Probá de nuevo en un rato." });
+  }
   let order = res.data[0];
   if (!order) return json(404, { error: "No encontramos esa orden." });
 
