@@ -204,9 +204,10 @@
     b.classList.add("is-busy");
     msg.textContent = "Guardando…";
     try {
-      await authed("/.netlify/functions/portal-mark", { song: song.id, kind: box.dataset.kind, action, artist: shownProfile.id });
+      const out = await authed("/.netlify/functions/portal-mark", { song: song.id, kind: box.dataset.kind, action, artist: shownProfile.id });
       song.delivery = { ...song.delivery, state: action === "aprobada" ? "aprobada" : "aprobar", manual: action, by: "admin" };
       song.ready = action === "entregada";
+      advance(song, out); // Mezcla aprobada: ya está en Master
       repaint(found);
       const again = document.querySelector(`[data-mark-song="${song.id}"] [data-mark="${action}"]`);
       if (again) again.classList.add("is-pop");

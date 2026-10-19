@@ -10,11 +10,16 @@
 //   Notion y el Inicio del panel dicen lo mismo, y el aviso anterior de esa
 //   canción se reemplaza solo.
 // - "Entregado": al artista le aparece para escuchar y aprobar aunque el
-//   audio no esté en su carpeta (p. ej. si se lo mandaste por WhatsApp).
-// - "Master aprobado": se borra la fecha de entrega de la canción (ya no hay
-//   nada que entregar) y la canción pasa sola a Distribución.
+//   audio no esté en su carpeta (p. ej. si se lo mandaste por WhatsApp). Igual
+//   que al subir el audio: las sesiones de esa etapa que estaban abiertas
+//   pasan a COMPLETADO y el calendario queda tildado (cierre-etapa.js →
+//   deliverStage). Si es el master, se borra la fecha de entrega.
+// - "Aprobado": exactamente lo mismo que cuando aprueba el artista
+//   (cierre-etapa.js → closeStage): tarea completada, la canción avanza
+//   (Mezcla → Master, Master → Distribución) y el calendario tildado.
 const { json, db, dbDetail, serviceKey } = require("./_lib/pass");
 const { _parsePageId: parsePageId } = require("./portal-songs");
+const { closeStage, deliverStage, nextSong } = require("./_lib/cierre-etapa");
 
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://zdstltihskdcartkmgii.supabase.co";
 const PUBLISHABLE_KEY = "sb_publishable_9M2gY0XZr7xIrV-1s9AiUA_XA1uNm0V";
@@ -63,18 +68,23 @@ exports.handler = async (event) => {
   if (stage !== STAGE_OF[kind]) return json(409, { error: `La canción ya no está en ${kind}. Actualizá la página.` });
   const title = plain(p["Canción"] && p["Canción"].title) || "Sin título";
 
-  const props = { Entrega: { select: { name: LABEL[kind][action] } } };
-  // Master aprobado: pasa solo a Distribución (la función programada crea
-  // la tarea de distribución y le avisa al equipo).
-  if (kind === "master" && action === "aprobada") { props["Fecha de entrega"] = { date: null }; props["Etapa actual"] = { select: { name: "Distribución" } }; }
-  const upd = await notion(`/pages/${songId}`, { method: "PATCH", body: JSON.stringify({ properties: props }) });
-  if (!upd.ok) {
-    const hint = upd.status === 400 ? "Falta la columna «Entrega» en Canciones o la integración no puede editar." : "Notion no dejó guardarlo.";
-    return json(502, { error: `${hint} Probá de nuevo en un momento.` });
+  let synced = null;
+  if (action === "aprobada") {
+    synced = await closeStage({ page: page.data, kind }).catch(() => ({ notion: false }));
+    if (!synced.notion) return json(502, { error: "Notion no dejó guardarlo (falta la columna «Entrega» o la integración no puede editar). Probá de nuevo en un momento." });
+  } else {
+    const props = { Entrega: { select: { name: LABEL[kind][action] } } };
+    if (kind === "master") props["Fecha de entrega"] = { date: null }; // ya no hay nada que entregar
+    const upd = await notion(`/pages/${songId}`, { method: "PATCH", body: JSON.stringify({ properties: props }) });
+    if (!upd.ok) {
+      const hint = upd.status === 400 ? "Falta la columna «Entrega» en Canciones o la integración no puede editar." : "Notion no dejó guardarlo.";
+      return json(502, { error: `${hint} Probá de nuevo en un momento.` });
+    }
+    synced = await deliverStage({ page: page.data, kind }).catch(() => null);
   }
 
   const saved = await db("song_approvals", { method: "POST", prefer: "return=representation", body: { profile_id: artist, song_id: songId, song_title: title, kind, action, source: "admin" } });
   if (!saved.ok) console.error("portal-mark song_approvals:", dbDetail(saved));
   const row = (saved.ok && saved.data && saved.data[0]) || {};
-  return json(200, { ok: true, kind, action, at: row.created_at || new Date().toISOString(), saved: saved.ok });
+  return json(200, { ok: true, kind, action, at: row.created_at || new Date().toISOString(), saved: saved.ok, tasks: (synced && synced.tasks) || [], calendar: synced && synced.calendar, next: action === "aprobada" ? nextSong(kind) : null });
 };
