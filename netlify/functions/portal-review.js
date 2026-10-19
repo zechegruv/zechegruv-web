@@ -74,6 +74,18 @@ async function notion(path, init = {}) {
   return { ok: res.ok, status: res.status, data: await res.json().catch(() => null) };
 }
 
+// Un envío igual del mismo artista en los últimos 2 minutos, o null.
+const REPEAT_WINDOW_MS = 2 * 60 * 1000;
+async function recentTwin({ profileId, songId, kind, action, note, marks }) {
+  const res = await db(`song_approvals?profile_id=eq.${profileId}&song_id=eq.${songId}&kind=eq.${kind}&action=eq.${action}&select=*&order=created_at.desc&limit=5`);
+  if (!res.ok || !Array.isArray(res.data)) return null;
+  const sig = (m) => JSON.stringify((Array.isArray(m) ? m : []).map((x) => [Number(x.t), String(x.text || ""), x.voice || null]));
+  return res.data.find((r) => Date.now() - Date.parse(r.created_at || 0) < REPEAT_WINDOW_MS
+    && (r.source || "artist") === "artist"
+    && (r.note || null) === (note || null)
+    && sig(r.marks) === sig(marks)) || null;
+}
+
 exports.handler = async (event) => {
   if (event.httpMethod !== "POST") return json(405, { error: "Método no permitido." });
   if (!serviceKey()) return json(500, { error: "Falta SUPABASE_SERVICE_ROLE_KEY en Netlify." });
@@ -111,6 +123,16 @@ exports.handler = async (event) => {
   const p = page.data.properties || {};
   const owners = ((p.Artista && p.Artista.relation) || []).map((r) => r.id.replace(/-/g, ""));
   if (!owners.includes(clientId.replace(/-/g, ""))) return json(403, { error: "Esa canción no es tuya." });
+
+  // El mismo envío repetido en poco tiempo (p. ej. se cerró el reproductor
+  // mientras se mandaba y se volvió a mandar, o se tocó dos veces): misma
+  // canción, mismo pedido y mismo contenido en los últimos 2 minutos. Se
+  // responde que está todo bien, sin guardarlo de nuevo, sin otro mail a
+  // Zeche y sin agendar otra sesión.
+  const twin = await recentTwin({ profileId: me.id, songId, kind, action, note, marks });
+  if (twin) {
+    return json(200, { ok: true, repeated: true, review: { kind, action, note: twin.note || null, marks: Array.isArray(twin.marks) ? twin.marks : marks, version: twin.version || null, at: twin.created_at }, saved: true, next: action === "aprobada" ? nextSong(kind) : null });
+  }
   const stage = p["Etapa actual"] && p["Etapa actual"].select && p["Etapa actual"].select.name;
   if (stage !== STAGE_OF[kind]) return json(409, { error: `Esta canción ya no está en ${kind}. Actualizá la página.` });
   // Tiene que estar entregado: el audio con "mix"/"master" en su carpeta.

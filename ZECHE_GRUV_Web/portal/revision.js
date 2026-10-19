@@ -668,37 +668,49 @@
     return false;
   }
 
+  // Si el artista cierra el reproductor mientras se manda, el envío termina
+  // igual en segundo plano: todo se hace sobre esta revisión (c), no sobre la
+  // que esté abierta en ese momento. Así se borran las notas guardadas, la
+  // canción pasa a aprobada o a "cambios" (onSent) y no queda nada para
+  // mandar dos veces. (El servidor además ignora el mismo envío repetido.)
   async function send(action) {
+    const c = cur;
+    if (!c || c.sending) return;
+    c.sending = true;
     const msg = $("rvMsg");
     const buttons = $("rvFoot").querySelectorAll("button");
     buttons.forEach((b) => { b.disabled = true; });
     P.setMsg(msg, "Enviando…");
     const gen = $("rvGenText");
-    if (gen) cur.general = gen.value.trim();
+    if (gen) c.general = gen.value.trim();
     try {
       const { data: { session } } = await db.auth.getSession();
       const res = await fetch("/.netlify/functions/portal-review", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
         body: JSON.stringify({
-          song: cur.song.id, kind: cur.kind, action, version: cur.file.name,
-          note: action === "cambios" ? (cur.general || null) : null,
-          marks: action === "cambios" ? cur.notes : [],
+          song: c.song.id, kind: c.kind, action, version: c.file.name,
+          note: action === "cambios" ? (c.general || null) : null,
+          marks: action === "cambios" ? c.notes : [],
         }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "No pudimos enviarlo. Probá de nuevo.");
-      store.set(cur.key, null);
-      store.set(cur.key + ":g", null);
-      if (window.zgTrack) window.zgTrack("portal_aprobacion", { etapa: cur.kind, accion: action, notas: cur.notes.length });
-      const n = cur.notes.length;
+      store.set(c.key, null);
+      store.set(c.key + ":g", null);
+      if (window.zgTrack) window.zgTrack("portal_aprobacion", { etapa: c.kind, accion: action, notas: c.notes.length });
+      if (c.onSent) c.onSent(data.review, data);
+      c.sending = false;
+      if (cur !== c) return; // ya lo cerró: la canción igual quedó actualizada
+      const n = c.notes.length;
       audio.pause();
       $("rvDone").innerHTML = action === "aprobada"
-        ? `<img class="rv-done-sun" src="../assets/zeche-gruv-sol.webp" alt="" aria-hidden="true"><span class="rv-done-ico">${ICON.check}</span><h3>¡${NOUN[cur.kind]} aprobad${cur.kind === "mezcla" ? "a" : "o"}!</h3><p>${cur.kind === "mezcla" ? "Seguimos con el master. Te avisamos apenas esté para escucharlo." : "Tu canción está terminada. Ahora, a prepararla para que salga."}</p><button class="btn btn-primary" type="button" data-rv="close">Listo</button>`
-        : `<img class="rv-done-sun" src="../assets/zeche-gruv-sol.webp" alt="" aria-hidden="true"><span class="rv-done-ico">${ICON.check}</span><h3>Zeche ya tiene tus notas</h3><p>${n ? `${n === 1 ? "Le llegó tu nota" : `Le llegaron tus ${n} notas`}, cada una en su momento exacto.` : "Le llegó tu pedido."} Cuando suba la versión nueva, te aparece acá para escuchar${cur.kind === "mezcla" ? "la" : "lo"}.</p><button class="btn btn-primary" type="button" data-rv="close">Listo</button>`;
+        ? `<img class="rv-done-sun" src="../assets/zeche-gruv-sol.webp" alt="" aria-hidden="true"><span class="rv-done-ico">${ICON.check}</span><h3>¡${NOUN[c.kind]} aprobad${c.kind === "mezcla" ? "a" : "o"}!</h3><p>${c.kind === "mezcla" ? "Seguimos con el master. Te avisamos apenas esté para escucharlo." : "Tu canción está terminada. Ahora, a prepararla para que salga."}</p><button class="btn btn-primary" type="button" data-rv="close">Listo</button>`
+        : `<img class="rv-done-sun" src="../assets/zeche-gruv-sol.webp" alt="" aria-hidden="true"><span class="rv-done-ico">${ICON.check}</span><h3>Zeche ya tiene tus notas</h3><p>${n ? `${n === 1 ? "Le llegó tu nota" : `Le llegaron tus ${n} notas`}, cada una en su momento exacto.` : "Le llegó tu pedido."} Cuando suba la versión nueva, te aparece acá para escuchar${c.kind === "mezcla" ? "la" : "lo"}.</p><button class="btn btn-primary" type="button" data-rv="close">Listo</button>`;
       $("rvDone").hidden = false;
-      if (cur.onSent) cur.onSent(data.review, data);
     } catch (err) {
+      c.sending = false;
+      if (cur !== c) return; // ya lo cerró: las notas siguen guardadas para mandarlas después
       buttons.forEach((b) => { b.disabled = false; });
       P.setMsg(msg, err.message, true);
     }
