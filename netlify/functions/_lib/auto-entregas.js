@@ -119,7 +119,8 @@ async function deliver({ profileId, clientId, song, kind, file, deliveryDate }) 
       note: `Entregado solo al subir «${file.name}» a la carpeta.`.slice(0, 1000),
     } }),
     closeTasks(song, kind, clientId, uploadedAt),
-    tickCalendar(song, kind, deliveryDate, file),
+    // Con el artista: los "Entrega: Mix <canción> <artista>" se reconocen por el título completo.
+    tickCalendar({ ...song, clientId: song.clientId || clientId }, kind, deliveryDate, file),
   ]);
   if (!saved.ok) console.error("auto-entregas song_approvals:", saved.status);
   // Aviso al artista: mezcla, master o corrección lista para escuchar.
