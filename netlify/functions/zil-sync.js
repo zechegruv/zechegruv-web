@@ -49,9 +49,18 @@ async function syncRelease(id, { force } = {}) {
     const link = sl && (sl.smartLink || sl.link || sl.url || (sl.data && (sl.data.smartLink || sl.data.link || sl.data.url)));
     if (link) patch.smart_link = link;
   }
-  const nowLive = live.length > 0 && rel.status !== "published";
-  if (nowLive) patch.status = "published";
-  await db(`releases?id=eq.${rel.id}`, { method: "PATCH", body: patch });
+  // El paso a "published" es condicional: solo lo logra la pasada que lo
+  // encuentra todavía sin publicar (si el panel y la función programada
+  // corren a la vez, la otra no lo vuelve a hacer). El mail al artista va
+  // solo si esta pasada fue la que lo publicó: nunca dos mails.
+  let nowLive = false;
+  if (live.length > 0 && rel.status !== "published") {
+    const up = await db(`releases?id=eq.${rel.id}&status=neq.published`, { method: "PATCH", prefer: "return=representation", body: { ...patch, status: "published" } });
+    nowLive = !!(up.ok && Array.isArray(up.data) && up.data.length);
+    if (!nowLive) await db(`releases?id=eq.${rel.id}`, { method: "PATCH", body: patch });
+  } else {
+    await db(`releases?id=eq.${rel.id}`, { method: "PATCH", body: patch });
+  }
 
   const artist = rel.profiles || {};
   const name = artist.display_name || artist.full_name || "";
