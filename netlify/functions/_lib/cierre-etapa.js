@@ -10,9 +10,11 @@
 //     3. Google Calendar: el evento "Entrega: Mix …" queda tildado con ✓ y las
 //        sesiones de mezcla que todavía no pasaron también (y dejan de ocupar
 //        el horario). No se borra nada.
-//     4. Fecha de entrega del master: el día de la sesión de master si ya hay
-//        una agendada; si no, la regla de 15 días (auto-etapas.js → onMaster);
-//        si tampoco hay regla y la fecha vieja ya pasó, una semana desde hoy.
+//     4. Sesión de master: si ya hay una agendada, la entrega del master es
+//        ese día; si no, se agenda sola en el primer hueco libre (lunes a
+//        viernes desde las 15 h, sin chocar con nada) con su tarea, su evento
+//        y la entrega ese día. Si no se puede agendar, la regla de 15 días
+//        (auto-etapas.js → onMaster) o, si tampoco hay, una semana desde hoy.
 //        Se mueve junto con su evento "Entrega:" (admin-reschedule.js).
 //        Queda anotado el paso a Master en song_stage_log, así la función
 //        programada no lo vuelve a procesar.
@@ -98,13 +100,17 @@ async function masterDate(song, now = new Date()) {
     const r = await rs()._moveDelivery({ songId: song.id, song: song.title, artist, stage: "Master" }, song.delivery, dated[0]);
     return { date: dated[0], from: "sesion", moved: r.notion, calendar: r.calendar };
   }
-  // 2) Regla de 15 días.
+  // 2) No hay sesión de master por delante: se agenda sola (lunes a viernes
+  //    desde las 15 h) y la entrega del master es ese día.
+  const auto = await scheduleSession(song, "master", artist, "el artista aprobó la mezcla", now).catch(() => null);
+  if (auto && auto.scheduled) return { date: auto.date, from: "agendada", moved: true, session: auto };
+  // 3) Si no se pudo agendar: regla de 15 días.
   if (row && row.vocals_at) {
     const r = await et()._onMaster({ ...song, stage: "Master" }, row);
     if (r.actions.some((a) => /^entrega \d/.test(a))) return { date: r.actions.find((a) => /^entrega \d/.test(a)).slice(8), from: "regla", moved: true };
     if (song.delivery && song.delivery >= today) return { date: song.delivery, from: "regla", moved: false };
   }
-  // 3) Sin regla: si la fecha vieja (la de la mezcla) ya pasó, una semana desde hoy.
+  // 4) Sin regla: si la fecha vieja (la de la mezcla) ya pasó, una semana desde hoy.
   if (!song.delivery || song.delivery < today) {
     const target = addDays(today, 7);
     const r = await rs()._moveDelivery({ songId: song.id, song: song.title, artist, stage: "Master" }, song.delivery, target);
@@ -188,17 +194,27 @@ async function reopenStage({ page, kind, now = new Date() }) {
     if (song.delivery !== day) await rs()._moveDelivery({ songId: song.id, song: song.title, artist, stage: stageLabel }, song.delivery, day);
     return { scheduled: false, existing: true, date: day, start: ahead.d.start };
   }
+  return scheduleSession(song, kind, artist, "el artista pidió cambios desde el portal", now);
+}
+
+// Agenda sola una sesión de mezcla o de master en el primer hueco libre del
+// horario automático (lunes a viernes desde las 15 h, ver auto-etapas.js →
+// AUTO): evento en Google Calendar + tarea en Notion + entrega ese día.
+// Sin Google Calendar conectado no agenda nada a medias.
+async function scheduleSession(song, kind, artist, why, now = new Date()) {
+  const stage = kind === "master" ? "Master" : "Mix";
+  const stageLabel = kind === "master" ? "Master" : "Mezcla";
   if (!(await gc.status()).connected) return { scheduled: false, google: false };
   const slot = await et()._firstSlot(now);
   if (!slot || !slot.google) return { scheduled: false, google: !!slot };
   const ev = await gc.createEvent({
     start: { dateTime: slot.start, timeZone: TZ }, end: { dateTime: slot.end, timeZone: TZ },
     summary: `${stage} – ${song.title}${artist ? ` (${artist})` : ""}`, colorId: kind === "master" ? "8" : "7",
-    description: "Agendada sola por el portal: el artista pidió cambios. Si no te sirve, movela desde el Inicio del panel (Reprogramar).",
+    description: `Agendada sola por el portal: ${why}. Si no te sirve, movela desde el Inicio del panel (Reprogramar).`,
     reminders: { useDefault: false, overrides: [{ method: "popup", minutes: 60 }] },
   });
   if (!ev.ok) return { scheduled: false, error: "calendario" };
-  const t = await et()._createTask({ name: `${stage} ${song.title}${artist ? ` ${artist}` : ""}`, etapa: stage, song, start: slot.start, end: slot.end, description: "Agendada sola: el artista pidió cambios desde el portal." });
+  const t = await et()._createTask({ name: `${stage} ${song.title}${artist ? ` ${artist}` : ""}`, etapa: stage, song, start: slot.start, end: slot.end, description: `Agendada sola: ${why}.` });
   if (!t.ok) {
     // Sin tarea en Notion, el evento no queda ocupando el horario como si nada.
     await gc.patchEvent(ev.data.id, { summary: `✗ ${ev.data.summary}`, transparency: "transparent", description: `${ev.data.description}\n\n✗ Notion no dejó crear la tarea: agendala desde el Inicio del panel.` }).catch(() => null);

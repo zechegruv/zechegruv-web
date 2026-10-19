@@ -153,12 +153,13 @@ exports.handler = async (event) => {
   if (!saved.ok) console.error("song_approvals insert:", dbDetail(saved));
   const row = (saved.ok && saved.data && saved.data[0]) || {};
 
+  const fmtWhen = (iso) => new Intl.DateTimeFormat("es-AR", { timeZone: "America/Argentina/Buenos_Aires", weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }).format(new Date(iso));
   // Aprobada: se cierra la etapa en Notion y el calendario antes de avisar,
   // así el mail ya dice cómo quedó todo.
   const closed = action === "aprobada" ? await closeStage({ page: page.data, kind }).catch((e) => ({ notion: false, error: String(e && e.message) })) : null;
   if (closed && !closed.notion) console.error("cierre-etapa:", closed.error || "notion");
   const closedLine = !closed ? "" : closed.notion
-    ? `La canción pasó sola a ${kind === "mezcla" ? "Master" : "Distribución"} en Notion${closed.tasks.length ? ` y quedó completada la tarea ${closed.tasks.map((n) => `«${n}»`).join(", ")}` : ""}.${closed.master && closed.master.date ? ` Entrega del master: ${closed.master.date}.` : ""}${closed.calendar === "error" ? " Ojo: Google Calendar no respondió, revisá el evento." : ""}`
+    ? `La canción pasó sola a ${kind === "mezcla" ? "Master" : "Distribución"} en Notion${closed.tasks.length ? ` y quedó completada la tarea ${closed.tasks.map((n) => `«${n}»`).join(", ")}` : ""}.${closed.master && closed.master.session ? ` Te agendé la sesión de master: ${fmtWhen(closed.master.session.start)} h (Notion y Google Calendar), con la entrega ese día. Si no te sirve, movela desde el Inicio (Reprogramar).` : closed.master && closed.master.date ? ` Entrega del master: ${closed.master.date}.` : ""}${closed.calendar === "error" ? " Ojo: Google Calendar no respondió, revisá el evento." : ""}`
     : "Ojo: Notion no dejó cerrar la etapa. Revisá la canción (Entrega, Etapa actual y su tarea).";
 
   // Cambios: se limpia Canciones → Entrega, así el próximo "Entregado"
@@ -169,7 +170,6 @@ exports.handler = async (event) => {
     await notion(`/pages/${songId}`, { method: "PATCH", body: JSON.stringify({ properties: { Entrega: { select: null } } }) }).catch(() => null);
     reopened = await reopenStage({ page: page.data, kind }).catch((e) => ({ scheduled: false, error: String(e && e.message) }));
   }
-  const fmtWhen = (iso) => new Intl.DateTimeFormat("es-AR", { timeZone: "America/Argentina/Buenos_Aires", weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }).format(new Date(iso));
   const reopenLine = !reopened ? "" : reopened.scheduled
     ? `Te agendé la sesión para corregir${kind === "mezcla" ? " la mezcla" : " el master"}: ${fmtWhen(reopened.start)} h (Notion y Google Calendar), con la entrega ese día. Si no te sirve, movela desde el Inicio (Reprogramar). `
     : reopened.existing ? `Ya tenías una sesión por delante (${fmtWhen(reopened.start)} h): la entrega pasó a ese día. `

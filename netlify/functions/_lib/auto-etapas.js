@@ -106,12 +106,44 @@ async function createTask({ name, etapa, song, start, end, description }) {
   return notion("/pages", { method: "POST", body: JSON.stringify({ parent: { type: "data_source_id", data_source_id: ps().TASKS_DS }, properties: props }) });
 }
 
-// Primer hueco libre de 2 h (Google Calendar + rutina fija).
+// Horario de lo que se agenda solo (mezclas, correcciones de mezcla y de
+// master, master después de aprobar la mezcla): de lunes a viernes, desde
+// las 15 h, sin chocar con nada de Google Calendar ni con las sesiones de
+// Notion. AUTO_SESSIONS_FROM (opcional, en Netlify) = primer día en que se
+// puede agendar solo; por defecto el lunes 26 de octubre de 2026 (esa semana
+// ya estás al día). Pasada esa fecha no cambia nada.
+const AUTO = {
+  fromMin: 15 * 60,
+  weekdays: [1, 2, 3, 4, 5],
+  startDate: (process.env.AUTO_SESSIONS_FROM || "2026-10-26").trim(),
+  days: 21,
+};
+
+// Sesiones de Notion con horario que todavía no pasaron (por si alguna no
+// está en el calendario): también ocupan.
+async function notionBusy(fromDay, toDay) {
+  const q = await notion(`/data_sources/${ps().TASKS_DS}/query`, {
+    method: "POST",
+    body: JSON.stringify({ filter: { and: [
+      { property: "Fecha de Vencimiento", date: { on_or_after: fromDay } },
+      { property: "Fecha de Vencimiento", date: { on_or_before: toDay } },
+      { property: "Estado de Tarea", select: { does_not_equal: "COMPLETADO" } },
+      { property: "Estado de Tarea", select: { does_not_equal: "INACTIVA" } },
+    ] }, page_size: 100 }),
+  }).catch(() => null);
+  return ((q && q.ok && q.data.results) || []).map((t) => t.properties["Fecha de Vencimiento"] && t.properties["Fecha de Vencimiento"].date)
+    .filter((d) => d && d.start && d.end && /T/.test(d.start))
+    .map((d) => ({ start: Date.parse(d.start), end: Date.parse(d.end) }));
+}
+
+// Primer hueco libre de 2 h dentro de ese horario.
 async function firstSlot(now = new Date()) {
   const today = dayAR(now);
   const g = await gc.status().catch(() => ({ connected: false }));
-  const busy = g.connected ? await gc.busy(rs()._at(today, 0), rs()._at(addDays(today, 14), 0)) : null;
-  const days = rs()._freeSlots(busy, SESSION_MIN, now);
+  const until = addDays(today, AUTO.days);
+  const busy = g.connected ? await gc.busy(rs()._at(today, 0), rs()._at(until, 0)) : null;
+  const all = busy ? [...busy, ...(await notionBusy(today, until))] : null;
+  const days = rs()._freeSlots(all, SESSION_MIN, now, AUTO);
   const day = days.find((d) => d.slots.length);
   if (!day) return null;
   const [h, m] = day.slots[0].split(":").map(Number);
@@ -374,4 +406,4 @@ async function ruleLimits() {
   return out;
 }
 
-module.exports = { watchStages, ruleDigest, ruleLimits, _onMix: onMix, _onMaster: onMaster, _onDistribution: onDistribution, _firstSlot: firstSlot, _createTask: createTask, _openTasks: openTasks, _artistName: artistName };
+module.exports = { watchStages, ruleDigest, ruleLimits, _onMix: onMix, _onMaster: onMaster, _onDistribution: onDistribution, _firstSlot: firstSlot, AUTO, _createTask: createTask, _openTasks: openTasks, _artistName: artistName };

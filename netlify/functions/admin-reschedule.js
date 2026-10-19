@@ -38,21 +38,28 @@ const rel = (p, name) => ((p[name] && p[name].relation) || []).map((r) => r.id);
 const fmtDay = (date) => new Intl.DateTimeFormat("es-AR", { timeZone: TZ, weekday: "short", day: "numeric", month: "short" }).format(new Date(`${date}T12:00:00${OFF}`)).replace(",", "").replace(/\./g, "");
 
 // Huecos libres por día, de a 30 minutos, donde entra la duración pedida.
-function freeSlots(busyList, dur, now = new Date()) {
+// opts (para lo que se agenda solo, ver auto-etapas.js → AUTO):
+//   fromMin  desde qué hora (minutos del día), p. ej. 15 h = 900
+//   weekdays qué días (0 = domingo), p. ej. [1, 2, 3, 4, 5]
+//   startDate no antes de este día (AAAA-MM-DD)
+//   days     cuántos días mirar
+function freeSlots(busyList, dur, now = new Date(), opts = {}) {
   const today = dayAR(now);
   const nowMin = (() => { const p = new Intl.DateTimeFormat("en-GB", { timeZone: TZ, hour: "2-digit", minute: "2-digit", hour12: false }).format(now).split(":"); return +p[0] * 60 + +p[1]; })();
   const out = [];
-  for (let i = 0; i < DAYS; i++) {
+  for (let i = 0; i < (opts.days || DAYS); i++) {
     const date = addDays(today, i);
     const wd = weekday(date);
     if (wd === 0) continue; // domingo libre
+    if (opts.weekdays && !opts.weekdays.includes(wd)) continue;
+    if (opts.startDate && date < opts.startDate) continue;
     const dayStartMs = Date.parse(at(date, 0));
     const blocks = [...FIXED(wd)];
     for (const b of busyList || []) {
       const s = Math.round((b.start - dayStartMs) / 60000), e = Math.round((b.end - dayStartMs) / 60000);
       if (e > 0 && s < 24 * 60) blocks.push([Math.max(0, s), Math.min(24 * 60, e)]);
     }
-    let from = DAY_START;
+    let from = Math.max(DAY_START, opts.fromMin || 0);
     if (i === 0) from = Math.max(from, Math.ceil((nowMin + 15) / STEP) * STEP);
     const clash = (s, e) => blocks.some(([bs, be]) => s < be && e > bs);
     const slots = [];
@@ -159,6 +166,18 @@ exports.handler = async (event) => {
   return json(200, { ok: true, calendar: r.calendar, delivery: fmtDay(date), created: r.created, label: `${fmtDay(date)} · ${time} h` });
 };
 
+// Reprogramada cuando ya estaba vencida: se guarda la fecha original
+// (029_reprogramadas.sql) para que el Inicio diga "Atrasada · era el …".
+// Si la tabla todavía no existe, se reprograma igual.
+async function rememberLate({ taskId, songId, stage, original, current }) {
+  if (!original || Date.parse(original) >= Date.now()) return false;
+  const { db } = require("./_lib/pass");
+  const ins = await db("task_reschedules?on_conflict=task_id", { method: "POST", prefer: "resolution=ignore-duplicates,return=minimal", body: { task_id: taskId, song_id: songId || null, stage, original_due: original, current_due: current } });
+  if (!ins.ok) return false;
+  await db(`task_reschedules?task_id=eq.${encodeURIComponent(taskId)}`, { method: "PATCH", body: { current_due: current, moved_at: new Date().toISOString() } });
+  return true;
+}
+
 // La sesión abierta de esa canción y etapa (la más próxima), o null.
 async function openSession(songId, stage) {
   const etapa = stage === "Master" ? "Master" : "Mix";
@@ -223,11 +242,16 @@ async function moveAll(t, { date, time, startISO, endISO }) {
     if (!r.ok) return fail("Google Calendar no dejó crear la sesión. Se dejó todo como estaba.");
     calendar = "creado";
   }
+  // Si ya estaba vencida, queda anotado desde cuándo (para el cartel "Atrasada").
+  const wasDue = (task.date && task.date.start) || (created && oldDelivery && oldDelivery.start) || null;
+  const original = wasDue && !/T/.test(wasDue) ? `${wasDue}T23:59:00${OFF}` : wasDue;
+  await rememberLate({ taskId: task.id, songId: t.songId, stage: t.stage, original, current: startISO }).catch(() => null);
   return { ok: true, calendar, created };
 }
 
 exports._freeSlots = freeSlots;
 exports._loadTask = loadTask;
+exports._rememberLate = rememberLate;
 exports._findEvent = findEvent;
 exports._moveDelivery = moveDelivery;
 exports._at = at;

@@ -104,26 +104,12 @@ async function closeTasks(song, kind, clientId, uploadedAt) {
   return picked.filter((t, i) => done[i].ok).map((t) => plain(t.properties.Nombre && t.properties.Nombre.title));
 }
 
-// Tilda con ✓ el evento "Entrega:" de la canción en Google Calendar.
-async function tickCalendar(song, kind, deliveryDate) {
-  try {
-    if (!(await gc.status()).connected) return "sin-google";
-    const ref = deliveryDate || dayAR(new Date());
-    const list = await gc.events(`${addDays(ref, -10)}T00:00:00-03:00`, `${addDays(ref, 30)}T00:00:00-03:00`);
-    if (!list) return "error";
-    const key = norm(song.title);
-    const isStage = kind === "master" ? /master/i : /\b(mix|mezcla)/i;
-    const ev = list.find((e) => e.start && e.start.date && /^entrega/i.test(e.summary || "") && isStage.test(e.summary || "") && norm(e.summary).includes(key));
-    if (!ev) return "sin-evento";
-    const r = await gc.patchEvent(ev.id, {
-      summary: `✓ ${ev.summary}`,
-      description: `${ev.description ? `${ev.description}\n\n` : ""}✓ ${LABEL[kind].entregada} (se marcó solo al subir el audio a la carpeta).`,
-    });
-    return r.ok ? "tildado" : "error";
-  } catch (e) {
-    return "error";
-  }
-}
+// Calendario: el evento "Entrega:" de la canción y las sesiones de esa etapa
+// que todavía no pasaron quedan tildados con ✓ (las sesiones además liberan el
+// horario). La sesión que sigue (master o corrección) se agenda sola recién
+// cuando el artista responde (cierre-etapa.js). No se borra nada.
+const tickCalendar = (song, kind, deliveryDate, file) =>
+  require("./cierre-etapa").tickCalendar(song, kind, deliveryDate, new Date(), `${LABEL[kind].entregada} (se marcó solo al subir «${file.name}» a la carpeta)`);
 
 async function deliver({ profileId, clientId, song, kind, file, deliveryDate }) {
   const props = { Entrega: { select: { name: LABEL[kind].entregada } } };
@@ -138,7 +124,7 @@ async function deliver({ profileId, clientId, song, kind, file, deliveryDate }) 
       note: `Entregado solo al subir «${file.name}» a la carpeta.`.slice(0, 1000),
     } }),
     closeTasks(song, kind, clientId, uploadedAt),
-    tickCalendar(song, kind, deliveryDate),
+    tickCalendar(song, kind, deliveryDate, file),
   ]);
   if (!saved.ok) console.error("auto-entregas song_approvals:", saved.status);
   return { song: song.title, kind, file: file.name, tasks, calendar, saved: saved.ok };
