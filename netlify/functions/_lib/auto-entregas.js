@@ -33,8 +33,6 @@ const gc = require("./gcal");
 // portal-songs.js también usa este archivo: se pide recién al usarlo.
 const ps = () => require("../portal-songs");
 
-const NOTION_API = "https://api.notion.com/v1";
-const NOTION_VERSION = "2025-09-03";
 const TZ = "America/Argentina/Buenos_Aires";
 const notionToken = () => (process.env.NOTION_TOKEN || "").replace(/[\s"'“”‘’]/g, "");
 const plain = (rich) => (rich || []).map((t) => t.plain_text || "").join("").trim();
@@ -49,13 +47,8 @@ const LABEL = {
   master: { entregada: "Master entregado", aprobada: "Master aprobado", stage: "Master", short: "Master" },
 };
 
-async function notion(path, init = {}) {
-  const res = await fetch(`${NOTION_API}${path}`, {
-    ...init,
-    headers: { Authorization: `Bearer ${notionToken()}`, "Notion-Version": NOTION_VERSION, "Content-Type": "application/json" },
-  });
-  return { ok: res.ok, status: res.status, data: await res.json().catch(() => null) };
-}
+// Con reintentos ante 429/502/503 y pocos pedidos a la vez (_lib/notion.js).
+const notion = (path, init) => require("./notion").notion(path, init);
 
 // ¿Esta tarea es la sesión de mezcla (o de master)? Por la columna Etapa o,
 // si está vacía, por cómo empieza el nombre ("Mix Seu amor", "Master ...").

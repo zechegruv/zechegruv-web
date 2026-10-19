@@ -34,8 +34,6 @@ const rs = () => require("../admin-reschedule");
 const ce = () => require("./cierre-etapa");
 const ae = () => require("./auto-entregas");
 
-const NOTION_API = "https://api.notion.com/v1";
-const NOTION_VERSION = "2025-09-03";
 const TZ = "America/Argentina/Buenos_Aires";
 const ORDER = ["Estructura", "Prod", "Rec", "Mix", "Master", "Distribución", "Publicada"];
 const MIX_DAYS = 7, RULE_DAYS = 15, SESSION_MIN = 120;
@@ -48,13 +46,8 @@ const addDays = (date, n) => new Date(Date.parse(`${date}T12:00:00Z`) + n * 8640
 const daysBetween = (a, b) => Math.round((Date.parse(`${b}T12:00:00Z`) - Date.parse(`${a}T12:00:00Z`)) / 86400000);
 const fmtDay = (date) => new Intl.DateTimeFormat("es-AR", { timeZone: TZ, weekday: "long", day: "numeric", month: "long" }).format(new Date(`${date}T12:00:00-03:00`)).replace(",", "");
 
-async function notion(path, init = {}) {
-  const res = await fetch(`${NOTION_API}${path}`, {
-    ...init,
-    headers: { Authorization: `Bearer ${notionToken()}`, "Notion-Version": NOTION_VERSION, "Content-Type": "application/json" },
-  });
-  return { ok: res.ok, status: res.status, data: await res.json().catch(() => null) };
-}
+// Con reintentos ante 429/502/503 y pocos pedidos a la vez (_lib/notion.js).
+const notion = (path, init) => require("./notion").notion(path, init);
 
 function songInfo(page) {
   const p = page.properties || {};

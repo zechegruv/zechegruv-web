@@ -17,8 +17,6 @@ const { json, db, serviceKey } = require("./_lib/pass");
 
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://zdstltihskdcartkmgii.supabase.co";
 const PUBLISHABLE_KEY = "sb_publishable_9M2gY0XZr7xIrV-1s9AiUA_XA1uNm0V";
-const NOTION_API = "https://api.notion.com/v1";
-const NOTION_VERSION = "2025-09-03";
 const KEEP_FINAL_DAYS = 7;
 const MAX = 15;
 const STAGE_OF = { mezcla: "Mix", master: "Master" };
@@ -26,10 +24,13 @@ const MANUAL = { "Mezcla entregada": ["mezcla", "entregada"], "Mezcla aprobada":
 const notionToken = () => (process.env.NOTION_TOKEN || "").replace(/[\s"'“”‘’]/g, "");
 const time = (iso) => Date.parse(iso || "") || 0;
 
+// La ficha de la canción (con reintentos ante 429/502/503, _lib/notion.js).
+// { page } si se leyó; { page: null, failed: true } si Notion no respondió.
 async function notionPage(id) {
-  if (!notionToken()) return null;
-  const res = await fetch(`${NOTION_API}/pages/${id}`, { headers: { Authorization: `Bearer ${notionToken()}`, "Notion-Version": NOTION_VERSION } }).catch(() => null);
-  return res && res.ok ? res.json() : null;
+  if (!notionToken()) return { page: null };
+  const r = await require("./_lib/notion").notion(`/pages/${id}`).catch(() => ({ ok: false, status: 0 }));
+  if (r.ok) return { page: r.data };
+  return { page: null, failed: r.status !== 404 };
 }
 
 // ¿Sigue valiendo este aviso? (la canción no avanzó ni se marcó otra cosa después)
@@ -108,7 +109,12 @@ exports.handler = async (event) => {
     if ((r.source || "artist") === "artist") latest.push(r);
     if (latest.length >= MAX) break;
   }
-  const pages = await Promise.all(latest.map((r) => notionPage(r.song_id)));
+  const reads = await Promise.all(latest.map((r) => notionPage(r.song_id)));
+  const pages = reads.map((x) => x.page);
+  // Si Notion no dejó leer alguna canción, la lista puede traer avisos que
+  // ya no valen: "partial" le dice al Inicio que deje lo que ya mostraba
+  // (admin-avisos.js) y lo resuelva en la próxima actualización.
+  const partial = reads.some((x) => x.failed);
   const reviews = latest.filter((r, i) => stillValid(r, pages[i])).map((r) => ({
     profile_id: r.profile_id,
     artist: r.profiles ? (r.profiles.display_name || r.profiles.full_name || "") : "",
@@ -125,7 +131,7 @@ exports.handler = async (event) => {
     note: r.note || null,
     at: r.created_at,
   }));
-  return json(200, { reviews });
+  return json(200, { reviews, ...(partial ? { partial: true } : {}) });
 };
 
 exports._stillValid = stillValid;

@@ -34,26 +34,18 @@ const ae = () => require("./auto-entregas");
 const et = () => require("./auto-etapas");
 const rs = () => require("../admin-reschedule");
 
-const NOTION_API = "https://api.notion.com/v1";
-const NOTION_VERSION = "2025-09-03";
 const TZ = "America/Argentina/Buenos_Aires";
 const OFF = "-03:00";
 const LABEL = { mezcla: "Mezcla aprobada", master: "Master aprobado" };
 const STAGE = { mezcla: "Mix", master: "Master" };
 const NEXT = { mezcla: "Master", master: "Distribución" };
-const notionToken = () => (process.env.NOTION_TOKEN || "").replace(/[\s"'“”‘’]/g, "");
 const plain = (rich) => (rich || []).map((t) => t.plain_text || "").join("").trim();
 const dayAR = (d) => new Intl.DateTimeFormat("en-CA", { timeZone: TZ }).format(d);
 const addDays = (date, n) => new Date(Date.parse(`${date}T12:00:00Z`) + n * 86400000).toISOString().slice(0, 10);
 const dayOf = (start) => (/T/.test(start) ? dayAR(new Date(start)) : String(start).slice(0, 10));
 
-async function notion(path, init = {}) {
-  const res = await fetch(`${NOTION_API}${path}`, {
-    ...init,
-    headers: { Authorization: `Bearer ${notionToken()}`, "Notion-Version": NOTION_VERSION, "Content-Type": "application/json" },
-  });
-  return { ok: res.ok, status: res.status, data: await res.json().catch(() => null) };
-}
+// Con reintentos ante 429/502/503 y pocos pedidos a la vez (_lib/notion.js).
+const notion = (path, init) => require("./notion").notion(path, init);
 
 // Calendario: tilda con ✓ la entrega y las sesiones por venir de esa etapa.
 // why: el motivo que queda escrito en el evento.

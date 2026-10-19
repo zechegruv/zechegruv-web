@@ -443,6 +443,9 @@
       }).catch(() => { if (first) tasksBox.replaceChildren(el("p", "zh-sub", "No pudimos leer tus tareas de Notion.")); });
       call("/.netlify/functions/portal-reviews").then((d) => {
         const list = d.reviews || [];
+        // Notion no respondió del todo: se deja lo que ya se veía (si no,
+        // podrían reaparecer avisos viejos) y se reintenta en 2 minutos.
+        if (d.partial && !first) return;
         if (first || JSON.stringify(list) !== JSON.stringify(noticesCache)) paintNotices(list, nBody, nHead);
       }).catch(() => { if (first) nBody.replaceChildren(el("p", "zh-sub", "No pudimos cargar los avisos.")); });
     };
@@ -463,7 +466,7 @@
     if (document.hidden || !tasksBox || !tasksBox.isConnected || document.getElementById("panel-home").hidden) return;
     // Volviste a la pestaña: se refresca en silencio.
     Promise.allSettled([call("/.netlify/functions/portal-reviews"), call("/.netlify/functions/admin-tasks")]).then(([n, t]) => {
-      if (n.status === "fulfilled") { const box = document.querySelector(".zn-body"), head = document.querySelector(".zn-box .zh-pill"); if (box && JSON.stringify(n.value.reviews) !== JSON.stringify(noticesCache)) paintNotices(n.value.reviews || [], box, head); }
+      if (n.status === "fulfilled" && !n.value.partial) { const box = document.querySelector(".zn-body"), head = document.querySelector(".zn-box .zh-pill"); if (box && JSON.stringify(n.value.reviews) !== JSON.stringify(noticesCache)) paintNotices(n.value.reviews || [], box, head); }
       if (t.status === "fulfilled" && t.value.connected && JSON.stringify(t.value.tasks) !== JSON.stringify(tasksCache)) paintTasks(t.value.tasks || [], tasksBox);
     });
   });

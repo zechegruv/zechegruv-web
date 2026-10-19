@@ -24,8 +24,6 @@ const { closeStage, deliverStage, nextSong } = require("./_lib/cierre-etapa");
 
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://zdstltihskdcartkmgii.supabase.co";
 const PUBLISHABLE_KEY = "sb_publishable_9M2gY0XZr7xIrV-1s9AiUA_XA1uNm0V";
-const NOTION_API = "https://api.notion.com/v1";
-const NOTION_VERSION = "2025-09-03";
 const STAGE_OF = { mezcla: "Mix", master: "Master" };
 const LABEL = {
   mezcla: { entregada: "Mezcla entregada", aprobada: "Mezcla aprobada" },
@@ -34,13 +32,8 @@ const LABEL = {
 const notionToken = () => (process.env.NOTION_TOKEN || "").replace(/[\s"'“”‘’]/g, "");
 const plain = (rich) => (rich || []).map((t) => t.plain_text || "").join("").trim();
 
-async function notion(path, init = {}) {
-  const res = await fetch(`${NOTION_API}${path}`, {
-    ...init,
-    headers: { Authorization: `Bearer ${notionToken()}`, "Notion-Version": NOTION_VERSION, "Content-Type": "application/json" },
-  });
-  return { ok: res.ok, status: res.status, data: await res.json().catch(() => null) };
-}
+// Con reintentos ante 429/502/503 y pocos pedidos a la vez (_lib/notion.js).
+const notion = (path, init) => require("./_lib/notion").notion(path, init);
 
 exports.handler = async (event) => {
   if (event.httpMethod !== "POST") return json(405, { error: "Método no permitido." });

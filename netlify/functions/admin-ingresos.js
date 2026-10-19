@@ -39,32 +39,20 @@ function monthRange(now = new Date()) {
   return { start: `${y}-${pad(m)}-01`, end: `${next[0]}-${pad(next[1])}-01`, name };
 }
 
+// Todas las filas del mes (con reintentos ante 429/502/503, _lib/notion.js).
 async function queryMonth(token, range) {
-  const rows = [];
-  let cursor;
-  do {
-    const res = await fetch(`https://api.notion.com/v1/data_sources/${DATA_SOURCE}/query`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}`, "Notion-Version": "2025-09-03", "Content-Type": "application/json" },
-      body: JSON.stringify({
-        page_size: 100,
-        start_cursor: cursor,
-        filter: { and: [
-          { property: "Fecha", date: { on_or_after: range.start } },
-          { property: "Fecha", date: { before: range.end } },
-        ] },
-      }),
-    });
-    if (!res.ok) {
-      const err = new Error(res.status === 404 || res.status === 403 ? "not_shared" : "notion_error");
-      err.status = res.status;
-      throw err;
-    }
-    const out = await res.json();
-    rows.push(...out.results);
-    cursor = out.has_more ? out.next_cursor : undefined;
-  } while (cursor);
-  return rows;
+  const r = await require("./_lib/notion").queryAll(DATA_SOURCE, {
+    filter: { and: [
+      { property: "Fecha", date: { on_or_after: range.start } },
+      { property: "Fecha", date: { before: range.end } },
+    ] },
+  }, { max: 5000 });
+  if (!r.ok) {
+    const err = new Error(r.status === 404 || r.status === 403 ? "not_shared" : "notion_error");
+    err.status = r.status;
+    throw err;
+  }
+  return r.results;
 }
 
 exports.handler = async (event) => {

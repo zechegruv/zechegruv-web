@@ -23,8 +23,6 @@ const { TASKS_DS, SONGS_DS } = require("./portal-songs");
 
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://zdstltihskdcartkmgii.supabase.co";
 const PUBLISHABLE_KEY = "sb_publishable_9M2gY0XZr7xIrV-1s9AiUA_XA1uNm0V";
-const NOTION_API = "https://api.notion.com/v1";
-const NOTION_VERSION = "2025-09-03";
 const TZ = "America/Argentina/Buenos_Aires";
 const AHEAD_DAYS = 21;
 const MAX = 20;
@@ -34,13 +32,8 @@ const notionToken = () => (process.env.NOTION_TOKEN || "").replace(/[\s"'“”�
 const plain = (rich) => (rich || []).map((t) => t.plain_text || "").join("").trim();
 const STAGE = { Estructura: "Estructura", Prod: "Producción", Rec: "Grabación", Mix: "Mezcla", Master: "Master", "Distribución": "Distribución" };
 
-async function notion(path, init = {}) {
-  const res = await fetch(`${NOTION_API}${path}`, {
-    ...init,
-    headers: { Authorization: `Bearer ${notionToken()}`, "Notion-Version": NOTION_VERSION, "Content-Type": "application/json" },
-  });
-  return { ok: res.ok, status: res.status, data: await res.json().catch(() => null) };
-}
+// Con reintentos ante 429/502/503 y pocos pedidos a la vez (_lib/notion.js).
+const notion = (path, init) => require("./_lib/notion").notion(path, init);
 
 async function isAdmin(event) {
   const auth = (event.headers && (event.headers.authorization || event.headers.Authorization)) || "";
@@ -202,8 +195,12 @@ exports.handler = async (event) => {
   const allSongs = Object.values(songPages).map((sp) => sp.id);
   const appr = allSongs.length ? await db(`song_approvals?song_id=in.(${allSongs.join(",")})&select=song_id,kind,action,created_at&order=created_at.desc&limit=500`) : { ok: false };
   const lastOf = (songId, stage) => ((appr.ok && appr.data) || []).find((r) => key(r.song_id) === key(songId) && r.kind === KIND[stage]) || null;
+  // Canciones vinculadas que Notion no dejó leer (ni con reintentos): de esas
+  // no se sabe si ya se entregó, así que no se deciden (ver "desconocida").
+  const unread = new Set(missing.filter((id, i) => !fetched[i].ok).map(key));
   function stateOf(songId, stage) {
     const sp = songPages[key(songId)];
+    if (!sp && unread.has(key(songId))) return "desconocida";
     if (!sp) return "abierta"; // sin canción vinculada: como siempre
     const p = sp.properties || {};
     const etapa = p["Etapa actual"] && p["Etapa actual"].select && p["Etapa actual"].select.name;
@@ -217,12 +214,16 @@ exports.handler = async (event) => {
     return "abierta";
   }
   const waiting = (t) => ({ ...t, urgency: "espera", waiting: true });
+  // No se pudo leer la canción: se muestra, pero sin cartel de "Vencida"
+  // (podría estar entregada esperando al artista). En la próxima
+  // actualización, con Notion respondiendo, vuelve a su estado real.
+  const unknown = (t) => ({ ...t, urgency: t.urgency === "vencida" ? "normal" : t.urgency, unknown: true });
 
   // Sesiones: las de canciones ya aprobadas no se muestran; las entregadas, en espera.
   const liveSessions = sessions
     .map((x) => ({ x, st: x.songId ? stateOf(x.songId, x.stage) : "abierta" }))
     .filter(({ st }) => st !== "cerrada")
-    .map(({ x, st }) => (st === "espera" ? waiting(x) : x));
+    .map(({ x, st }) => (st === "espera" ? waiting(x) : st === "desconocida" ? unknown(x) : x));
 
   // ---------- Reprogramadas: el día nuevo, avisando que vas atrasado ----------
   // 1) Si una sesión vencida en Notion ya tiene su evento movido a otro día en
