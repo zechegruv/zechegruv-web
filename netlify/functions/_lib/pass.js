@@ -107,7 +107,11 @@ async function refund(paymentId, orderId, reason) {
 async function settlePayment(paymentId, base) {
   if (!/^\d+$/.test(String(paymentId || ""))) return { result: "ignored" };
   const pay = await mp(`/v1/payments/${paymentId}`);
-  if (!pay.ok || !pay.data) return { result: "payment_not_found" };
+  // Solo un 404 de verdad es "ese pago no existe". Si Mercado Pago no
+  // respondió bien (caído, demora, demasiados pedidos), se corta con error:
+  // el aviso responde 500 y Mercado Pago lo vuelve a mandar más tarde.
+  if (pay.status === 404) return { result: "payment_not_found" };
+  if (!pay.ok || !pay.data) throw new Error(`Mercado Pago no respondió la consulta del pago (${pay.status}).`);
   const p = pay.data;
   const orderId = String(p.external_reference || "");
   if (!UUID.test(orderId)) return { result: "ignored" };
