@@ -123,10 +123,11 @@ async function moveDelivery(t, oldDate, newDate) {
     else if (ev) { const r = await gc.patchEvent(ev.id, { ...body, description: note(ev.description, `↻ Movida desde el portal (antes: ${fmtDay(ev.start.date)}).`) }); cal = r.ok ? "movido" : "error"; if (r.ok) cal = { state: "movido", id: ev.id, old: { start: ev.start, end: ev.end } }; }
     else {
       const r = await gc.createEvent({ ...body, summary: `Entrega: ${t.stage === "Master" ? "Master" : "Mix"} ${t.song}${t.artist ? ` ${t.artist}` : ""}`, colorId: "11", transparency: "transparent", extendedProperties: gc.tag({ songId: t.songId, stage: t.stage, kind: "entrega" }), description: "Agendada desde el portal de ZECHE GRUV." });
-      cal = r.ok ? "creado" : "error";
+      cal = r.ok ? { state: "creado", id: r.data && r.data.id, created: true } : "error";
     }
   }
-  // Para quien llama: "movido" / "creado" / "error" / "sin-google" (el detalle, para deshacer).
+  // Para quien llama: "movido" / "creado" / "error" / "sin-google" (el
+  // detalle, para deshacer: el evento movido vuelve a su día; el creado se borra).
   const undo = cal && typeof cal === "object" ? cal : null;
   return { notion: n.ok, calendar: undo ? undo.state : cal, undo };
 }
@@ -190,11 +191,28 @@ async function openSession(songId, stage) {
   return list.sort((a, b) => when(a) - when(b))[0] || null;
 }
 
-// Mueve tarea + entrega + calendario. Si algo falla, lo ya movido vuelve atrás.
+// Mueve tarea + entrega + calendario. Si algo falla, lo ya hecho vuelve
+// atrás: lo movido vuelve a su fecha y lo creado en este mismo pedido se
+// saca (la tarea nueva se archiva en Notion, el evento nuevo se borra). Si
+// algún paso de deshacer también falla, el mensaje lo dice con claridad (y
+// qué revisar), nunca "Se dejó todo como estaba".
 async function moveAll(t, { date, time, startISO, endISO }) {
-  const done = []; // pasos para deshacer, en orden
-  const undo = async () => { for (const f of done.reverse()) await f().catch(() => null); };
-  const fail = async (error) => { await undo(); return { ok: false, error }; };
+  const done = []; // [qué es, cómo deshacerlo], en orden
+  const undo = async () => {
+    const left = [];
+    for (const [what, f] of done.reverse()) {
+      const r = await f().catch(() => null);
+      if (!r || !r.ok) left.push(what);
+    }
+    return left;
+  };
+  // what: qué falló (una frase). Se agrega cómo quedó todo.
+  const fail = async (what) => {
+    const left = await undo();
+    if (!left.length) return { ok: false, error: `${what} Se dejó todo como estaba.` };
+    return { ok: false, error: `${what} Ojo: no se pudo deshacer ${left.join(", ")}. Revisalo a mano en Notion y en Google Calendar.` };
+  };
+  const archive = (id) => notion(`/pages/${id}`, { method: "PATCH", body: JSON.stringify({ archived: true }) });
 
   // Canción: hace falta su ficha (fecha de entrega vieja y artista).
   const songPage = t.songPage || (t.songId ? (await notion(`/pages/${t.songId}`)).data : null);
@@ -211,24 +229,26 @@ async function moveAll(t, { date, time, startISO, endISO }) {
   let created = false;
   if (task) {
     const n = await notion(`/pages/${task.id}`, { method: "PATCH", body: JSON.stringify({ properties: { "Fecha de Vencimiento": { date: { start: startISO, end: endISO } } } }) });
-    if (!n.ok) return fail("Notion no dejó mover la tarea. No se cambió nada.");
+    if (!n.ok) return { ok: false, error: "Notion no dejó mover la tarea. No se cambió nada." };
     const prev = task.date && task.date.start ? { start: task.date.start, ...(task.date.end ? { end: task.date.end } : {}) } : null;
-    done.push(() => notion(`/pages/${task.id}`, { method: "PATCH", body: JSON.stringify({ properties: { "Fecha de Vencimiento": { date: prev } } }) }));
+    done.push(["la fecha de la sesión en Notion", () => notion(`/pages/${task.id}`, { method: "PATCH", body: JSON.stringify({ properties: { "Fecha de Vencimiento": { date: prev } } }) })]);
   } else {
     const clientId = rel(sp, "Artista")[0] || null;
     const c = await et()._createTask({ name: `${t.stage === "Master" ? "Master" : "Mix"} ${t.song}${t.artist ? ` ${t.artist}` : ""}`, etapa: t.stage === "Master" ? "Master" : "Mix", song: { id: t.songId, clientId }, start: startISO, end: endISO, description: "Agendada desde el portal al reprogramar la entrega." });
-    if (!c.ok) return fail("Notion no dejó crear la sesión. No se cambió nada.");
+    if (!c.ok) return { ok: false, error: "Notion no dejó crear la sesión. No se cambió nada." };
     created = true;
     task = { id: c.data.id, date: null };
+    done.push(["la sesión nueva en Notion (Tareas Pendientes)", () => archive(task.id)]);
   }
 
   // 2) Fecha de entrega de la canción = el día de la sesión (Notion + su evento "Entrega:").
   const oldDay = oldDelivery && oldDelivery.start ? oldDelivery.start.slice(0, 10) : null;
   const d = await moveDelivery({ ...t, kind: "entrega" }, oldDay, date);
-  if (!d.notion) return fail("Notion no dejó mover la fecha de entrega. Se dejó todo como estaba.");
-  done.push(() => notion(`/pages/${t.songId}`, { method: "PATCH", body: JSON.stringify({ properties: { "Fecha de entrega": { date: oldDelivery ? { start: oldDelivery.start } : null } } }) }));
-  if (d.undo) done.push(() => gc.patchEvent(d.undo.id, { start: d.undo.old.start, end: d.undo.old.end }));
-  if (d.calendar === "error") return fail("Google Calendar no dejó mover la entrega. Se dejó todo como estaba.");
+  if (!d.notion) return fail("Notion no dejó mover la fecha de entrega.");
+  done.push(["la fecha de entrega en Notion", () => notion(`/pages/${t.songId}`, { method: "PATCH", body: JSON.stringify({ properties: { "Fecha de entrega": { date: oldDelivery ? { start: oldDelivery.start } : null } } }) })]);
+  if (d.undo && d.undo.created) done.push(["el evento «Entrega:» nuevo en Google Calendar", () => gc.deleteEvent(d.undo.id)]);
+  else if (d.undo) done.push(["el evento «Entrega:» en Google Calendar", () => gc.patchEvent(d.undo.id, { start: d.undo.old.start, end: d.undo.old.end })]);
+  if (d.calendar === "error") return fail("Google Calendar no dejó mover la entrega.");
 
   // 3) El evento de la sesión en Google Calendar (si no existe, se crea).
   const old = task.date && task.date.start;
@@ -239,11 +259,11 @@ async function moveAll(t, { date, time, startISO, endISO }) {
   if (ev) {
     const before = new Intl.DateTimeFormat("es-AR", { timeZone: TZ, weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }).format(new Date(ev.start.dateTime));
     const r = await gc.patchEvent(ev.id, { ...when, description: note(ev.description, `↻ Reprogramada desde el portal (antes: ${before}).`) });
-    if (!r.ok) return fail("Google Calendar no dejó mover la sesión. Se dejó todo como estaba.");
+    if (!r.ok) return fail("Google Calendar no dejó mover la sesión.");
     calendar = "movido";
   } else {
     const r = await gc.createEvent({ ...when, summary: `${t.stage === "Master" ? "Master" : "Mix"} – ${t.song || t.name}${t.artist ? ` (${t.artist})` : ""}`, colorId: t.stage === "Master" ? "8" : "7", extendedProperties: gc.tag({ songId: t.songId, stage: t.stage, kind: "sesion" }), description: "Agendada desde el portal de ZECHE GRUV." });
-    if (!r.ok) return fail("Google Calendar no dejó crear la sesión. Se dejó todo como estaba.");
+    if (!r.ok) return fail("Google Calendar no dejó crear la sesión.");
     calendar = "creado";
   }
   // Si ya estaba vencida, queda anotado desde cuándo (para el cartel "Atrasada").
