@@ -20,11 +20,10 @@ function deliveryMail({ name, song, kind, again, notes }) {
   const master = kind === "master";
   const hi = name ? `${esc(name)}, ` : "";
   const s = `«${esc(song)}»`;
-  const notesTxt = notes ? (notes === 1 ? "la nota que dejaste" : `las ${notes} notas que dejaste`) : "los cambios que pediste";
   const c = master
     ? again
       ? { subject: `Ya están tus cambios en el master de «${song}»`, eyebrow: "Master · versión nueva",
-          title: `${hi}trabajamos ${notesTxt} en el master de ${s}`,
+          title: `${hi ? `${hi}ya` : "Ya"} están hechas las modificaciones que pediste en el master de ${s}`,
           body: "Escuchalo de nuevo en los lugares donde escuchás música todos los días: auriculares, el celu, el auto. Fijate si ahora suena como la tenías en la cabeza.",
           next: "Si está, aprobalo y tu canción queda terminada. Si todavía falta algo, marcá el segundo exacto (podés dejar una nota de voz) y lo ajustamos.",
           cta: "Escuchar el master" }
@@ -35,8 +34,8 @@ function deliveryMail({ name, song, kind, again, notes }) {
           cta: "Escuchar el master" }
     : again
       ? { subject: `Ya están tus cambios en «${song}»`, eyebrow: "Mezcla · versión nueva",
-          title: `${hi ? `${hi}${notesTxt}` : notesTxt.charAt(0).toUpperCase() + notesTxt.slice(1)} ya ${notes > 1 || !notes ? "están" : "está"} en la mezcla de ${s}`,
-          body: `Terminé las modificaciones que me pediste en «${song}». Ya podés escuchar la versión nueva en el portal.`,
+          title: `${hi ? `${hi}ya` : "Ya"} están hechas las modificaciones que pediste en ${s}`,
+          body: "Ya podés escuchar la versión nueva en el portal.",
           next: "Decime si querés cambiar algo más o si pasamos al master: si está bien, aprobala; si falta algo, marcá el segundo exacto (podés dejar una nota de voz) y lo ajustamos.",
           cta: "Escuchar la mezcla" }
       : { subject: `Tu mezcla de «${song}» está lista para escuchar`, eyebrow: "Mezcla lista",
