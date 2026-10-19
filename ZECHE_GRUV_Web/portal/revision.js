@@ -675,7 +675,7 @@
         ? `<img class="rv-done-sun" src="../assets/zeche-gruv-sol.webp" alt="" aria-hidden="true"><span class="rv-done-ico">${ICON.check}</span><h3>¡${NOUN[cur.kind]} aprobad${cur.kind === "mezcla" ? "a" : "o"}!</h3><p>${cur.kind === "mezcla" ? "Seguimos con el master. Te avisamos apenas esté para escucharlo." : "Tu canción está terminada. Ahora, a prepararla para que salga."}</p><button class="btn btn-primary" type="button" data-rv="close">Listo</button>`
         : `<img class="rv-done-sun" src="../assets/zeche-gruv-sol.webp" alt="" aria-hidden="true"><span class="rv-done-ico">${ICON.check}</span><h3>Zeche ya tiene tus notas</h3><p>${n ? `${n === 1 ? "Le llegó tu nota" : `Le llegaron tus ${n} notas`}, cada una en su momento exacto.` : "Le llegó tu pedido."} Cuando suba la versión nueva, te aparece acá para escuchar${cur.kind === "mezcla" ? "la" : "lo"}.</p><button class="btn btn-primary" type="button" data-rv="close">Listo</button>`;
       $("rvDone").hidden = false;
-      if (cur.onSent) cur.onSent(data.review);
+      if (cur.onSent) cur.onSent(data.review, data);
     } catch (err) {
       buttons.forEach((b) => { b.disabled = false; });
       P.setMsg(msg, err.message, true);

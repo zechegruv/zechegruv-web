@@ -266,4 +266,4 @@ async function syncAll({ remind = false } = {}) {
   return { ok: true, artists: artists.length, delivered, errors, reminders };
 }
 
-module.exports = { syncArtist, syncAll, _taskKind: taskKind, _remindArtist: remindArtist, _remindMail: remindMail };
+module.exports = { syncArtist, syncAll, _taskKind: taskKind, _closeTasks: closeTasks, _remindArtist: remindArtist, _remindMail: remindMail };

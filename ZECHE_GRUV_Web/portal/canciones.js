@@ -102,6 +102,9 @@
       </div>`;
   }
 
+  // Nombre del artista que se está mirando (para "Esperando aprobación de …").
+  const artistName = () => (shownProfile && P.nameOf ? P.nameOf(shownProfile) : "") || "el artista";
+
   function reviewCore(song) {
     const d = song.delivery;
     if (!d || song.done) return "";
@@ -119,7 +122,7 @@
     }
     if (d.state === "aprobar" && !d.file) {
       // Entregado a mano (sin audio en la carpeta): se aprueba desde acá.
-      if (!own) return `<div class="dv is-espera"><span class="dv-ico">${IC.send}</span><span class="dv-text"><b>${NOUN[d.kind]} entregad${ao}</b><span>Marcad${ao} a mano. Esperando que l${ao} apruebe desde su portal.</span></span></div>`;
+      if (!own) return `<div class="dv is-espera"><span class="dv-ico">${IC.send}</span><span class="dv-text"><b>${NOUN[d.kind]} entregad${ao}</b><span>Marcad${ao} a mano. Esperando aprobación de ${esc(artistName())}.</span></span></div>`;
       return `<div class="dv is-aprobar" data-quick-song="${esc(song.id)}" data-kind="${d.kind}"><span class="dv-ico">${IC.send}</span><span class="dv-text"><b>${NOUN[d.kind]} para aprobar</b><span>Zeche te pasó ${WHAT[d.kind]}. Escuchal${ao} y contanos: ¿la aprobás o querés cambios?</span></span>
         <div class="review-actions"><button class="btn review-btn" type="button" data-quick="aprobada">${IC.check}<span>Aprobar</span></button><button class="btn review-btn review-ghost" type="button" data-quick="cambios">Pedir cambios</button></div>
         <form class="review-form" hidden><textarea rows="3" maxlength="1000" placeholder="¿Qué te gustaría cambiar?"></textarea><div class="review-actions"><button class="btn review-btn" type="submit">Mandar</button><button class="btn review-btn review-ghost" type="button" data-quick="cancelar">Cancelar</button></div></form>
@@ -129,7 +132,7 @@
       const drafts = own && window.ZGReview ? window.ZGReview.drafts(song) : 0;
       const again = r && r.action === "cambios";
       if (!own) {
-        return `<div class="dv is-espera"><span class="dv-ico">${IC.play}</span><span class="dv-text"><b>${NOUN[d.kind]} entregad${ao}${again ? " · versión nueva" : ""}</b><span>Esperando que l${ao} escuche y l${ao} apruebe.${again && notesTxt ? ` Antes había dejado ${notesTxt}.` : ""}</span></span>${open("Escuchar")}</div>`;
+        return `<div class="dv is-espera"><span class="dv-ico">${IC.play}</span><span class="dv-text"><b>${NOUN[d.kind]} entregad${ao}${again ? " · versión nueva" : ""}</b><span>Esperando aprobación de ${esc(artistName())}.${again && notesTxt ? ` Antes había dejado ${notesTxt}.` : ""}</span></span>${open("Escuchar")}</div>`;
       }
       return `<div class="dv is-aprobar"><span class="dv-ico">${IC.play}</span><span class="dv-text"><b>${again ? "Versión nueva de " + WHAT[d.kind] : NOUN[d.kind] + " para aprobar"}</b><span>${drafts ? `Tenés ${drafts} ${drafts === 1 ? "nota guardada" : "notas guardadas"} sin mandar.` : `Escuchal${ao}, dejá notas en el momento exacto o aprobal${ao}.`}</span></span>${open(drafts ? "Seguir escuchando" : "Escuchar y aprobar", "btn")}</div>`;
     }
@@ -150,17 +153,24 @@
     return null;
   }
 
+  // Mezcla aprobada: el servidor ya la pasó a Master (cierre-etapa.js) y
+  // devuelve cómo queda; se muestra al momento, sin recargar.
+  function advance(song, out) {
+    if (out && out.next) Object.assign(song, out.next);
+  }
+
   function listen(id) {
     const found = findSong(id);
     if (!found || !window.ZGReview) return;
     const { song } = found;
     window.ZGReview.open(song, {
       own: viewingOwn,
-      onSent(review) {
+      onSent(review, out) {
         // La canción pasa a aprobada o a "cambios" sin esperar a Notion.
         song.delivery = { ...song.delivery, state: review.action === "aprobada" ? "aprobada" : "cambios", review };
         song.review = { kind: song.delivery.kind, ...review };
         song.ready = false;
+        advance(song, out);
         if (shownProfile) paint(shownProfile, found.data);
       },
     });
@@ -220,6 +230,7 @@
       found.song.delivery = { ...found.song.delivery, state: action === "aprobada" ? "aprobada" : "cambios", review };
       found.song.review = { kind: found.song.delivery.kind, ...review };
       found.song.ready = false;
+      advance(found.song, out);
       repaint(found);
     } catch (err) {
       P.setMsg(msg, err.message, true);

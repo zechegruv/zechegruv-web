@@ -307,4 +307,4 @@ async function ruleLimits() {
   return out;
 }
 
-module.exports = { watchStages, ruleDigest, ruleLimits, _onMix: onMix, _onMaster: onMaster, _onDistribution: onDistribution, _firstSlot: firstSlot };
+module.exports = { watchStages, ruleDigest, ruleLimits, _onMix: onMix, _onMaster: onMaster, _onDistribution: onDistribution, _firstSlot: firstSlot, _createTask: createTask, _openTasks: openTasks, _artistName: artistName };

@@ -39,7 +39,12 @@ function stillValid(row, page, now = Date.now()) {
   if (!page) return true; // si Notion no responde, se muestra igual
   const p = page.properties || {};
   const stage = p["Etapa actual"] && p["Etapa actual"].select && p["Etapa actual"].select.name;
-  if (stage !== STAGE_OF[row.kind]) {
+  // Mezcla aprobada: ahora la canción pasa sola a Master al aprobarla
+  // (_lib/cierre-etapa.js), así que el aviso sigue valiendo en Master
+  // (hasta 7 días o hasta que entregues el master).
+  const mixOk = row.kind === "mezcla" && row.action === "aprobada" && stage === "Master";
+  if (mixOk && now - time(row.created_at) > KEEP_FINAL_DAYS * 86400000) return false;
+  if (stage !== STAGE_OF[row.kind] && !mixOk) {
     // Pasó de etapa: solo queda el master aprobado (ya está en Distribución).
     if (!(final && (stage === "Distribución" || stage === "Publicada"))) return false;
   }
