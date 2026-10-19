@@ -29,11 +29,15 @@
 //     GRUV", con acceso a la base Canciones.
 //   NOTION_SONGS_DS (opcional): ID de la base de datos Canciones.
 //
-// Qué ficha de Notion es de cada artista se encuentra solo: se busca en
+// Qué ficha de Notion es de cada artista se encuentra sola: se busca en
 // Clientes Zeche Gruv la ficha con el mismo mail que la cuenta del portal y,
-// si no hay, la que tiene el mismo nombre artístico (sin importar tildes ni
-// mayúsculas). El campo "Ficha en Notion" del perfil queda solo para forzar
-// otra ficha cuando el mail y el nombre no coinciden.
+// si no hay, la que tiene como nombre el nombre completo del perfil (sin
+// importar tildes ni mayúsculas). Nunca por el nombre que se ve en el portal
+// (display_name): ese lo cambia el propio artista, y con eso podía ver y
+// aprobar canciones de otro. Apenas se encuentra, queda guardada en
+// artist_private.notion_page_id (032_portal.sql): desde ahí manda esa, aunque
+// después cambie el nombre o el mail. El campo "Ficha en Notion" del perfil
+// sirve para elegir otra a mano cuando el mail y el nombre no coinciden.
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://zdstltihskdcartkmgii.supabase.co";
 const NOTION_API = "https://api.notion.com/v1";
 const NOTION_VERSION = "2025-09-03";
@@ -219,28 +223,54 @@ function nextSession(tasks, songs, now = new Date()) {
 // ---------- Ficha del artista en Notion ----------
 const norm = (s) => String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/\s+/g, " ").trim();
 
-// Busca la ficha en Clientes Zeche Gruv: primero por mail, después por nombre.
-// Lo encontrado se recuerda unos minutos (mientras la function siga activa)
-// para no recorrer la base de clientes en cada visita.
-const clientCache = new Map(); // "mail|nombre" -> { id, at }
+// Busca la ficha en Clientes Zeche Gruv: primero por mail, después por
+// nombre completo (los dos los carga solo el administrador). Lo encontrado
+// se recuerda unos minutos (mientras la function siga activa) para no
+// recorrer la base de clientes en cada visita, y queda guardado en
+// artist_private para que la próxima vez no haya que buscarla.
+const clientCache = new Map(); // "mail|nombre completo" -> { id, at }
 async function findClient(profile) {
-  const key = [profile.email, profile.display_name, profile.full_name].join("|");
+  const key = [profile.email, profile.full_name].join("|");
   const hit = clientCache.get(key);
   if (hit && Date.now() - hit.at < 10 * 60 * 1000) return hit.id;
   const id = await searchClient(profile);
   clientCache.set(key, { id, at: Date.now() });
+  if (id && profile.id) await rememberClient(profile.id, id).catch(() => null);
   return id;
 }
 
 async function searchClient(profile) {
   const clients = await notionQuery(CLIENTS_DS, undefined);
   const email = norm(profile.email);
-  const names = [profile.display_name, profile.full_name].map(norm).filter(Boolean);
+  const names = [profile.full_name].map(norm).filter(Boolean);
   const field = (c, name) => (c.properties || {})[name];
   const byEmail = email && clients.find((c) => norm(field(c, "Correo Electrónico") && field(c, "Correo Electrónico").email) === email);
   if (byEmail) return byEmail.id;
   const byName = names.length && clients.find((c) => names.includes(norm(plain(field(c, "Nombre Artista") && field(c, "Nombre Artista").title))));
   return byName ? byName.id : null;
+}
+
+// La ficha encontrada queda fija en artist_private.notion_page_id (como si
+// el administrador la hubiera pegado a mano: el ID suelto, sin guiones).
+// Solo si todavía no tenía una: la elegida a mano nunca se pisa. Si el
+// artista todavía no tiene fila (sin carpeta), se crea. Si la base no deja
+// guardar (falta correr 032_portal.sql), no pasa nada: se vuelve a buscar.
+async function rememberClient(profileId, pageId) {
+  const key = serviceRoleKey();
+  const hex = String(pageId).replace(/-/g, "").toLowerCase();
+  const headers = { apikey: key, Authorization: `Bearer ${key}`, "Content-Type": "application/json", Prefer: "return=representation" };
+  const body = JSON.stringify({ notion_page_id: hex, updated_at: new Date().toISOString() });
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/artist_private?profile_id=eq.${profileId}&notion_page_id=is.null`, { method: "PATCH", headers, body });
+  const hit = res.ok ? await res.json().catch(() => []) : [];
+  if (res.ok && Array.isArray(hit) && hit.length) return true;
+  const exists = await supabase(`/rest/v1/artist_private?profile_id=eq.${profileId}&select=profile_id`, key);
+  if (exists && exists.length) return false; // ya tiene una elegida a mano
+  const made = await fetch(`${SUPABASE_URL}/rest/v1/artist_private?on_conflict=profile_id`, {
+    method: "POST",
+    headers: { ...headers, Prefer: "resolution=ignore-duplicates,return=minimal" },
+    body: JSON.stringify({ profile_id: profileId, notion_page_id: hex, updated_at: new Date().toISOString() }),
+  });
+  return made.ok;
 }
 
 // Hoy en Buenos Aires, como "2026-10-07" (para filtrar en Notion).
@@ -298,7 +328,7 @@ exports.handler = async (event) => {
   if (!notionToken()) return json(500, { error: "Falta NOTION_TOKEN en las variables de entorno de Netlify." });
   const [rows, profile] = await Promise.all([
     supabase(`/rest/v1/artist_private?profile_id=eq.${artistId}&select=notion_page_id,onedrive_link,onedrive_edit_link`, serviceKey),
-    supabase(`/rest/v1/profiles?id=eq.${artistId}&select=email,display_name,full_name`, serviceKey),
+    supabase(`/rest/v1/profiles?id=eq.${artistId}&select=id,email,full_name`, serviceKey),
   ]);
   if (!profile || !profile[0]) return json(500, { error: BAD_KEY });
 

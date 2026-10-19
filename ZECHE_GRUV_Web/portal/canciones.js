@@ -614,7 +614,7 @@
     if (!data.configured) {
       // Al artista no se le muestra una sección vacía: aparece cuando se conecta.
       if (!admin) { card.hidden = true; return; }
-      status.textContent = "No encontramos su ficha en Clientes Zeche Gruv: el mail y el nombre artístico no coinciden con ninguna. Corregí uno de los dos en Notion o pegá el link de la ficha en su perfil.";
+      status.textContent = "No encontramos su ficha en Clientes Zeche Gruv: ni el mail ni el nombre completo de su perfil coinciden con ninguna (el nombre que el artista edita no cuenta). Corregí uno de los dos o pegá el link de la ficha en su perfil.";
       return;
     }
 
