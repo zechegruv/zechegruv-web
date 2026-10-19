@@ -23,7 +23,7 @@ const { json, db, dbDetail, esc, sendMail, notifyEmail, serviceKey } = require("
 const { _findClient: findClient, _parsePageId: parsePageId, _notionQuery: notionQuery, _toSong: toSong, SONGS_DS } = require("./portal-songs");
 const { listAudio, matchAudio } = require("./_lib/song-audio");
 const { MANUAL } = require("./portal-songs");
-const { closeStage, nextSong } = require("./_lib/cierre-etapa");
+const { closeStage, reopenStage, nextSong } = require("./_lib/cierre-etapa");
 
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://zdstltihskdcartkmgii.supabase.co";
 const PUBLISHABLE_KEY = "sb_publishable_9M2gY0XZr7xIrV-1s9AiUA_XA1uNm0V";
@@ -161,6 +161,21 @@ exports.handler = async (event) => {
     ? `La canción pasó sola a ${kind === "mezcla" ? "Master" : "Distribución"} en Notion${closed.tasks.length ? ` y quedó completada la tarea ${closed.tasks.map((n) => `«${n}»`).join(", ")}` : ""}.${closed.master && closed.master.date ? ` Entrega del master: ${closed.master.date}.` : ""}${closed.calendar === "error" ? " Ojo: Google Calendar no respondió, revisá el evento." : ""}`
     : "Ojo: Notion no dejó cerrar la etapa. Revisá la canción (Entrega, Etapa actual y su tarea).";
 
+  // Cambios: se limpia Canciones → Entrega, así el próximo "Entregado"
+  // (botón o Notion) vale como versión nueva, y queda una sesión para
+  // corregir con la entrega ese día (_lib/cierre-etapa.js → reopenStage).
+  let reopened = null;
+  if (action === "cambios") {
+    await notion(`/pages/${songId}`, { method: "PATCH", body: JSON.stringify({ properties: { Entrega: { select: null } } }) }).catch(() => null);
+    reopened = await reopenStage({ page: page.data, kind }).catch((e) => ({ scheduled: false, error: String(e && e.message) }));
+  }
+  const fmtWhen = (iso) => new Intl.DateTimeFormat("es-AR", { timeZone: "America/Argentina/Buenos_Aires", weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }).format(new Date(iso));
+  const reopenLine = !reopened ? "" : reopened.scheduled
+    ? `Te agendé la sesión para corregir${kind === "mezcla" ? " la mezcla" : " el master"}: ${fmtWhen(reopened.start)} h (Notion y Google Calendar), con la entrega ese día. Si no te sirve, movela desde el Inicio (Reprogramar). `
+    : reopened.existing ? `Ya tenías una sesión por delante (${fmtWhen(reopened.start)} h): la entrega pasó a ese día. `
+      : reopened.google === false ? "No pude agendar la sesión para corregir porque Google Calendar no está conectado: conectalo y reprogramala desde el Inicio. "
+        : "No encontré un hueco libre para la sesión de corrección: agendala desde el Inicio. ";
+
   const who = me.display_name || me.full_name || me.email;
   const verb = action === "aprobada" ? `aprobó ${LABEL[kind]}` : `pidió cambios en ${LABEL[kind]}`;
   // Aviso a Zeche (mail) y comentario en la ficha de Notion. Si alguno
@@ -178,7 +193,7 @@ ${note ? `<p style="margin:0 0 14px;padding:14px 16px;background:#2E1607;border-
 ${marks.length ? `<table role="presentation" style="width:100%;border-collapse:separate;border-spacing:0 6px;margin:0 0 14px">${marks.map((m) => `<tr><td style="width:64px;vertical-align:top;padding:12px 0 12px 14px;background:#2E1607;border-radius:12px 0 0 12px;font-family:'Courier New',monospace;font-size:15px;font-weight:700;color:#F5A623">${clock(m.t)}</td><td style="padding:12px 14px;background:#2E1607;border-radius:0 12px 12px 0;font-size:15px;line-height:1.45">${esc(m.text)}${voiceLinks[marks.indexOf(m)] ? ` <a href="${voiceLinks[marks.indexOf(m)]}" style="color:#F5A623;font-weight:700;text-decoration:none">▶ Escuchar nota de voz</a>` : ""}</td></tr>`).join("")}</table>` : ""}
 ${version ? `<p style="margin:0 0 10px;font-size:12px;color:#C9A980">Escuchó: ${esc(version)}</p>` : ""}
 ${saved.ok ? "" : `<p style="margin:0 0 10px;font-size:12px;color:#FF9C7A">Ojo: no quedó guardado en el portal (${esc(dbDetail(saved))}). Las notas están solo en este mail y en Notion.</p>`}
-<p style="margin:0;font-size:13px;color:#C9A980">${action === "aprobada" && kind === "master" ? `${esc(closedLine)} En unos minutos le avisamos al equipo de distribución.` : action === "aprobada" ? `${esc(closedLine)} Ya podés arrancar con el master.` : (marks.length ? "En el portal (su perfil → Canciones) tenés el audio con cada nota marcada: tocás una y salta a ese momento. " : "") + "Respondé este mail para hablar con el artista."}</p>
+<p style="margin:0;font-size:13px;color:#C9A980">${action === "aprobada" && kind === "master" ? `${esc(closedLine)} En unos minutos le avisamos al equipo de distribución.` : action === "aprobada" ? `${esc(closedLine)} Ya podés arrancar con el master.` : esc(reopenLine) + (marks.length ? "En el portal (su perfil → Canciones) tenés el audio con cada nota marcada: tocás una y salta a ese momento. " : "") + "Respondé este mail para hablar con el artista."}</p>
 </div>`,
     }).catch(() => false),
     notion("/comments", {
@@ -186,9 +201,6 @@ ${saved.ok ? "" : `<p style="margin:0 0 10px;font-size:12px;color:#FF9C7A">Ojo: 
       body: JSON.stringify({ parent: { page_id: songId }, rich_text: [{ type: "text", text: { content: [`Portal: ${who} ${verb}.${note ? ` «${note}»` : ""}`, ...marks.map((m) => `${clock(m.t)} — ${m.text}${m.voice ? " (🎙 nota de voz, escuchala en el portal)" : ""}`)].join("\n").slice(0, 1900) } }] }),
     }).catch(() => null),
   ]);
-  // Cambios: se limpia Canciones → Entrega, así el próximo "Entregado"
-  // (botón o Notion) vale como versión nueva. (Aprobada: ya lo hizo closeStage.)
-  if (action === "cambios") await notion(`/pages/${songId}`, { method: "PATCH", body: JSON.stringify({ properties: { Entrega: { select: null } } }) }).catch(() => null);
   // Nada quedó en ningún lado: ahí sí, que lo vuelva a intentar.
   const reached = mailed !== false || (commented && commented.ok);
   if (!saved.ok && !reached) return json(500, { error: "No pudimos enviarlo. Tus notas siguen acá: probá de nuevo en un momento." });

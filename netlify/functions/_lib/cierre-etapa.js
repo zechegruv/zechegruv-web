@@ -58,7 +58,8 @@ async function notion(path, init = {}) {
 const isStage = (kind, text) => (kind === "master" ? /master/i : /\b(mix|mezcla)/i).test(text || "");
 
 // Calendario: tilda con ✓ la entrega y las sesiones por venir de esa etapa.
-async function tickCalendar(song, kind, refDate, now = new Date()) {
+// why: el motivo que queda escrito en el evento.
+async function tickCalendar(song, kind, refDate, now = new Date(), why = `${LABEL[kind]} por el artista en el portal`) {
   try {
     if (!(await gc.status()).connected) return "sin-google";
     const today = dayAR(now);
@@ -69,7 +70,7 @@ async function tickCalendar(song, kind, refDate, now = new Date()) {
     const mine = list.filter((e) => key && !/^✓/.test(e.summary || "") && isStage(kind, e.summary) && norm(`${e.summary} ${e.description || ""}`).includes(key));
     const delivery = mine.filter((e) => e.start && e.start.date && /^entrega/i.test(e.summary || ""));
     const sessions = mine.filter((e) => e.start && e.start.dateTime && Date.parse(e.end && e.end.dateTime || e.start.dateTime) > now.getTime());
-    const text = `✓ ${LABEL[kind]} por el artista en el portal`;
+    const text = `✓ ${why}`;
     const res = await Promise.all([
       ...delivery.map((e) => gc.patchEvent(e.id, { summary: `✓ ${e.summary}`, description: `${e.description ? `${e.description}\n\n` : ""}${text}.` })),
       // La sesión ya no hace falta: queda a la vista con ✓ y libera el horario.
@@ -142,6 +143,71 @@ async function closeStage({ page, kind, now = new Date() }) {
   return out;
 }
 
+// Song a partir de la ficha de Notion.
+function songOf(page) {
+  const p = page.properties || {};
+  return {
+    id: page.id,
+    title: plain(p["Canción"] && p["Canción"].title) || "Sin título",
+    clientId: ((p.Artista && p.Artista.relation) || [])[0]?.id || null,
+    delivery: p["Fecha de entrega"] && p["Fecha de entrega"].date && p["Fecha de entrega"].date.start ? p["Fecha de entrega"].date.start.slice(0, 10) : null,
+  };
+}
+
+// Botón "Entregado" del panel (o lo que lo reemplace): igual que cuando subís
+// el audio a la carpeta, se completan las sesiones de esa etapa que estaban
+// abiertas y el calendario queda tildado. La Entrega en Notion la pone quien llama.
+async function deliverStage({ page, kind, now = new Date() }) {
+  const song = songOf(page);
+  const label = kind === "mezcla" ? "Mezcla entregada" : "Master entregado";
+  const [tasks, calendar] = await Promise.all([
+    ae()._closeTasks(song, kind, song.clientId, now.getTime()).catch(() => null),
+    tickCalendar(song, kind, song.delivery, now, `${label} (marcado desde el panel)`),
+  ]);
+  return { tasks: tasks || [], tasksOk: tasks !== null, calendar };
+}
+
+// El artista pidió cambios: hace falta una sesión para corregir. Si ya hay
+// una abierta por delante, la entrega pasa a ese día; si no, se agenda sola
+// en el primer hueco libre de 2 h (tarea + evento) y la entrega va ese día,
+// así nunca queda "vencida" con la fecha vieja. Sin Google Calendar
+// conectado no se agenda nada (se avisa en el mail).
+async function reopenStage({ page, kind, now = new Date() }) {
+  const song = songOf(page);
+  const stage = kind === "master" ? "Master" : "Mix";
+  const stageLabel = kind === "master" ? "Master" : "Mezcla";
+  const today = dayAR(now);
+  const artist = await et()._artistName(song.clientId).catch(() => "");
+  const open = await et()._openTasks(song.id, [stage]).catch(() => []);
+  const ahead = open
+    .map((t) => ({ t, d: t.properties["Fecha de Vencimiento"] && t.properties["Fecha de Vencimiento"].date }))
+    .filter(({ d }) => d && d.start && dayOf(d.start) >= today)
+    .sort((a, b) => Date.parse(a.d.start) - Date.parse(b.d.start))[0];
+  if (ahead) {
+    const day = dayOf(ahead.d.start);
+    if (song.delivery !== day) await rs()._moveDelivery({ songId: song.id, song: song.title, artist, stage: stageLabel }, song.delivery, day);
+    return { scheduled: false, existing: true, date: day, start: ahead.d.start };
+  }
+  if (!(await gc.status()).connected) return { scheduled: false, google: false };
+  const slot = await et()._firstSlot(now);
+  if (!slot || !slot.google) return { scheduled: false, google: !!slot };
+  const ev = await gc.createEvent({
+    start: { dateTime: slot.start, timeZone: TZ }, end: { dateTime: slot.end, timeZone: TZ },
+    summary: `${stage} – ${song.title}${artist ? ` (${artist})` : ""}`, colorId: kind === "master" ? "8" : "7",
+    description: "Agendada sola por el portal: el artista pidió cambios. Si no te sirve, movela desde el Inicio del panel (Reprogramar).",
+    reminders: { useDefault: false, overrides: [{ method: "popup", minutes: 60 }] },
+  });
+  if (!ev.ok) return { scheduled: false, error: "calendario" };
+  const t = await et()._createTask({ name: `${stage} ${song.title}${artist ? ` ${artist}` : ""}`, etapa: stage, song, start: slot.start, end: slot.end, description: "Agendada sola: el artista pidió cambios desde el portal." });
+  if (!t.ok) {
+    // Sin tarea en Notion, el evento no queda ocupando el horario como si nada.
+    await gc.patchEvent(ev.data.id, { summary: `✗ ${ev.data.summary}`, transparency: "transparent", description: `${ev.data.description}\n\n✗ Notion no dejó crear la tarea: agendala desde el Inicio del panel.` }).catch(() => null);
+    return { scheduled: false, error: "notion" };
+  }
+  await rs()._moveDelivery({ songId: song.id, song: song.title, artist, stage: stageLabel }, song.delivery, slot.date);
+  return { scheduled: true, date: slot.date, time: slot.time, start: slot.start, end: slot.end };
+}
+
 // Cómo queda la canción en el portal del artista, sin esperar a recargar.
 function nextSong(kind) {
   if (kind === "mezcla") {
@@ -151,4 +217,4 @@ function nextSong(kind) {
   return null; // master: el portal ya lo muestra aprobado; pasa a Terminadas al recargar
 }
 
-module.exports = { closeStage, nextSong, _tickCalendar: tickCalendar, _masterDate: masterDate };
+module.exports = { closeStage, deliverStage, reopenStage, nextSong, tickCalendar, _masterDate: masterDate };
