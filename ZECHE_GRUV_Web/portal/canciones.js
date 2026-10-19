@@ -211,6 +211,8 @@
       repaint(found);
       const again = document.querySelector(`[data-mark-song="${song.id}"] [data-mark="${action}"]`);
       if (again) again.classList.add("is-pop");
+      const sentMsg = document.querySelector(`[data-mark-song="${song.id}"] .dv-mark-msg`);
+      if (sentMsg && out.notified) sentMsg.textContent = `Le avisamos a ${artistName()} por mail.`;
     } catch (err) {
       msg.textContent = err.message;
       box.querySelectorAll("[data-mark]").forEach((x) => { x.disabled = false; });

@@ -13,7 +13,8 @@
 //   audio no esté en su carpeta (p. ej. si se lo mandaste por WhatsApp). Igual
 //   que al subir el audio: las sesiones de esa etapa que estaban abiertas
 //   pasan a COMPLETADO y el calendario queda tildado (cierre-etapa.js →
-//   deliverStage). Si es el master, se borra la fecha de entrega.
+//   deliverStage). Si es el master, se borra la fecha de entrega. Al artista
+//   le llega un mail para escucharlo (aviso-entrega.js).
 // - "Aprobado": exactamente lo mismo que cuando aprueba el artista
 //   (cierre-etapa.js → closeStage): tarea completada, la canción avanza
 //   (Mezcla → Master, Master → Distribución) y el calendario tildado.
@@ -86,5 +87,9 @@ exports.handler = async (event) => {
   const saved = await db("song_approvals", { method: "POST", prefer: "return=representation", body: { profile_id: artist, song_id: songId, song_title: title, kind, action, source: "admin" } });
   if (!saved.ok) console.error("portal-mark song_approvals:", dbDetail(saved));
   const row = (saved.ok && saved.data && saved.data[0]) || {};
-  return json(200, { ok: true, kind, action, at: row.created_at || new Date().toISOString(), saved: saved.ok, tasks: (synced && synced.tasks) || [], calendar: synced && synced.calendar, next: action === "aprobada" ? nextSong(kind) : null });
+  // Entregado: le avisamos al artista por mail (mezcla, master o corrección).
+  const notice = action === "entregada"
+    ? await require("./_lib/aviso-entrega").notifyArtistDelivered({ profileId: artist, song: { id: songId, title }, kind, version: `manual|${new Date().toISOString().slice(0, 13)}` }).catch(() => null)
+    : null;
+  return json(200, { ok: true, kind, action, at: row.created_at || new Date().toISOString(), saved: saved.ok, tasks: (synced && synced.tasks) || [], calendar: synced && synced.calendar, next: action === "aprobada" ? nextSong(kind) : null, notified: !!(notice && notice.sent) });
 };

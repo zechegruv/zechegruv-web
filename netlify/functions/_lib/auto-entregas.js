@@ -14,6 +14,8 @@
 //   3. Supabase → song_approvals: queda registrada la entrega (source
 //      'admin'). Así el aviso viejo del Inicio de esa canción (p. ej. "pidió
 //      cambios") se va solo y al artista le aparece para escuchar y aprobar.
+//   5. Al artista le llega un mail: su mezcla, su master o su corrección está
+//      lista para escuchar (aviso-entrega.js), una sola vez por versión.
 //   4. Google Calendar (si está conectado): el evento "Entrega:" de esa
 //      canción queda tildado con ✓ (no se borra nada).
 //
@@ -127,7 +129,9 @@ async function deliver({ profileId, clientId, song, kind, file, deliveryDate }) 
     tickCalendar(song, kind, deliveryDate, file),
   ]);
   if (!saved.ok) console.error("auto-entregas song_approvals:", saved.status);
-  return { song: song.title, kind, file: file.name, tasks, calendar, saved: saved.ok };
+  // Aviso al artista: mezcla, master o corrección lista para escuchar.
+  const notice = await require("./aviso-entrega").notifyArtistDelivered({ profileId, song, kind, version: `${file.name}|${file.modified}` }).catch(() => null);
+  return { song: song.title, kind, file: file.name, tasks, calendar, saved: saved.ok, notified: !!(notice && notice.sent) };
 }
 
 // ---------- Recordatorio al artista ----------
