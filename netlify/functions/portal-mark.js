@@ -35,6 +35,18 @@ const plain = (rich) => (rich || []).map((t) => t.plain_text || "").join("").tri
 // Con reintentos ante 429/502/503 y pocos pedidos a la vez (_lib/notion.js).
 const notion = (path, init) => require("./_lib/notion").notion(path, init);
 
+// ¿Este «Entregado» es el segundo clic de un doble clic? Hay otro marcado
+// a mano (sin nota: los automáticos llevan nota) de la misma canción y etapa
+// hasta 2 minutos ANTES que este. Solo mira hacia atrás: de dos clics
+// simultáneos, el primero manda el mail y el segundo no.
+const DOUBLE_MS = 2 * 60 * 1000;
+async function clickedTwice(row, songId, kind) {
+  if (!row || !row.id || !row.created_at) return false;
+  const mine = Date.parse(row.created_at);
+  const prev = await db(`song_approvals?song_id=eq.${encodeURIComponent(songId)}&kind=eq.${kind}&action=eq.entregada&source=eq.admin&note=is.null&select=id,created_at&order=created_at.desc&limit=10`);
+  return ((prev.ok && prev.data) || []).some((r) => r.id !== row.id && Date.parse(r.created_at) <= mine && mine - Date.parse(r.created_at) < DOUBLE_MS && (Date.parse(r.created_at) < mine || String(r.id) < String(row.id)));
+}
+
 exports.handler = async (event) => {
   if (event.httpMethod !== "POST") return json(405, { error: "Método no permitido." });
   if (!serviceKey()) return json(500, { error: "Falta SUPABASE_SERVICE_ROLE_KEY en Netlify." });
@@ -80,9 +92,15 @@ exports.handler = async (event) => {
   const saved = await db("song_approvals", { method: "POST", prefer: "return=representation", body: { profile_id: artist, song_id: songId, song_title: title, kind, action, source: "admin" } });
   if (!saved.ok) console.error("portal-mark song_approvals:", dbDetail(saved));
   const row = (saved.ok && saved.data && saved.data[0]) || {};
-  // Entregado: le avisamos al artista por mail (mezcla, master o corrección).
-  const notice = action === "entregada"
-    ? await require("./_lib/aviso-entrega").notifyArtistDelivered({ profileId: artist, song: { id: songId, title }, kind, version: `manual|${new Date().toISOString().slice(0, 13)}` }).catch(() => null)
-    : null;
+  // Entregado: le avisamos al artista por mail (mezcla, master o modificaciones).
+  // Cada entrega es una versión distinta (la fila recién guardada), así dos
+  // entregas en la misma hora mandan dos mails. Pero un doble clic no: si
+  // hubo otro «Entregado» de esta canción en los 2 minutos anteriores, el
+  // mail ya lo mandó ese.
+  let notice = null;
+  if (action === "entregada" && !(await clickedTwice(row, songId, kind))) {
+    const version = row.id ? `manual|${row.id}` : `manual|${new Date().toISOString().slice(0, 16)}`;
+    notice = await require("./_lib/aviso-entrega").notifyArtistDelivered({ profileId: artist, song: { id: songId, title }, kind, version }).catch(() => null);
+  }
   return json(200, { ok: true, kind, action, at: row.created_at || new Date().toISOString(), saved: saved.ok, tasks: (synced && synced.tasks) || [], calendar: synced && synced.calendar, next: action === "aprobada" ? nextSong(kind) : null, notified: !!(notice && notice.sent) });
 };
