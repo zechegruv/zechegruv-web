@@ -28,7 +28,6 @@ const DAY_START = 9 * 60 + 30, DAY_END = 21 * 60;
 // gimnasio lunes/miércoles/viernes, sesión con Layla Mar los jueves.
 const FIXED = (wd) => [[13 * 60, 15 * 60], ...([1, 3, 5].includes(wd) ? [[11 * 60, 13 * 60]] : []), ...(wd === 4 ? [[11 * 60, 13 * 60]] : [])];
 const plain = (rich) => (rich || []).map((t) => t.plain_text || "").join("").trim();
-const norm = (v) => String(v || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ").trim();
 const hhmm = (m) => `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
 const at = (date, min) => `${date}T${hhmm(min)}:00${OFF}`;
 const addDays = (date, n) => new Date(Date.parse(`${date}T12:00:00Z`) + n * 86400000).toISOString().slice(0, 10);
@@ -92,17 +91,22 @@ async function loadTask(id, kind) {
   return { kind, id, name, song, songId, songPage: songPage && songPage.ok ? songPage.data : null, artist, stage: isMaster ? "Master" : "Mezcla", date: p["Fecha de Vencimiento"] && p["Fecha de Vencimiento"].date };
 }
 
-// Busca el evento del calendario que corresponde (misma canción, cerca de la fecha vieja).
+// Busca el evento del calendario que corresponde (misma canción, cerca de la
+// fecha vieja). Que sea de esa canción y etapa lo decide gcal.js →
+// eventMatch (por la marca del evento o por el título con palabras
+// completas): «Luna» nunca agarra «Luna Llena». Si hay uno con marca, va primero.
 async function findEvent(t, fromISO, toISO, test) {
   const list = await gc.events(fromISO, toISO);
   if (!list) return null;
-  const song = norm(t.song);
-  const hits = list.filter((e) => test(e) && song && norm(`${e.summary} ${e.description || ""}`).includes(song));
-  return hits[0] || null;
+  const song = { id: t.songId, title: t.song, artist: t.artist };
+  const hits = list.map((e) => ({ e, how: test(e) ? gc.eventMatch(e, song, t.stage) : null })).filter((x) => x.how);
+  hits.sort((a, b) => (a.how === "marca" ? 0 : 1) - (b.how === "marca" ? 0 : 1));
+  return hits[0] ? hits[0].e : null;
 }
-const isSessionEvent = (stage) => (e) => !!(e.start && e.start.dateTime) && !/^✓/.test(e.summary || "") && (stage === "Master" ? /master/i.test(e.summary || "") : /\b(mix|mezcla)/i.test(e.summary || ""));
-// "Entrega: Mix …" o "Entrega: Master …" (cada etapa la suya; las tildadas con ✓ ya no cuentan).
-const isDeliveryEvent = (stage) => (e) => !!(e.start && e.start.date) && /^entrega/i.test(e.summary || "") && (stage === "Master" ? /master/i : /\b(mix|mezcla)/i).test(e.summary || "");
+// Sesión con horario (las tildadas con ✓ ya no cuentan).
+const isSessionEvent = () => (e) => !!(e.start && e.start.dateTime) && !/^✓/.test(e.summary || "");
+// "Entrega: Mix …" o "Entrega: Master …" de todo el día (la etapa la mira eventMatch).
+const isDeliveryEvent = () => (e) => !!(e.start && e.start.date);
 const note = (desc, text) => `${desc ? `${desc}\n\n` : ""}${text}`;
 
 async function moveDelivery(t, oldDate, newDate) {
@@ -118,7 +122,7 @@ async function moveDelivery(t, oldDate, newDate) {
     if (ev && ev.start.date === newDate) cal = "sin-cambio";
     else if (ev) { const r = await gc.patchEvent(ev.id, { ...body, description: note(ev.description, `↻ Movida desde el portal (antes: ${fmtDay(ev.start.date)}).`) }); cal = r.ok ? "movido" : "error"; if (r.ok) cal = { state: "movido", id: ev.id, old: { start: ev.start, end: ev.end } }; }
     else {
-      const r = await gc.createEvent({ ...body, summary: `Entrega: ${t.stage === "Master" ? "Master" : "Mix"} ${t.song}${t.artist ? ` ${t.artist}` : ""}`, colorId: "11", transparency: "transparent", description: "Agendada desde el portal de ZECHE GRUV." });
+      const r = await gc.createEvent({ ...body, summary: `Entrega: ${t.stage === "Master" ? "Master" : "Mix"} ${t.song}${t.artist ? ` ${t.artist}` : ""}`, colorId: "11", transparency: "transparent", extendedProperties: gc.tag({ songId: t.songId, stage: t.stage, kind: "entrega" }), description: "Agendada desde el portal de ZECHE GRUV." });
       cal = r.ok ? "creado" : "error";
     }
   }
@@ -238,7 +242,7 @@ async function moveAll(t, { date, time, startISO, endISO }) {
     if (!r.ok) return fail("Google Calendar no dejó mover la sesión. Se dejó todo como estaba.");
     calendar = "movido";
   } else {
-    const r = await gc.createEvent({ ...when, summary: `${t.stage === "Master" ? "Master" : "Mix"} – ${t.song || t.name}${t.artist ? ` (${t.artist})` : ""}`, colorId: t.stage === "Master" ? "8" : "7", description: "Agendada desde el portal de ZECHE GRUV." });
+    const r = await gc.createEvent({ ...when, summary: `${t.stage === "Master" ? "Master" : "Mix"} – ${t.song || t.name}${t.artist ? ` (${t.artist})` : ""}`, colorId: t.stage === "Master" ? "8" : "7", extendedProperties: gc.tag({ songId: t.songId, stage: t.stage, kind: "sesion" }), description: "Agendada desde el portal de ZECHE GRUV." });
     if (!r.ok) return fail("Google Calendar no dejó crear la sesión. Se dejó todo como estaba.");
     calendar = "creado";
   }

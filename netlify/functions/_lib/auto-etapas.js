@@ -194,6 +194,7 @@ async function onMix(song, log) {
       const ev = await gc.createEvent({
         start: { dateTime: slot.start, timeZone: TZ }, end: { dateTime: slot.end, timeZone: TZ },
         summary: `Mix – ${song.title}${artist ? ` (${artist})` : ""}`, colorId: COLOR.Mix,
+        extendedProperties: gc.tag({ songId: song.id, stage: "mezcla", kind: "sesion" }),
         description: `Agendada sola por el portal al pasar a Mezcla. Si no te sirve, movela desde el Inicio del panel (Reprogramar).\nRegla de 15 días: master hasta el ${fmtDay(rule)}.`,
         reminders: { useDefault: false, overrides: [{ method: "popup", minutes: 60 }] },
       });

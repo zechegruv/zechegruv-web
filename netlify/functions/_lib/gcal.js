@@ -113,4 +113,67 @@ async function events(fromISO, toISO, q) {
 const patchEvent = (id, body) => gcal(`${calPath()}/events/${encodeURIComponent(id)}`, { method: "PATCH", body });
 const createEvent = (body) => gcal(`${calPath()}/events`, { method: "POST", body });
 
-module.exports = { configured, status, authUrl, validState, exchangeCode, busy, events, patchEvent, createEvent };
+// ---------- ¿Este evento es de esta canción? ----------
+// Una sola regla para todas las búsquedas (tildar al aprobar o entregar,
+// reprogramar, el ✓ del Inicio y las vencidas que se movieron en el
+// calendario), para que nunca se confundan canciones parecidas.
+//
+// 1) Todo evento que crea el sistema lleva una marca escondida (no se ve en
+//    el calendario): { zgSong: id de la canción sin guiones, zgStage:
+//    "mezcla" | "master", zgKind: "sesion" | "entrega" }. Si el evento tiene
+//    marca, manda la marca (aunque le cambies el título a mano).
+// 2) Eventos viejos o creados a mano (sin marca): el título tiene que nombrar
+//    la canción con palabras completas y sin nada de más. No cuenta lo que
+//    está entre paréntesis ni, al final, el nombre del artista. Delante solo
+//    pueden ir palabras como "Entrega:", "Mix", "Mezcla", "Master",
+//    "Correcciones", "Modificaciones", "Sesión de".
+//    Ejemplos con la canción «Luna»: "Mix – Luna (Pazz)" sí; "Mix – Luna
+//    Llena (Pazz)" no. «Mar» no es "Mix – Otra (Layla Mar)". «Amor» no es
+//    "Entrega: Mix Seu amor Rouse Bby". «Soltando Etiquetas» sí es
+//    "Correcciones Mix Soltando Etiquetas (Pazz)".
+const idKey = (id) => String(id || "").replace(/-/g, "").toLowerCase();
+const words = (v) => String(v || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim().split(" ").filter(Boolean);
+const PREFIX = new Set(["entrega", "sesion", "de", "del", "la", "el", "mix", "mezcla", "master", "mastering", "correccion", "correcciones", "modificacion", "modificaciones", "cambios"]);
+const stageKey = (s) => (/master/i.test(String(s || "")) ? "master" : "mezcla");
+
+// La marca escondida, para crear eventos. stage: "mezcla"/"Mix"/"Mezcla" o "master"/"Master".
+function tag({ songId, stage, kind }) {
+  return { private: { zgSong: idKey(songId), zgStage: stageKey(stage), zgKind: kind === "entrega" ? "entrega" : "sesion" } };
+}
+
+// "marca" (seguro por la marca), "nombre" (seguro por el título) o null.
+//   song: { id, title, artist } · stage: mezcla/master · kind: sesion/entrega
+//   (kind opcional: si falta, se deduce de si el evento es de todo el día).
+function eventMatch(e, { id, title, artist }, stage, kind) {
+  if (!e) return null;
+  const evKind = e.start && e.start.date ? "entrega" : "sesion";
+  const k = kind || evKind;
+  const st = stageKey(stage);
+  const mark = e.extendedProperties && e.extendedProperties.private;
+  if (mark && mark.zgSong) {
+    return mark.zgSong === idKey(id) && (mark.zgStage || st) === st && (mark.zgKind || evKind) === k ? "marca" : null;
+  }
+  if (evKind !== k) return null;
+  const songW = words(title);
+  if (!songW.length) return null;
+  const summary = String(e.summary || "").replace(/^\s*([✓✗]\s*)+/, "").replace(/\([^)]*\)/g, " ");
+  const all = words(summary);
+  const isDelivery = all[0] === "entrega";
+  if ((k === "entrega") !== isDelivery) return null;
+  const artistW = words(artist);
+  const fits = (w) => {
+    if (w.length <= songW.length) return false;
+    const tail = w.slice(w.length - songW.length);
+    if (tail.join(" ") !== songW.join(" ")) return false;
+    const head = w.slice(0, w.length - songW.length);
+    // Delante, solo palabras de etapa, y tiene que decir cuál etapa.
+    if (!head.every((x) => PREFIX.has(x))) return false;
+    return st === "master" ? head.some((x) => x === "master" || x === "mastering") : head.some((x) => x === "mix" || x === "mezcla");
+  };
+  if (fits(all)) return "nombre";
+  // El artista al final, sin paréntesis ("Entrega: Mix Seu amor Rouse Bby").
+  if (artistW.length && all.length > artistW.length && all.slice(-artistW.length).join(" ") === artistW.join(" ") && fits(all.slice(0, -artistW.length))) return "nombre";
+  return null;
+}
+
+module.exports = { configured, status, authUrl, validState, exchangeCode, busy, events, patchEvent, createEvent, tag, eventMatch };

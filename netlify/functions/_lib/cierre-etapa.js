@@ -30,7 +30,6 @@
 // aprobación. Devuelve qué hizo y el estado nuevo de la canción para el portal.
 const { db } = require("./pass");
 const gc = require("./gcal");
-const { norm } = require("./song-audio");
 const ae = () => require("./auto-entregas");
 const et = () => require("./auto-etapas");
 const rs = () => require("../admin-reschedule");
@@ -56,9 +55,6 @@ async function notion(path, init = {}) {
   return { ok: res.ok, status: res.status, data: await res.json().catch(() => null) };
 }
 
-// ¿El evento es de esta etapa? (mezcla: "Mix"/"Mezcla"; master: "Master").
-const isStage = (kind, text) => (kind === "master" ? /master/i : /\b(mix|mezcla)/i).test(text || "");
-
 // Calendario: tilda con ✓ la entrega y las sesiones por venir de esa etapa.
 // why: el motivo que queda escrito en el evento.
 async function tickCalendar(song, kind, refDate, now = new Date(), why = `${LABEL[kind]} por el artista en el portal`) {
@@ -68,9 +64,12 @@ async function tickCalendar(song, kind, refDate, now = new Date(), why = `${LABE
     const from = [refDate, today].filter(Boolean).sort()[0];
     const list = await gc.events(`${addDays(from, -10)}T00:00:00${OFF}`, `${addDays(today, 45)}T00:00:00${OFF}`);
     if (!list) return "error";
-    const key = norm(song.title);
-    const mine = list.filter((e) => key && !/^✓/.test(e.summary || "") && isStage(kind, e.summary) && norm(`${e.summary} ${e.description || ""}`).includes(key));
-    const delivery = mine.filter((e) => e.start && e.start.date && /^entrega/i.test(e.summary || ""));
+    // Solo los eventos de esta canción y etapa (por su marca o por el título
+    // con palabras completas, ver gcal.js → eventMatch): «Luna» nunca tilda
+    // «Luna Llena». El nombre del artista hace falta para los "Entrega:".
+    const artist = song.artist != null ? song.artist : await et()._artistName(song.clientId).catch(() => "");
+    const mine = list.filter((e) => !/^✓/.test(e.summary || "") && gc.eventMatch(e, { ...song, artist }, kind));
+    const delivery = mine.filter((e) => e.start && e.start.date);
     const sessions = mine.filter((e) => e.start && e.start.dateTime && Date.parse(e.end && e.end.dateTime || e.start.dateTime) > now.getTime());
     const text = `✓ ${why}`;
     const res = await Promise.all([
@@ -210,6 +209,7 @@ async function scheduleSession(song, kind, artist, why, now = new Date()) {
   const ev = await gc.createEvent({
     start: { dateTime: slot.start, timeZone: TZ }, end: { dateTime: slot.end, timeZone: TZ },
     summary: `${stage} – ${song.title}${artist ? ` (${artist})` : ""}`, colorId: kind === "master" ? "8" : "7",
+    extendedProperties: gc.tag({ songId: song.id, stage: kind, kind: "sesion" }),
     description: `Agendada sola por el portal: ${why}. Si no te sirve, movela desde el Inicio del panel (Reprogramar).`,
     reminders: { useDefault: false, overrides: [{ method: "popup", minutes: 60 }] },
   });

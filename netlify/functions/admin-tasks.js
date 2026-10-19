@@ -80,9 +80,9 @@ async function tickSessionEvent(taskId, done) {
     if (!t || !t.song) return "sin-evento";
     const start = t.date && t.date.start;
     const ref = start ? dayKey(start) : dayAR(new Date());
-    const stageRe = t.stage === "Master" ? /master/i : /\b(mix|mezcla)/i;
+    // Que sea de esta canción y etapa lo decide gcal.js → eventMatch (marca o título exacto).
     const ev = await rs._findEvent(t, `${rs._addDays(ref, -2)}T00:00:00-03:00`, `${rs._addDays(ref, 3)}T00:00:00-03:00`,
-      (e) => !!(e.start && e.start.dateTime) && stageRe.test(e.summary || "") && (done ? !/^✓/.test(e.summary || "") : /^✓/.test(e.summary || "")));
+      (e) => !!(e.start && e.start.dateTime) && (done ? !/^✓/.test(e.summary || "") : /^✓/.test(e.summary || "")));
     if (!ev) return "sin-evento";
     const future = Date.parse((ev.end && ev.end.dateTime) || ev.start.dateTime) > Date.now();
     const body = done
@@ -243,12 +243,14 @@ exports.handler = async (event) => {
     const g = await gc.status().catch(() => ({ connected: false }));
     const from = overdue.map((x) => dayKey(x.start)).sort()[0];
     const list = g.connected ? await gc.events(`${from}T00:00:00-03:00`, `${dayAR(new Date(Date.now() + AHEAD_DAYS * 86400000))}T23:59:00-03:00`).catch(() => null) : null;
-    const nrm = (v) => String(v || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+    const et = require("./_lib/auto-etapas");
     for (const x of list ? overdue : []) {
-      const song = nrm(titleOfPage(songPages[key(x.songId)]));
-      const stageRe = x.stage === "Master" ? /master/i : /\b(mix|mezcla)/i;
-      const after = list.filter((e) => e.start && e.start.dateTime && !/^[✓✗]/.test(e.summary || "") && stageRe.test(e.summary || "")
-        && song && nrm(e.summary).includes(song) && Date.parse(e.start.dateTime) > Date.parse(x.start) + 30 * 60000);
+      // Solo un evento que seguro es de esta canción y etapa (por su marca o
+      // por el título con palabras completas, gcal.js → eventMatch): con una
+      // coincidencia a medias no se toca Notion («Luna» ≠ «Luna Llena»).
+      const song = { id: x.songId, title: titleOfPage(songPages[key(x.songId)]), artist: await et._artistName(x.clientId).catch(() => "") };
+      const after = list.filter((e) => e.start && e.start.dateTime && !/^[✓✗]/.test(e.summary || "")
+        && gc.eventMatch(e, song, x.stage, "sesion") && Date.parse(e.start.dateTime) > Date.parse(x.start) + 30 * 60000);
       if (!after.length) continue;
       const ahead = after.filter((e) => Date.parse(e.end.dateTime) > Date.now()).sort((a, b) => Date.parse(a.start.dateTime) - Date.parse(b.start.dateTime));
       const ev = ahead[0] || after.sort((a, b) => Date.parse(b.start.dateTime) - Date.parse(a.start.dateTime))[0];
@@ -262,7 +264,7 @@ exports.handler = async (event) => {
           const fe = sp["Fecha de entrega"] && sp["Fecha de entrega"].date && sp["Fecha de entrega"].date.start;
           const newDay = dayAR(new Date(ev.start.dateTime));
           if (fe && fe.slice(0, 10) < newDay) {
-            await rs._moveDelivery({ songId: x.songId, song: titleOfPage(songPages[key(x.songId)]), artist: "", stage: x.stage }, fe.slice(0, 10), newDay).catch(() => null);
+            await rs._moveDelivery({ songId: x.songId, song: song.title, artist: song.artist, stage: x.stage }, fe.slice(0, 10), newDay).catch(() => null);
             sp["Fecha de entrega"] = { date: { start: newDay } };
           }
         }
