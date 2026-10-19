@@ -79,6 +79,16 @@ exports.handler = async (event) => {
       const id = String(body.resolve.id || "").replace(/[^0-9a-f-]/gi, "");
       const i = Number(body.resolve.i);
       if (!id || !Number.isInteger(i) || i < 0 || i > 59) return json(400, { error: "Pedido inválido." });
+      // De una sola vez en la base (030_panel.sql → zg_toggle_resolved): dos
+      // clics rápidos ya no se pisan. Si la función todavía no existe (falta
+      // correr 030), sigue como antes: leer, cambiar y guardar.
+      const rpc = await db("rpc/zg_toggle_resolved", { method: "POST", body: { p_id: id, p_i: i, p_done: !!body.resolve.done } });
+      if (rpc.ok) {
+        if (!Array.isArray(rpc.data)) return json(404, { error: "No encontramos esas notas." });
+        return json(200, { ok: true, resolved: rpc.data });
+      }
+      const missingRpc = rpc.status === 404 || (rpc.data && rpc.data.code === "PGRST202");
+      if (!missingRpc) return json(500, { error: "No pudimos guardarlo." });
       const cur = await db(`song_approvals?id=eq.${id}&select=resolved,marks`);
       if (!cur.ok || !cur.data || !cur.data[0]) return json(cur.status === 400 ? 500 : 404, { error: cur.status === 400 ? "Falta correr 025_automatizaciones.sql en Supabase." : "No encontramos esas notas." });
       const set = new Set(Array.isArray(cur.data[0].resolved) ? cur.data[0].resolved : []);

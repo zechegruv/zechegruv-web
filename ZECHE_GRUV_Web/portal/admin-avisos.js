@@ -302,6 +302,7 @@
     let checklist = null;
     if (r.action === "cambios" && (r.marks || []).length) {
       const done = new Set(r.resolved || []);
+      let queue = Promise.resolve(); // tildes pendientes de guardar, en orden
       const box = el("div", "zc-box");
       const head = el("div", "zc-head");
       const bar = el("span", "zc-bar");
@@ -331,7 +332,11 @@
           li.classList.toggle("is-done", on);
           b.setAttribute("aria-checked", on ? "true" : "false");
           paint();
-          try { await call("/.netlify/functions/portal-reviews", { resolve: { id: r.id, i, done: on } }); }
+          // Los pedidos van de a uno, en el orden de los clics (fila de
+          // espera): con dos clics rápidos ninguno pisa al otro.
+          const send = queue.then(() => call("/.netlify/functions/portal-reviews", { resolve: { id: r.id, i, done: on } }));
+          queue = send.catch(() => {});
+          try { await send; }
           catch (e) {
             on ? done.delete(i) : done.add(i);
             li.classList.toggle("is-done", !on);
