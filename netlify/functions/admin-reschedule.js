@@ -1,19 +1,24 @@
-// Reprogramar una mezcla o un master vencido, desde el Inicio del panel.
+// Reprogramar una mezcla o un master, desde el Inicio del panel.
 //   GET  ?task=<id>&kind=sesion|entrega&dur=<min>
 //        -> huecos libres de los próximos 14 días (según Google Calendar y la
 //           rutina fija de Zeche) para elegir cuándo.
 //   POST { task, kind, date: "AAAA-MM-DD", time: "HH:MM", dur }
-//        -> mueve todo junto:
-//           · sesión: Notion (Tareas → Fecha de Vencimiento) y su evento en
-//             Google Calendar (si no existe, lo crea). Si la fecha de entrega
-//             de la canción quedaba antes, la corre a ese día (Notion y el
-//             evento "Entrega:" del calendario).
-//           · entrega: Notion (Canciones → Fecha de entrega) y el evento
-//             "Entrega:" de todo el día (si no existe, lo crea).
-// Sin Google conectado, igual reprograma en Notion (sin huecos sugeridos).
+//        -> mueve SIEMPRE las tres cosas juntas, nunca una sola:
+//           · Notion → Tareas Pendientes: la Fecha de Vencimiento de la sesión
+//             de Mix/Master de esa canción (si no hay ninguna abierta, se crea).
+//           · Notion → Canciones: la Fecha de entrega pasa a ese mismo día.
+//           · Google Calendar: el evento de la sesión y el "Entrega:" de todo
+//             el día (si no existen, se crean).
+//           "task" puede ser la tarea (fila de sesión) o la canción (fila de
+//           entrega): en los dos casos se reprograma la sesión y la entrega.
+//           Si algo falla a mitad de camino, lo que ya se había movido vuelve
+//           a su fecha anterior y se avisa. Sin Google Calendar conectado no se
+//           mueve nada (para que nunca quede Notion por un lado y el
+//           calendario por otro).
 const { json } = require("./_lib/pass");
 const gc = require("./_lib/gcal");
 const { _notion: notion, _isAdmin: isAdmin, _dayAR: dayAR } = require("./admin-tasks");
+const et = () => require("./_lib/auto-etapas");
 
 const TZ = "America/Argentina/Buenos_Aires";
 const OFF = "-03:00"; // Argentina no tiene horario de verano
@@ -88,26 +93,31 @@ async function findEvent(t, fromISO, toISO, test) {
   const hits = list.filter((e) => test(e) && song && norm(`${e.summary} ${e.description || ""}`).includes(song));
   return hits[0] || null;
 }
-const isSessionEvent = (stage) => (e) => !!(e.start && e.start.dateTime) && (stage === "Master" ? /master/i.test(e.summary || "") : /\b(mix|mezcla)/i.test(e.summary || ""));
-const isDeliveryEvent = (e) => !!(e.start && e.start.date) && /^entrega/i.test(e.summary || "");
+const isSessionEvent = (stage) => (e) => !!(e.start && e.start.dateTime) && !/^✓/.test(e.summary || "") && (stage === "Master" ? /master/i.test(e.summary || "") : /\b(mix|mezcla)/i.test(e.summary || ""));
+// "Entrega: Mix …" o "Entrega: Master …" (cada etapa la suya; las tildadas con ✓ ya no cuentan).
+const isDeliveryEvent = (stage) => (e) => !!(e.start && e.start.date) && /^entrega/i.test(e.summary || "") && (stage === "Master" ? /master/i : /\b(mix|mezcla)/i).test(e.summary || "");
 const note = (desc, text) => `${desc ? `${desc}\n\n` : ""}${text}`;
 
 async function moveDelivery(t, oldDate, newDate) {
   // Notion
   const n = await notion(`/pages/${t.songId}`, { method: "PATCH", body: JSON.stringify({ properties: { "Fecha de entrega": { date: { start: newDate } } } }) });
+  if (!n.ok) return { notion: false, calendar: "sin-tocar", undo: null };
   // Calendario: el evento "Entrega:" de todo el día
   let cal = "sin-google";
   if ((await gc.status()).connected) {
     const ref = oldDate || newDate;
-    const ev = await findEvent(t, at(addDays(ref, -3), 0), at(addDays(ref, 3), 0), isDeliveryEvent);
+    const ev = await findEvent(t, at(addDays(ref, -3), 0), at(addDays(ref, 3), 0), isDeliveryEvent(t.stage));
     const body = { start: { date: newDate }, end: { date: addDays(newDate, 1) } };
-    if (ev) { const r = await gc.patchEvent(ev.id, { ...body, description: note(ev.description, `↻ Movida desde el portal (antes: ${fmtDay(ev.start.date)}).`) }); cal = r.ok ? "movido" : "error"; }
+    if (ev && ev.start.date === newDate) cal = "sin-cambio";
+    else if (ev) { const r = await gc.patchEvent(ev.id, { ...body, description: note(ev.description, `↻ Movida desde el portal (antes: ${fmtDay(ev.start.date)}).`) }); cal = r.ok ? "movido" : "error"; if (r.ok) cal = { state: "movido", id: ev.id, old: { start: ev.start, end: ev.end } }; }
     else {
       const r = await gc.createEvent({ ...body, summary: `Entrega: ${t.stage === "Master" ? "Master" : "Mix"} ${t.song}${t.artist ? ` ${t.artist}` : ""}`, colorId: "11", transparency: "transparent", description: "Agendada desde el portal de ZECHE GRUV." });
       cal = r.ok ? "creado" : "error";
     }
   }
-  return { notion: n.ok, calendar: cal };
+  // Para quien llama: "movido" / "creado" / "error" / "sin-google" (el detalle, para deshacer).
+  const undo = cal && typeof cal === "object" ? cal : null;
+  return { notion: n.ok, calendar: undo ? undo.state : cal, undo };
 }
 
 exports.handler = async (event) => {
@@ -134,49 +144,87 @@ exports.handler = async (event) => {
   const t = await loadTask(id, kind);
   if (!t) return json(404, { error: "No encontramos la tarea en Notion." });
 
-  if (kind === "entrega") {
-    const r = await moveDelivery(t, t.date && t.date.start && t.date.start.slice(0, 10), date);
-    if (!r.notion) return json(502, { error: "Notion no dejó mover la fecha. Probá de nuevo." });
-    return json(200, { ok: true, calendar: r.calendar, label: fmtDay(date) });
-  }
-
   const time = /^\d{2}:\d{2}$/.test(body.time || "") ? body.time : null;
   if (!time) return json(400, { error: "Elegí un horario." });
   const startMin = +time.slice(0, 2) * 60 + +time.slice(3);
   const dur = Math.min(8 * 60, Math.max(30, +body.dur || 120));
   const startISO = at(date, startMin), endISO = at(date, Math.min(24 * 60 - 1, startMin + dur));
 
-  // 1) Notion
-  const n = await notion(`/pages/${id}`, { method: "PATCH", body: JSON.stringify({ properties: { "Fecha de Vencimiento": { date: { start: startISO, end: endISO } } } }) });
-  if (!n.ok) return json(502, { error: "Notion no dejó reprogramarla. Probá de nuevo." });
+  // Sin Google Calendar no se mueve nada: nunca Notion por un lado y el calendario por otro.
+  const g = await gc.status();
+  if (!g.connected) return json(409, { error: g.configured ? "Conectá Google Calendar para reprogramar: se mueven juntos el evento, la tarea y la entrega." : "Falta configurar Google Calendar en Netlify: sin eso no se puede mover el evento junto con Notion." });
 
-  // 2) Google Calendar: mover el evento de la sesión (o crearlo)
-  let calendar = "sin-google";
-  if ((await gc.status()).connected) {
-    const old = t.date && t.date.start;
-    const ref = old ? dayAR(new Date(/T/.test(old) ? old : `${old}T12:00:00${OFF}`)) : date;
-    const ev = await findEvent(t, at(addDays(ref, -2), 0), at(addDays(ref, 3), 0), isSessionEvent(t.stage));
-    const when = { start: { dateTime: startISO, timeZone: TZ }, end: { dateTime: endISO, timeZone: TZ } };
-    if (ev) {
-      const before = new Intl.DateTimeFormat("es-AR", { timeZone: TZ, weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }).format(new Date(ev.start.dateTime));
-      const r = await gc.patchEvent(ev.id, { ...when, description: note(ev.description, `↻ Reprogramada desde el portal (antes: ${before}).`) });
-      calendar = r.ok ? "movido" : "error";
-    } else {
-      const r = await gc.createEvent({ ...when, summary: `${t.stage === "Master" ? "Master" : "Mix"} – ${t.song || t.name}${t.artist ? ` (${t.artist})` : ""}`, colorId: t.stage === "Master" ? "8" : "7", description: "Agendada desde el portal de ZECHE GRUV." });
-      calendar = r.ok ? "creado" : "error";
-    }
-  }
-
-  // 3) Si la entrega de la canción quedaba antes de la nueva sesión, se corre a ese día.
-  let delivery = null;
-  const sp = t.songPage && t.songPage.properties;
-  const fe = sp && sp["Fecha de entrega"] && sp["Fecha de entrega"].date;
-  if (t.songId && fe && fe.start && fe.start.slice(0, 10) < date) {
-    const r = await moveDelivery({ ...t, kind: "entrega" }, fe.start.slice(0, 10), date);
-    delivery = r.notion ? fmtDay(date) : null;
-  }
-  return json(200, { ok: true, calendar, delivery, label: `${fmtDay(date)} · ${time} h` });
+  const r = await moveAll(t, { date, time, startISO, endISO });
+  if (!r.ok) return json(502, { error: r.error });
+  return json(200, { ok: true, calendar: r.calendar, delivery: fmtDay(date), created: r.created, label: `${fmtDay(date)} · ${time} h` });
 };
+
+// La sesión abierta de esa canción y etapa (la más próxima), o null.
+async function openSession(songId, stage) {
+  const etapa = stage === "Master" ? "Master" : "Mix";
+  const list = await et()._openTasks(songId, [etapa]).catch(() => []);
+  const when = (x) => { const d = x.properties["Fecha de Vencimiento"] && x.properties["Fecha de Vencimiento"].date; return d && d.start ? Date.parse(d.start) : Infinity; };
+  return list.sort((a, b) => when(a) - when(b))[0] || null;
+}
+
+// Mueve tarea + entrega + calendario. Si algo falla, lo ya movido vuelve atrás.
+async function moveAll(t, { date, time, startISO, endISO }) {
+  const done = []; // pasos para deshacer, en orden
+  const undo = async () => { for (const f of done.reverse()) await f().catch(() => null); };
+  const fail = async (error) => { await undo(); return { ok: false, error }; };
+
+  // Canción: hace falta su ficha (fecha de entrega vieja y artista).
+  const songPage = t.songPage || (t.songId ? (await notion(`/pages/${t.songId}`)).data : null);
+  if (!t.songId || !songPage) return { ok: false, error: "La tarea no tiene la canción vinculada en Notion: vinculala y probá de nuevo." };
+  const sp = songPage.properties || {};
+  const oldDelivery = sp["Fecha de entrega"] && sp["Fecha de entrega"].date;
+
+  // 1) La tarea de la sesión (si se reprograma desde la fila de entrega, la abierta de esa canción).
+  let task = t.kind === "sesion" ? { id: t.id, date: t.date } : null;
+  if (!task) {
+    const open = await openSession(t.songId, t.stage);
+    if (open) task = { id: open.id, date: open.properties["Fecha de Vencimiento"] && open.properties["Fecha de Vencimiento"].date };
+  }
+  let created = false;
+  if (task) {
+    const n = await notion(`/pages/${task.id}`, { method: "PATCH", body: JSON.stringify({ properties: { "Fecha de Vencimiento": { date: { start: startISO, end: endISO } } } }) });
+    if (!n.ok) return fail("Notion no dejó mover la tarea. No se cambió nada.");
+    const prev = task.date && task.date.start ? { start: task.date.start, ...(task.date.end ? { end: task.date.end } : {}) } : null;
+    done.push(() => notion(`/pages/${task.id}`, { method: "PATCH", body: JSON.stringify({ properties: { "Fecha de Vencimiento": { date: prev } } }) }));
+  } else {
+    const clientId = rel(sp, "Artista")[0] || null;
+    const c = await et()._createTask({ name: `${t.stage === "Master" ? "Master" : "Mix"} ${t.song}${t.artist ? ` ${t.artist}` : ""}`, etapa: t.stage === "Master" ? "Master" : "Mix", song: { id: t.songId, clientId }, start: startISO, end: endISO, description: "Agendada desde el portal al reprogramar la entrega." });
+    if (!c.ok) return fail("Notion no dejó crear la sesión. No se cambió nada.");
+    created = true;
+    task = { id: c.data.id, date: null };
+  }
+
+  // 2) Fecha de entrega de la canción = el día de la sesión (Notion + su evento "Entrega:").
+  const oldDay = oldDelivery && oldDelivery.start ? oldDelivery.start.slice(0, 10) : null;
+  const d = await moveDelivery({ ...t, kind: "entrega" }, oldDay, date);
+  if (!d.notion) return fail("Notion no dejó mover la fecha de entrega. Se dejó todo como estaba.");
+  done.push(() => notion(`/pages/${t.songId}`, { method: "PATCH", body: JSON.stringify({ properties: { "Fecha de entrega": { date: oldDelivery ? { start: oldDelivery.start } : null } } }) }));
+  if (d.undo) done.push(() => gc.patchEvent(d.undo.id, { start: d.undo.old.start, end: d.undo.old.end }));
+  if (d.calendar === "error") return fail("Google Calendar no dejó mover la entrega. Se dejó todo como estaba.");
+
+  // 3) El evento de la sesión en Google Calendar (si no existe, se crea).
+  const old = task.date && task.date.start;
+  const ref = old ? dayAR(new Date(/T/.test(old) ? old : `${old}T12:00:00${OFF}`)) : date;
+  const ev = await findEvent(t, at(addDays(ref, -2), 0), at(addDays(ref, 3), 0), isSessionEvent(t.stage));
+  const when = { start: { dateTime: startISO, timeZone: TZ }, end: { dateTime: endISO, timeZone: TZ } };
+  let calendar;
+  if (ev) {
+    const before = new Intl.DateTimeFormat("es-AR", { timeZone: TZ, weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }).format(new Date(ev.start.dateTime));
+    const r = await gc.patchEvent(ev.id, { ...when, description: note(ev.description, `↻ Reprogramada desde el portal (antes: ${before}).`) });
+    if (!r.ok) return fail("Google Calendar no dejó mover la sesión. Se dejó todo como estaba.");
+    calendar = "movido";
+  } else {
+    const r = await gc.createEvent({ ...when, summary: `${t.stage === "Master" ? "Master" : "Mix"} – ${t.song || t.name}${t.artist ? ` (${t.artist})` : ""}`, colorId: t.stage === "Master" ? "8" : "7", description: "Agendada desde el portal de ZECHE GRUV." });
+    if (!r.ok) return fail("Google Calendar no dejó crear la sesión. Se dejó todo como estaba.");
+    calendar = "creado";
+  }
+  return { ok: true, calendar, created };
+}
 
 exports._freeSlots = freeSlots;
 exports._moveDelivery = moveDelivery;

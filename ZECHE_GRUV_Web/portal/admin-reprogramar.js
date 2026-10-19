@@ -2,9 +2,11 @@
 // vencido. Se abre desde "Mezclas y masters" (botón del calendario en las
 // filas vencidas). Muestra los huecos libres de los próximos 14 días según
 // Google Calendar y la rutina fija (almuerzo, gimnasio, sesión con Layla),
-// sugiere el primero y, al confirmar, mueve la fecha en Notion y el evento en
-// Google Calendar (admin-reschedule.js). Sin Google conectado, igual mueve
-// Notion y ofrece conectarlo.
+// sugiere el primero y, al confirmar, mueve todo junto (admin-reschedule.js):
+// la sesión en Notion, la fecha de entrega de la canción (ese mismo día) y
+// los dos eventos de Google Calendar. Desde una fila de sesión o de entrega
+// se elige igual: día y horario de la sesión. Sin Google conectado no se
+// mueve nada y ofrece conectarlo.
 (() => {
   const P = window.ZGPortal;
   const { db } = P;
@@ -46,7 +48,9 @@
   }
 
   function open(t, onDone) {
-    const isSession = t.kind !== "entrega";
+    // Siempre se elige día y horario: la entrega va el día de la sesión.
+    const isSession = true;
+    const fromDelivery = t.kind === "entrega";
     const origDur = t.timed && t.end ? Math.round((Date.parse(t.end) - Date.parse(t.start)) / 60000) : 120;
     let dur = DURS.includes(origDur) ? origDur : 120;
     let days = [], dayIdx = 0, pick = null, google = null, busy = false;
@@ -59,7 +63,7 @@
     const head = el("div", "zr-head");
     const titles = el("div", "zr-titles");
     titles.append(
-      el("span", "zr-eyebrow", isSession ? (t.stage === "Mezcla" ? "Reprogramar sesión de mezcla" : "Reprogramar sesión de master") : (t.stage === "Mezcla" ? "Nueva fecha de entrega de la mezcla" : "Nueva fecha de entrega del master")),
+      el("span", "zr-eyebrow", fromDelivery ? (t.stage === "Mezcla" ? "Nueva fecha de entrega de la mezcla" : "Nueva fecha de entrega del master") : (t.stage === "Mezcla" ? "Reprogramar sesión de mezcla" : "Reprogramar sesión de master")),
       el("h3", "zr-title", t.song ? `«${t.song}»` : t.name),
       el("span", "zr-who", [t.artist, "estaba para " + (t.whenText || "antes")].filter(Boolean).join(" · ")),
     );
@@ -115,7 +119,7 @@
         return;
       }
       gBar.className = "zr-google";
-      gBar.append(el("span", "", google && !google.configured ? "Por ahora solo tu rutina fija (falta configurar Google en Netlify). Se mueve en Notion." : "Conectá Google Calendar para ver tus huecos reales y mover también el evento."));
+      gBar.append(el("span", "", google && !google.configured ? "Falta configurar Google en Netlify: sin el calendario no se reprograma (se mueve todo junto o nada)." : "Conectá Google Calendar para reprogramar: se mueven juntos el evento, la tarea y la entrega."));
       if (google && google.configured) {
         const b = el("button", "zr-link", "Conectar");
         b.type = "button";
@@ -170,6 +174,7 @@
 
     function paintFoot() {
       const d = days[dayIdx];
+      if (google && !google.connected) { go.disabled = true; go.textContent = "Conectá Google Calendar"; hint.textContent = ""; return; }
       if (!pick) { go.disabled = true; go.textContent = isSession ? "Elegí un horario" : "Elegí un día"; hint.textContent = ""; return; }
       go.disabled = false;
       const dayTxt = d.today ? "hoy" : d.label.replace(",", "").replace(/\./g, "");
@@ -207,9 +212,9 @@
         const out = await call("/.netlify/functions/admin-reschedule", { task: t.id, kind: t.kind, date: pick.date, time: pick.time, dur });
         go.classList.remove("is-busy"); go.classList.add("is-done");
         go.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Listo';
-        const cal = { movido: " y en Google Calendar", creado: " y agendada en Google Calendar", error: " (Google Calendar no respondió: revisalo)" }[out.calendar] || "";
-        const extra = out.delivery ? ` La entrega pasó al ${out.delivery.replace(".", "")}.` : "";
-        setTimeout(() => { busy = false; close(); toast(`Movida a ${out.label.replace(".", "")} en Notion${cal}.${extra}`, out.calendar !== "error"); if (onDone) onDone(); }, reduced() ? 0 : 520);
+        const cal = { movido: " y en Google Calendar", creado: " y agendada en Google Calendar" }[out.calendar] || "";
+        const extra = out.delivery ? ` La entrega quedó para el ${out.delivery.replace(".", "")}.` : "";
+        setTimeout(() => { busy = false; close(); toast(`Movida a ${out.label.replace(".", "")} en Notion${cal}.${extra}`); if (onDone) onDone(); }, reduced() ? 0 : 520);
       } catch (e) {
         busy = false; go.classList.remove("is-busy"); go.disabled = false;
         go.classList.remove("is-shake"); void go.offsetWidth; go.classList.add("is-shake");
