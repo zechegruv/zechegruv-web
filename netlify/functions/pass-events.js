@@ -23,7 +23,10 @@ exports.handler = async (event) => {
   const now = Date.now();
   const events = await Promise.all(res.data.map(async (e) => {
     const taken = await rpc("pass_taken", { p_event: e.id });
-    const remaining = Math.max(0, e.capacity - (taken.ok ? taken.data : e.capacity));
+    // Si no se pudo contar, no se sabe cuántos quedan: no se marca agotado
+    // ni se muestra el contador (la base igual controla el lugar al reservar).
+    if (!taken.ok) console.error("ZG PASS: no se pudieron contar los lugares", e.slug, dbDetail(taken));
+    const remaining = taken.ok ? Math.max(0, e.capacity - taken.data) : null;
     const open = e.status === "published"
       && (!e.sales_start || now >= Date.parse(e.sales_start))
       && now <= Date.parse(e.sales_end || e.starts_at);
@@ -40,10 +43,10 @@ exports.handler = async (event) => {
       important_info: e.important_info,
       lineup: (e.lineup || []).filter(Boolean),
       max_per_buyer: e.max_per_buyer,
-      on_sale: open && remaining > 0,
+      on_sale: open && (remaining === null || remaining > 0),
       sold_out: remaining === 0,
       // No se publica el número exacto salvo cuando quedan pocas.
-      few_left: remaining > 0 && remaining <= 10 ? remaining : null,
+      few_left: remaining !== null && remaining > 0 && remaining <= 10 ? remaining : null,
       openmic_open: e.openmic_enabled && (!e.openmic_deadline || now <= Date.parse(e.openmic_deadline)),
       ticket_types: (e.pass_ticket_types || [])
         .filter((t) => t.active)
