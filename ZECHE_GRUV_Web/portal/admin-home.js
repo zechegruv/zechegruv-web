@@ -99,9 +99,12 @@
     const incGoal = el("span", "zh-mono", "");
     incTop.append(incLabel, incGoal);
     const incNum = el("span", "zh-num", "—");
-    const incBarSlot = el("div");
+    let incBarSlot = el("div");
     const incSub = el("span", "zh-sub", "Leyendo tu Notion…");
+    const incRow = el("div", "zh-row"); // "Reintentar", si hace falta
     inc.append(incTop, incNum, incBarSlot, incSub);
+    // Cambia la barra por otra (al reintentar, se reemplaza la anterior).
+    const swap = (old, next) => { old.replaceWith(next); return next; };
     // 2) Artistas
     const art = el("section", "zh-card");
     const artNum = el("span", "zh-num", "—");
@@ -157,23 +160,43 @@
     ]);
 
     // Ingresos
-    if (incRes.status === "fulfilled" && incRes.value.connected) {
-      const v = incRes.value;
-      incLabel.textContent = `Ingresos de ${v.month}`;
-      incGoal.textContent = `meta ${fmtMoney(v.goal)}`;
-      countUp(incNum, v.cobrado, fmtMoney);
-      incBarSlot.replaceWith(bar(v.goal ? v.cobrado / v.goal * 100 : 0));
-      incSub.textContent = `${v.pagos} ${v.pagos === 1 ? "pago" : "pagos"} · ${Math.round(v.goal ? v.cobrado / v.goal * 100 : 0)}% de la meta` + (v.pendiente ? ` · ${fmtMoney(v.pendiente)} por cobrar` : "") + (v.gastos ? ` · gastos ${fmtMoney(v.gastos)}` : "");
-    } else {
-      const v = incRes.status === "fulfilled" ? incRes.value : {};
+    // "Conectá Notion" solo si de verdad falta la conexión (admin-ingresos.js
+    // → missing). Si Notion o la función fallaron un rato, se dice eso y se
+    // puede reintentar sin recargar.
+    const paintIngresos = (res) => {
+      incRow.remove();
+      incNum.style.fontSize = "";
+      if (res.status === "fulfilled" && res.value.connected) {
+        const v = res.value;
+        incLabel.textContent = `Ingresos de ${v.month}`;
+        incGoal.textContent = `meta ${fmtMoney(v.goal)}`;
+        countUp(incNum, v.cobrado, fmtMoney);
+        incBarSlot = swap(incBarSlot, bar(v.goal ? v.cobrado / v.goal * 100 : 0));
+        incSub.textContent = `${v.pagos} ${v.pagos === 1 ? "pago" : "pagos"} · ${Math.round(v.goal ? v.cobrado / v.goal * 100 : 0)}% de la meta` + (v.pendiente ? ` · ${fmtMoney(v.pendiente)} por cobrar` : "") + (v.gastos ? ` · gastos ${fmtMoney(v.gastos)}` : "");
+        return;
+      }
+      const v = res.status === "fulfilled" ? res.value : {};
       incGoal.textContent = v.goal ? `meta ${fmtMoney(v.goal)}` : "";
-      incNum.textContent = "Conectá Notion";
+      incBarSlot = swap(incBarSlot, bar(0));
       incNum.style.fontSize = "30px";
-      incBarSlot.replaceWith(bar(0));
-      incSub.textContent = v.problem === "not_shared"
-        ? "Falta compartir la base “Gastos e ingresos” con la integración de Notion."
-        : "Se llena solo con tu base “Gastos e ingresos” de Notion cuando la conectemos.";
-    }
+      if (v.missing) {
+        incNum.textContent = "Conectá Notion";
+        incSub.textContent = v.problem === "not_shared"
+          ? "Falta compartir la base “Gastos e ingresos” con la integración de Notion."
+          : "Se llena solo con tu base “Gastos e ingresos” de Notion cuando la conectemos.";
+        return;
+      }
+      incNum.textContent = "—";
+      incSub.textContent = "No pudimos traer los ingresos, probá en un rato.";
+      const again = btn("zh-btn is-ghost", "Reintentar", async () => {
+        again.disabled = true;
+        incSub.textContent = "Leyendo tu Notion…";
+        paintIngresos(await ingresos().then((value) => ({ status: "fulfilled", value }), (reason) => ({ status: "rejected", reason })));
+      });
+      incRow.replaceChildren(again);
+      inc.append(incRow);
+    };
+    paintIngresos(incRes);
 
     // Artistas
     const arts = artRes.status === "fulfilled" && !artRes.value.error ? artRes.value.data.filter((p) => p.role === "artist") : null;

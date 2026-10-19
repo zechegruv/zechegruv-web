@@ -6,7 +6,10 @@
 // - Solo para el administrador (sesión de Supabase en Authorization: Bearer).
 // - Variables en Netlify: NOTION_TOKEN (la misma integración "Portal ZECHE GRUV"
 //   del portal, con acceso compartido a "Gastos e ingresos") y, opcional, ZG_META_MENSUAL.
-// - Sin NOTION_TOKEN responde { connected: false } y el panel muestra cómo conectarlo.
+// - Sin NOTION_TOKEN, o si la base no está compartida con la integración,
+//   responde { connected: false, missing: true } y el panel muestra cómo
+//   conectarlo. Si Notion falla un rato (429, 500…), { temporary: true }: el
+//   panel dice "probá en un rato" y ofrece reintentar (no "Conectá Notion").
 const { SUPABASE_URL, db } = require("./_lib/pass");
 
 const PUBLISHABLE_KEY = "sb_publishable_9M2gY0XZr7xIrV-1s9AiUA_XA1uNm0V";
@@ -62,7 +65,7 @@ exports.handler = async (event) => {
   const token = (process.env.NOTION_TOKEN || "").replace(/[\s"'“”‘’]/g, "");
   const goal = Number(process.env.ZG_META_MENSUAL) || 5000000;
   const range = monthRange();
-  if (!token) return reply(200, { connected: false, goal, month: range.name });
+  if (!token) return reply(200, { connected: false, missing: true, goal, month: range.name });
 
   try {
     const rows = await queryMonth(token, range);
@@ -80,6 +83,7 @@ exports.handler = async (event) => {
     }
     return reply(200, { connected: true, month: range.name, goal, cobrado, pendiente, gastos, neto: cobrado - gastos, pagos });
   } catch (err) {
-    return reply(200, { connected: false, goal, month: range.name, problem: err.message });
+    if (err.message === "not_shared") return reply(200, { connected: false, missing: true, goal, month: range.name, problem: "not_shared" });
+    return reply(200, { connected: false, temporary: true, goal, month: range.name, problem: err.message });
   }
 };
