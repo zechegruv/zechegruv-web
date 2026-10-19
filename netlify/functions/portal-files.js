@@ -84,19 +84,34 @@ const newestFirst = (a, b) => (b.modified || "").localeCompare(a.modified || "")
 // "vivo" -> versión para show en vivo, "master", "mix"/"mezcla", "rec".
 // Si dice "vivo", es para vivo aunque también diga master. Solo se lee el
 // nombre: no se copia ni se mueve nada.
-function tagOf(name) {
-  const n = ` ${String(name || "").replace(/\.[a-z0-9]{2,5}$/i, "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim()} `;
-  if (/ (vivo|live) /.test(n)) return "vivo";
+// titles: títulos de canción que no cuentan (las subcarpetas son las
+// canciones). Así «Estoy vivo - Mix v2.wav» es Mezcla y la maqueta de «Mix
+// de emociones» no se marca como mezcla. Lo que está en una subcarpeta para
+// vivo ("Para show en vivo") es para vivo.
+const words = (s) => ` ${String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim()} `;
+// "Para show en vivo", "Vivo", "Versiones en vivo"… (no "Estoy vivo", que es
+// una canción): igual que en _lib/song-audio.js.
+const LIVE_WORDS = new Set(["vivo", "live", "para", "show", "shows", "en", "el", "la", "los", "las", "de", "del", "version", "versiones", "tracks", "pistas"]);
+const isLiveFolder = (name) => {
+  const w = words(name).trim().split(" ").filter(Boolean);
+  return w.some((x) => x === "vivo" || x === "live") && w.every((x) => LIVE_WORDS.has(x));
+};
+function tagOf(name, titles = [], liveGroup = false) {
+  let n = words(String(name || "").replace(/\.[a-z0-9]{2,5}$/i, ""));
+  // Primero el título más largo ("Seu amor" antes que "Amor").
+  [...titles].map((t) => words(t).trim()).filter(Boolean).sort((a, b) => b.length - a.length)
+    .forEach((t) => { n = n.split(` ${t} `).join(" "); });
+  if (liveGroup || / (vivo|live) /.test(n)) return "vivo";
   if (/ (master|mastered|mstr) /.test(n)) return "master";
   if (/ (mix|mezcla|mixdown) /.test(n)) return "mezcla";
   if (/ (rec|grabacion) /.test(n)) return "rec";
   return null;
 }
 
-function toFile(item) {
+function toFile(item, titles, liveGroup) {
   const fs = item.fileSystemInfo || {};
   return {
-    tag: tagOf(item.name),
+    tag: tagOf(item.name, titles, liveGroup),
     name: item.name,
     size: item.size || 0,
     created: fs.createdDateTime || item.createdDateTime || null,
@@ -105,7 +120,7 @@ function toFile(item) {
   };
 }
 
-const visibleFiles = (items) => items.filter((i) => i.file && !HIDDEN.test(i.name)).map(toFile).sort(newestFirst);
+const visibleFiles = (items, titles, liveGroup) => items.filter((i) => i.file && !HIDDEN.test(i.name)).map((i) => toFile(i, titles, liveGroup)).sort(newestFirst);
 
 // Devuelve los archivos sueltos de la sección y un grupo por subcarpeta
 // (las subcarpetas agrupan por canción).
@@ -118,11 +133,17 @@ async function listSection(shareLink, folderName) {
 
   const items = await listChildren(driveId, folder.id);
   const subfolders = items.filter((i) => i.folder && !HIDDEN.test(i.name));
-  const groups = await Promise.all(subfolders.map(async (sub) => ({
-    name: sub.name,
-    files: sub.folder.childCount ? visibleFiles(await listChildren(driveId, sub.id)) : [],
-  })));
-  return { exists: true, files: visibleFiles(items), groups: groups.sort(byName) };
+  // Las subcarpetas son canciones (salvo la de vivo): sus títulos no cuentan
+  // para la etiqueta, ni adentro de su carpeta ni en los archivos sueltos.
+  const songTitles = subfolders.filter((sub) => !isLiveFolder(sub.name)).map((sub) => sub.name);
+  const groups = await Promise.all(subfolders.map(async (sub) => {
+    const live = isLiveFolder(sub.name);
+    return {
+      name: sub.name,
+      files: sub.folder.childCount ? visibleFiles(await listChildren(driveId, sub.id), live ? songTitles : [sub.name], live) : [],
+    };
+  }));
+  return { exists: true, files: visibleFiles(items, songTitles), groups: groups.sort(byName) };
 }
 
 // ---------- Supabase ----------
