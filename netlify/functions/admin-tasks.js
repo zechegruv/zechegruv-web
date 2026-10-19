@@ -122,33 +122,37 @@ exports.handler = async (event) => {
   const limit = new Date(Date.now() + AHEAD_DAYS * 86400000);
   // Solo lo de mezcla y master: el resto (estructura, producción, grabación)
   // son sesiones presenciales de todas las semanas y no hace falta recordarlas.
+  // Las dos consultas recorren todas las páginas de Notion (has_more): con
+  // muchas tareas o canciones, ninguna de mezcla o master queda afuera.
+  const { queryAll } = require("./_lib/notion");
   const [q, sq] = await Promise.all([
-    notion(`/data_sources/${TASKS_DS}/query`, {
-      method: "POST",
-      body: JSON.stringify({
-        filter: { and: [
-          { property: "Estado de Tarea", select: { does_not_equal: "COMPLETADO" } },
-          { property: "Estado de Tarea", select: { does_not_equal: "INACTIVA" } }, // proyectos en pausa
-          { property: "Fecha de Vencimiento", date: { on_or_before: dayAR(limit) } },
+    queryAll(TASKS_DS, {
+      filter: { and: [
+        { property: "Estado de Tarea", select: { does_not_equal: "COMPLETADO" } },
+        { property: "Estado de Tarea", select: { does_not_equal: "INACTIVA" } }, // proyectos en pausa
+        { property: "Fecha de Vencimiento", date: { on_or_before: dayAR(limit) } },
+        // Solo mezcla y master (Etapa); las que no tienen Etapa entran por el
+        // nombre ("Mix …", "Mezcla …", "Master …") y abajo se revisa que empiecen así.
+        { or: [
+          { property: "Etapa", select: { equals: "Mix" } },
+          { property: "Etapa", select: { equals: "Master" } },
+          { property: "Nombre", title: { contains: "Mix" } },
+          { property: "Nombre", title: { contains: "Mezcla" } },
+          { property: "Nombre", title: { contains: "Master" } },
         ] },
-        sorts: [{ property: "Fecha de Vencimiento", direction: "ascending" }],
-        page_size: 100,
-      }),
+      ] },
+      sorts: [{ property: "Fecha de Vencimiento", direction: "ascending" }],
     }),
     // Fechas de entrega de las canciones que están en mezcla o en master.
-    notion(`/data_sources/${SONGS_DS}/query`, {
-      method: "POST",
-      body: JSON.stringify({
-        filter: { and: [
-          { or: [
-            { property: "Etapa actual", select: { equals: "Mix" } },
-            { property: "Etapa actual", select: { equals: "Master" } },
-          ] },
-          { property: "Fecha de entrega", date: { on_or_before: dayAR(limit) } },
+    queryAll(SONGS_DS, {
+      filter: { and: [
+        { or: [
+          { property: "Etapa actual", select: { equals: "Mix" } },
+          { property: "Etapa actual", select: { equals: "Master" } },
         ] },
-        sorts: [{ property: "Fecha de entrega", direction: "ascending" }],
-        page_size: 100,
-      }),
+        { property: "Fecha de entrega", date: { on_or_before: dayAR(limit) } },
+      ] },
+      sorts: [{ property: "Fecha de entrega", direction: "ascending" }],
     }),
   ]);
   if (!q.ok) return json(502, { error: "No pudimos leer Tareas Pendientes en Notion." });
@@ -159,7 +163,7 @@ exports.handler = async (event) => {
   };
 
   // Sesiones de mezcla y master (Tareas Pendientes).
-  const sessions = (q.data.results || []).map((t) => {
+  const sessions = q.results.map((t) => {
     const p = t.properties || {};
     const date = p["Fecha de Vencimiento"] && p["Fecha de Vencimiento"].date;
     if (!date || !date.start) return null;
@@ -188,7 +192,7 @@ exports.handler = async (event) => {
   const LABELS = { Mezcla: ["Mezcla entregada", "Mezcla aprobada"], Master: ["Master entregado", "Master aprobado"] };
   const KIND = { Mezcla: "mezcla", Master: "master" };
   const key = (id) => String(id || "").replace(/-/g, "");
-  const songPages = Object.fromEntries(((sq.ok && sq.data.results) || []).map((sp) => [key(sp.id), sp]));
+  const songPages = Object.fromEntries(((sq.ok && sq.results) || []).map((sp) => [key(sp.id), sp]));
   const missing = [...new Set(sessions.map((x) => x.songId).filter((id) => id && !songPages[key(id)]))];
   const fetched = await Promise.all(missing.map((id) => notion(`/pages/${id}`)));
   missing.forEach((id, i) => { if (fetched[i].ok) songPages[key(id)] = fetched[i].data; });
@@ -277,7 +281,7 @@ exports.handler = async (event) => {
   liveSessions.forEach((x) => { if (lateOf[key(x.id)]) x.late = lateOf[key(x.id)]; });
 
   // Fechas límite de entrega (Canciones → Fecha de entrega).
-  const deadlines = ((sq.ok && sq.data.results) || []).map((sp) => {
+  const deadlines = ((sq.ok && sq.results) || []).map((sp) => {
     const p = sp.properties || {};
     const date = p["Fecha de entrega"] && p["Fecha de entrega"].date;
     const etapa = p["Etapa actual"] && p["Etapa actual"].select && p["Etapa actual"].select.name;
