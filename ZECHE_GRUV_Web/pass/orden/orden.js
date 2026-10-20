@@ -57,7 +57,9 @@
     const many = order.tickets.length > 1;
     $("paidNumber").textContent = `Orden ${order.number}`;
     $("paidTitle").textContent = many ? "¡Tus entradas están confirmadas!" : "¡Tu entrada está confirmada!";
-    $("paidText").textContent = `${many ? "Te las mandamos" : "Te la mandamos"} también a ${order.buyer_email}. Podés sacarle una captura de pantalla: el QR es lo que se muestra en la puerta.`;
+    // La línea del mail va solo si la compra tiene mail (en puerta puede no tener).
+    const sent = order.buyer_email ? `${many ? "Te las mandamos" : "Te la mandamos"} también a ${order.buyer_email}. ` : "";
+    $("paidText").textContent = `${sent}Podés sacarle una captura de pantalla: el QR es lo que se muestra en la puerta.`;
     $("micBtn").hidden = !order.openmic_open;
     $("micBtn").href = `/pass/openmic/?t=${token}`;
     pdfName = `ZG-PASS-${order.tickets.length > 1 ? order.number : order.tickets[0].code}.pdf`;
