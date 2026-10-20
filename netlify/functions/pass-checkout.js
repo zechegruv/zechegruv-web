@@ -79,7 +79,11 @@ exports.handler = async (event) => {
     await rpc("pass_close_order", { p_order: order.order_id, p_status: "cancelled" });
     return json(502, { error: "No pudimos conectar con Mercado Pago. Probá de nuevo en un rato." });
   }
-  await db(`pass_orders?id=eq.${order.order_id}`, { method: "PATCH", body: { mp_preference_id: preference.data.id } });
+  // El link de pago queda con la orden: si la persona vuelve sin pagar, la
+  // página de la orden la manda de nuevo a este mismo pago mientras dure la
+  // reserva (supabase/031_pass.sql).
+  const saved = await db(`pass_orders?id=eq.${order.order_id}`, { method: "PATCH", body: { mp_preference_id: preference.data.id, pay_url: preference.data.init_point } });
+  if (!saved.ok) await db(`pass_orders?id=eq.${order.order_id}`, { method: "PATCH", body: { mp_preference_id: preference.data.id } });
 
   return json(200, {
     number: order.number,

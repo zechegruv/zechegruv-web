@@ -8,11 +8,17 @@
 // la entrada aparece al instante.
 const { json, db, dbWithLineup, dbDetail, settlePayment, sendTickets, siteUrl, serviceKey } = require("./_lib/pass");
 
-const SELECT = "id,number,status,total,expires_at,email_sent_at,buyer_first_name,buyer_last_name,buyer_email,"
+const SELECT = "id,number,status,total,expires_at,email_sent_at,buyer_first_name,buyer_last_name,buyer_email,pay_url,"
   + "pass_events(slug,kind,name,starts_at,venue_name,venue_address,important_info,openmic_enabled,openmic_deadline,lineup),"
   + "pass_tickets(code,token,status,holder_name,price_paid,pass_ticket_types(name))";
 
-const load = (token) => dbWithLineup(`pass_orders?access_token=eq.${token}&select=${SELECT}`);
+// Si la base todavía no tiene la columna pay_url (falta correr
+// supabase/031_pass.sql), se repite la consulta sin ella.
+async function load(token) {
+  const res = await dbWithLineup(`pass_orders?access_token=eq.${token}&select=${SELECT}`);
+  if (res.ok || !/pay_url/.test(dbDetail(res))) return res;
+  return dbWithLineup(`pass_orders?access_token=eq.${token}&select=${SELECT.replace("pay_url,", "")}`);
+}
 
 exports.handler = async (event) => {
   if (event.httpMethod !== "GET") return json(405, { error: "Método no permitido." });
@@ -55,6 +61,8 @@ exports.handler = async (event) => {
     buyer_name: `${order.buyer_first_name} ${order.buyer_last_name}`,
     buyer_email: order.buyer_email,
     event: order.pass_events,
+    // Mientras la reserva siga viva, el link para volver a intentar el pago.
+    pay_url: order.status === "pending" && !expired && order.pay_url ? order.pay_url : undefined,
     openmic_open: order.pass_events.openmic_enabled && (!order.pass_events.openmic_deadline || Date.now() <= Date.parse(order.pass_events.openmic_deadline)),
     // Las entradas (y sus QR) solo se entregan con la orden paga.
     tickets: paid

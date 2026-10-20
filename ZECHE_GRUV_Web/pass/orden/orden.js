@@ -23,11 +23,14 @@
     ["waiting", "state", "paid"].forEach((v) => { $(`view-${v}`).hidden = v !== name; });
   }
 
-  function showState(number, title, text, eventSlug) {
+  // payUrl: link de pago de la orden mientras la reserva sigue viva. Con
+  // él, "Volver a intentar" lleva al mismo pago de Mercado Pago (no a una
+  // compra nueva, que reservaría otros lugares).
+  function showState(number, title, text, eventSlug, payUrl) {
     $("stateNumber").textContent = number ? `Orden ${number}` : "ZG PASS";
     $("stateTitle").textContent = title;
     $("stateText").textContent = text;
-    $("stateBtn").href = eventSlug ? `/pass/?e=${encodeURIComponent(eventSlug)}` : "/pass/";
+    $("stateBtn").href = payUrl || (eventSlug ? `/pass/?e=${encodeURIComponent(eventSlug)}` : "/pass/");
     showView("state");
   }
 
@@ -114,10 +117,13 @@
     if (order.status === "expired") return showState(order.number, "Se venció el tiempo para pagar.", "Los lugares se liberaron y no se te cobró nada. Si llegaste a pagar, el dinero se devuelve solo. Podés volver a intentarlo.", slug);
     // Volvió de Mercado Pago sin pagar (rechazo o "volver al sitio").
     if (!paymentId || mpStatus === "rejected" || mpStatus === "null") {
-      if (tries >= 2) return showState(order.number, "El pago no se completó.", "No se te cobró nada. Tus lugares siguen reservados unos minutos: podés volver a intentarlo.", slug);
+      if (tries >= 2) return showState(order.number, "El pago no se completó.", "No se te cobró nada. Tus lugares siguen reservados unos minutos: podés volver a intentarlo.", slug, safePayUrl(order.pay_url));
     }
     retry(order);
   }
+
+  // Solo se usa un link de pago de Mercado Pago (https).
+  const safePayUrl = (url) => (/^https:\/\/([a-z0-9-]+\.)*mercadopago\.com(\.[a-z]{2})?\//i.test(String(url || "")) ? url : "");
 
   function retry(order) {
     if (tries >= POLL_MAX) {
