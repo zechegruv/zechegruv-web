@@ -5,6 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="{{NAME}} — ZECHE GRUV" />
   <title>{{NAME}} — ZECHE GRUV</title>
+  <link rel="canonical" href="{{CANONICAL}}">
+
+  <!-- Vista previa al compartir la página (WhatsApp, Instagram, X…) -->
+  <meta property="og:type" content="profile">
+  <meta property="og:site_name" content="ZECHE GRUV">
+  <meta property="og:url" content="{{CANONICAL}}">
+  <meta property="og:title" content="{{OG_TITLE}}">
+  <meta property="og:description" content="{{OG_DESCRIPTION}}">
+  <meta property="og:image" content="{{OG_IMAGE}}">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{OG_TITLE}}">
+  <meta name="twitter:description" content="{{OG_DESCRIPTION}}">
+  <meta name="twitter:image" content="{{OG_IMAGE}}">
 
   <link rel="icon" href="/favicon.ico?v=3" sizes="any">
   <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon/favicon-32x32.png?v=3">
@@ -23,12 +36,12 @@
 
 <body data-artist-id="{{ID}}" data-artist-slug="{{SLUG}}" data-artist-name="{{NAME}}">
   <nav>
-    <a class="nav-mark" href="../index.html">
+    <a class="nav-mark" href="/">
       <img class="nav-sun" src="../assets/zeche-gruv-sol.webp" alt="" aria-hidden="true">
       ZECHE GRUV®
     </a>
     <div class="nav-right">
-      <a class="nav-back" href="../index.html#artists" data-i18n="nav_back">← Volver al roster</a>
+      <a class="nav-back" href="/#artists" data-i18n="nav_back">← Volver al roster</a>
       <select class="lang-select" id="langSelect" aria-label="Language / Idioma">
         <option value="es">ES</option>
         <option value="en">EN</option>
@@ -76,7 +89,7 @@
 
     <div class="artist-section">
       <div class="buttons">
-{{SPOTIFY_BUTTON}}        <a class="btn" href="../index.html#artists" data-i18n="nav_back">← Volver al roster</a>
+{{SPOTIFY_BUTTON}}        <a class="btn" href="/#artists" data-i18n="nav_back">← Volver al roster</a>
       </div>
     </div>
   </main>

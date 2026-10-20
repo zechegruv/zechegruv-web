@@ -15,6 +15,7 @@ No depende de Node — este equipo no lo tiene instalado.
 """
 from __future__ import annotations
 
+import html
 import json
 import re
 import unicodedata
@@ -25,6 +26,8 @@ ARTISTS_JS = ROOT / "assets" / "data" / "artists.js"
 BIOS_JSON = ROOT / "assets" / "data" / "artist-bios.json"
 TEMPLATE = ROOT / "scripts" / "artist-page-template.html"
 OUT_DIR = ROOT / "artistas"
+SITE = "https://www.zechegruv.com"
+DEFAULT_IMAGE = f"{SITE}/assets/og-image.jpg"
 
 # photo (opcional): foto propia para artistas sin perfil de Spotify.
 ENTRY_RE = re.compile(
@@ -59,6 +62,50 @@ def load_bios():
     return {}
 
 
+def og_description(a, bio):
+    """Para la vista previa al compartir: la primera oración de la
+    biografía en español (hasta ~200 letras) o, si no hay, una frase fija."""
+    text = " ".join(str((bio or {}).get("es") or "").split())
+    if not text:
+        return f'{a["name"]}, artista de ZECHE GRUV, sello discográfico independiente de Buenos Aires.'
+    first = re.split(r"(?<=[.!?])\s", text, maxsplit=1)[0]
+    return first if len(first) <= 200 else first[:197].rsplit(" ", 1)[0] + "…"
+
+
+def render(template, a, bios):
+    """Arma la página de un artista a partir de la plantilla."""
+    # {{BIO_JSON}} lleva el diccionario {idioma: texto} de este artista
+    # (o {} si no hay biografía todavía) — assets/artist-stats.js lo lee
+    # en el navegador y elige el idioma según el selector de la página.
+    bio = bios.get(a["slug"], {})
+    bio_json = json.dumps(bio, ensure_ascii=False)
+    # Datos para buscadores y vista previa al compartir (dirección única de
+    # la página, título, descripción e imagen), escapados para ir en atributos.
+    canonical = f'{SITE}/artistas/{a["slug"]}.html'
+    if a["photo"]:
+        image = f'{SITE}/{a["photo"]}'
+    elif a["img"]:
+        image = f'https://i.scdn.co/image/{a["img"]}'
+    else:
+        image = DEFAULT_IMAGE
+    attr = lambda value: html.escape(value, quote=True)
+    return (
+        template
+        .replace("{{CANONICAL}}", attr(canonical))
+        .replace("{{OG_TITLE}}", attr(f'{a["name"]} — ZECHE GRUV'))
+        .replace("{{OG_DESCRIPTION}}", attr(og_description(a, bio)))
+        .replace("{{OG_IMAGE}}", attr(image))
+        .replace("{{NAME}}", a["name"])
+        .replace("{{ID}}", a["id"])
+        .replace("{{PHOTO_URL}}", f'../{a["photo"]}' if a["photo"] else f'https://i.scdn.co/image/{a["img"]}')
+        .replace("{{SPOTIFY_BUTTON}}", (
+            f'        <a class="btn" href="https://open.spotify.com/artist/{a["id"]}" target="_blank" rel="noopener" data-i18n="btn_spotify">Escuchar en Spotify ↗</a>\n'
+            if a["id"] else ""))
+        .replace("{{SLUG}}", a["slug"])
+        .replace("{{BIO_JSON}}", bio_json)
+    )
+
+
 def main():
     artists = load_artists()
     bios = load_bios()
@@ -66,23 +113,8 @@ def main():
     OUT_DIR.mkdir(exist_ok=True)
 
     for a in artists:
-        # {{BIO_JSON}} lleva el diccionario {idioma: texto} de este artista
-        # (o {} si no hay biografía todavía) — assets/artist-stats.js lo lee
-        # en el navegador y elige el idioma según el selector de la página.
-        bio_json = json.dumps(bios.get(a["slug"], {}), ensure_ascii=False)
-        html = (
-            template
-            .replace("{{NAME}}", a["name"])
-            .replace("{{ID}}", a["id"])
-            .replace("{{PHOTO_URL}}", f'../{a["photo"]}' if a["photo"] else f'https://i.scdn.co/image/{a["img"]}')
-            .replace("{{SPOTIFY_BUTTON}}", (
-                f'        <a class="btn" href="https://open.spotify.com/artist/{a["id"]}" target="_blank" rel="noopener" data-i18n="btn_spotify">Escuchar en Spotify ↗</a>\n'
-                if a["id"] else ""))
-            .replace("{{SLUG}}", a["slug"])
-            .replace("{{BIO_JSON}}", bio_json)
-        )
         out_path = OUT_DIR / f'{a["slug"]}.html'
-        out_path.write_text(html, encoding="utf-8")
+        out_path.write_text(render(template, a, bios), encoding="utf-8")
         print(f'{"✓" if a["slug"] in bios else "·"} {out_path.relative_to(ROOT)}')
 
     print(f"\n{len(artists)} páginas generadas. {len(bios)} con biografía real.")
