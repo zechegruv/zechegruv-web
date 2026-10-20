@@ -709,6 +709,14 @@
     return ok;
   }
 
+  // Una letra que quedó vacía (sin título ni texto) no se guarda: se borra,
+  // así no quedan tarjetas "Sin título" en el cuaderno.
+  function dropIfEmpty(leaving) {
+    if (!isEmpty(leaving)) return;
+    lyrics = lyrics.filter((l) => l.id !== leaving.id);
+    db.from("lyrics").delete().eq("id", leaving.id).then(() => {});
+  }
+
   // Al salir del editor se guarda lo pendiente; si quedó vacía, se borra.
   async function closeEditor() {
     if (!doc) return;
@@ -717,10 +725,7 @@
     const leaving = doc;
     doc = null;
     setReading(false);
-    if (isEmpty(leaving)) {
-      lyrics = lyrics.filter((l) => l.id !== leaving.id);
-      db.from("lyrics").delete().eq("id", leaving.id).then(() => {});
-    }
+    dropIfEmpty(leaving);
     window.ZGFiles.open("letras", profile);
   }
 
@@ -770,9 +775,10 @@
   });
   // Si se sale del editor por otro lado (pestañas, cerrar sesión), se guarda
   // igual. El editor se vacía solo si se guardó bien; si no, lo pendiente
-  // queda en el dispositivo y se reintenta solo (flushPending).
+  // queda en el dispositivo y se reintenta solo (flushPending). Si quedó
+  // vacía, se borra igual que al volver con «←».
   new MutationObserver(() => {
-    if ($("panel-lyric").hidden && doc) { const d = doc; setReading(false); save().then((ok) => { if (ok && doc === d) doc = null; }); }
+    if ($("panel-lyric").hidden && doc) { const d = doc; setReading(false); save().then((ok) => { if (ok && doc === d) { doc = null; dropIfEmpty(d); } }); }
   }).observe($("panel-lyric"), { attributes: true, attributeFilter: ["hidden"] });
 
   // Alto de la barra de arriba del portal cuando queda fija (celu): las
