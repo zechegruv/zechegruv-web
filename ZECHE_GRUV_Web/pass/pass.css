@@ -320,8 +320,11 @@ a.btn { display: inline-block; }
 .pass-meta dd span { display: block; font-size: 12.5px; font-weight: 500; color: var(--soft); letter-spacing: 0; margin-top: 2px; }
 
 /* Line up (en la página del evento y en la entrada). */
-dd.lineup { display: flex; flex-wrap: wrap; row-gap: 2px; text-transform: uppercase; letter-spacing: .01em; }
-dd.lineup b { font-weight: 800; white-space: nowrap; }
+/* Cada nombre pasa entero a la línea siguiente; solo si un nombre solo es
+   más ancho que la línea (p. ej. a 375 px) se corta adentro, en vez de
+   empujar la página hacia el costado. */
+dd.lineup { display: flex; flex-wrap: wrap; row-gap: 2px; min-width: 0; text-transform: uppercase; letter-spacing: .01em; }
+dd.lineup b { font-weight: 800; min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
 dd.lineup b:not(:last-child)::after { content: "·"; color: var(--orange-soft); margin: 0 .4em; }
 .pass dd.lineup { font-size: 17px; }
 .pass dd.lineup b:not(:last-child)::after { color: var(--accent); }
