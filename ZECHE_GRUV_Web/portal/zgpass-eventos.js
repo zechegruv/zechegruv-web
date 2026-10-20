@@ -410,6 +410,8 @@
   $("zgpConfigClose").addEventListener("click", () => $("zgpConfig").close());
 
   // ---------- Lista de invitados: entradas sin cargo por mail ----------
+  const GL_BATCH = 5;  // invitados por pedido: cada tanda termina rápido
+  const glKey = () => (window.crypto && crypto.randomUUID ? crypto.randomUUID() : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`);
   function glRow() {
     const row = el("div", "gl-row");
     row.innerHTML = `
@@ -418,6 +420,11 @@
       <div class="field gl-mail"><label>Mail</label><input type="email" class="gl-email" maxlength="160" autocomplete="off" inputmode="email"></div>
       <div class="field gl-qty"><label>Entradas</label><input type="number" class="gl-quantity" min="1" max="10" value="1" inputmode="numeric"></div>
       <button class="link-btn gl-remove" type="button" aria-label="Quitar">✕</button>`;
+    // Clave única de este invitado: viaja con su envío y, si una tanda se
+    // corta y se reenvía, el servidor no le emite una segunda entrada. Si se
+    // cambian sus datos, es otro invitado: clave nueva.
+    row.dataset.idem = glKey();
+    row.addEventListener("input", () => { row.dataset.idem = glKey(); });
     row.querySelector(".gl-remove").addEventListener("click", () => { if ($("glRows").children.length > 1) row.remove(); else row.querySelectorAll("input").forEach((i) => { i.value = i.type === "number" ? 1 : ""; }); });
     return row;
   }
@@ -473,6 +480,8 @@
       last_name: r.querySelector(".gl-last").value.trim(),
       email: r.querySelector(".gl-email").value.trim(),
       quantity: Number(r.querySelector(".gl-quantity").value) || 1,
+      idem: r.dataset.idem,
+      row: r,
     })).filter((g) => g.first_name || g.last_name || g.email);
     if (!guests.length) return setMsg($("glMsg"), "Completá al menos un invitado.", true);
     if (guests.some((g) => !g.first_name || !g.last_name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(g.email))) return setMsg($("glMsg"), "Cada invitado necesita nombre, apellido y un mail válido (ahí le llega la entrada).", true);
@@ -482,25 +491,35 @@
     if (!window.confirm(`¿Enviar ${total} ${total > 1 ? "entradas" : "entrada"} sin cargo para “${ev.name}” (${fmtDate(ev.starts_at)}) a ${guests.length} ${guests.length > 1 ? "invitados" : "invitado"}? Les llegan por mail en el momento.`)) return;
     $("glSend").disabled = true;
     setMsg($("glMsg"), "Enviando entradas…");
-    try {
-      const { results } = await A.call({ action: "guestlist_send", event_id: ev.id, ticket_type_id: $("glType").value, guests });
-      const okList = results.filter((r) => r.ok);
-      const failed = results.filter((r) => !r.ok);
-      const noMail = okList.filter((r) => !r.emailed);
-      const parts = [`Listo: ${okList.length} de ${results.length} ${results.length > 1 ? "invitados" : "invitado"} con entrada.`];
-      if (noMail.length) parts.push(`No pudimos mandar el mail a: ${noMail.map((r) => r.name).join(", ")} (la entrada está emitida; reenviala desde “Entradas”).`);
-      if (failed.length) parts.push(`No se emitió para: ${failed.map((r) => `${r.name} (${r.error})`).join(", ")}.`);
-      setMsg($("glMsg"), parts.join(" "), !!(failed.length || noMail.length));
-      // Quedan en el formulario solo los que fallaron, para reintentar.
-      const failedEmails = new Set(failed.map((r) => r.email));
-      rows.forEach((r) => { if (!failedEmails.has(r.querySelector(".gl-email").value.trim())) r.remove(); });
-      if (!$("glRows").children.length) $("glRows").append(glRow());
-      await A.reload(A.current.id); // actualiza los números (y vuelve a cargar la lista)
-    } catch (err) {
-      setMsg($("glMsg"), err.message, true);
-    } finally {
-      $("glSend").disabled = false;
+    // Se manda de a tandas chicas. Cada invitado confirmado sale del
+    // formulario en el momento; si una tanda se corta, quedan los que no se
+    // confirmaron y se pueden reenviar (con su misma clave: el que ya tenía
+    // su entrada no recibe otra).
+    const results = [];
+    let cut = null;
+    for (let i = 0; i < guests.length; i += GL_BATCH) {
+      const batch = guests.slice(i, i + GL_BATCH);
+      setMsg($("glMsg"), `Enviando entradas… (${Math.min(i + GL_BATCH, guests.length)} de ${guests.length})`);
+      try {
+        const out = await A.call({ action: "guestlist_send", event_id: ev.id, ticket_type_id: $("glType").value, guests: batch.map(({ row, ...g }) => g) });
+        out.results.forEach((r, j) => { results.push(r); if (r.ok && batch[j]) batch[j].row.remove(); });
+      } catch (err) {
+        cut = err;
+        break;
+      }
     }
+    const okList = results.filter((r) => r.ok);
+    const failed = results.filter((r) => !r.ok);
+    const noMail = okList.filter((r) => !r.emailed);
+    const parts = [`Listo: ${okList.length} de ${guests.length} ${guests.length > 1 ? "invitados" : "invitado"} con entrada.`];
+    if (noMail.length) parts.push(`No pudimos mandar el mail a: ${noMail.map((r) => r.name).join(", ")} (la entrada está emitida; reenviala desde “Entradas”).`);
+    if (failed.length) parts.push(`No se emitió para: ${failed.map((r) => `${r.name} (${r.error})`).join(", ")}.`);
+    if (cut) parts.push(`Se cortó el envío (${cut.message}). Los que quedan abajo todavía no están confirmados: tocá “Enviar” de nuevo; a quien ya le llegó su entrada no se le manda otra.`);
+    setMsg($("glMsg"), parts.join(" "), !!(failed.length || noMail.length || cut));
+    if (!$("glRows").children.length) $("glRows").append(glRow());
+    $("glSend").disabled = false;
+    // Actualiza los números (y vuelve a cargar la lista).
+    if (okList.length) await A.reload(A.current.id).catch(() => {});
   });
 
   window.ZGEventos = { review, openEditor, loadGuestlist };

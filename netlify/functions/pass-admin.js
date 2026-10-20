@@ -10,7 +10,8 @@
 //   events                                   → eventos con sus datos y sus números
 //   event_save { event_id?, event, ticket_types } → crea (en borrador) o edita un evento y sus entradas
 //   door_list / door_add { label } / door_remove { access_id } → links de acceso de puerta del evento
-//   guestlist_send { ticket_type_id, guests: [{ first_name, last_name, email, quantity }] } → entradas sin cargo por mail
+//   guestlist_send { ticket_type_id, guests: [{ first_name, last_name, email, quantity, idem }] } → entradas sin cargo por mail
+//            (hasta 10 por pedido; idem: clave única de cada invitado para no emitir dos veces)
 //   settings / root_save { kind: show | camp, root_folder_link } → carpetas madre de los eventos
 //   tickets  { event_id }                    → entradas emitidas del evento
 //   openmic  { event_id }                    → inscriptos al open mic
@@ -33,6 +34,7 @@ const drive = require("./_lib/onedrive");
 const { summary, checkTicket, issueTickets } = require("./_lib/pass-ops");
 const folders = require("./_lib/pass-folders");
 
+const GUESTS_PER_CALL = 10;  // invitados por pedido (el panel manda de a 5)
 const PUBLISHABLE_KEY = "sb_publishable_9M2gY0XZr7xIrV-1s9AiUA_XA1uNm0V";
 const text = (value, max) => String(value || "").replace(/\s+/g, " ").trim().slice(0, max);
 
@@ -446,18 +448,22 @@ exports.handler = async (event) => {
   if (body.action === "peek" || body.action === "checkin") return checkTicket(eventId, body, adminId, { allowCode: true });
 
   // ---------- Lista de invitados: entradas sin cargo por mail ----------
-  // guests: [{ first_name, last_name, email, quantity }]. Cada invitado recibe
-  // su entrada bonificada por mail (ocupa un lugar igual que una paga).
+  // guests: [{ first_name, last_name, email, quantity, idem }]. Cada invitado
+  // recibe su entrada bonificada por mail (ocupa un lugar igual que una paga).
+  // El panel manda la lista en tandas chicas (así cada pedido termina rápido)
+  // y cada invitado lleva su clave única (idem): si una tanda se corta y se
+  // reenvía, al que ya tenía su entrada no se le emite otra.
   if (body.action === "guestlist_send") {
     const typeId = String(body.ticket_type_id || "");
-    const list = (Array.isArray(body.guests) ? body.guests : []).slice(0, 50);
+    const list = Array.isArray(body.guests) ? body.guests : [];
     if (!list.length) return json(400, { error: "Agregá al menos un invitado." });
+    if (list.length > GUESTS_PER_CALL) return json(400, { error: `Mandá los invitados de a ${GUESTS_PER_CALL} como máximo.` });
     const results = [];
     for (const g of list) {
       const out = await issueTickets(event, eventId, {
         ticket_type_id: typeId, quantity: Number(g.quantity) || 1,
-        first_name: g.first_name, last_name: g.last_name, email: g.email, method: "comp", checkin: false,
-      }, adminId, { allowComp: true });
+        first_name: g.first_name, last_name: g.last_name, email: g.email, method: "comp", checkin: false, idem: g.idem,
+      }, adminId, { allowComp: true, idemPrefix: "gl" });
       const data = JSON.parse(out.body || "{}");
       results.push({ name: `${text(g.first_name, 60)} ${text(g.last_name, 60)}`.trim(), email: text(g.email, 160), ok: out.statusCode === 200, emailed: !!data.emailed, error: data.error || null, tickets: (data.tickets || []).length });
     }
