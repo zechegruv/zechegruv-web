@@ -638,7 +638,8 @@
       if (st && !st.phone) $("waHint").textContent = WA_NO_PHONE;
       return;
     }
-    // Administrador: una línea, solo lectura.
+    // Administrador: una línea, solo lectura (y otra de notificaciones, notificaciones.js).
+    if (window.ZGPush) window.ZGPush.paintAdminLine(p);
     if (!st) { $("waHint").textContent = "No pudimos revisar su ficha ahora."; return; }
     const phone = st.phone ? `Teléfono …${st.last4}` : st.written ? "El teléfono de su ficha no se entiende (revisalo en Notion)" : "Sin teléfono en su ficha de Notion";
     const on = st.on ? "avisos activos" : "avisos apagados por el artista";

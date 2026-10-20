@@ -62,9 +62,9 @@
     return sub && Notification.permission === "granted" ? "on" : "off";
   }
 
-  async function api(method, body) {
+  async function api(method, body, qs = "") {
     const p = P();
-    const res = await p.authFetch("/.netlify/functions/portal-push", body ? { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) } : { method });
+    const res = await p.authFetch(`/.netlify/functions/portal-push${qs}`, body ? { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) } : { method });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.error || "No pudimos conectarnos.");
     return data;
@@ -171,6 +171,23 @@
   }
 
   // ---------- Mi perfil ----------
+  // Administrador mirando la ficha de un artista: una línea, solo lectura,
+  // con si las activó y qué tipos recibe.
+  async function paintAdminLine(artist) {
+    const row = $("waRow");
+    if (!row) return;
+    let line = $("zgnAdmin");
+    if (!line) { line = document.createElement("p"); line.id = "zgnAdmin"; line.className = "hint zgn-admin"; row.querySelector(".wa-text").append(line); }
+    line.textContent = "Notificaciones: revisando…";
+    let st = null;
+    try { st = await api("GET", null, `?artist=${encodeURIComponent(artist.id)}`); } catch (e) { st = null; }
+    if (!st) { line.textContent = "Notificaciones: no pudimos revisarlas ahora."; return; }
+    if (!st.configured) { line.textContent = "Notificaciones: todavía sin las claves en Netlify (docs/NOTIFICACIONES.md)."; return; }
+    const types = [st.proyecto && "su proyecto", st.novedades && "eventos"].filter(Boolean);
+    line.textContent = !st.devices ? "Notificaciones: todavía no las activó."
+      : `Notificaciones: activas en ${st.devices === 1 ? "1 dispositivo" : `${st.devices} dispositivos`}${types.length ? ` · recibe ${types.join(" y ")}` : " · tiene los dos tipos apagados"}.`;
+  }
+
   async function paintProfile() {
     const row = $("waRow");
     const form = row && row.parentElement;
@@ -298,5 +315,5 @@
   // Mi perfil se arma de nuevo cada vez que se abre: se vuelve a sumar la fila.
   document.addEventListener("click", (e) => { if (e.target.closest('#artistTabs [data-atab="perfil"]')) setTimeout(paintProfile, 0); });
 
-  window.ZGPush = { ready, logout, paintProfile, _state: deviceState };
+  window.ZGPush = { ready, logout, paintProfile, paintAdminLine, _state: deviceState };
 })();

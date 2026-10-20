@@ -138,6 +138,18 @@ const open = async (h, path = "/portal/") => {
       assert(h.calls.some((c) => c.body && c.body.action === "unsubscribe"), "no dio de baja el dispositivo al salir");
     } finally { await h.close(); }
   });
+  await test("panel: la ficha del artista dice si activó las notificaciones y qué tipos recibe", async () => {
+    const h = await harness({ sb: { session: SESSION, profile: ARTIST }, fn: async (name, req, url) => ({ json: name === "portal-push" ? (url.searchParams.get("artist") ? { configured: true, devices: 2, proyecto: true, novedades: false } : { configured: true, devices: 0, proyecto: true, novedades: true }) : name === "portal-shows" ? { shows: [] } : name === "portal-songs" ? { configured: true, active: [], done: [] } : {} }) });
+    try {
+      await h.page.goto(h.url("/portal/"));
+      await h.page.waitForFunction(() => window.ZGPush && !document.getElementById("view-app").hidden);
+      await h.page.evaluate(() => window.ZGPush.paintAdminLine({ id: "22222222-2222-4222-8222-222222222222" }));
+      await h.page.waitForFunction(() => /activas en 2 dispositivos/.test((document.getElementById("zgnAdmin") || {}).textContent || ""));
+      const t = await h.page.locator("#zgnAdmin").innerText();
+      assert(/recibe su proyecto\.$/.test(t), t);
+    } finally { await h.close(); }
+  });
+
   await test("el service worker muestra la notificación que llega (título, texto, ícono y a dónde lleva)", async () => {
     const h = await harness({ sw: true, full: true, sb: { session: SESSION, profile: ARTIST }, fn: async (name) => ({ json: name === "portal-push" ? { configured: false } : name === "portal-shows" ? { shows: [] } : name === "portal-songs" ? { configured: true, active: [], done: [] } : {} }) });
     try {

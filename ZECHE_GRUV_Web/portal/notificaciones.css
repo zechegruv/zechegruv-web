@@ -45,3 +45,6 @@
   .zgn-actions .btn, .zgn .zgn-actions .zgi-btn { flex: none; width: 100%; min-height: 46px; }
 }
 @media (prefers-reduced-motion: reduce) { .zgn.is-done .zgn-main { animation: none; } }
+
+/* Panel: línea de solo lectura en la ficha del artista. */
+.zgn-admin { margin-top: 6px; color: var(--beige, #E8D2AE); }

@@ -18,12 +18,14 @@ const fmtTime = (iso) => {
   const [h, m] = new Intl.DateTimeFormat("en-GB", { timeZone: TZ, hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date(iso)).split(":");
   return m === "00" ? `${+h} h` : `${+h}:${m} h`;
 };
+// "en el Teatro Sergio Souza", "en La Tangente": con artículo cuando el nombre es un lugar genérico.
+const atVenue = (v) => (!v ? "" : /^(teatro|centro|club|bar|espacio|estudio|sal[oó]n|auditorio|anfiteatro|museo|galp[oó]n|patio)\b/i.test(v) ? ` en el ${v}` : ` en ${v}`);
 const firstName = (p) => String(p.display_name || p.full_name || "").trim().split(/\s+/)[0] || "";
 
 // Textos (en primera persona, directos; ver docs/NOTIFICACIONES.md).
 function inviteText(ev, p) {
   const day = fmtDay(ev.starts_at);
-  const where = ev.venue_name ? ` en ${ev.venue_name}` : "";
+  const where = atVenue(ev.venue_name);
   return {
     title: `Open mic del ${day}`,
     body: `Hola ${firstName(p)}, el ${day} a las ${fmtTime(ev.starts_at)} es ${ev.name}${where}. Si querés cantar una canción tuya en el open mic, sacá tu entrada y anotate desde la página del evento.`,
@@ -31,7 +33,7 @@ function inviteText(ev, p) {
   };
 }
 function dayText(ev, p) {
-  const where = ev.venue_name ? ` en ${ev.venue_name}` : "";
+  const where = atVenue(ev.venue_name);
   return {
     title: `Hoy tocás en ${ev.name}`,
     body: `Hola ${firstName(p)}, hoy es el show. Te espero a las ${fmtTime(ev.starts_at)}${where}. Disfrutalo: es tu noche.`,

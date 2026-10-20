@@ -191,7 +191,7 @@ const queueOf = (who) => S.tables.push_queue.filter((r) => r.profile_id === who)
   check("invitación al open mic: no a las 10:30 (sale entre las 12 y las 21)", !newsTo(LUNA).length, newsTo(LUNA));
   at("2026-10-26T15:00:00-03:00"); await eventos.runEvents(); await eventos.runEvents();
   const inv = newsTo(LUNA);
-  check("a las 15: invitación a quien no toca (Luna), una sola vez", inv.length === 1 && inv[0].sent_at && inv[0].title === "Open mic del sábado 31" && /cantar una canción tuya/.test(inv[0].body) && inv[0].url === `/pass/?e=${evRow.slug}`, inv);
+  check("a las 15: invitación a quien no toca (Luna), una sola vez", inv.length === 1 && inv[0].sent_at && inv[0].title === "Open mic del sábado 31" && /cantar una canción tuya/.test(inv[0].body) && /en el Teatro Sergio Souza/.test(inv[0].body) && inv[0].url === `/pass/?e=${evRow.slug}`, inv);
   check("a quien toca (Bastian) no le llega la invitación; a Pazz, que salió del line up, sí", !newsTo(BAST).length && newsTo(PAZZ).length === 1, { b: newsTo(BAST), p: newsTo(PAZZ) });
 
   // Tope de 2 por semana.
@@ -207,7 +207,7 @@ const queueOf = (who) => S.tables.push_queue.filter((r) => r.profile_id === who)
   check("el día del show a las 9:30 todavía no", !newsTo(BAST).length, newsTo(BAST));
   at("2026-10-31T10:15:00-03:00"); await eventos.runEvents(); await eventos.runEvents();
   const day = newsTo(BAST);
-  check("a las 10:15: «Hoy tocás» a quien toca, una sola vez", day.length === 1 && day[0].title === "Hoy tocás en Shows & Open Mic 3" && /20 h/.test(day[0].body) && /Teatro Sergio Souza/.test(day[0].body), day);
+  check("a las 10:15: «Hoy tocás» a quien toca, una sola vez", day.length === 1 && day[0].title === "Hoy tocás en Shows & Open Mic 3" && /20 h/.test(day[0].body) && /en el Teatro Sergio Souza/.test(day[0].body), day);
   check("el día del show no les llega a los que no tocan", newsTo(LUNA).length === 2, newsTo(LUNA).length);
 
   // ---------- Cerrar sesión ----------
