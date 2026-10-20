@@ -117,6 +117,11 @@ function detectInitialLang() {
   applyLanguage(detectInitialLang());
   langSelect?.addEventListener("change", () => applyLanguage(langSelect.value));
 
+  // Los datos vienen de Spotify: todo texto va escapado (un título con
+  // comillas o "<" no puede romper la tarjeta) y los links, solo http(s).
+  const esc = (str) => String(str == null ? "" : str).replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+  const safeUrl = (url, fallback = "") => (/^https?:\/\//i.test(String(url || "")) ? String(url) : fallback);
+
   function formatNumber(n) {
     if (typeof n !== "number") return null;
     return new Intl.NumberFormat("es-AR").format(n);
@@ -131,12 +136,12 @@ function detectInitialLang() {
     tracksList.innerHTML = tracks.slice(0, 3).map((t, i) => {
       const plays = (trackPlays && trackPlays[t.id]) || t.plays;
       return `
-      <div class="top-track" data-spotify-uri="spotify:track:${t.id}" data-spotify-name="${t.name}">
+      <div class="top-track" data-spotify-uri="spotify:track:${esc(t.id)}" data-spotify-name="${esc(t.name)}">
         <div class="top-track-index">${i + 1}</div>
-        <img class="top-track-cover" src="${t.cover || ""}" alt="" loading="lazy">
+        <img class="top-track-cover" src="${esc(safeUrl(t.cover))}" alt="" loading="lazy">
         <div class="top-track-info">
-          <div class="top-track-name">${t.name}</div>
-          <div class="top-track-artists">${t.artists || ""}</div>
+          <div class="top-track-name">${esc(t.name)}</div>
+          <div class="top-track-artists">${esc(t.artists)}</div>
         </div>
         ${plays ? `<div class="top-track-plays">${formatNumber(plays)}</div>` : ""}
       </div>
@@ -209,16 +214,20 @@ function detectInitialLang() {
       });
       if (!matches.length) return;
 
-      grid.innerHTML = matches.map((item) => `
-        <a href="${item.url}" target="_blank" rel="noopener" class="release-card"
-           data-spotify-uri="spotify:${item.type === "track" ? "track" : "album"}:${item.id}" data-spotify-name="${item.name}">
-          <div class="release-art"><img src="${item.cover || ""}" alt="${item.name} — cover art" loading="lazy" decoding="async"></div>
+      grid.innerHTML = matches.map((item) => {
+        const kind = item.type === "track" ? "track" : "album";
+        const href = safeUrl(item.url, `https://open.spotify.com/${kind}/${encodeURIComponent(item.id || "")}`);
+        return `
+        <a href="${esc(href)}" target="_blank" rel="noopener" class="release-card"
+           data-spotify-uri="spotify:${kind}:${esc(item.id)}" data-spotify-name="${esc(item.name)}">
+          <div class="release-art"><img src="${esc(safeUrl(item.cover))}" alt="${esc(item.name)} — cover art" loading="lazy" decoding="async"></div>
           <div class="card-info">
-            <div class="card-name">${item.name}</div>
-            <div class="card-meta">${item.artists}${item.appearsOn ? " · Aparece en" : ""}</div>
+            <div class="card-name">${esc(item.name)}</div>
+            <div class="card-meta">${esc(item.artists)}${item.appearsOn ? " · Aparece en" : ""}</div>
           </div>
         </a>
-      `).join("");
+      `;
+      }).join("");
 
       grid.querySelectorAll("[data-spotify-uri]").forEach((el) => {
         el.addEventListener("click", (event) => {

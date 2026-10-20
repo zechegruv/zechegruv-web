@@ -118,6 +118,8 @@ let beatPanelOpen = false;
 let beatListOpen = false; // lista completa, se abre con la flecha
 
 const escHtml = (str) => String(str).replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+// Solo links http(s): cualquier otra cosa (javascript:, data:…) se descarta.
+const safeHttpUrl = (url, fallback = "") => (/^https?:\/\//i.test(String(url || "")) ? String(url) : fallback);
 // Para buscar sin importar mayúsculas ni tildes.
 const normText = (str) => String(str).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
 
@@ -1037,16 +1039,22 @@ if (!savedLang()) {
     const sig = JSON.stringify(items.map((i) => [i.id, i.cover]));
     if (sig === shown) return;
     shown = sig;
-    grid.innerHTML = items.map((item, n) => `
-      <a href="${item.url}" target="_blank" rel="noopener" class="release-card"
-         data-spotify-uri="spotify:${item.type === "track" ? "track" : "album"}:${item.id}" data-spotify-name="${item.name}">
-        <div class="release-art"><img src="${item.cover || ""}" alt="${item.name} — cover art" ${n < 8 ? 'fetchpriority="high"' : 'loading="lazy"'} decoding="async"></div>
+    // Los datos vienen de Spotify: todo texto va escapado (un título con
+    // comillas o "<" no puede romper la tarjeta) y los links, solo http(s).
+    grid.innerHTML = items.map((item, n) => {
+      const kind = item.type === "track" ? "track" : "album";
+      const href = safeHttpUrl(item.url, `https://open.spotify.com/${kind}/${encodeURIComponent(item.id || "")}`);
+      return `
+      <a href="${escHtml(href)}" target="_blank" rel="noopener" class="release-card"
+         data-spotify-uri="spotify:${kind}:${escHtml(item.id || "")}" data-spotify-name="${escHtml(item.name || "")}">
+        <div class="release-art"><img src="${escHtml(safeHttpUrl(item.cover))}" alt="${escHtml(item.name || "")} — cover art" ${n < 8 ? 'fetchpriority="high"' : 'loading="lazy"'} decoding="async"></div>
         <div class="card-info">
-          <div class="card-name">${item.name}</div>
-          <div class="card-meta">${item.artists}${item.appearsOn ? " · Aparece en" : ""}</div>
+          <div class="card-name">${escHtml(item.name || "")}</div>
+          <div class="card-meta">${escHtml(item.artists || "")}${item.appearsOn ? " · Aparece en" : ""}</div>
         </div>
       </a>
-    `).join("");
+    `;
+    }).join("");
 
     document.querySelectorAll("#fullCatalogueGrid [data-spotify-uri]").forEach((el) => {
       el.addEventListener("click", (event) => {
