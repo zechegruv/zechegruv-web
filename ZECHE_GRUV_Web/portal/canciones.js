@@ -546,6 +546,23 @@
     return promise;
   }
 
+  // Los links de audio de OneDrive vencen al rato. El reproductor, si no
+  // puede abrir un audio, pide las canciones de nuevo (sin usar lo guardado)
+  // y recibe la canción con links nuevos (revision.js).
+  async function fresh(songId) {
+    let owner = null;
+    for (const [id, hit] of cache.entries()) {
+      const all = hit && hit.data ? [...(hit.data.active || []), ...(hit.data.done || [])] : [];
+      if (all.some((x) => x.id === songId)) { owner = id; break; }
+    }
+    if (!owner || !P.me) return null;
+    const profile = owner === P.me.id ? P.me : shownProfile && shownProfile.id === owner ? shownProfile : { id: owner };
+    const hit = cache.get(owner);
+    cache.set(owner, { ...hit, promise: null }); // que no reuse un pedido en curso
+    const data = await fetchSongs(profile);
+    return [...(data.active || []), ...(data.done || [])].find((x) => x.id === songId) || null;
+  }
+
   const countLabel = (n) => (n === 1 ? "1 canción" : `${n} canciones`);
 
   async function load(profile) {
@@ -673,5 +690,5 @@
     return (s && s.feat) || null;
   }
 
-  window.ZGSongs = { load, titles, find, feat, openWhenReady };
+  window.ZGSongs = { load, titles, find, feat, openWhenReady, fresh };
 })();

@@ -443,6 +443,7 @@
       return;
     }
     audio.dataset.url = btn.dataset.play;
+    delete audio.dataset.retried;
     audio.src = btn.dataset.play;
     $("playerName").textContent = btn.dataset.name;
     $("playerNow").textContent = "0:00";
@@ -462,9 +463,34 @@
     $("playerNow").textContent = fmtTime(audio.currentTime);
     if (audio.duration) $("playerSeek").value = Math.round((audio.currentTime / audio.duration) * 1000);
   });
-  audio.addEventListener("error", () => {
-    if (!audio.dataset.url) return;
-    // Los links de OneDrive vencen al rato: hay que volver a abrir la sección.
+  // Los links de OneDrive vencen al rato: si el audio no abre, se vuelve a
+  // pedir la sección (sin usar lo guardado) y se reproduce con el link nuevo
+  // del mismo archivo. Una sola vez por audio: si vuelve a fallar, se avisa.
+  const findFile = (data, test) => {
+    for (const f of (data && data.files) || []) if (test(f, "")) return { file: f, group: "" };
+    for (const g of (data && data.groups) || []) for (const f of g.files || []) if (test(f, g.name)) return { file: f, group: g.name };
+    return null;
+  };
+  audio.addEventListener("error", async () => {
+    const url = audio.dataset.url;
+    if (!url) return;
+    const hit = cache.get(cacheKey(section, profile));
+    const was = !audio.dataset.retried && findFile(hit && hit.data, (f) => f.url === url);
+    if (was) {
+      audio.dataset.retried = "1";
+      const sec = section, who = profile;
+      const data = await fetchSection(sec, who, true).catch(() => null);
+      const now = data && findFile(data, (f, g) => f.name === was.file.name && g === was.group);
+      if (now && now.file.url && now.file.url !== url && audio.dataset.url === url) {
+        audio.dataset.url = now.file.url;
+        audio.src = now.file.url;
+        audio.play().catch(() => {});
+        // La lista también queda con los links nuevos.
+        if (section === sec && profile === who) document.querySelectorAll(`#filesList .play-btn[data-play="${CSS.escape(url)}"]`).forEach((b) => { b.dataset.play = now.file.url; });
+        syncPlayer();
+        return;
+      }
+    }
     $("playerName").textContent = "No pudimos reproducir este audio. Volvé a abrir la sección y probá de nuevo.";
     syncPlayer();
   });

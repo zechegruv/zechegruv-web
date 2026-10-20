@@ -389,12 +389,45 @@
   audio.addEventListener("ended", () => setPlaying(false));
   audio.addEventListener("waiting", () => { $("rvLoading").textContent = "Cargando audio…"; });
   audio.addEventListener("playing", () => { $("rvLoading").textContent = ""; });
-  audio.addEventListener("error", () => {
-    if (!cur) return;
-    $("rvLoading").textContent = "No pudimos abrir el audio. Cerrá y volvé a abrir (el link se renueva cada tanto).";
+  // Los links de OneDrive vencen al rato. Si el audio no abre, se piden las
+  // canciones de nuevo (canciones.js → fresh) y se sigue con los links
+  // nuevos, en el mismo segundo. Una sola vez por apertura: si vuelve a
+  // fallar, se avisa.
+  let playIntent = 0; // cuándo tocó reproducir (para seguir sonando después de renovar)
+  audio.addEventListener("error", async () => {
+    const c = cur;
+    if (!c || !audio.getAttribute("src")) return;
+    if (!c.renewed && window.ZGSongs && window.ZGSongs.fresh) {
+      c.renewed = true;
+      const at = { t: audio.currentTime || (pendingSeek && pendingSeek.t) || 0, play: Date.now() - playIntent < 15000 };
+      $("rvLoading").textContent = "Cargando audio…";
+      const song = await window.ZGSongs.fresh(c.song.id).catch(() => null);
+      if (cur !== c) return;
+      const d = song && song.delivery;
+      const byName = {};
+      if (d) [d.file, ...(d.versions || []), d.demo].filter(Boolean).forEach((f) => { if (f.url) byName[f.name] = f; });
+      const now = c.sources[c.srcIdx].file;
+      if (byName[now.name] && byName[now.name].url !== now.url) {
+        c.sources.forEach((src) => {
+          const nf = byName[src.file.name];
+          if (!nf) return;
+          // La onda y el nivel ya medidos siguen valiendo con el link nuevo.
+          if (peakCache.has(src.file.url)) peakCache.set(nf.url, peakCache.get(src.file.url));
+          if (rmsCache.has(src.file.url)) rmsCache.set(nf.url, rmsCache.get(src.file.url));
+          src.file = { ...src.file, url: nf.url };
+        });
+        c.file = c.sources[0].file;
+        pendingSeek = at;
+        audio.src = c.sources[c.srcIdx].file.url;
+        loadPeaks(c.sources[c.srcIdx].file);
+        $("rvLoading").textContent = "";
+        return;
+      }
+    }
+    $("rvLoading").textContent = "No pudimos abrir el audio. Cerrá y volvé a abrir en un rato.";
   });
 
-  function toggle() { if (audio.paused) audio.play().catch(() => {}); else audio.pause(); }
+  function toggle() { if (audio.paused) { playIntent = Date.now(); audio.play().catch(() => {}); } else audio.pause(); }
   function seek(t, play) {
     const dur = duration();
     if (!dur) return;
