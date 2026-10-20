@@ -66,13 +66,8 @@ async function voiceLink(path) {
 const notionToken = () => (process.env.NOTION_TOKEN || "").replace(/[\s"'“”‘’]/g, "");
 const plain = (rich) => (rich || []).map((t) => t.plain_text || "").join("").trim();
 
-async function notion(path, init = {}) {
-  const res = await fetch(`${NOTION_API}${path}`, {
-    ...init,
-    headers: { Authorization: `Bearer ${notionToken()}`, "Notion-Version": NOTION_VERSION, "Content-Type": "application/json" },
-  });
-  return { ok: res.ok, status: res.status, data: await res.json().catch(() => null) };
-}
+// Pedidos a Notion con reintento si está saturado (_lib/notion.js).
+const notion = (path, init) => require("./_lib/notion").notion(path, init);
 
 // Un envío igual del mismo artista en los últimos 2 minutos, o null.
 const REPEAT_WINDOW_MS = 2 * 60 * 1000;
@@ -196,6 +191,7 @@ exports.handler = async (event) => {
     ? `Te agendé la sesión para corregir${kind === "mezcla" ? " la mezcla" : " el master"}: ${fmtWhen(reopened.start)} h (Notion y Google Calendar), con la entrega ese día. Si no te sirve, movela desde el Inicio (Reprogramar). `
     : reopened.existing ? `Ya tenías una sesión por delante (${fmtWhen(reopened.start)} h): la entrega pasó a ese día. `
       : reopened.google === false ? "No pude agendar la sesión para corregir porque Google Calendar no está conectado: conectalo y reprogramala desde el Inicio. "
+        : reopened.error === "google" ? "No pude agendar la sesión para corregir porque Google Calendar no respondió: agendala desde el Inicio (Reprogramar). "
         : "No encontré un hueco libre para la sesión de corrección: agendala desde el Inicio. ";
 
   const who = me.display_name || me.full_name || me.email;

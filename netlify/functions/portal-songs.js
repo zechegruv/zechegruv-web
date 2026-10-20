@@ -66,13 +66,9 @@ async function notionQuery(dataSource, filter) {
   const results = [];
   let cursor;
   do {
-    const res = await fetch(`${NOTION_API}/data_sources/${dataSource}/query`, {
+    // Con reintento si Notion está saturado un momento (_lib/notion.js).
+    const res = await require("./_lib/notion").notion(`/data_sources/${dataSource}/query`, {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${notionToken()}`,
-        "Notion-Version": NOTION_VERSION,
-        "Content-Type": "application/json",
-      },
       body: JSON.stringify({
         ...(filter ? { filter } : {}),
         page_size: 100,
@@ -84,7 +80,7 @@ async function notionQuery(dataSource, filter) {
       err.status = res.status;
       throw err;
     }
-    const page = await res.json();
+    const page = res.data || {};
     results.push(...(page.results || []));
     cursor = page.has_more ? page.next_cursor : null;
   } while (cursor);
