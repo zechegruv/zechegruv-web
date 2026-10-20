@@ -9,9 +9,11 @@ const UPLOAD_HOST = /^https:\/\/([a-z0-9-]+\.)*microsoftpersonalcontent\.com\//i
 
 let cachedToken = null;
 let cachedExpiresAt = 0;
-async function auth() {
+// fresh: pide un acceso nuevo aunque haya uno guardado (lo usa "Estado del
+// sistema" del panel para probar que OneDrive de verdad lo da).
+async function auth({ fresh = false } = {}) {
   const now = Date.now();
-  if (!cachedToken || now >= cachedExpiresAt) {
+  if (fresh || !cachedToken || now >= cachedExpiresAt) {
     const res = await fetch(ONEDRIVE_TOKEN_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ appId: ONEDRIVE_APP_ID }) });
     if (!res.ok) throw new Error(`token ${res.status}`);
     const data = await res.json();
@@ -104,4 +106,4 @@ async function remove(parent, name) {
   return del.ok || del.status === 404 ? "deleted" : "error";
 }
 
-module.exports = { UPLOAD_HOST, cleanName, folder, subfolder, remove, createUploadSession, putSmall, putChunk, sessionStatus };
+module.exports = { UPLOAD_HOST, auth, cleanName, folder, subfolder, remove, createUploadSession, putSmall, putChunk, sessionStatus };
