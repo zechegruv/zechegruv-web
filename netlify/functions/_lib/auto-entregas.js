@@ -25,7 +25,8 @@
 // canción ya figura aprobada, tampoco.
 //
 // Corre: cada 15 minutos (auto-entregas.js, programada en netlify.toml), al
-// abrir el Inicio del panel y cuando un artista abre sus canciones.
+// abrir el Inicio del panel (ya no al abrir el artista sus canciones: eso
+// solo mira la carpeta, sin escribir).
 const { db, sendMail, esc } = require("./pass");
 const { listAudio, matchAudio, norm } = require("./song-audio");
 const gc = require("./gcal");

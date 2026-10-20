@@ -6,7 +6,7 @@
   # y, cuando hay cambios, baja los nuevos solo. En la compu queda "__BUILD__".
   # También las páginas de ZG PASS y de artistas (piden medicion.js así):
   # se buscan con find, así anda con cualquier cantidad de páginas.
-  command = "sed -i \"s/__BUILD__/${COMMIT_REF:-local}/g\" ZECHE_GRUV_Web/index.html ZECHE_GRUV_Web/assets/js/site.js && find ZECHE_GRUV_Web/pass ZECHE_GRUV_Web/artistas -name '*.html' -exec sed -i \"s/__BUILD__/${COMMIT_REF:-local}/g\" {} +"
+  command = "sed -i \"s/__BUILD__/${COMMIT_REF:-local}/g\" ZECHE_GRUV_Web/index.html ZECHE_GRUV_Web/portal/index.html ZECHE_GRUV_Web/assets/js/site.js && find ZECHE_GRUV_Web/pass ZECHE_GRUV_Web/artistas -name '*.html' -exec sed -i \"s/__BUILD__/${COMMIT_REF:-local}/g\" {} +"
 
 [functions]
   node_bundler = "esbuild"

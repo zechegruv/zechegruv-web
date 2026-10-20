@@ -206,7 +206,7 @@ exports.handler = async (event) => {
     const reason = closedReason(ev, who, root);
     if (reason) return json(409, { error: reason });
     const name = drive.cleanName(body.name);
-    if (!name || !TYPES.test(name)) return json(400, { error: "Ese tipo de archivo no se puede subir. Mandá WAV, MP3, AIFF, FLAC o un ZIP con las pistas." });
+    if (!name || !TYPES.test(name)) return json(400, { error: "Ese tipo de archivo no se puede subir. Se aceptan WAV, MP3, AIFF, FLAC, M4A, ZIP o RAR con las pistas, PDF o TXT." });
 
     const where = await folderFor(ev, who);
     if (where.error) return json(502, { error: where.error });
