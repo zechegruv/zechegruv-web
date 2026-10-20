@@ -6,7 +6,9 @@
   # y, cuando hay cambios, baja los nuevos solo. En la compu queda "__BUILD__".
   # También las páginas de ZG PASS y de artistas (piden medicion.js así):
   # se buscan con find, así anda con cualquier cantidad de páginas.
-  command = "sed -i \"s/__BUILD__/${COMMIT_REF:-local}/g\" ZECHE_GRUV_Web/index.html ZECHE_GRUV_Web/portal/index.html ZECHE_GRUV_Web/assets/js/site.js && find ZECHE_GRUV_Web/pass ZECHE_GRUV_Web/artistas -name '*.html' -exec sed -i \"s/__BUILD__/${COMMIT_REF:-local}/g\" {} +"
+  # Y el service worker del portal (portal/sw.js): con la versión nueva, el
+  # celu se entera de que hay cambios y borra lo guardado de la anterior.
+  command = "sed -i \"s/__BUILD__/${COMMIT_REF:-local}/g\" ZECHE_GRUV_Web/index.html ZECHE_GRUV_Web/portal/index.html ZECHE_GRUV_Web/portal/sw.js ZECHE_GRUV_Web/assets/js/site.js && find ZECHE_GRUV_Web/pass ZECHE_GRUV_Web/artistas -name '*.html' -exec sed -i \"s/__BUILD__/${COMMIT_REF:-local}/g\" {} +"
 
 [functions]
   node_bundler = "esbuild"
@@ -66,6 +68,13 @@
   for = "/assets/fonts/*.woff"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
+
+# Service worker del portal (instalable y sin conexión): el navegador lo
+# revisa siempre, así una versión nueva llega apenas se publica.
+[[headers]]
+  for = "/portal/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache"
 
 # Estilos, código e idiomas del inicio: llevan ?v=<versión>, se guardan un año.
 [[headers]]

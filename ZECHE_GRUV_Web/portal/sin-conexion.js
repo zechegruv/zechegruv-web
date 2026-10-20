@@ -14,6 +14,15 @@
   };
   const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
   const P = () => window.ZGPortal || null;
+
+  // ---------- Service worker (portal/sw.js) ----------
+  // Guarda la página, los estilos y el código del portal para que abra sin
+  // conexión. Se registra cuando la página ya cargó, para no competir con
+  // lo que el artista vino a ver.
+  if ("serviceWorker" in navigator && location.pathname.startsWith("/portal/")) {
+    const register = () => navigator.serviceWorker.register("/portal/sw.js", { scope: "/portal/" }).catch(() => { /* sin SW: el portal anda igual, solo que no abre sin conexión */ });
+    if (document.readyState === "complete") register(); else window.addEventListener("load", register);
+  }
   const isArtist = () => { const p = P(); return !!(p && p.me && p.me.role === "artist"); };
 
   // ---------- Instalar el portal ----------
