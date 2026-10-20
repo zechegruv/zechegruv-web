@@ -101,10 +101,10 @@ function tagOf(name, titles = [], liveGroup = false) {
   // Primero el título más largo ("Seu amor" antes que "Amor").
   [...titles].map((t) => words(t).trim()).filter(Boolean).sort((a, b) => b.length - a.length)
     .forEach((t) => { n = n.split(` ${t} `).join(" "); });
-  if (liveGroup || / (vivo|live) /.test(n)) return "vivo";
-  if (/ (master|mastered|mstr) /.test(n)) return "master";
-  if (/ (mix|mezcla|mixdown) /.test(n)) return "mezcla";
-  if (/ (rec|grabacion) /.test(n)) return "rec";
+  if (liveGroup || / (vivo|live)\d* /.test(n)) return "vivo";
+  if (/ (master|mastered|mstr)\d* /.test(n)) return "master";
+  if (/ (mix|mezcla|mixdown)\d* /.test(n)) return "mezcla";
+  if (/ (rec|grabacion)\d* /.test(n)) return "rec";
   return null;
 }
 

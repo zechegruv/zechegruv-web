@@ -91,11 +91,12 @@ function liveFolder(folder, title) {
 // "mix", "mezcla" o "master" como palabra (no "remix" ni "premaster").
 // Si dice las dos ("mix master"), es master. title: el de la canción, si
 // ya se sabe de cuál es (se saca del nombre antes de mirar).
+// El número de versión puede ir pegado: «mix2», «master3», «vivo2», «demo2».
 function kindOf(name, title, folder) {
   const n = withoutTitle(String(name).replace(AUDIO, ""), title);
-  if (/ (vivo|live) /.test(n) || liveFolder(folder, title)) return null; // versión para show en vivo
-  if (/ (master|mastered|mstr) /.test(n)) return "master";
-  if (/ (mix|mezcla|mixdown) /.test(n)) return "mezcla";
+  if (/ (vivo|live)\d* /.test(n) || liveFolder(folder, title)) return null; // versión para show en vivo
+  if (/ (master|mastered|mstr)\d* /.test(n)) return "master";
+  if (/ (mix|mezcla|mixdown)\d* /.test(n)) return "mezcla";
   return null;
 }
 // Además de mezcla y master: la maqueta / demo (para el "antes y después") y
@@ -103,8 +104,8 @@ function kindOf(name, title, folder) {
 // aprueban ni se entregan: solo se escuchan y se descargan.
 function extraKindOf(name, title, folder) {
   const n = withoutTitle(String(name).replace(AUDIO, ""), title);
-  if (/ (vivo|live) /.test(n) || liveFolder(folder, title)) return "vivo";
-  if (/ (maqueta|demo) /.test(n)) return "demo";
+  if (/ (vivo|live)\d* /.test(n) || liveFolder(folder, title)) return "vivo";
+  if (/ (maqueta|demo)\d* /.test(n)) return "demo";
   return null;
 }
 const anyKind = (name, title, folder) => kindOf(name, title, folder) || extraKindOf(name, title, folder);
