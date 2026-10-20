@@ -4,7 +4,9 @@
   # En cada publicación, los estilos, el código y los idiomas del inicio se
   # piden con el número de esa versión (?v=…): el navegador los guarda un año
   # y, cuando hay cambios, baja los nuevos solo. En la compu queda "__BUILD__".
-  command = "sed -i \"s/__BUILD__/${COMMIT_REF:-local}/g\" ZECHE_GRUV_Web/index.html ZECHE_GRUV_Web/assets/js/site.js"
+  # También las páginas de ZG PASS y de artistas (piden medicion.js así):
+  # se buscan con find, así anda con cualquier cantidad de páginas.
+  command = "sed -i \"s/__BUILD__/${COMMIT_REF:-local}/g\" ZECHE_GRUV_Web/index.html ZECHE_GRUV_Web/assets/js/site.js && find ZECHE_GRUV_Web/pass ZECHE_GRUV_Web/artistas -name '*.html' -exec sed -i \"s/__BUILD__/${COMMIT_REF:-local}/g\" {} +"
 
 [functions]
   node_bundler = "esbuild"
