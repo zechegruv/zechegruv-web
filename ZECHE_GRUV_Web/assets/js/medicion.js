@@ -21,11 +21,19 @@
   try { off = localStorage.getItem(OFF_KEY) === "1"; } catch (e) {}
   if (!GA_ID || GA_ID.indexOf("XXXX") !== -1 || off) return;
 
-  // La dirección que se manda a Google, sin códigos privados (links de
-  // acceso al portal, números de orden, pagos): solo campañas (utm_) y evento.
-  var keep = new URLSearchParams();
-  q.forEach(function (v, k) { if (k.indexOf("utm_") === 0 || k === "e") keep.set(k, v); });
-  var clean = location.origin + location.pathname + (keep.toString() ? "?" + keep : "");
+  // La dirección que se manda a Google, sin códigos privados (claves de
+  // órdenes y entradas ?t= / ?k=, links de acceso al portal, pagos): solo
+  // campañas (utm_) y evento. Lo mismo para la página de origen.
+  function cleanUrl(href) {
+    try {
+      var u = new URL(href, location.href);
+      var keep = new URLSearchParams();
+      u.searchParams.forEach(function (v, k) { if (k.indexOf("utm_") === 0 || k === "e") keep.set(k, v); });
+      return u.origin + u.pathname + (keep.toString() ? "?" + keep : "");
+    } catch (e) { return ""; }
+  }
+  var clean = cleanUrl(location.href);
+  var cleanRef = document.referrer ? cleanUrl(document.referrer) : "";
 
   var s = document.createElement("script");
   s.async = true;
@@ -34,7 +42,21 @@
   window.dataLayer = window.dataLayer || [];
   window.gtag = function () { window.dataLayer.push(arguments); };
   window.gtag("js", new Date());
-  window.gtag("config", GA_ID, { anonymize_ip: true, page_location: clean });
+  window.gtag("set", { page_location: clean, page_referrer: cleanRef });
+  window.gtag("config", GA_ID, { anonymize_ip: true, page_location: clean, page_referrer: cleanRef });
+
+  // Las páginas que cambian la dirección sin recargar (p. ej. la de la
+  // orden, que la limpia) avisan la nueva, también sin claves.
+  ["pushState", "replaceState"].forEach(function (name) {
+    var original = history[name];
+    if (typeof original !== "function") return;
+    history[name] = function () {
+      var before = cleanUrl(location.href);
+      var out = original.apply(this, arguments);
+      window.gtag("set", { page_location: cleanUrl(location.href), page_referrer: before });
+      return out;
+    };
+  });
 
   window.zgTrack = function (name, params) {
     var p = params || {};
