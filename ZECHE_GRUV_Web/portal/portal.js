@@ -236,8 +236,18 @@
   }
 
   async function enter(userId) {
-    const { data, error } = await db.from("profiles").select("*").eq("id", userId).single();
-    if (error || !data) {
+    let data = null, error = null;
+    try { ({ data, error } = await db.from("profiles").select("*").eq("id", userId).single()); }
+    catch (e) { error = { message: String(e && e.message) }; }
+    // Un corte de red no es motivo para cerrar la sesión: se avisa y se
+    // reintenta. Solo si el perfil de verdad no existe (la base responde
+    // "sin filas", PGRST116) se cierra la sesión.
+    const missing = !error ? !data : error.code === "PGRST116";
+    if (error && !missing) {
+      showRetry("No pudimos conectarnos. Revisá tu conexión a internet y probá de nuevo.", () => enter(userId));
+      return;
+    }
+    if (missing) {
       await db.auth.signOut();
       showView("login");
       setMsg($("loginMsg"), "No pudimos cargar tu perfil. Escribinos para revisarlo.", true);
