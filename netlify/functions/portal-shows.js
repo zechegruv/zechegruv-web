@@ -47,12 +47,15 @@ async function userOf(event) {
   return user && user.id ? user : null;
 }
 
-function closedReason(ev, who, root) {
+// now: la hora con la que se compara el cierre (para "done" se da un margen:
+// una subida que arrancó antes del cierre puede terminar un rato después).
+function closedReason(ev, who, root, now = Date.now()) {
   if (ev.status === "cancelled") return "El evento se canceló.";
   if (!(who && who.folderLink) && !folders.available(ev, "shows", root)) return "La subida de pistas todavía no está habilitada. Te avisamos cuando abra.";
-  if (Date.now() > Date.parse(ev.shows_deadline || ev.starts_at)) return "La subida de pistas para este show ya cerró. Si te falta algo, escribinos.";
+  if (now > Date.parse(ev.shows_deadline || ev.starts_at)) return "La subida de pistas para este show ya cerró. Si te falta algo, escribinos.";
   return "";
 }
+const DONE_GRACE_MS = 6 * 3600 * 1000;
 
 const showView = (ev, files, who, root) => {
   const reason = closedReason(ev, who, root);
@@ -171,12 +174,18 @@ exports.handler = async (event) => {
     if (!ev) return json(404, { error: "No figurás en el line up de ese show. Si es un error, escribinos." });
 
     // ---- Terminó una tanda: se registra y se avisa ----
+    // Solo con la subida abierta (con unas horas de margen) y solo lo que
+    // todavía no estaba registrado: si se repite el mismo aviso, no se
+    // vuelve a registrar ni le llega otro mail a Zeche.
     if (body.action === "done") {
+      const closed = closedReason(ev, who, root, Date.now() - DONE_GRACE_MS);
+      if (closed) return json(409, { error: closed });
+      const seen = new Set((await filesOf(who, ev)).map((f) => f.file_name));
       const files = (Array.isArray(body.files) ? body.files : []).slice(0, 50)
         .map((f) => ({ name: drive.cleanName(f && f.name), size: Number(f && f.size) || null }))
-        .filter((f) => f.name);
-      if (!files.length) return json(400, { error: "No hay archivos para registrar." });
-      await db("pass_show_files", { method: "POST", body: files.map((f) => ({ event_id: ev.id, ...who.row, file_name: f.name, file_size: f.size })) });
+        .filter((f) => f.name && !seen.has(f.name) && (seen.add(f.name), true));
+      if (!files.length) return json(200, { done: true, repeated: true });
+      await Promise.all(files.map((f) => db("pass_show_files", { method: "POST", body: { event_id: ev.id, ...who.row, file_name: f.name, file_size: f.size } })));
       const list = files.map((f) => `<li style="padding:3px 0">${esc(f.name)}${f.size ? ` <span style="color:#8a6a45">(${(f.size / MB).toFixed(1)} MB)</span>` : ""}</li>`).join("");
       await sendMail({
         to: notifyEmail(),
