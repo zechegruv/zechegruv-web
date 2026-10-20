@@ -84,7 +84,14 @@ async function notifyArtistDelivered({ profileId, song, kind, version }) {
   const whatsapp = await require("./whatsapp").notifyArtist({
     profileId, profile: p, songId: song.id, key, which: again ? "cambios" : kind, params: [name, song.title],
   }).catch(() => ({ sent: false, why: "error" }));
-  return { sent: !!ok, again, whatsapp };
+  // Y la notificación en su celu o su compu, si la activó (push.js): misma
+  // clave, así sale una sola vez por versión.
+  const which = again ? "cambios" : kind;
+  const push = await require("./push").notify({
+    profileId, profile: p, category: "proyecto", key, url: "/portal/#canciones", tag: `cancion-${song.id}`,
+    ...require("./push").projectText(which, { name, song: song.title, kind }),
+  }).catch(() => ({ sent: false, why: "error" }));
+  return { sent: !!ok, again, whatsapp, push };
 }
 
 module.exports = { notifyArtistDelivered, deliveryMail };

@@ -10,6 +10,8 @@
 //      (_lib/auto-etapas.js).
 //   4. Regla de 15 días: un mail por día (desde las 10 h) con lo que está
 //      por vencer.
+//   5. Notificaciones del portal: sale lo que esperaba el fin del horario de
+//      silencio y los avisos de eventos (open mic y día del show).
 // No se abre por link: la corre Netlify sola. Para correr las entregas al
 // momento está el Inicio del panel.
 // Cada corrida queda anotada en automation_runs (supabase/034_estado.sql):
@@ -27,6 +29,10 @@ exports.handler = async () => {
     watchStages().catch((e) => ({ ok: false, error: e.message })),
   ]);
   const regla = await ruleDigest().catch((e) => ({ error: e.message }));
+  // 5. Notificaciones: lo que quedó esperando por el horario de silencio
+  //    (00 a 9 h) y los avisos de eventos (_lib/push-eventos.js).
+  const cola = await require("./_lib/push").flush().catch((e) => ({ error: e.message }));
+  const eventos = await require("./_lib/push-eventos").runEvents().catch((e) => ({ error: e.message }));
   const log = { entregas: entregas.delivered, recordatorios: entregas.reminders, etapas: etapas.done, regla };
   console.log("automatizaciones:", JSON.stringify(log));
   if (!entregas.ok || (entregas.errors && entregas.errors.length)) console.error("auto-entregas:", entregas.error || JSON.stringify(entregas.errors));
@@ -41,6 +47,8 @@ exports.handler = async () => {
     etapas.error ? `Etapas: ${etapas.error}` : null,
     ...(etapas.done || []).filter((d) => d && d.error).map((d) => `Etapa de ${d.song || "?"}: ${d.error}`),
     regla && regla.error ? `Regla de 15 días: ${regla.error}` : null,
+    cola && cola.error ? `Notificaciones: ${cola.error}` : null,
+    eventos && eventos.error ? `Avisos de eventos: ${eventos.error}` : null,
   ].filter(Boolean);
   await finishRun(runId, {
     ok: !errores.length && entregas.ok !== false && etapas.ok !== false,
@@ -50,6 +58,7 @@ exports.handler = async () => {
       recordatorios: count(entregas.reminders),
       etapas: (etapas.done || []).filter((d) => d && !d.error).length,
       regla: (regla && regla.sent) || 0,
+      notificaciones: ((cola && cola.sent) || 0) + ((eventos && eventos.invites) || 0) + ((eventos && eventos.day) || 0),
     },
     error: errores.join(" · ") || null,
   });

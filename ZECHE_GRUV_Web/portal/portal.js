@@ -297,6 +297,8 @@
     if (me.role === "artist" && window.ZGEscena) window.ZGEscena.start(me);
     // Instalable y sin conexión (sin-conexion.js): aviso para instalar y lo pendiente.
     if (window.ZGOffline) window.ZGOffline.ready(me);
+    // Notificaciones en el celu y la compu (notificaciones.js).
+    if (window.ZGPush) window.ZGPush.ready(me);
   }
 
   $("loginForm").addEventListener("submit", async (event) => {
@@ -380,9 +382,11 @@
     await enter(data.user.id);
   });
 
-  $("logoutBtn").addEventListener("click", () => {
+  $("logoutBtn").addEventListener("click", async () => {
     // Lo guardado para escuchar sin señal es de esta cuenta: al salir se borra del celu.
     if (window.ZGOffline) window.ZGOffline.clear();
+    // Y este dispositivo deja de recibir sus notificaciones.
+    if (window.ZGPush) await window.ZGPush.logout();
     db.auth.signOut();
   });
 
@@ -617,6 +621,9 @@
     if (!show) return;
     setMsg($("waMsg"), "");
     $("waSwitch").hidden = !own;
+    // Al artista solo se le muestra si WhatsApp ya está conectado en Netlify:
+    // si no, sería un interruptor que no hace nada.
+    if (own) row.hidden = true;
     row.classList.toggle("is-readonly", !own);
     paintWaSwitch(p.whatsapp_avisos !== false);
     $("waHint").textContent = own ? WA_TEXT : "Revisando su ficha…";
@@ -627,6 +634,7 @@
     } catch (e) { st = null; }
     if (!viewing || viewing.id !== p.id) return; // ya abrió otro perfil
     if (own) {
+      row.hidden = !(st && st.configured);
       if (st && !st.phone) $("waHint").textContent = WA_NO_PHONE;
       return;
     }

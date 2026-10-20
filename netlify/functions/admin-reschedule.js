@@ -169,8 +169,29 @@ exports.handler = async (event) => {
   const g = await gc.status();
   if (!g.connected) return json(409, { error: g.configured ? "Conectá Google Calendar para reprogramar: se mueven juntos el evento, la tarea y la entrega." : "Falta configurar Google Calendar en Netlify: sin eso no se puede mover el evento junto con Notion." });
 
+  // La fecha de entrega que tenía antes (para avisarle al artista solo si cambia).
+  const songBefore = t.songPage || (t.songId ? (await notion(`/pages/${t.songId}`)).data : null);
+  const dateOf = (d) => String((d && (d.start || d)) || "").slice(0, 10);
+  const oldDelivery = dateOf(songBefore && songBefore.properties && songBefore.properties["Fecha de entrega"] && songBefore.properties["Fecha de entrega"].date);
+
   const r = await moveAll(t, { date, time, startISO, endISO });
   if (!r.ok) return json(502, { error: r.error });
+
+  // Notificación al artista con la fecha nueva (si la activó; push.js).
+  if (oldDelivery !== date && songBefore) {
+    const push = require("./_lib/push");
+    const clientId = rel(songBefore.properties || {}, "Artista")[0];
+    const profileId = await push.profileByClient(clientId).catch(() => null);
+    if (profileId) {
+      const day = new Intl.DateTimeFormat("es-AR", { timeZone: TZ, weekday: "long", day: "numeric" }).format(new Date(`${date}T12:00:00${OFF}`)).replace(",", "");
+      const prof = await require("./_lib/pass").db(`profiles?id=eq.${profileId}&select=*`);
+      const p = prof.ok && prof.data && prof.data[0];
+      await push.notify({
+        profileId, profile: p, category: "proyecto", key: `fecha|${t.songId}|${t.stage}|${date}`, url: "/portal/#canciones", tag: `cancion-${t.songId}`,
+        ...push.projectText("fecha", { name: p && (p.display_name || p.full_name), song: t.song, kind: t.stage === "Master" ? "master" : "mezcla", day }),
+      }).catch(() => null);
+    }
+  }
   return json(200, { ok: true, calendar: r.calendar, delivery: fmtDay(date), created: r.created, label: `${fmtDay(date)} · ${time} h` });
 };
 

@@ -71,8 +71,8 @@
       <div class="zgi-text">
         <b>Instalá el portal en tu celu</b>
         ${ios
-          ? `<span>Tocá <i class="zgi-share">${SHARE_IC}</i> <b>Compartir</b> y después <b>Agregar a inicio</b>. Lo abrís como una app, también sin señal.</span>`
-          : "<span>Lo abrís como una app y escuchás lo que guardes, también sin señal.</span>"}
+          ? `<span>Tocá <i class="zgi-share">${SHARE_IC}</i> <b>Compartir</b> y después <b>Agregar a inicio</b>. Lo abrís como una app, te llegan los avisos y funciona sin señal.</span>`
+          : "<span>Lo abrís como una app, te llegan los avisos de tu mezcla y escuchás lo que guardes, también sin señal.</span>"}
       </div>
       ${ios ? "" : '<button class="btn btn-primary zgi-btn" type="button" data-install>Instalar</button>'}
       <button class="zgi-x" type="button" data-install-close aria-label="Cerrar aviso de instalación">${X_IC}</button>`;
@@ -303,7 +303,8 @@
     const retry = document.querySelector("#view-loading .load-retry");
     if (retry) spots.push([retry, "after"]);
     if (isArtist()) {
-      const anchor = document.getElementById("zgInstall") && !document.getElementById("zgInstall").hidden ? document.getElementById("zgInstall") : document.getElementById("projectCards");
+      const vis = (id) => { const n = document.getElementById(id); return n && !n.hidden ? n : null; };
+      const anchor = vis("zgPush") || vis("zgInstall") || document.getElementById("projectCards");
       if (anchor) spots.push([anchor, "after"]);
     }
     spots.forEach(([anchor]) => {

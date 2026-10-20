@@ -124,6 +124,17 @@ async function whatsapp() {
   return down(`WhatsApp no responde (${res.status})`);
 }
 
+// Notificaciones del portal (Web Push): con las claves VAPID cargadas y la
+// tabla de 035, cuántos dispositivos de artistas las tienen activas.
+async function notificaciones() {
+  const push = require("./_lib/push");
+  if (!push.configured()) return unset("Faltan VAPID_PUBLIC_KEY y VAPID_PRIVATE_KEY: los avisos van solo por mail");
+  const r = await db("push_subscriptions?select=profile_id", {}).catch(() => null);
+  if (!r || !r.ok) return warn("Falta correr supabase/035_notificaciones.sql");
+  const people = new Set((r.data || []).map((x) => x.profile_id)).size;
+  return ok(people ? `Activas en ${people === 1 ? "1 artista" : `${people} artistas`}` : "Listas: todavía ningún artista las activó");
+}
+
 async function zil() {
   const z = require("./_lib/zil");
   if (!z.token()) return unset("Falta ZIL_API_TOKEN: los lanzamientos no van a ZIL");
@@ -144,6 +155,7 @@ const SERVICES = [
   ["resend", "Resend (mails)", resend],
   ["mercadopago", "Mercado Pago", mercadopago],
   ["whatsapp", "WhatsApp", whatsapp],
+  ["notificaciones", "Notificaciones del portal", notificaciones],
   ["zil", "ZIL", zil],
 ];
 

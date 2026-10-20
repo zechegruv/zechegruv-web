@@ -116,3 +116,38 @@ self.addEventListener("fetch", (event) => {
   const fixed = !own || url.searchParams.has("v") || req.destination === "image" || req.destination === "font";
   event.respondWith(fixed ? cacheFirst(req) : networkFirst(req));
 });
+
+// ---------- Notificaciones (push.js en el servidor) ----------
+// Llega el aviso cifrado; se muestra con el logo del sello. Al tocarlo, se
+// abre el portal en la sección del aviso (o la página del evento). Si el
+// portal ya está abierto, se usa esa ventana.
+self.addEventListener("push", (event) => {
+  let d = {};
+  try { d = event.data ? event.data.json() : {}; } catch (e) { d = { title: "ZECHE GRUV", body: event.data ? event.data.text() : "" }; }
+  const title = d.title || "ZECHE GRUV";
+  event.waitUntil(self.registration.showNotification(title, {
+    body: d.body || "",
+    icon: d.icon || "/assets/favicon/android-chrome-192x192.png?v=3",
+    badge: d.badge || "/assets/favicon/zg-badge-96.png",
+    tag: d.tag || undefined,
+    renotify: !!d.tag,
+    lang: "es-AR",
+    data: { url: d.url || "/portal/" },
+  }));
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const target = new URL((event.notification.data && event.notification.data.url) || "/portal/", self.location.origin);
+  event.waitUntil((async () => {
+    const wins = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+    const same = target.pathname.startsWith(PAGE) && wins.find((w) => new URL(w.url).pathname.startsWith(PAGE));
+    if (same) {
+      await same.focus();
+      // El portal abre la sección del aviso (notificaciones.js escucha esto).
+      same.postMessage({ type: "zg-open", hash: target.hash });
+      return;
+    }
+    await self.clients.openWindow(target.href);
+  })());
+});

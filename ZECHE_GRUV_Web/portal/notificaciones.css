@@ -1,0 +1,47 @@
+/* ZECHE GRUV — Portal: notificaciones (notificaciones.js).
+   La tarjeta usa la misma piel que la de instalar (.zgi en sin-conexion.css)
+   y los interruptores son los de WhatsApp en Mi perfil (.wa-switch). */
+
+.zgn { align-items: flex-start; }
+.zgn .zgi-ico { margin-top: 2px; }
+.zgn-main { gap: 6px; }
+.zgn-opts { display: grid; gap: 2px; margin: 8px 0 2px; }
+.zgn-opt {
+  display: flex; align-items: center; justify-content: space-between; gap: 14px;
+  padding: 10px 0; border-top: 1px solid rgba(240, 224, 192, .08);
+}
+.zgn-opt:first-child { border-top: 0; }
+.zgn-opt-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.zgn-opt-text > span { font-size: 14px; font-weight: 600; color: var(--cream, #FFF4DC); }
+.zgn-opt-text > small { font-size: 12.5px; line-height: 1.4; color: var(--muted, #C9A980); }
+.zgn-opt .wa-switch { margin-top: 0; }
+.zgn-msg:empty, .zgn-profile .msg:empty { display: none; }
+.zgn-msg { font-size: 13px; line-height: 1.45; }
+.zgn-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 6px; }
+.zgn .zgn-actions .zgi-btn { flex: none; order: 0; }
+.zgn-later {
+  border-radius: 999px; min-height: 40px; padding: 0 18px; text-transform: none; letter-spacing: 0; font-weight: 600;
+  background: none; border: 1px solid rgba(240, 224, 192, .18); color: var(--beige, #E8D2AE);
+  transition: border-color 200ms ease, color 200ms ease, transform 160ms ease-out;
+}
+.zgn-later:active { transform: scale(.97); }
+@media (hover: hover) and (pointer: fine) { .zgn-later:hover { border-color: var(--cream, #FFF4DC); color: var(--cream, #FFF4DC); } }
+
+/* Activadas: la tarjeta confirma y se va sola. */
+.zgn.is-done .zgi-ico { background: rgba(240, 120, 0, .9); color: #241105; transition: background-color 300ms ease, color 300ms ease; }
+.zgn.is-done .zgi-x { display: none; }
+.zgn.is-done .zgn-main { animation: zgnSwap 360ms cubic-bezier(.16, 1, .3, 1) both; }
+@keyframes zgnSwap { from { opacity: 0; transform: translateY(4px); } }
+
+/* Mi perfil: debajo de «Avisos por WhatsApp». */
+.zgn-profile { flex-direction: column; align-items: stretch; }
+.zgn-ptext { width: 100%; }
+.zgn-profile .hint { max-width: none; }
+.zgn-profile .zgn-actions .btn { border-radius: 999px; min-height: 40px; padding: 0 18px; text-transform: none; letter-spacing: 0; font-weight: 600; }
+
+@media (max-width: 640px) {
+  .zgn .zgn-main { flex-basis: calc(100% - 110px); }
+  .zgn-actions { flex-direction: column; }
+  .zgn-actions .btn, .zgn .zgn-actions .zgi-btn { flex: none; width: 100%; min-height: 46px; }
+}
+@media (prefers-reduced-motion: reduce) { .zgn.is-done .zgn-main { animation: none; } }

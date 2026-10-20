@@ -202,7 +202,11 @@ async function remindArtist({ profileId, email, name, songs, files, rows }, now 
     const wa = await require("./whatsapp").notifyArtist({
       profileId, songId: song.id, key, which: "recordatorio", params: [firstName(name), song.title],
     }).catch(() => null);
-    sent.push({ song: song.title, kind, step, ok, whatsapp: !!(wa && wa.sent) });
+    const nt = await require("./push").notify({
+      profileId, category: "proyecto", key, url: "/portal/#canciones", tag: `cancion-${song.id}`,
+      ...require("./push").projectText("recordatorio", { name, song: song.title, kind }),
+    }).catch(() => null);
+    sent.push({ song: song.title, kind, step, ok, whatsapp: !!(wa && wa.sent), push: !!(nt && nt.sent) });
   }
   return sent;
 }

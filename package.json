@@ -3,6 +3,7 @@
   "private": true,
   "description": "Sitio de ZECHE GRUV. Las dependencias son solo para las Netlify Functions.",
   "dependencies": {
-    "qrcode-generator": "1.4.4"
+    "qrcode-generator": "1.4.4",
+    "web-push": "3.6.7"
   }
 }
