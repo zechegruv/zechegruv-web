@@ -84,12 +84,24 @@ async function tickCalendar(song, kind, refDate, now = new Date(), why = `${LABE
   }
 }
 
-// Mezcla aprobada → fecha de entrega del master.
-async function masterDate(song, now = new Date()) {
+// Paso a Master anotado en song_stage_log ANTES de cambiar la Etapa en
+// Notion: así, si la función programada (cada 15 min) pasa justo en el
+// medio, ve que ya está en Master y no lo procesa de nuevo. Devuelve la fila
+// anotada (o null si no estaba en Mix) y cómo volverla atrás si Notion falla.
+async function claimMaster(songId, now = new Date()) {
+  const q = `song_stage_log?song_id=eq.${encodeURIComponent(songId)}`;
+  const before = await db(`${q}&select=stage,changed_at`).catch(() => null);
+  const prev = before && before.ok && before.data && before.data[0];
+  const claim = await db(`${q}&stage=eq.Mix`, { method: "PATCH", prefer: "return=representation", body: { stage: "Master", changed_at: now.toISOString() } }).catch(() => null);
+  const row = (claim && claim.ok && claim.data && claim.data[0]) || null;
+  const undo = () => (row ? db(`${q}&stage=eq.Master`, { method: "PATCH", body: { stage: "Mix", changed_at: (prev && prev.changed_at) || row.changed_at } }).catch(() => null) : null);
+  return { row, undo };
+}
+
+// Mezcla aprobada → fecha de entrega del master. row: la anotación de
+// claimMaster (con vocals_at, para la regla de 15 días).
+async function masterDate(song, now = new Date(), row = null) {
   const today = dayAR(now);
-  // Paso a Master anotado (si lo tomamos nosotros, la función programada no lo repite).
-  const claim = await db(`song_stage_log?song_id=eq.${encodeURIComponent(song.id)}&stage=eq.Mix`, { method: "PATCH", prefer: "return=representation", body: { stage: "Master", changed_at: now.toISOString() } }).catch(() => null);
-  const row = claim && claim.ok && claim.data && claim.data[0];
   const artist = await et()._artistName(song.clientId).catch(() => "");
   // 1) Si ya hay una sesión de master agendada, la entrega es ese día.
   const open = await et()._openTasks(song.id, ["Master"]).catch(() => []);
@@ -131,10 +143,15 @@ async function closeStage({ page, kind, now = new Date() }) {
   const props = { Entrega: { select: { name: LABEL[kind] } }, "Etapa actual": { select: { name: NEXT[kind] } } };
   if (kind === "master") props["Fecha de entrega"] = { date: null };
   const patch = () => notion(`/pages/${song.id}`, { method: "PATCH", body: JSON.stringify({ properties: props }) });
+  // Mezcla aprobada: primero se anota el paso a Master (ver claimMaster).
+  const claim = kind === "mezcla" ? await claimMaster(song.id, now) : null;
   let upd = await patch().catch(() => ({ ok: false }));
   if (!upd.ok) upd = await patch().catch(() => ({ ok: false })); // un reintento
   out.notion = !!upd.ok;
-  if (!out.notion) return out; // sin la canción cerrada no se toca lo demás (queda todo como estaba)
+  if (!out.notion) {
+    if (claim) await claim.undo(); // la anotación vuelve a Mix: queda todo como estaba
+    return out; // sin la canción cerrada no se toca lo demás
+  }
 
   // Tareas de esa etapa: todas las abiertas, sin importar cuándo se crearon.
   const [tasks, calendar] = await Promise.all([
@@ -144,7 +161,7 @@ async function closeStage({ page, kind, now = new Date() }) {
   out.tasks = tasks || [];
   out.tasksOk = tasks !== null;
   out.calendar = calendar;
-  if (kind === "mezcla") out.master = await masterDate(song, now).catch((e) => ({ error: String(e && e.message).slice(0, 80) }));
+  if (kind === "mezcla") out.master = await masterDate(song, now, claim && claim.row).catch((e) => ({ error: String(e && e.message).slice(0, 80) }));
   return out;
 }
 
