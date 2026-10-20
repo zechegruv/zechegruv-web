@@ -21,6 +21,7 @@ const VERSION = "__BUILD__";
 const SHELL = `zg-portal-${VERSION}`;
 const PAGE = "/portal/";
 // Archivos versionados de otros sitios que el portal necesita para abrir.
+const SHELL_KINDS = new Set(["script", "style", "image", "font", "manifest"]);
 const CDN = /^https:\/\/(cdn\.jsdelivr\.net\/npm\/|cdnjs\.cloudflare\.com\/ajax\/libs\/|fonts\.googleapis\.com\/|fonts\.gstatic\.com\/)/;
 
 // Lo que pide la página (estilos, código, íconos y el manifest), sacado del
@@ -108,6 +109,10 @@ self.addEventListener("fetch", (event) => {
     return;
   }
   if (!own && !CDN.test(req.url)) return;
+  // Del propio sitio, solo la cáscara (código, estilos, íconos, tipografías y
+  // el manifest). Cualquier otro pedido (un audio bajado con fetch para la
+  // onda, un JSON, un archivo) va directo a la red y no ocupa lugar en el celu.
+  if (own && !SHELL_KINDS.has(req.destination)) return;
   const fixed = !own || url.searchParams.has("v") || req.destination === "image" || req.destination === "font";
   event.respondWith(fixed ? cacheFirst(req) : networkFirst(req));
 });

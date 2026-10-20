@@ -380,7 +380,11 @@
     await enter(data.user.id);
   });
 
-  $("logoutBtn").addEventListener("click", () => db.auth.signOut());
+  $("logoutBtn").addEventListener("click", () => {
+    // Lo guardado para escuchar sin señal es de esta cuenta: al salir se borra del celu.
+    if (window.ZGOffline) window.ZGOffline.clear();
+    db.auth.signOut();
+  });
 
   // ---------- Perfil ----------
   function showProfile(p) {

@@ -67,7 +67,12 @@
     }).join("");
   }
 
-  function tableHtml(files) {
+  // Guardar en el celu para escuchar sin señal (sin-conexion.js): solo el
+  // artista, en su propio espacio.
+  const offline = () => (window.ZGOffline && window.ZGOffline.canSave(profile) ? window.ZGOffline : null);
+
+  function tableHtml(files, group) {
+    const off = offline();
     return `
       <div class="table-wrap">
         <table class="table files-table">
@@ -81,7 +86,7 @@
                 <td data-label="Creado">${fmtDate(f.created)}</td>
                 <td data-label="Modificado">${fmtDate(f.modified)}</td>
                 <td data-label="Tamaño">${fmtSize(f.size)}</td>
-                <td>${f.url ? `<a class="btn download-btn" href="${esc(f.url)}" download="${esc(f.name)}" aria-label="Descargar ${esc(f.name)}">${DOWNLOAD_ICON}<span>Descargar</span></a>` : ""}</td>
+                <td>${off && f.url && PLAYABLE.test(f.name) ? off.saveBtn(f, section, group || "") : ""}${f.url ? `<a class="btn download-btn" href="${esc(f.url)}" download="${esc(f.name)}" aria-label="Descargar ${esc(f.name)}">${DOWNLOAD_ICON}<span>Descargar</span></a>` : ""}</td>
               </tr>`).join("")}
           </tbody>
         </table>
@@ -265,7 +270,7 @@
     const groups = view.groups.map((g) => `
       <details class="file-group" data-group="${esc(g.name)}"${openGroups.has(g.name) ? " open" : ""}>
         <summary><span class="group-name">${esc(g.name)}</span><span class="group-count">${countLabel(g.files.length)}</span></summary>
-        ${g.files.length ? tableHtml(g.files) : ""}
+        ${g.files.length ? tableHtml(g.files, g.name) : ""}
       </details>`).join("");
     $("filesList").innerHTML = switcher + loose + groups;
     syncToggle();
