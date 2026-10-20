@@ -34,6 +34,7 @@ const SECTIONS = {
   letras: { folder: "Letras", max: 25 * MB, types: /\.(txt|doc|docx|pdf|rtf|md|pages|odt)$/i },
 };
 const SIMPLE_MAX = 4 * MB; // lo que entra en un solo pedido a esta function
+const MAX_ANY = Math.max(...Object.values(SECTIONS).map((s) => s.max)); // tope de cualquier sección
 
 const ONEDRIVE_API = "https://my.microsoftpersonalcontent.com/_api/v2.0";
 const ONEDRIVE_TOKEN_URL = "https://api-badgerp.svc.ms/v1.0/token";
@@ -104,6 +105,13 @@ exports.handler = async (event) => {
   let body;
   try { body = JSON.parse(event.body || "{}"); } catch (e) { return json(400, { error: "Datos inválidos." }); }
 
+  // Artista inactivo (013_activos.sql): sin acceso, aunque su sesión
+  // todavía no haya vencido. Va antes de todo, también de las partes de una
+  // subida ya abierta. Se pide "*" para que ande también antes de correr ese SQL.
+  const caller = await supabase(`/rest/v1/profiles?id=eq.${user.id}&select=*`, serviceKey);
+  if (!caller) return json(500, { error: BAD_KEY });
+  if (caller[0] && caller[0].role !== "admin" && caller[0].active === false) return json(403, { error: INACTIVE });
+
   try {
     // ---- Partes de una subida ya abierta ----
     if (body.action === "chunk" || body.action === "status") {
@@ -117,6 +125,7 @@ exports.handler = async (event) => {
       const start = Number(body.start), end = Number(body.end), total = Number(body.total);
       const data = Buffer.from(String(body.data || ""), "base64");
       if (!(start >= 0 && end >= start && total > end)) return json(400, { error: "Subida inválida." });
+      if (total > MAX_ANY) return json(400, { error: `El archivo pesa más de ${Math.round(MAX_ANY / MB)} MB.` });
       const res = await fetch(url, { method: "PUT", headers: { "Content-Range": `bytes ${start}-${end}/${total}`, "Content-Type": "application/octet-stream" }, body: data });
       if (!res.ok) return fail(502, "Se cortó la subida. Probá de nuevo.", `chunk ${res.status}`);
       const out = await res.json().catch(() => ({}));
@@ -130,20 +139,11 @@ exports.handler = async (event) => {
     const name = cleanName(body.name);
     if (!name || !section.types.test(name)) return json(400, { error: "Ese tipo de archivo no se puede subir a esta sección." });
 
-    // Artista inactivo (013_activos.sql): sin acceso, aunque su sesión
-    // todavía no haya vencido. Se pide "*" para que ande también antes de
-    // correr ese SQL.
-    const caller = await supabase(`/rest/v1/profiles?id=eq.${user.id}&select=*`, serviceKey);
-    if (!caller) return json(500, { error: BAD_KEY });
-    if (caller[0] && caller[0].role !== "admin" && caller[0].active === false) return json(403, { error: INACTIVE });
-
     // Un artista siempre sube a lo suyo; solo el administrador puede elegir otro perfil.
     let artistId = user.id;
     if (body.artist && body.artist !== user.id) {
       if (!/^[0-9a-f-]{36}$/i.test(String(body.artist))) return json(400, { error: "Artista inválido." });
-      const me = await supabase(`/rest/v1/profiles?id=eq.${user.id}&select=role`, serviceKey);
-      if (!me) return json(500, { error: BAD_KEY });
-      if (!me[0] || me[0].role !== "admin") return json(403, { error: "No tenés permiso para subir a esa carpeta." });
+      if (!caller[0] || caller[0].role !== "admin") return json(403, { error: "No tenés permiso para subir a esa carpeta." });
       artistId = body.artist;
     }
     const rows = await supabase(`/rest/v1/artist_private?profile_id=eq.${artistId}&select=onedrive_edit_link`, serviceKey);
@@ -169,10 +169,13 @@ exports.handler = async (event) => {
     if (!(size > 0)) return json(400, { error: "El archivo está vacío." });
     if (size > section.max) return json(400, { error: `El archivo pesa más de ${Math.round(section.max / MB)} MB.` });
 
+    // fileSize: el tamaño que dijo el navegador queda fijado en la sesión de
+    // OneDrive. Así el tope es real: OneDrive no acepta que después se manden
+    // más bytes que esos (y avisa antes si no hay espacio).
     const res = await fetch(`${itemPath}/createUploadSession`, {
       method: "POST",
       headers: { ...target.auth, "Content-Type": "application/json" },
-      body: JSON.stringify({ item: { "@name.conflictBehavior": "rename" } }),
+      body: JSON.stringify({ item: { "@name.conflictBehavior": "rename", fileSize: size } }),
     });
     if (res.ok) {
       const session = await res.json();
