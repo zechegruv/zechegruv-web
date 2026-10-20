@@ -11,8 +11,10 @@
 //
 // Acciones:
 //   info                                  → evento, tipos de entrada y contador
-//   peek    { token | code }              → ¿esta entrada es válida? (no la marca)
-//   checkin { token | code }              → marcar como ingresada
+//   peek    { token }                     → ¿esta entrada es válida? (no la marca)
+//   checkin { token }                     → marcar como ingresada
+//           (en la puerta se entra solo escaneando el QR: no se aceptan
+//           códigos escritos a mano, ni se muestran datos de otros eventos)
 //   issue   { ticket_type_id, quantity, first_name, last_name, email?, method, checkin? }
 //           method: cash | transfer | mercadopago
 const { json, db, serviceKey, testMode } = require("./_lib/pass");

@@ -442,7 +442,8 @@ exports.handler = async (event) => {
   }
 
   // ---------- Control de acceso ----------
-  if (body.action === "peek" || body.action === "checkin") return checkTicket(eventId, body, adminId);
+  // El panel puede buscar también por el código visible (solo de este evento).
+  if (body.action === "peek" || body.action === "checkin") return checkTicket(eventId, body, adminId, { allowCode: true });
 
   // ---------- Lista de invitados: entradas sin cargo por mail ----------
   // guests: [{ first_name, last_name, email, quantity }]. Cada invitado recibe

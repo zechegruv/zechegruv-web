@@ -1,6 +1,7 @@
 // ZG PASS — acceso de puerta de un evento.
 //   /puerta?k=<clave>  (redirige a /pass/puerta/?k=…)
-// Para quien controla la entrada: escanear QR, vender en puerta y ver el
+// Para quien controla la entrada: escanear QR (en la puerta se entra solo
+// con el QR, no hay carga de código a mano), vender en puerta y ver el
 // contador (totales, anticipadas, en puerta). Sin cuenta y sin acceso al
 // resto del portal (netlify/functions/pass-door.js).
 (() => {
@@ -159,7 +160,7 @@
   async function check(what) {
     pending = what;
     setMsg($("zgpScanMsg"), "");
-    if (!what.token && !what.code) return showResult("unknown", {});
+    if (!what.token) return showResult("unknown", {});
     try {
       const out = await call({ action: "peek", ...what });
       showResult(out.result, out);
@@ -281,13 +282,6 @@
   $("doorTabs").addEventListener("click", (event) => { const b = event.target.closest(".tab"); if (b) showView(b.dataset.view); });
   $("zgpScanBtn").addEventListener("click", () => { if (scanning) stopCamera(); else startCamera(); });
   $("zgpMark").addEventListener("click", mark);
-  $("zgpManual").addEventListener("submit", (event) => {
-    event.preventDefault();
-    const code = $("zgpCode").value.trim().toUpperCase();
-    if (!code) return;
-    stopCamera();
-    check({ code });
-  });
   $("zgpType").addEventListener("change", syncTotal);
   $("zgpQty").addEventListener("input", syncTotal);
   $("zgpIssueForm").addEventListener("submit", issue);

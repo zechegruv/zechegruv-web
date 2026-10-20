@@ -33,20 +33,25 @@ function summary(ev, tickets) {
   };
 }
 
-// Entrada a partir de lo que leyó el scanner (clave del QR) o de su código visible.
-async function findTicket(body) {
+// Entrada a partir de lo que leyó el scanner (clave del QR). El código
+// visible escrito a mano solo lo acepta el panel del administrador
+// (opts.allowCode) y siempre dentro del evento elegido: así nunca aparece
+// el nombre de alguien de otro evento.
+async function findTicket(body, eventId, opts = {}) {
   const select = "id,code,token,status,used_at,event_id,holder_name,modality,pass_ticket_types(name)";
   const token = String(body.token || "").toLowerCase();
   const code = text(body.code, 20).toUpperCase();
   let filter = "";
   if (/^[0-9a-f]{64}$/.test(token)) filter = `token=eq.${token}`;
-  else if (/^ZG-\d{2}-\d{6}$/.test(code)) filter = `code=eq.${code}`;
+  else if (opts.allowCode && /^ZG-\d{2}-[0-9A-Z]{6}$/.test(code)) filter = `code=eq.${encodeURIComponent(code)}&event_id=eq.${eventId}`;
   if (!filter) return null;
   const res = await db(`pass_tickets?${filter}&select=${select}`);
   return res.ok ? res.data[0] || null : undefined;
 }
 
-const ticketView = (t, result) => ({
+// Lo que se muestra de una entrada leída. Si es de otro evento, solo eso:
+// ni el nombre ni el código de esa persona.
+const ticketView = (t, result) => (result === "wrong_event" ? { result } : {
   result,
   code: t.code,
   holder_name: t.holder_name,
@@ -56,9 +61,11 @@ const ticketView = (t, result) => ({
 });
 
 
-// Scanner: { action: "peek" | "checkin", token | code } → respuesta lista.
-async function checkTicket(eventId, body, actorId) {
-    const ticket = await findTicket(body);
+// Scanner: { action: "peek" | "checkin", token } → respuesta lista.
+//   opts.allowCode: acepta también { code } escrito a mano (solo el panel).
+async function checkTicket(eventId, body, actorId, opts = {}) {
+    if (!opts.allowCode && !body.token && body.code) return json(400, { error: "En la puerta las entradas se validan solo escaneando el QR." });
+    const ticket = await findTicket(body, eventId, opts);
     if (ticket === undefined) return json(502, { error: "No pudimos consultar la entrada. Revisá la conexión." });
     if (!ticket) {
       if (body.action === "checkin") await rpc("pass_checkin", { p_token: "", p_event: eventId, p_admin: actorId });
@@ -70,7 +77,8 @@ async function checkTicket(eventId, body, actorId) {
     }
     const done = await rpc("pass_checkin", { p_token: ticket.token, p_event: eventId, p_admin: actorId });
     if (!done.ok || !done.data) return json(502, { error: "No pudimos marcar el ingreso. Probá de nuevo." });
-    return json(200, { ...ticketView(ticket, done.data.result), used_at: done.data.used_at || ticket.used_at });
+    const view = ticketView(ticket, done.data.result);
+    return json(200, done.data.result === "wrong_event" ? view : { ...view, used_at: done.data.used_at || ticket.used_at });
 }
 
 // Venta en puerta (y bonificadas, solo si opts.allowComp).

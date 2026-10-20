@@ -8,6 +8,8 @@
 --     conexión y se reintentó), se devuelve la misma orden en vez de otra.
 --   · Un pago que llega con la reserva vencida respeta también el cupo del
 --     tipo de entrada (antes solo se miraba la capacidad total).
+--   · Los códigos visibles de las entradas nuevas salen al azar (ya no
+--     correlativos). Las ya vendidas conservan el suyo.
 --   · Límite de reservas por conexión (para que nadie retenga lugares con
 --     mails inventados) y código de puerta con los intentos contados en la
 --     base, de a uno (con pedidos en paralelo no se pueden probar más).
@@ -147,8 +149,32 @@ begin
 end;
 $$;
 
+-- ---------- Código visible de cada entrada ----------
+-- ZG-<año>-<6 letras y números al azar>, p. ej. ZG-26-K7Q4X2. Sin 0/O,
+-- 1/I/L, para que no se confundan al leerlos. Ya no son correlativos: no
+-- se puede adivinar el de otra entrada a partir del propio. Las entradas
+-- que ya tenían código lo conservan (y entran igual, con su QR).
+create or replace function public.pass_ticket_code()
+returns text
+language plpgsql
+volatile
+set search_path = ''
+as $$
+declare
+  v_chars constant text := 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+  v_bytes bytea := uuid_send(gen_random_uuid());  -- los primeros 6 bytes son al azar
+  v_code text := '';
+  i integer;
+begin
+  for i in 0..5 loop
+    v_code := v_code || substr(v_chars, 1 + get_byte(v_bytes, i) % length(v_chars), 1);
+  end loop;
+  return 'ZG-' || to_char(now() at time zone 'America/Argentina/Buenos_Aires', 'YY') || '-' || v_code;
+end;
+$$;
+
 -- ---------- Confirmar el pago y emitir las entradas ----------
--- Igual que en 007; cuando el pago llega con la reserva vencida se vuelve a
+-- Igual que en 007, con códigos visibles al azar (arriba); cuando el pago llega con la reserva vencida se vuelve a
 -- comprobar la capacidad total Y el cupo de cada tipo de entrada de la
 -- orden (como al reservar): si no hay lugar, no se emite y se devuelve.
 create or replace function public.pass_confirm_paid(
@@ -166,6 +192,7 @@ declare
   v_order public.pass_orders%rowtype;
   v_qty integer;
   v_capacity integer;
+  v_ticket uuid;
 begin
   select * into v_order from public.pass_orders where id = p_order for update;
   if not found then raise exception 'ZG_NO_ORDER'; end if;
@@ -203,11 +230,20 @@ begin
     end if;
   end if;
 
-  update public.pass_tickets
-  set status = 'valid',
-      code = 'ZG-' || to_char(now() at time zone 'America/Argentina/Buenos_Aires', 'YY') || '-'
-             || lpad(nextval('public.pass_ticket_seq')::text, 6, '0')
-  where order_id = p_order;
+  -- Cada entrada recibe su código visible al azar (pass_ticket_code). Si
+  -- justo sale uno que ya existe, la base lo rechaza (code es único) y se
+  -- prueba con otro.
+  for v_ticket in select id from public.pass_tickets where order_id = p_order loop
+    loop
+      begin
+        update public.pass_tickets set status = 'valid', code = public.pass_ticket_code()
+        where id = v_ticket;
+        exit;
+      exception when unique_violation then
+        null;  -- código repetido: otra vuelta
+      end;
+    end loop;
+  end loop;
 
   update public.pass_orders
   set status = 'paid', paid_at = now(), payment_method = p_method,
@@ -293,10 +329,12 @@ $$;
 revoke execute on function public.pass_reserve(uuid, uuid, integer, text, text, text, text, integer, numeric, text, uuid, uuid, boolean, text) from public, anon, authenticated;
 revoke execute on function public.pass_confirm_paid(uuid, text, numeric, text) from public, anon, authenticated;
 revoke execute on function public.pass_rate_hit(text, integer, integer) from public, anon, authenticated;
+revoke execute on function public.pass_ticket_code() from public, anon, authenticated;
 revoke execute on function public.pass_door_try(uuid, text, integer) from public, anon, authenticated;
 grant execute on function public.pass_reserve(uuid, uuid, integer, text, text, text, text, integer, numeric, text, uuid, uuid, boolean, text) to service_role;
 grant execute on function public.pass_confirm_paid(uuid, text, numeric, text) to service_role;
 grant execute on function public.pass_rate_hit(text, integer, integer) to service_role;
+grant execute on function public.pass_ticket_code() to service_role;
 grant execute on function public.pass_door_try(uuid, text, integer) to service_role;
 
 notify pgrst, 'reload schema';
