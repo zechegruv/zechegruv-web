@@ -296,12 +296,38 @@ exports.handler = async (event) => {
       songId: sp.id,
     };
     return st === "espera" ? waiting(row) : row;
-  }).filter(Boolean)
+  }).filter(Boolean);
+
+  // Entrega que quedó atrás de su sesión: si la sesión de esa canción y etapa
+  // está agendada para un día posterior a la fecha de entrega (p. ej. la
+  // sesión se movió y la entrega quedó en el día viejo), la entrega pasa al
+  // día de la sesión (Notion + su evento "Entrega:") y se muestra una sola
+  // fila, la de la sesión. Si la entrega ya estaba vencida, la sesión lleva
+  // "Atrasada · era el …" desde ese día.
+  const behind = new Set();
+  for (const d of deadlines) {
+    if (d.waiting) continue;
+    const s = liveSessions
+      .filter((x) => x.songId && key(x.songId) === key(d.songId) && x.stage === d.stage && !x.waiting && dayKey(x.start) > dayKey(d.start))
+      .sort((a, b) => Date.parse(a.start) - Date.parse(b.start))[0];
+    if (!s) continue;
+    behind.add(d);
+    const rs = require("./admin-reschedule");
+    const oldDay = dayKey(d.start), newDay = dayKey(s.start);
+    const artist = await require("./_lib/auto-etapas")._artistName(d.clientId).catch(() => "");
+    await rs._moveDelivery({ songId: d.songId, song: d.name, artist, stage: d.stage }, oldDay, newDay).catch(() => null);
+    if (d.days < 0) {
+      const original = `${oldDay}T23:59:00-03:00`;
+      if (lateOk) await rs._rememberLate({ taskId: s.id, songId: s.songId, stage: s.stage, original, current: s.start }).catch(() => null);
+      if (!s.late || Date.parse(original) < Date.parse(s.late)) s.late = original;
+    }
+  }
+  const deadlinesLeft = deadlines.filter((d) => !behind.has(d))
     // Si ya hay una sesión de la misma canción y etapa ese día (o en espera), alcanza con la sesión.
     .filter((d) => !liveSessions.some((s) => s.songId && key(s.songId) === key(d.songId) && s.stage === d.stage && (dayKey(s.start) === dayKey(d.start) || s.waiting || d.waiting)));
 
   // Lo que espera al artista va después de lo que hay que hacer.
-  const raw = [...liveSessions, ...deadlines].sort((x, y) => (x.waiting ? 1 : 0) - (y.waiting ? 1 : 0) || x.days - y.days || Date.parse(x.start) - Date.parse(y.start)).slice(0, MAX);
+  const raw = [...liveSessions, ...deadlinesLeft].sort((x, y) => (x.waiting ? 1 : 0) - (y.waiting ? 1 : 0) || x.days - y.days || Date.parse(x.start) - Date.parse(y.start)).slice(0, MAX);
 
   // Nombres de artista y de canción (cada ficha, una vez).
   const clientIds = [...new Set(raw.map((t) => t.clientId).filter(Boolean))];
