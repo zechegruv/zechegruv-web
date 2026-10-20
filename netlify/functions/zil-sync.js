@@ -88,12 +88,23 @@ async function syncRelease(id, { force } = {}) {
 }
 
 exports.syncRelease = syncRelease;
+// Cada corrida queda anotada en automation_runs (supabase/034_estado.sql)
+// para "Estado del sistema" del panel. Sin ZIL configurado no corre ni se anota.
 exports.handler = async () => {
   if (!token()) return { statusCode: 200 };
+  const { startRun, finishRun } = require("./_lib/automation-runs");
+  const runId = await startRun("zil-sync");
   const r = await db("releases?status=eq.loaded&zil_album_id=not.is.null&select=id");
   const ids = (r.ok && r.data || []).map((x) => x.id);
   const results = [];
   for (const id of ids) results.push(await syncRelease(id).catch((e) => ({ ok: false, id, error: e.message })));
   if (ids.length) console.log("zil-sync:", JSON.stringify(results.map((x) => ({ ok: x.ok, live: x.live, error: x.error }))));
+  const bad = results.filter((x) => !x.ok);
+  const errores = [r.ok ? null : `No se pudo leer Supabase (${r.status})`, ...bad.map((x) => x.error)].filter(Boolean);
+  await finishRun(runId, {
+    ok: !errores.length,
+    summary: { lanzamientos: ids.length, publicados: results.filter((x) => x.published).length, errores: bad.length },
+    error: errores.join(" · ") || null,
+  });
   return { statusCode: 200 };
 };

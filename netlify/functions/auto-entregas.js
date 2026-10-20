@@ -12,10 +12,16 @@
 //      por vencer.
 // No se abre por link: la corre Netlify sola. Para correr las entregas al
 // momento está el Inicio del panel.
+// Cada corrida queda anotada en automation_runs (supabase/034_estado.sql):
+// el panel la muestra en "Estado del sistema" y avisa si deja de correr.
 const { syncAll } = require("./_lib/auto-entregas");
 const { watchStages, ruleDigest } = require("./_lib/auto-etapas");
+const { startRun, finishRun } = require("./_lib/automation-runs");
+
+const count = (x) => (Array.isArray(x) ? x.length : 0);
 
 exports.handler = async () => {
+  const runId = await startRun("auto-entregas");
   const [entregas, etapas] = await Promise.all([
     syncAll({ remind: true }).catch((e) => ({ ok: false, error: e.message })),
     watchStages().catch((e) => ({ ok: false, error: e.message })),
@@ -25,5 +31,27 @@ exports.handler = async () => {
   console.log("automatizaciones:", JSON.stringify(log));
   if (!entregas.ok || (entregas.errors && entregas.errors.length)) console.error("auto-entregas:", entregas.error || JSON.stringify(entregas.errors));
   if (!etapas.ok) console.error("auto-etapas:", etapas.error);
+
+  // Resumen corto para el panel: cuántas entregas se marcaron (y a cuántos
+  // artistas se les avisó), recordatorios, cambios de etapa y mails de la
+  // regla de 15 días. Los errores, en una línea legible.
+  const errores = [
+    entregas.error ? `Entregas: ${entregas.error}` : null,
+    ...(entregas.errors || []).map((e) => `${e.artist || "?"}${e.song ? ` · ${e.song}` : ""}: ${e.error}`),
+    etapas.error ? `Etapas: ${etapas.error}` : null,
+    ...(etapas.done || []).filter((d) => d && d.error).map((d) => `Etapa de ${d.song || "?"}: ${d.error}`),
+    regla && regla.error ? `Regla de 15 días: ${regla.error}` : null,
+  ].filter(Boolean);
+  await finishRun(runId, {
+    ok: !errores.length && entregas.ok !== false && etapas.ok !== false,
+    summary: {
+      entregas: count(entregas.delivered),
+      avisos: (entregas.delivered || []).filter((d) => d.notified).length,
+      recordatorios: count(entregas.reminders),
+      etapas: (etapas.done || []).filter((d) => d && !d.error).length,
+      regla: (regla && regla.sent) || 0,
+    },
+    error: errores.join(" · ") || null,
+  });
   return { statusCode: 200 };
 };
