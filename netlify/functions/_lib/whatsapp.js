@@ -116,4 +116,62 @@ async function sendTemplate({ to, template, params = [], timeoutMs = TIMEOUT_MS 
   }
 }
 
-module.exports = { normalizePhone, sendTemplate, templateName, configured, TIMEOUT_MS };
+// ---------- El número del artista ----------
+// Sale de su ficha en Notion → Clientes Zeche Gruv → "Teléfono" (la ficha
+// vinculada en artist_private.notion_page_id). Devuelve { raw, phone }:
+// raw es lo que está escrito en la ficha, phone el número listo para
+// WhatsApp (null si no hay o no se entiende).
+const pageIdOf = (v) => {
+  const h = String(v || "").replace(/-/g, "").match(/[0-9a-f]{32}/i);
+  return h ? h[0].toLowerCase() : null;
+};
+function phoneProp(props) {
+  const all = Object.entries(props || {}).filter(([, p]) => p && p.type === "phone_number");
+  const byName = all.find(([k]) => /^tel[eé]fono$/i.test(k.trim()));
+  const hit = byName || all[0];
+  return hit ? String(hit[1].phone_number || "").trim() : "";
+}
+async function artistPhone(profileId) {
+  const { db } = require("./pass");
+  const priv = await db(`artist_private?profile_id=eq.${profileId}&select=notion_page_id`);
+  const pageId = pageIdOf(priv.ok && priv.data && priv.data[0] && priv.data[0].notion_page_id);
+  if (!pageId) return { raw: "", phone: null };
+  const pg = await require("./notion").notion(`/pages/${pageId}`);
+  if (!pg.ok || !pg.data) return { raw: "", phone: null };
+  const raw = phoneProp(pg.data.properties);
+  return { raw, phone: normalizePhone(raw) };
+}
+
+// ---------- Aviso a un artista ----------
+// which: mezcla | master | cambios | recordatorio. key: la misma clave del
+// mail (se anota como "wa|<key>", así sale una sola vez). params: los {{n}}.
+// profile (opcional): la fila de profiles si ya se leyó. songId: la canción.
+// Orden: si no está configurado no se toca nada; si el artista lo apagó en su
+// perfil (profiles.whatsapp_avisos, 033_whatsapp.sql) o no tiene teléfono,
+// tampoco. Recién ahí se anota el turno y se manda. Nunca tira error.
+async function notifyArtist({ profileId, profile, songId, which, key, params }) {
+  try {
+    if (!configured()) return { sent: false, why: "sin-configurar" };
+    if (!profileId || !key) return { sent: false, why: "datos" };
+    const { db } = require("./pass");
+    let p = profile;
+    if (!p) {
+      // "*": así anda también antes de correr 033 (sin la columna, queda prendido).
+      const r = await db(`profiles?id=eq.${profileId}&select=*`);
+      p = r.ok && r.data && r.data[0];
+    }
+    if (!p || p.active === false) return { sent: false, why: "sin-perfil" };
+    if (p.whatsapp_avisos === false) return { sent: false, why: "desactivado" };
+    const { phone } = await artistPhone(profileId);
+    if (!phone) return { sent: false, why: "sin-telefono" };
+    const waKey = `wa|${key}`.slice(0, 500);
+    const claim = await db("portal_reminders?on_conflict=key", { method: "POST", prefer: "resolution=ignore-duplicates,return=representation", body: { key: waKey, kind: "whatsapp", profile_id: profileId, song_id: songId || null } });
+    if (!claim.ok || !claim.data || !claim.data[0]) return { sent: false, why: "ya-avisado" };
+    return await sendTemplate({ to: phone, template: templateName(which), params });
+  } catch (e) {
+    console.error("WhatsApp: no se pudo avisar", e && e.message);
+    return { sent: false, why: "error" };
+  }
+}
+
+module.exports = { normalizePhone, sendTemplate, templateName, configured, artistPhone, notifyArtist, TIMEOUT_MS };

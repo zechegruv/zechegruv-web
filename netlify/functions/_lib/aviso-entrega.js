@@ -8,6 +8,8 @@
 // la misma entrega se procesa dos veces, no le llegan dos mails. Responde a
 // Zeche (reply-to). Después, si no la escucha, siguen los recordatorios de
 // los 3 y 7 días (auto-entregas.js → remindArtist).
+// Además del mail le llega un WhatsApp con el mismo aviso (whatsapp.js),
+// salvo que lo haya apagado en su perfil o no tenga teléfono en su ficha.
 const { db, sendMail, notifyEmail, esc } = require("./pass");
 
 const PORTAL = "https://www.zechegruv.com/portal/";
@@ -60,7 +62,8 @@ function deliveryMail({ name, song, kind, again, notes }) {
 // version: algo que identifique esta entrega (archivo + fecha, o "manual|<hora>").
 async function notifyArtistDelivered({ profileId, song, kind, version }) {
   if (!profileId || !song || !song.id) return { sent: false, why: "datos" };
-  const prof = await db(`profiles?id=eq.${profileId}&select=email,display_name,full_name,active`);
+  // "*": trae también whatsapp_avisos (033), y anda igual antes de correrlo.
+  const prof = await db(`profiles?id=eq.${profileId}&select=*`);
   const p = prof.ok && prof.data && prof.data[0];
   if (!p || !p.email || p.active === false) return { sent: false, why: "sin-mail" };
   // ¿Es la versión nueva después de que pidió cambios? (lo último que dijo el artista)
@@ -72,9 +75,16 @@ async function notifyArtistDelivered({ profileId, song, kind, version }) {
   const key = `entrega-aviso|${song.id}|${kind}|${String(version || "").slice(0, 200)}`;
   const claim = await db("portal_reminders?on_conflict=key", { method: "POST", prefer: "resolution=ignore-duplicates,return=representation", body: { key, kind: "entrega-aviso", profile_id: profileId, song_id: song.id } });
   if (!claim.ok || !claim.data || !claim.data[0]) return { sent: false, why: "ya-avisado" };
-  const mail = deliveryMail({ name: firstName(p.display_name || p.full_name), song: song.title, kind, again, notes });
+  const name = firstName(p.display_name || p.full_name);
+  const mail = deliveryMail({ name, song: song.title, kind, again, notes });
   const ok = await sendMail({ to: p.email, from: "ZG Portal <portal@zechegruv.com>", replyTo: notifyEmail(), ...mail }).catch(() => false);
-  return { sent: !!ok, again };
+  // Además del mail, un WhatsApp (whatsapp.js): mezcla lista, master listo o
+  // modificaciones listas. Una sola vez por versión ("wa|" + la misma clave).
+  // Si no está configurado, lo apagó o no tiene teléfono, no pasa nada.
+  const whatsapp = await require("./whatsapp").notifyArtist({
+    profileId, profile: p, songId: song.id, key, which: again ? "cambios" : kind, params: [name, song.title],
+  }).catch(() => ({ sent: false, why: "error" }));
+  return { sent: !!ok, again, whatsapp };
 }
 
 module.exports = { notifyArtistDelivered, deliveryMail };

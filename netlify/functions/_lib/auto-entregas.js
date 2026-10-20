@@ -16,6 +16,7 @@
 //      cambios") se va solo y al artista le aparece para escuchar y aprobar.
 //   5. Al artista le llega un mail: su mezcla, su master o su corrección está
 //      lista para escuchar (aviso-entrega.js), una sola vez por versión.
+//      Y el mismo aviso por WhatsApp (whatsapp.js), si lo tiene prendido.
 //   4. Google Calendar (si está conectado): el evento "Entrega:" de esa
 //      canción queda tildado con ✓ (no se borra nada).
 //
@@ -144,7 +145,8 @@ async function deliver({ profileId, clientId, song, kind, file, deliveryDate }) 
 // Si una mezcla o un master lleva 3 días esperando que el artista lo
 // escuche (y no respondió nada), le llega un mail cálido de ZG Portal. Si
 // a los 7 días sigue igual, uno más. Nunca más de eso por versión, solo de
-// 10 a 20 h y solo desde la función programada.
+// 10 a 20 h y solo desde la función programada. Cada uno sale también por
+// WhatsApp (whatsapp.js), si el artista no lo apagó y tiene teléfono.
 const REMIND_DAYS = [3, 7];
 const PORTAL = "https://www.zechegruv.com/portal/";
 const TZ_AR = "America/Argentina/Buenos_Aires";
@@ -195,7 +197,12 @@ async function remindArtist({ profileId, email, name, songs, files, rows }, now 
     if (step === 1) await db("portal_reminders?on_conflict=key", { method: "POST", prefer: "resolution=ignore-duplicates,return=minimal", body: { key: key.replace(/\|1$/, "|0"), kind: "recordatorio", profile_id: profileId, song_id: song.id } });
     const mail = remindMail({ name: firstName(name), song: song.title, kind, step, since: file.modified });
     const ok = await sendMail({ to: email, from: "ZG Portal <portal@zechegruv.com>", replyTo: require("./pass").notifyEmail(), ...mail }).catch(() => false);
-    sent.push({ song: song.title, kind, step, ok });
+    // Además del mail, el mismo recordatorio por WhatsApp (whatsapp.js), una
+    // vez por versión y por paso: la clave es la del mail con "wa|" adelante.
+    const wa = await require("./whatsapp").notifyArtist({
+      profileId, songId: song.id, key, which: "recordatorio", params: [firstName(name), song.title],
+    }).catch(() => null);
+    sent.push({ song: song.title, kind, step, ok, whatsapp: !!(wa && wa.sent) });
   }
   return sent;
 }
