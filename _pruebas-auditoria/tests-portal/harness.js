@@ -19,7 +19,7 @@ const freePort = () => new Promise((ok) => { const s = net.createServer(); s.lis
 // El service worker del portal (portal/sw.js) se bloquea salvo que la prueba
 // lo pida (sw: true): con él, los pedidos que hace el SW no pasan por
 // page.route y el supabase falso se cambiaría por el real guardado.
-async function harness({ sb = {}, fn = null, supabaseScript = "fake", viewport = { width: 1200, height: 900 }, sw = false } = {}) {
+async function harness({ sb = {}, fn = null, supabaseScript = "fake", viewport = { width: 1200, height: 900 }, sw = false, full = false } = {}) {
   const port = await freePort();
   const server = spawn("python3", ["-m", "http.server", String(port), "--bind", "127.0.0.1"], { cwd: WEB, stdio: "ignore" });
   for (let i = 0; i < 50; i++) {
@@ -27,7 +27,8 @@ async function harness({ sb = {}, fn = null, supabaseScript = "fake", viewport =
     if (up) break;
     await new Promise((r) => setTimeout(r, 100));
   }
-  const browser = await chromium.launch();
+  // full: el Chromium completo (el mínimo no deja mostrar notificaciones).
+  const browser = await chromium.launch(full ? { channel: "chromium" } : {});
   const context = await browser.newContext({ viewport, serviceWorkers: sw ? "allow" : "block" });
   const page = await context.newPage();
   const logs = [];
