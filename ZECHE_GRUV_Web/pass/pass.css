@@ -370,6 +370,9 @@ dd.lineup b:not(:last-child)::after { content: "·"; color: var(--orange-soft); 
   border-radius: 50%;
   padding: 4px;
 }
+/* QR como imagen del servidor (si no cargó la librería): ocupa el lugar
+   del dibujo, sin el tratamiento del sol del centro. */
+.pass-qr img.pass-qr-img { position: static; display: block; width: 100%; height: auto; transform: none; padding: 0; border-radius: 0; background: none; }
 .pass-id { font-family: "DM Mono", monospace; font-size: 15px; font-weight: 500; letter-spacing: .14em; color: var(--accent); }
 .pass-used {
   display: inline-block;

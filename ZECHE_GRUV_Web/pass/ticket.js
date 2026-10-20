@@ -47,7 +47,18 @@ window.ZGPass = (() => {
   // El QR lleva solo la clave secreta de la entrada, en mayúsculas (así
   // el código sale menos denso y se lee más fácil). Corrección de errores
   // alta para que el sol del centro no impida la lectura.
+  // Si no cargó la librería del QR (cdnjs caído o bloqueado), se usa la
+  // imagen que arma el servidor (netlify/functions/pass-qr.js): es el mismo
+  // QR que va en el mail.
+  function qrImage(token) {
+    const img = el("img", "pass-qr-img");
+    img.src = `/.netlify/functions/pass-qr?k=${encodeURIComponent(String(token).toLowerCase())}`;
+    img.alt = "Código QR de la entrada";
+    return img;
+  }
+
   function qrSvg(token, dark) {
+    if (typeof window.qrcode !== "function") return qrImage(token);
     const qr = window.qrcode(0, "H");
     qr.addData(`ZGP1.${String(token).toUpperCase()}`, "Alphanumeric");
     qr.make();

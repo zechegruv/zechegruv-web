@@ -121,7 +121,11 @@
     const order = res.data;
     $("waitNumber").textContent = `Orden ${order.number}`;
     const slug = order.event && order.event.slug;
-    if (order.status === "paid") return showPaid(order);
+    if (order.status === "paid") {
+      // Si algo falla al dibujar la entrada, se sigue consultando en vez de
+      // quedar trabado en "Estamos confirmando…".
+      try { return showPaid(order); } catch (e) { console.error("ZG PASS: no se pudo mostrar la entrada", e); return retry(order); }
+    }
     if (order.status === "refunded") return showState(order.number, "Esta orden fue reembolsada.", "Las entradas de esta compra ya no son válidas.", slug);
     if (order.status === "cancelled") return showState(order.number, "Esta orden fue cancelada.", "No se emitieron entradas para esta compra.", slug);
     if (order.status === "expired") return showState(order.number, "Se venció el tiempo para pagar.", "Los lugares se liberaron y no se te cobró nada. Si llegaste a pagar, el dinero se devuelve solo. Podés volver a intentarlo.", slug);
