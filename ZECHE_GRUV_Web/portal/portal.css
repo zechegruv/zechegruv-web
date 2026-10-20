@@ -336,6 +336,59 @@ main {
 .table .row-inactive td { opacity: .55; }
 .access-zone + .danger-zone { margin-top: 16px; }
 
+/* ---------- Avisos por WhatsApp (Perfil) ---------- */
+/* Una fila dentro del formulario de Perfil: texto a la izquierda y el
+   interruptor a la derecha. Se guarda al tocarlo (portal.js). */
+.wa-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 2px 0 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+.wa-text { display: grid; gap: 4px; min-width: 0; }
+.wa-label { font-size: 14px; font-weight: 600; color: var(--cream); }
+.wa-row .hint { font-size: 13px; color: var(--muted); max-width: 46ch; }
+.wa-row.is-readonly .hint { color: var(--beige); }
+.wa-row .msg { margin-top: 2px; }
+.wa-switch {
+  position: relative;
+  flex: none;
+  width: 48px;
+  height: 28px;
+  margin-top: 2px;
+  padding: 0;
+  border: 1px solid rgba(240, 224, 192, .22);
+  border-radius: 999px;
+  background: rgba(240, 224, 192, .08);
+  cursor: pointer;
+  transition: background-color 200ms ease, border-color 200ms ease, transform 160ms cubic-bezier(.23, 1, .32, 1), opacity 200ms ease;
+}
+.wa-switch[aria-checked="true"] { background: var(--orange); border-color: var(--orange); }
+.wa-knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--cream);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .35);
+  transition: transform 220ms cubic-bezier(.23, 1, .32, 1);
+}
+.wa-switch[aria-checked="true"] .wa-knob { transform: translateX(20px); }
+.wa-switch:active { transform: scale(.96); }
+.wa-switch:focus-visible { outline: none; box-shadow: 0 0 0 4px rgba(240, 120, 0, .28); }
+.wa-switch[aria-busy="true"] { opacity: .7; cursor: progress; }
+@media (hover: hover) and (pointer: fine) {
+  .wa-switch[aria-checked="false"]:hover { border-color: rgba(240, 120, 0, .55); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wa-switch, .wa-knob { transition: background-color 200ms ease, border-color 200ms ease, opacity 200ms ease; }
+}
+
 /* ---------- Borrar perfil (administrador) ---------- */
 
 .danger-zone {

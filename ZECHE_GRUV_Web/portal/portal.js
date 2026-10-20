@@ -443,6 +443,8 @@
     // si no distribuye, el artista no ve la sección Distribución.
     $("distZone").hidden = !(admin && !own && p.role === "artist");
     paintDist(p);
+    // Avisos por WhatsApp: el artista los prende o apaga; el admin ve una línea.
+    paintWhatsApp(p, own, admin);
     $("openDistribution").closest("li").hidden = p.role === "artist" && p.distributes === false && !admin;
 
     setMsg($("profileMsg"), "");
@@ -588,6 +590,66 @@
     if (error || !data) { setMsg($("distMsg"), "No pudimos guardarlo. ¿Corriste supabase/028_distribuye.sql?", true); return; }
     if (viewing && viewing.id === target.id) { viewing = data; paintDist(data); }
     setMsg($("distMsg"), next ? `${nameOf(target)} distribuye con ZECHE GRUV.` : `Listo: ${nameOf(target)} no distribuye con ZECHE GRUV.`);
+  });
+
+  // ---------- Avisos por WhatsApp ----------
+  // Además del mail, al artista le llega un WhatsApp cuando su mezcla o su
+  // master está listo (netlify/functions/_lib/whatsapp.js). El número sale de
+  // su ficha de Notion, que el artista no puede leer: portal-whatsapp.js dice
+  // si hay uno (solo las últimas 4 cifras). El interruptor guarda
+  // profiles.whatsapp_avisos al instante (supabase/033_whatsapp.sql).
+  const WA_TEXT = "Te aviso por WhatsApp cuando tu mezcla o tu master esté listo para escuchar (al número que tengo en tu ficha).";
+  const WA_NO_PHONE = "Te aviso por WhatsApp cuando tu mezcla o tu master esté listo para escuchar, pero todavía no tengo tu número en tu ficha. Pasámelo por WhatsApp y lo cargo.";
+  function paintWaSwitch(on) {
+    $("waSwitch").setAttribute("aria-checked", on ? "true" : "false");
+  }
+  async function paintWhatsApp(p, own, admin) {
+    const row = $("waRow");
+    // Solo en artistas: su propio perfil, o el administrador mirando uno.
+    const show = p.role === "artist" && (own || admin);
+    row.hidden = !show;
+    if (!show) return;
+    setMsg($("waMsg"), "");
+    $("waSwitch").hidden = !own;
+    row.classList.toggle("is-readonly", !own);
+    paintWaSwitch(p.whatsapp_avisos !== false);
+    $("waHint").textContent = own ? WA_TEXT : "Revisando su ficha…";
+    let st = null;
+    try {
+      const res = await authFetch(`/.netlify/functions/portal-whatsapp${own ? "" : `?artist=${encodeURIComponent(p.id)}`}`);
+      st = res.ok ? await res.json() : null;
+    } catch (e) { st = null; }
+    if (!viewing || viewing.id !== p.id) return; // ya abrió otro perfil
+    if (own) {
+      if (st && !st.phone) $("waHint").textContent = WA_NO_PHONE;
+      return;
+    }
+    // Administrador: una línea, solo lectura.
+    if (!st) { $("waHint").textContent = "No pudimos revisar su ficha ahora."; return; }
+    const phone = st.phone ? `Teléfono …${st.last4}` : st.written ? "El teléfono de su ficha no se entiende (revisalo en Notion)" : "Sin teléfono en su ficha de Notion";
+    const on = st.on ? "avisos activos" : "avisos apagados por el artista";
+    $("waHint").textContent = `${phone} · ${on}${st.configured ? "" : " · todavía sin conectar (docs/WHATSAPP.md)"}`;
+  }
+
+  $("waSwitch").addEventListener("click", async () => {
+    const sw = $("waSwitch");
+    if (sw.getAttribute("aria-busy") === "true" || !viewing || viewing.id !== me.id) return;
+    const target = viewing;
+    const next = sw.getAttribute("aria-checked") !== "true";
+    // Se mueve en el momento; si no se pudo guardar, vuelve.
+    paintWaSwitch(next);
+    sw.setAttribute("aria-busy", "true");
+    setMsg($("waMsg"), "");
+    const { data, error } = await db.from("profiles").update({ whatsapp_avisos: next }).eq("id", target.id).select().single();
+    sw.removeAttribute("aria-busy");
+    if (error || !data) {
+      paintWaSwitch(!next);
+      setMsg($("waMsg"), "No pudimos guardarlo. Probá de nuevo.", true);
+      return;
+    }
+    if (data.id === me.id) me = data;
+    if (viewing && viewing.id === data.id) viewing = data;
+    setMsg($("waMsg"), next ? "Listo: te aviso por WhatsApp." : "Listo: apagaste los avisos por WhatsApp. Te sigo avisando por mail.");
   });
 
   // ---------- Activo / inactivo ----------

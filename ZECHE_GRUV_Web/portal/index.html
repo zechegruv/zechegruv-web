@@ -298,6 +298,18 @@
               </div>
             </div>
 
+            <!-- Avisos por WhatsApp (portal.js → paintWhatsApp): el artista los
+                 prende o apaga y se guarda al instante; el administrador, en la
+                 ficha de un artista, ve una línea de solo lectura. -->
+            <div class="wa-row" id="waRow" hidden>
+              <div class="wa-text">
+                <span class="wa-label" id="waLabel">Avisos por WhatsApp</span>
+                <p class="hint" id="waHint"></p>
+                <p class="msg" id="waMsg" role="status"></p>
+              </div>
+              <button class="wa-switch" type="button" role="switch" id="waSwitch" aria-checked="true" aria-labelledby="waLabel" aria-describedby="waHint"><span class="wa-knob" aria-hidden="true"></span></button>
+            </div>
+
             <p class="msg" id="profileMsg" role="status"></p>
             <button class="btn btn-primary" type="submit">Guardar cambios</button>
           </form>
