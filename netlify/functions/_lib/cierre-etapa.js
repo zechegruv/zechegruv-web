@@ -222,7 +222,10 @@ async function scheduleSession(song, kind, artist, why, now = new Date()) {
   const stageLabel = kind === "master" ? "Master" : "Mezcla";
   if (!(await gc.status()).connected) return { scheduled: false, google: false };
   const slot = await et()._firstSlot(now);
-  if (!slot || !slot.google) return { scheduled: false, google: !!slot };
+  // Google conectado pero no respondió: no es "no conectado" ni "sin hueco".
+  if (slot && slot.unavailable) return { scheduled: false, google: true, error: "google" };
+  if (!slot) return { scheduled: false, google: true, error: "sin-hueco" };
+  if (!slot.google) return { scheduled: false, google: false };
   const ev = await gc.createEvent({
     start: { dateTime: slot.start, timeZone: TZ }, end: { dateTime: slot.end, timeZone: TZ },
     summary: `${stage} – ${song.title}${artist ? ` (${artist})` : ""}`, colorId: kind === "master" ? "8" : "7",

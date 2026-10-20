@@ -130,11 +130,18 @@ async function notionBusy(fromDay, toDay) {
 }
 
 // Primer hueco libre de 2 h dentro de ese horario.
+//   null                         -> no hay hueco en los próximos 21 días
+//   { unavailable: true }        -> Google está conectado pero no respondió
+//                                   (no es lo mismo que "no conectado": se
+//                                   reintenta en la próxima pasada)
+//   { date, time, start, end, google } -> el hueco (google: false si Google
+//                                   no está conectado: solo según la rutina)
 async function firstSlot(now = new Date()) {
   const today = dayAR(now);
   const g = await gc.status().catch(() => ({ connected: false }));
   const until = addDays(today, AUTO.days);
   const busy = g.connected ? await gc.busy(rs()._at(today, 0), rs()._at(until, 0)) : null;
+  if (g.connected && !busy) return { unavailable: true, google: true };
   const all = busy ? [...busy, ...(await notionBusy(today, until))] : null;
   const days = rs()._freeSlots(all, SESSION_MIN, now, AUTO);
   const day = days.find((d) => d.slots.length);
@@ -151,6 +158,33 @@ const mailBox = (eyebrow, title, body, cta) => `<div style="font-family:Helvetic
 ${cta ? `<p style="margin:20px 0 0"><a href="${cta[1]}" style="display:inline-block;background:#F07800;color:#241105;text-decoration:none;font-weight:700;padding:12px 20px;border-radius:999px">${cta[0]}</a></p>` : ""}
 </div>`;
 
+// ---------- Mezcla sin agendar: queda pendiente ----------
+// Si no se pudo agendar (sin hueco, Google no respondió, o Notion / Google
+// no dejaron crear la sesión), la canción queda anotada (portal_reminders,
+// kind "pendiente-agenda") y cada pasada de la función programada lo vuelve
+// a intentar (retryPending). A Zeche le llega UN mail ("No pude agendar la
+// mezcla de «X»"), salvo cuando fue solo que Google no respondió: eso es
+// pasajero y no hace falta molestarlo.
+async function leavePending(song, artist, why) {
+  const key = `pendiente-agenda|${song.id}`;
+  const mark = await db("portal_reminders?on_conflict=key", { method: "POST", prefer: "resolution=ignore-duplicates,return=representation", body: { key, kind: "pendiente-agenda", song_id: song.id } });
+  if (!(mark.ok && mark.data && mark.data[0])) await db(`portal_reminders?key=eq.${encodeURIComponent(key)}`, { method: "PATCH", body: { kind: "pendiente-agenda" } });
+  if (why === "google") return;
+  // Una sola vez por canción.
+  const once = await db("portal_reminders?on_conflict=key", { method: "POST", prefer: "resolution=ignore-duplicates,return=representation", body: { key: `sin-agenda-aviso|${song.id}`, kind: "sin-agenda-aviso", song_id: song.id } });
+  if (!(once.ok && once.data && once.data[0])) return;
+  const reason = why === "sin-hueco"
+    ? `No encontré un hueco libre de 2 h en las próximas 3 semanas (de lunes a viernes desde las 15 h).`
+    : `Google Calendar o Notion no dejaron crear la sesión.`;
+  await sendMail({
+    to: notifyEmail(), from: "ZG Portal <portal@zechegruv.com>",
+    subject: `No pude agendar la mezcla de «${song.title}»${artist ? ` (${artist})` : ""}`,
+    html: mailBox("Portal · Mezcla sin agendar", `${esc(song.title)}${artist ? ` · ${esc(artist)}` : ""} pasó a Mezcla`,
+      `<p style="margin:0 0 10px">${esc(reason)}</p><p style="margin:0;color:#C9A980">Lo sigo intentando solo cada 15 minutos. Si preferís, agendala vos desde el Inicio del panel.</p>`,
+      ["Abrir el panel", PORTAL]),
+  }).catch(() => false);
+}
+
 // ---------- Acciones ----------
 async function onMix(song, log) {
   const out = { song: song.title, stage: "Mix", actions: [] };
@@ -159,9 +193,13 @@ async function onMix(song, log) {
   const rule = addDays(vocals, RULE_DAYS);
 
   const existing = await openTasks(song.id, ["Mix"]);
-  let slot = null;
+  let slot = null, pending = null;
   if (!existing.length) {
     slot = await firstSlot();
+    // Google conectado pero no respondió: se reintenta en la próxima pasada,
+    // sin mail (no es que falte conectarlo ni que no haya hueco).
+    if (slot && slot.unavailable) { slot = null; pending = "google"; }
+    else if (!slot) pending = "sin-hueco";
     // Sin Google Calendar no se agenda a medias: queda pendiente y se agenda
     // completa (tarea + evento + entrega) apenas se conecte.
     if (slot && !slot.google) {
@@ -195,7 +233,7 @@ async function onMix(song, log) {
       const t = ev.ok ? await createTask({ name, etapa: "Mix", song, start: slot.start, end: slot.end, description: `Agendada sola al pasar a Mezcla (voces finales: ${vocals}). Regla de 15 días: master hasta el ${rule}.` }) : null;
       out.actions.push(t && t.ok ? "tarea" : `tarea-error ${t ? t.status : "sin-evento"}`);
       if (ev.ok && !(t && t.ok)) await gc.patchEvent(ev.data.id, { summary: `✗ ${ev.data.summary}`, transparency: "transparent", description: `${ev.data.description}\n\n✗ Notion no dejó crear la tarea: agendala desde el Inicio del panel.` }).catch(() => null);
-      if (!(t && t.ok)) slot = null; // no se agendó: el mail no lo anuncia
+      if (!(t && t.ok)) { slot = null; pending = "error"; } // no se agendó: el mail no lo anuncia
     }
   }
   // Fecha de entrega de la mezcla: la semana de la regla (o el día de la sesión si cae después).
@@ -220,7 +258,9 @@ async function onMix(song, log) {
     }).catch(() => false);
     out.actions.push("mail");
   } else if (!existing.length) {
-    out.actions.push("sin-hueco");
+    out.actions.push(pending === "google" ? "google-no-respondio" : pending === "error" ? "sin-agendar" : "sin-hueco");
+    await leavePending(song, artist, pending).catch(() => null);
+    out.actions.push("pendiente");
   }
   return out;
 }
@@ -250,23 +290,28 @@ async function onMasterFromNotion(song, log) {
   return out;
 }
 
-// Mezclas que quedaron sin agendar porque Google Calendar no estaba
-// conectado: apenas se conecta, se agendan completas.
+// Mezclas que quedaron sin agendar: porque Google Calendar no estaba
+// conectado (pendiente-google) o porque no se pudo en ese momento
+// (pendiente-agenda: sin hueco, Google no respondió, falló la tarea). Con
+// Google conectado, cada pasada lo vuelve a intentar completo.
 async function retryPendingGoogle() {
   const g = await gc.status().catch(() => ({ connected: false }));
   if (!g.connected) return [];
-  const rows = await db("portal_reminders?kind=eq.pendiente-google&select=key,song_id");
+  const rows = await db("portal_reminders?kind=in.(pendiente-google,pendiente-agenda)&select=key,kind,song_id");
   const out = [];
   for (const r of (rows.ok && rows.data) || []) {
     const page = await notion(`/pages/${r.song_id}`);
+    if (!page.ok && page.status !== 404) continue; // Notion no respondió: queda para la próxima
     const song = page.ok ? songInfo(page.data) : null;
     // Ya no hace falta (avanzó o ya tiene sesión): se da por resuelto.
-    const claim = await db(`portal_reminders?key=eq.${encodeURIComponent(r.key)}&kind=eq.pendiente-google`, { method: "PATCH", prefer: "return=representation", body: { kind: "pendiente-google-hecho" } });
+    const claim = await db(`portal_reminders?key=eq.${encodeURIComponent(r.key)}&kind=eq.${encodeURIComponent(r.kind)}`, { method: "PATCH", prefer: "return=representation", body: { kind: `${r.kind}-hecho` } });
     if (!claim.ok || !claim.data || !claim.data[0] || !song || song.stage !== "Mix") continue;
     const logRow = await db(`song_stage_log?song_id=eq.${encodeURIComponent(song.id)}&select=*`);
     const res = await onMix(song, (logRow.ok && logRow.data && logRow.data[0]) || {}).catch((e) => ({ song: song.title, error: e.message }));
-    // Si justo se desconectó otra vez, onMix lo vuelve a dejar pendiente.
-    if (res.actions && res.actions.includes("esperando-google")) await db(`portal_reminders?key=eq.${encodeURIComponent(r.key)}`, { method: "PATCH", body: { kind: "pendiente-google" } });
+    // Si justo se desconectó otra vez, onMix lo vuelve a dejar pendiente
+    // (lo mismo si sigue sin hueco: onMix → leavePending, sin repetir el mail).
+    if (res.actions && res.actions.includes("esperando-google")) await db(`portal_reminders?key=eq.${encodeURIComponent(`pendiente-google|${song.id}`)}`, { method: "PATCH", body: { kind: "pendiente-google" } });
+    if (res.error) await db(`portal_reminders?key=eq.${encodeURIComponent(r.key)}`, { method: "PATCH", body: { kind: r.kind } });
     out.push(res);
   }
   return out;
