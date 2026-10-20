@@ -137,7 +137,8 @@ window.ZGPistas = (() => {
     const fill = el("i");
     bar.append(fill);
     bar.hidden = true;
-    const hint = el("p", "hint", `WAV, MP3, AIFF o FLAC, o un ZIP con todo (hasta 2 GB por archivo). ${t("Tenés", "Tienen")} tiempo hasta el ${until(show.deadline)} h. Desde acá no se puede borrar: si ${t("subiste algo por error, avisanos", "subieron algo por error, avísennos")}.`);
+    // Los formatos son los mismos que acepta ACCEPT (y el servidor).
+    const hint = el("p", "hint", `WAV, MP3, AIFF, FLAC o M4A, o un ZIP o RAR con todo; también PDF o TXT (letras, setlist). Hasta 2 GB por archivo. ${t("Tenés", "Tienen")} tiempo hasta el ${until(show.deadline)} h. Desde acá no se puede borrar: si ${t("subiste algo por error, avisanos", "subieron algo por error, avísennos")}.`);
     const actions = el("div", "show-actions");
     actions.append(btn, bar, msg, hint);
     box.append(input, actions);
@@ -148,7 +149,7 @@ window.ZGPistas = (() => {
       input.value = "";
       if (!files.length) return;
       const bad = files.find((f) => !ACCEPT.split(",").includes((f.name.match(/\.[^.]+$/) || [""])[0].toLowerCase()));
-      if (bad) return setMsg(msg, `“${bad.name}” no se puede subir. ${t("Mandá", "Manden")} WAV, MP3, AIFF, FLAC o un ZIP.`, true);
+      if (bad) return setMsg(msg, `“${bad.name}” no se puede subir. ${t("Mandá", "Manden")} WAV, MP3, AIFF, FLAC, M4A, un ZIP o RAR, o PDF / TXT.`, true);
       const big = files.find((f) => f.size > MAX || !f.size);
       if (big) return setMsg(msg, big.size ? `“${big.name}” pesa más de 2 GB. ${t("Partilo", "Pártanlo")} en varios.` : `“${big.name}” está vacío.`, true);
 
