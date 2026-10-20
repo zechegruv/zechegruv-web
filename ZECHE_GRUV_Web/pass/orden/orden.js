@@ -13,8 +13,18 @@
   const token = params.get("t") || "";
   // Mercado Pago agrega estos datos al volver. Sirven para apurar la
   // confirmación; el servidor igual los comprueba con Mercado Pago.
-  const paymentId = params.get("payment_id") || params.get("collection_id") || "";
-  const mpStatus = params.get("status") || params.get("collection_status") || "";
+  let paymentId = params.get("payment_id") || params.get("collection_id") || "";
+  let mpStatus = params.get("status") || params.get("collection_status") || "";
+  // La dirección se limpia (abajo), así que el número de pago se guarda en
+  // esta pestaña: si la persona recarga, se sigue usando para confirmar.
+  const PAY_KEY = `zg-pass-pago-${token.slice(0, 16)}`;
+  try {
+    if (/^\d+$/.test(paymentId)) sessionStorage.setItem(PAY_KEY, JSON.stringify({ paymentId, mpStatus }));
+    else {
+      const saved = JSON.parse(sessionStorage.getItem(PAY_KEY) || "null");
+      if (saved && /^\d+$/.test(saved.paymentId)) { paymentId = saved.paymentId; mpStatus = saved.mpStatus || ""; }
+    }
+  } catch (e) { /* sin almacenamiento: se sigue solo con lo que traiga la dirección */ }
   let wantsPdf = params.get("pdf") === "1";  // se llega desde el botón "Descargar PDF" del mail
   let pdfName = "ZG-PASS.pdf";
   let tries = 0;
@@ -115,9 +125,13 @@
     if (order.status === "refunded") return showState(order.number, "Esta orden fue reembolsada.", "Las entradas de esta compra ya no son válidas.", slug);
     if (order.status === "cancelled") return showState(order.number, "Esta orden fue cancelada.", "No se emitieron entradas para esta compra.", slug);
     if (order.status === "expired") return showState(order.number, "Se venció el tiempo para pagar.", "Los lugares se liberaron y no se te cobró nada. Si llegaste a pagar, el dinero se devuelve solo. Podés volver a intentarlo.", slug);
-    // Volvió de Mercado Pago sin pagar (rechazo o "volver al sitio").
-    if (!paymentId || mpStatus === "rejected" || mpStatus === "null") {
+    // Mercado Pago avisó que no hubo pago (rechazo o "volver al sitio").
+    if (mpStatus === "rejected" || mpStatus === "null") {
       if (tries >= 2) return showState(order.number, "El pago no se completó.", "No se te cobró nada. Tus lugares siguen reservados unos minutos: podés volver a intentarlo.", slug, safePayUrl(order.pay_url));
+    } else if (!/^\d+$/.test(paymentId) && tries >= 2) {
+      // Sin datos del pago no se sabe si pagó: no se afirma nada y se sigue
+      // consultando, por si la confirmación llega en un rato.
+      showState(order.number, "Todavía no vemos tu pago.", "Si ya pagaste, puede tardar unos minutos en confirmarse: no hace falta pagar de nuevo, la entrada te llega por mail. Si no llegaste a pagar, tus lugares siguen reservados unos minutos y podés volver a intentarlo.", slug, safePayUrl(order.pay_url));
     }
     retry(order);
   }
