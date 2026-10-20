@@ -68,7 +68,7 @@ const showView = (ev, files, who, root) => {
 // Carpeta de quien sube: la propia del invitado, o la suya adentro de
 // "Shows" para los artistas del sello. { target, prefix } o { error }.
 async function folderFor(ev, who) {
-  const name = who.name;
+  const name = who.folderName || who.name;
   if (who.folderLink) {
     const own = await drive.folder(who.folderLink);
     if (own.error) { console.error("ZG shows: carpeta invitado", own.error); return { error: "No pudimos abrir tu carpeta. Avisanos por WhatsApp." }; }
@@ -112,6 +112,10 @@ async function whoIs(event, body) {
   }
   return {
     kind: "artist", id: artist.id, name: artist.display_name || artist.full_name || "Artista", email: artist.email,
+    // La subcarpeta en Shows va con el nombre completo (lo carga el
+    // administrador), no con el que el artista edita en su perfil: si se lo
+    // cambia, sus pistas siguen yendo a la misma carpeta.
+    folderName: artist.full_name || `Artista ${String(artist.id).slice(0, 8)}`,
     filter: `profile_id=eq.${artist.id}`, row: { profile_id: artist.id },
   };
 }
@@ -192,7 +196,7 @@ exports.handler = async (event) => {
         replyTo: who.email || undefined,
         subject: `Pistas: ${who.name}${who.kind === "guest" ? " (invitado)" : ""} — ${ev.name}`,
         html: `<div style="font-family:Arial,sans-serif;color:#241105"><p><strong>${esc(who.name)}</strong>${who.kind === "guest" ? " (invitado)" : ""} subió ${files.length > 1 ? `${files.length} archivos` : "un archivo"} para <strong>${esc(ev.name)}</strong>:</p><ul>${list}</ul>`
-          + `<p style="color:#8a6a45;font-size:13px">${who.folderLink ? "Ya están en su carpeta." : `Ya están en la carpeta Shows del evento, en la subcarpeta “${esc(drive.cleanName(who.name))}”.`}</p></div>`,
+          + `<p style="color:#8a6a45;font-size:13px">${who.folderLink ? "Ya están en su carpeta." : `Ya están en la carpeta Shows del evento, en la subcarpeta “${esc(drive.cleanName(who.folderName || who.name))}”.`}</p></div>`,
       }).catch((e) => console.error("ZG shows: mail", e));
       return json(200, { done: true });
     }
