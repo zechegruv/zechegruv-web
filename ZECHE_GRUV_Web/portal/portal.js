@@ -184,6 +184,40 @@
     }
   });
 
+  // ---------- Sesión vencida ----------
+  // Las funciones del servidor (canciones, archivos, revisión, shows) se
+  // llaman con el token de la sesión. Si la sesión venció y no se pudo
+  // renovar (o el servidor responde 401), en vez de quedar la sección vacía
+  // o con un error raro, se vuelve a la pantalla de ingreso con el aviso.
+  const EXPIRED_MSG = "Tu sesión venció, entrá de nuevo.";
+  let expiring = false;
+  async function expired() {
+    if (expiring) return;
+    expiring = true;
+    me = viewing = null;
+    try { await db.auth.signOut({ scope: "local" }); } catch (e) { /* ya no había sesión */ }
+    showView("login");
+    setMsg($("loginMsg"), EXPIRED_MSG, true);
+    expiring = false;
+  }
+  // El token para mandar en Authorization. Sin sesión: aviso y error.
+  async function token() {
+    let session = null;
+    try { ({ data: { session } } = await db.auth.getSession()); } catch (e) { session = null; }
+    if (!session || !session.access_token) {
+      expired();
+      throw new Error(EXPIRED_MSG);
+    }
+    return session.access_token;
+  }
+  // fetch con la sesión puesta; si el servidor dice 401, se pide entrar de nuevo.
+  async function authFetch(url, init = {}) {
+    const t = await token();
+    const res = await fetch(url, { ...init, headers: { ...(init.headers || {}), Authorization: `Bearer ${t}` } });
+    if (res.status === 401) expired();
+    return res;
+  }
+
   async function start() {
     if (linkToken) {
       const { error } = await db.auth.verifyOtp({ token_hash: linkToken, type: linkType === "invite" ? "invite" : "recovery" });
@@ -882,7 +916,7 @@
 
   // Lo que necesitan los módulos de distribución y de archivos.
   window.ZGPortal = {
-    db, $, setMsg, showPanel, nameOf, FORMAT_LABEL, openTab, showProfile, paintAvatar,
+    db, $, setMsg, showPanel, nameOf, FORMAT_LABEL, openTab, showProfile, paintAvatar, token, authFetch, expired,
     get me() { return me; },
     backToProfile(profile) { if (profile && profile.id !== me.id) showProfile(profile); else if (me.role === "admin") openTab("me"); else showProfile(me); },
   };

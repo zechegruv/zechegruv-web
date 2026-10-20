@@ -121,10 +121,9 @@
     const hit = cache.get(key);
     if (!force && hit && hit.promise) return hit.promise; // ya se está pidiendo
     const promise = (async () => {
-      const { data: { session } } = await db.auth.getSession();
       const params = new URLSearchParams({ section: sec });
       if (who.id !== P.me.id) params.set("artist", who.id);
-      const res = await fetch(`/.netlify/functions/portal-files?${params}`, { headers: { Authorization: `Bearer ${session.access_token}` } });
+      const res = await P.authFetch(`/.netlify/functions/portal-files?${params}`);
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "error");
       cache.set(key, { data, at: Date.now(), promise: null });
@@ -319,10 +318,9 @@
   }
 
   async function uploadCall(body) {
-    const { data: { session } } = await db.auth.getSession();
-    const res = await fetch("/.netlify/functions/portal-upload", {
+    const res = await P.authFetch("/.netlify/functions/portal-upload", {
       method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
     const out = await res.json().catch(() => ({}));

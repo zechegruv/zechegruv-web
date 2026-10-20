@@ -684,10 +684,9 @@
     const gen = $("rvGenText");
     if (gen) c.general = gen.value.trim();
     try {
-      const { data: { session } } = await db.auth.getSession();
-      const res = await fetch("/.netlify/functions/portal-review", {
+      const res = await P.authFetch("/.netlify/functions/portal-review", {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           song: c.song.id, kind: c.kind, action, version: c.file.name,
           note: action === "cambios" ? (c.general || null) : null,

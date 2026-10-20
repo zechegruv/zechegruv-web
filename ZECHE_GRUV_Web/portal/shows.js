@@ -9,11 +9,10 @@
   let current = 0;
 
   async function call(body) {
-    const { data: { session } } = await db.auth.getSession();
-    if (profile && profile.id !== P.me.id) body.artist = profile.id;
-    const res = await fetch("/.netlify/functions/portal-shows", {
+    if (profile && P.me && profile.id !== P.me.id) body.artist = profile.id;
+    const res = await P.authFetch("/.netlify/functions/portal-shows", {
       method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
     const out = await res.json().catch(() => ({}));
@@ -34,7 +33,7 @@
     } catch (err) {
       return; // si falla, el resto del perfil sigue igual
     }
-    if (ticket !== current) return;
+    if (ticket !== current || !P.me) return; // p. ej. la sesión venció en el medio
     const own = p.id === P.me.id;
     holder.replaceChildren(...shows.map((show) => window.ZGPistas.card(show, {
       call,

@@ -182,8 +182,7 @@
   });
 
   async function authed(url, body) {
-    const { data: { session } } = await db.auth.getSession();
-    const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` }, body: JSON.stringify(body) });
+    const res = await P.authFetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
     const out = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(out.error || "No pudimos guardarlo. Probá de nuevo.");
     return out;
@@ -523,9 +522,8 @@
     if (hit && hit.promise) return hit.promise;
     const own = profile.id === P.me.id;
     const promise = (async () => {
-      const { data: { session } } = await db.auth.getSession();
       const query = own ? "" : `?artist=${encodeURIComponent(profile.id)}`;
-      const res = await fetch(`/.netlify/functions/portal-songs${query}`, { headers: { Authorization: `Bearer ${session.access_token}` } });
+      const res = await P.authFetch(`/.netlify/functions/portal-songs${query}`);
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "error");
       cache.set(profile.id, { data, at: Date.now(), promise: null });
@@ -565,7 +563,7 @@
       if (Date.now() - hit.at > FRESH_FOR) {
         const shown = JSON.stringify(hit.data);
         fetchSongs(profile).then((newer) => {
-          if (ticket === current && JSON.stringify(newer) !== shown) paint(profile, newer);
+          if (ticket === current && P.me && JSON.stringify(newer) !== shown) paint(profile, newer);
         }).catch(() => {});
       }
       return;
@@ -575,7 +573,8 @@
     try {
       data = await fetchSongs(profile);
     } catch (err) {
-      if (ticket !== current) return;
+      // Si en el medio se cerró la sesión (venció), no hay nada que mostrar.
+      if (ticket !== current || !P.me) return;
       renderWelcome(profile, null);
       renderProject(profile, null);
       // Al artista no se le muestra un error: la sección aparece cuando funciona.
@@ -583,7 +582,7 @@
       status.textContent = err.message !== "error" ? err.message : "No pudimos traer las canciones. Probá de nuevo en un momento.";
       return;
     }
-    if (ticket !== current) return;
+    if (ticket !== current || !P.me) return;
     paint(profile, data);
   }
 
