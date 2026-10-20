@@ -2194,6 +2194,9 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 }
 
 .ref-preview .ref-meta { padding: 0; }
+/* Sin título de YouTube: se le pide al artista (referencias-youtube.js). */
+.ref-preview .ref-ask { margin-top: 6px; }
+.ref-preview .ref-ask input { width: 100%; box-sizing: border-box; }
 
 .ref-title {
   font-size: 13px;

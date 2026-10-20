@@ -134,12 +134,15 @@
     const box = $("refLinkPreview");
     if (!preview) { box.hidden = true; box.innerHTML = ""; return; }
     box.hidden = false;
+    const typed = $("refLinkTitle") ? $("refLinkTitle").value : "";
     box.innerHTML = `
       <img src="${thumb(preview.id)}" alt="">
       <div class="ref-meta">
         <div class="ref-title">${preview.loading ? "Buscando el video…" : esc(preview.title || "Video de YouTube")}</div>
         ${preview.channel ? `<div class="ref-channel">${esc(preview.channel)}</div>` : ""}
+        ${preview.ask ? `<div class="field ref-ask"><label for="refLinkTitle">¿Cómo se llama el video?</label><input type="text" id="refLinkTitle" maxlength="300" autocomplete="off" enterkeyhint="done"></div>` : ""}
       </div>`;
+    if (preview.ask) $("refLinkTitle").value = typed;
   }
 
   async function onInput() {
@@ -157,7 +160,8 @@
     if (preview && preview.id === id) { preview.url = cleanUrl(value, id); return; }
     preview = { id, url: cleanUrl(value, id), title: "", channel: "", loading: true };
     showPreview();
-    $("refLinkAdd").disabled = false;
+    // «Agregar» se habilita recién con la respuesta (así no se guarda sin título).
+    $("refLinkAdd").disabled = true;
     const info = await videoInfo(id).catch(() => ({}));
     if (mine !== previewTicket) return;
     if (info.missing) {
@@ -169,11 +173,25 @@
     }
     Object.assign(preview, { title: info.title || "", channel: info.channel || "", loading: false });
     showPreview();
+    $("refLinkAdd").disabled = false;
   }
 
   async function add(event) {
     event.preventDefault();
-    if (!preview || saving || !profile) return;
+    if (!preview || preview.loading || saving || !profile) return;
+    // Sin título (YouTube no lo dio: video privado, con la inserción
+    // bloqueada o sin conexión): se le pide al artista antes de guardar.
+    if (!preview.title) {
+      const typed = $("refLinkTitle") ? $("refLinkTitle").value.trim() : "";
+      if (!typed) {
+        preview.ask = true;
+        showPreview();
+        P.setMsg($("refLinkMsg"), "No pudimos leer el nombre del video. Escribilo y tocá «Agregar».", true);
+        $("refLinkTitle").focus();
+        return;
+      }
+      preview.title = typed.slice(0, 300);
+    }
     const song = $("refLinkSong").value || null;
     if (links.some((l) => l.video_id === preview.id && (l.song || null) === song)) {
       P.setMsg($("refLinkMsg"), song ? `Ese video ya está en ${song}.` : "Ese video ya está en tus referencias.", true);
@@ -217,6 +235,8 @@
   });
 
   $("refLinkUrl").addEventListener("input", onInput);
+  // Enter en el nombre del video (fuera del formulario) también agrega.
+  $("refLinkPreview").addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.id === "refLinkTitle") add(e); });
   $("refLinkForm").addEventListener("submit", add);
 
   window.ZGRefLinks = { load, setSongs, parseYouTube };
