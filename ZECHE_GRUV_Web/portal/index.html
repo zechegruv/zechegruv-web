@@ -24,6 +24,7 @@
   <link rel="stylesheet" href="vista-artista.css">
   <link rel="stylesheet" href="reprogramar.css">
   <link rel="stylesheet" href="pulido.css">
+  <link rel="stylesheet" href="estado.css">
   <!-- Medición de visitas (Google Analytics 4) -->
   <script src="/assets/js/medicion.js?v=__BUILD__"></script>
 </head>
@@ -163,6 +164,9 @@
 
       <!-- Administrador: Inicio (admin-home.js) -->
       <div id="panel-home" hidden></div>
+
+      <!-- Administrador: Estado del sistema (admin-estado.js), se abre desde el Inicio -->
+      <div id="panel-estado" hidden></div>
 
       <!-- Perfil (propio, o el de un artista cuando lo abre el admin) -->
       <div id="panel-profile">
@@ -1296,6 +1300,7 @@
   <script src="vista-artista.js"></script>
   <script src="admin-reprogramar.js"></script>
   <script src="admin-avisos.js"></script>
+  <script src="admin-estado.js"></script>
   <script src="deslizar.js"></script>
   <script src="pulido.js"></script>
   <script src="/pass/pistas-card.js"></script>

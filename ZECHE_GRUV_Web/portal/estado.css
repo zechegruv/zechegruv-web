@@ -1,0 +1,163 @@
+/* ZECHE GRUV — Panel de administrador: Estado del sistema (admin-estado.js).
+   Mismo idioma visual que el Inicio (admin.css, vista-artista.css):
+   tarjetas marrones redondeadas, pastillas, Geist/Bricolage, entradas que
+   suben suave y botones que se hunden un poco al tocarlos. */
+
+body.is-admin {
+  --zs-ok: #9FD49A;
+  --zs-warn: #F2CF7A;
+  --zs-ease: cubic-bezier(.23, 1, .32, 1);
+}
+
+/* ---------- Tarjeta chica en el Inicio (abajo del saludo) ---------- */
+.zs-card {
+  display: inline-flex; align-items: center; gap: 12px;
+  margin-top: 16px; max-width: 100%; box-sizing: border-box;
+  font: inherit; font-family: var(--body); text-align: left; color: var(--cream); cursor: pointer;
+  background: var(--panel, #2E1607); border: 1px solid rgba(240, 224, 192, .12);
+  border-radius: 16px; padding: 10px 12px 10px 14px;
+  animation: zhRise 600ms cubic-bezier(.16, 1, .3, 1) 120ms both;
+  transition: transform 160ms var(--zs-ease), border-color 200ms ease, background-color 200ms ease;
+}
+.zs-card:active { transform: scale(.97); }
+.zs-card:focus-visible { outline: 2px solid var(--orange-soft); outline-offset: 3px; }
+.zs-words { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.zs-text { font-size: 15px; font-weight: 600; line-height: 1.25; transition: opacity 200ms ease; }
+.zs-sub { font-family: var(--mono); font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.zs-chev { display: inline-flex; color: var(--muted); margin-left: 4px; transition: transform 200ms var(--zs-ease), color 200ms ease; }
+.zs-chev svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* El punto: verde / amarillo / rojo. El rojo late (como "Vencida"). */
+.zs-dot {
+  width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+  background: rgba(240, 224, 192, .3);
+  transition: background-color 300ms ease, transform 300ms var(--zs-ease);
+}
+.zs-dot.is-ok { background: var(--zs-ok); box-shadow: 0 0 0 4px rgba(159, 212, 154, .14); }
+.zs-dot.is-atencion { background: var(--zs-warn); box-shadow: 0 0 0 4px rgba(242, 207, 122, .14); }
+.zs-dot.is-caido { background: var(--red); animation: zhPulseRed 1.8s ease-out infinite; }
+.zs-dot.is-loading { animation: zsBreath 1.2s ease-in-out infinite; }
+.zs-dot.is-unknown { background: rgba(240, 224, 192, .35); }
+
+@media (hover: hover) and (pointer: fine) {
+  .zs-card:hover { border-color: rgba(240, 120, 0, .55); background: #331a09; }
+  .zs-card:hover .zs-chev { transform: translateX(2px); color: var(--cream); }
+}
+
+/* ---------- Detalle ---------- */
+.zs { display: flex; flex-direction: column; gap: 20px; font-family: var(--body, "Geist", sans-serif); }
+.zs-back {
+  align-self: flex-start; font: inherit; font-family: var(--body); font-size: 14px; font-weight: 600;
+  color: var(--orange-soft); background: none; border: 0; padding: 6px 2px; cursor: pointer;
+  transition: color 200ms ease, transform 160ms var(--zs-ease);
+}
+.zs-back:active { transform: scale(.97); }
+.zs-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px; }
+.zs-title { font-size: clamp(34px, 5.4vw, 48px); }
+.zs-lead { font-size: 16px; }
+.zs-again svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.zs-again.is-busy { opacity: .75; cursor: progress; }
+.zs-again.is-busy svg { animation: zgSpin 700ms linear infinite; }
+.zs-body { display: flex; flex-direction: column; gap: 14px; transition: opacity 200ms ease; }
+.zs-body.is-busy { opacity: .6; }
+
+.zs-hero {
+  display: flex; align-items: center; gap: 14px;
+  padding: 18px 22px; border-radius: 22px;
+  background: var(--panel, #2E1607); border: 1px solid rgba(240, 224, 192, .1);
+  animation: zhRise 600ms cubic-bezier(.16, 1, .3, 1) both;
+}
+.zs-hero .zs-dot { width: 14px; height: 14px; }
+.zs-hero-text { font-family: var(--display); font-size: 24px; font-weight: 700; letter-spacing: -.02em; line-height: 1.15; }
+.zs-hero.is-caido { border-color: rgba(214, 40, 40, .35); }
+.zs-hero.is-atencion { border-color: rgba(242, 207, 122, .3); }
+
+.zs-alert {
+  display: grid; gap: 2px; padding: 12px 16px; border-radius: 14px;
+  font-size: 14px; line-height: 1.45; color: var(--cream);
+  background: rgba(242, 207, 122, .1); box-shadow: inset 3px 0 0 var(--zs-warn);
+  animation: zhRise 520ms cubic-bezier(.16, 1, .3, 1) 60ms both;
+}
+.zs-alert strong { font-family: var(--display); font-weight: 700; }
+.zs-alert span { color: var(--beige); }
+.zs-alert.is-caido { background: rgba(214, 40, 40, .14); box-shadow: inset 3px 0 0 var(--red); }
+
+.zs-box { gap: 6px; animation-delay: 80ms; }
+.zs-box + .zs-box { animation-delay: 160ms; }
+.zs-box .zh-top { margin-bottom: 6px; }
+.zs-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+
+.zs-row, .zs-auto { border-top: 1px solid rgba(240, 224, 192, .08); animation: zhRise 520ms cubic-bezier(.16, 1, .3, 1) both; }
+.zs-row { display: flex; align-items: center; gap: 14px; padding: 13px 4px; }
+.zs-row.is-caido { box-shadow: inset 3px 0 0 var(--red); padding-left: 14px; }
+.zs-row.is-atencion { box-shadow: inset 3px 0 0 var(--zs-warn); padding-left: 14px; }
+.zs-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.zs-name { font-weight: 600; font-size: 15px; line-height: 1.3; }
+.zs-say { font-size: 13px; color: var(--muted); line-height: 1.4; overflow-wrap: anywhere; }
+.zs-row.is-sin_configurar .zs-name { color: var(--beige); }
+.zs-side { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.zs-ms { font-family: var(--mono); font-size: 12px; color: var(--muted); min-width: 52px; text-align: right; font-variant-numeric: tabular-nums; }
+
+/* Pastillas, como las de urgencia del Inicio (.zt-urg). */
+.zs-pill {
+  font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  padding: 3px 8px; border-radius: 999px; white-space: nowrap;
+  transition: background-color 200ms ease, color 200ms ease;
+}
+.zs-pill.is-ok { background: rgba(159, 212, 154, .16); color: #B9E4B4; }
+.zs-pill.is-atencion { background: rgba(245, 166, 35, .16); color: var(--zs-warn); }
+.zs-pill.is-caido { background: var(--red); color: var(--cream); animation: zhPulseRed 1.8s ease-out infinite; }
+.zs-pill.is-sin_configurar, .zs-pill.is-unknown { background: rgba(240, 224, 192, .08); color: var(--beige); text-transform: none; letter-spacing: .01em; }
+.zs-pill.is-running { background: rgba(240, 120, 0, .2); color: var(--orange-soft); }
+
+.zs-auto { padding: 14px 4px; display: flex; flex-direction: column; gap: 6px; }
+.zs-auto-top { display: flex; align-items: center; gap: 14px; }
+.zs-sum { margin: 0; font-size: 13px; color: var(--beige); }
+.zs-err-btn {
+  align-self: flex-start; display: inline-flex; align-items: center; gap: 6px;
+  font: inherit; font-family: var(--body); font-size: 13px; font-weight: 600;
+  color: #FF9C7A; background: rgba(214, 40, 40, .1); border: 0; border-radius: 999px;
+  padding: 6px 12px 6px 8px; cursor: pointer;
+  transition: background-color 200ms ease, transform 160ms var(--zs-ease);
+}
+.zs-err-btn:active { transform: scale(.97); }
+.zs-err-btn svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; transition: transform 200ms var(--zs-ease); }
+.zs-err-btn.is-open svg { transform: rotate(180deg); }
+.zs-err {
+  display: grid; gap: 4px; padding: 10px 14px; border-radius: 12px;
+  background: #241105; border: 1px solid rgba(214, 40, 40, .25);
+  transform-origin: top left;
+  animation: zsReveal 200ms var(--zs-ease) both;
+}
+.zs-err[hidden] { display: none; }
+.zs-err-when { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.zs-err p { margin: 0; font-family: var(--mono); font-size: 13px; line-height: 1.5; color: var(--cream); overflow-wrap: anywhere; }
+
+@media (hover: hover) and (pointer: fine) {
+  .zs-back:hover { color: var(--cream); }
+  .zs-err-btn:hover { background: rgba(214, 40, 40, .18); }
+}
+
+@media (max-width: 700px) {
+  /* En el celu el saludo ocupa todo el ancho y la tarjeta también. */
+  .zh-head > div:first-child { flex: 1 1 100%; min-width: 0; }
+  .zs-card { display: flex; width: 100%; }
+  .zs-chev { margin-left: auto; }
+  .zs-head .zh-btn { width: 100%; justify-content: center; }
+  .zs-hero { padding: 16px 18px; }
+  .zs-hero-text { font-size: 20px; }
+  /* El estado y el tiempo pasan arriba, a la derecha del nombre. */
+  .zs-row, .zs-auto-top { flex-wrap: wrap; align-items: flex-start; gap: 4px 10px; }
+  .zs-row .zs-main, .zs-auto-top .zs-main { display: contents; }
+  .zs-row .zs-name, .zs-auto-top .zs-name { flex: 1 1 0; min-width: 0; }
+  .zs-row .zs-say, .zs-auto-top .zs-say { flex: 1 1 100%; order: 3; }
+  .zs-ms { min-width: 0; }
+}
+
+@keyframes zsBreath { 50% { opacity: .35; transform: scale(.85); } }
+@keyframes zsReveal { from { opacity: 0; transform: translateY(-4px) scale(.98); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .zs-card, .zs-hero, .zs-alert, .zs-row, .zs-auto, .zs-err, .zs-dot, .zs-pill.is-caido, .zs-again.is-busy svg { animation: none !important; }
+  .zs-card, .zs-chev, .zs-err-btn svg { transition: none; }
+}

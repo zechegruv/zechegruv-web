@@ -88,7 +88,9 @@
     const head = el("header", "zh-head");
     const hl = el("div");
     const lead = el("p", "zh-lead", "Armando tu resumen…");
-    hl.append(el("div", "zh-eyebrow", weekLabel()), el("h1", "zh-title", `Buenas, ${first}.`), lead);
+    // Estado del sistema (admin-estado.js): tarjeta chica abajo del saludo.
+    const status = el("div");
+    hl.append(el("div", "zh-eyebrow", weekLabel()), el("h1", "zh-title", `Buenas, ${first}.`), lead, status);
     head.append(hl, btn("zh-btn is-orange", "Abrir ZG PASS", () => openPass("summary")));
 
     const grid = el("div", "zh-grid");
@@ -150,6 +152,7 @@
     wrap.append(head, work, grid, qbox, split);
     root.replaceChildren(wrap);
     if (window.ZGAvisos) window.ZGAvisos.mount(work); else work.remove();
+    if (window.ZGEstado) window.ZGEstado.mountCard(status); else status.remove();
 
     const [incRes, evRes, artRes, relRes] = await Promise.allSettled([
       ingresos(),
