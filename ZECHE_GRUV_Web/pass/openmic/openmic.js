@@ -139,6 +139,12 @@
       $("emailSubmit").disabled = false;
       return showView("email");
     }
+    if (res.status === 429 && !token) {
+      $("emailMsg").textContent = res.data.error || "Hiciste muchos intentos seguidos. Esperá unos minutos y probá de nuevo.";
+      $("emailMsg").classList.add("is-error");
+      $("emailSubmit").disabled = false;
+      return showView("email");
+    }
     if (!res.ok) return showState("No pudimos cargar la inscripción.", "Revisá tu conexión y volvé a intentar en un momento.", true);
     info = res.data;
     if (!info.open) return showState("Inscripción cerrada.", info.closed_reason, true);
@@ -150,9 +156,11 @@
 
     $("formIntro").textContent = `${info.event.name} · ${fmtDate(info.event.starts_at)}.`
       + (info.deadline ? ` Podés anotarte hasta el ${fmtDate(info.deadline).toLowerCase()} a las ${fmtTime(info.deadline)}.` : "");
-    $("ticketSelect").replaceChildren(...free.map((t) => {
-      const option = el("option", "", `${t.code} — ${t.holder_name}`);
-      option.value = t.code;
+    // Con el link de la orden cada entrada viene con su código; entrando con
+    // el mail, sin código (solo una referencia): se muestra "Entrada N".
+    $("ticketSelect").replaceChildren(...free.map((t, i) => {
+      const option = el("option", "", `${t.code || `Entrada ${i + 1}`} — ${t.holder_name}`);
+      option.value = t.code || t.ref;
       return option;
     }));
     $("ticketField").hidden = free.length < 2;
