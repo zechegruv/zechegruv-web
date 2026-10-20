@@ -216,10 +216,11 @@
     $("rvLoading").textContent = "";
     setPlaying(false);
     draw();
-    loadPeaks(file).then(() => {
-      // Con la onda de esta versión lista, se miden las otras (para igualar el volumen).
-      if (cur && cur.sources && cur.sources.length > 1) cur.sources.slice(1).reduce((p, s) => p.then(() => loadPeaks(s.file)), Promise.resolve()).then(applyLevel);
-    });
+    // Solo se mide la versión que se escucha: las otras (A/B y la maqueta)
+    // se descargan recién cuando el artista las elige (switchSource), para
+    // no bajar de golpe varios WAV enteros. El volumen se iguala apenas hay
+    // dos medidas.
+    loadPeaks(file);
   }
 
   // Onda y nivel promedio de un audio. La onda se dibuja con el audio real
