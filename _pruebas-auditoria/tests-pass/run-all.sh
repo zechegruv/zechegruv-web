@@ -6,7 +6,7 @@ PG=/var/lib/postgresql/zgpass-test
 su postgres -s /bin/bash -c "/usr/lib/postgresql/16/bin/pg_ctl -D $PG status >/dev/null || /usr/lib/postgresql/16/bin/pg_ctl -D $PG -o '-p 55432 -k $PG' -l $PG/log -w start >/dev/null"
 fail=0
 echo "== node --check de los .js tocados =="
-for f in $(git -C ../pass diff --name-only 222d379 HEAD -- '*.js'); do node --check "../pass/$f" || fail=1; done
+for f in $(git -C ../pass diff --name-only $(git -C ../pass merge-base HEAD main) HEAD -- '*.js'); do node --check "../pass/$f" || fail=1; done
 python3 -I -B -m py_compile ../pass/ZECHE_GRUV_Web/scripts/generate_artist_pages.py 2>&1 && rm -rf ../pass/ZECHE_GRUV_Web/scripts/__pycache__
 echo "== SQL (Postgres 16 real) =="; node sql.test.js 2>&1 | grep -v NOTICE || fail=1
 echo "== Netlify Functions =="; node fn.test.js 2>/dev/null || fail=1

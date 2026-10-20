@@ -3,6 +3,8 @@
 // diga cada prueba. Uso:
 //   const h = await harness({ sb: {...}, fn: async (name, req, url) => ({ status, json }) });
 //   await h.page.goto(h.url("/portal/")); ... await h.close();
+// Para que context.route también vea los pedidos que hace el service worker.
+process.env.PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS = "1";
 const { chromium } = require("playwright");
 const { spawn } = require("child_process");
 const fs = require("fs");
@@ -14,7 +16,10 @@ const FAKE = fs.readFileSync(path.join(__dirname, "fake-supabase.js"), "utf8");
 
 const freePort = () => new Promise((ok) => { const s = net.createServer(); s.listen(0, () => { const p = s.address().port; s.close(() => ok(p)); }); });
 
-async function harness({ sb = {}, fn = null, supabaseScript = "fake", viewport = { width: 1200, height: 900 } } = {}) {
+// El service worker del portal (portal/sw.js) se bloquea salvo que la prueba
+// lo pida (sw: true): con él, los pedidos que hace el SW no pasan por
+// page.route y el supabase falso se cambiaría por el real guardado.
+async function harness({ sb = {}, fn = null, supabaseScript = "fake", viewport = { width: 1200, height: 900 }, sw = false } = {}) {
   const port = await freePort();
   const server = spawn("python3", ["-m", "http.server", String(port), "--bind", "127.0.0.1"], { cwd: WEB, stdio: "ignore" });
   for (let i = 0; i < 50; i++) {
@@ -23,18 +28,19 @@ async function harness({ sb = {}, fn = null, supabaseScript = "fake", viewport =
     await new Promise((r) => setTimeout(r, 100));
   }
   const browser = await chromium.launch();
-  const context = await browser.newContext({ viewport });
+  const context = await browser.newContext({ viewport, serviceWorkers: sw ? "allow" : "block" });
   const page = await context.newPage();
   const logs = [];
   page.on("pageerror", (e) => logs.push("pageerror: " + e.message + (process.env.STACK ? " @ " + String(e.stack).split("\n").slice(1, 3).join(" ") : "")));
   page.on("console", (m) => { if (m.type() === "error" && !/Failed to load resource/.test(m.text())) logs.push("console: " + m.text()); });
   await page.addInitScript((cfg) => { window.__SB = cfg; }, sb);
   const fnCalls = [];
-  await page.route(/supabase-js/, (route) => (supabaseScript === "fake"
+  const R = sw ? context : page;
+  await R.route(/supabase-js/, (route) => (supabaseScript === "fake"
     ? route.fulfill({ status: 200, contentType: "application/javascript", body: FAKE })
     : route.abort()));
-  await page.route(/fonts\.(googleapis|gstatic)\.com|googletagmanager|google-analytics|i\.ytimg\.com|cdnjs\.cloudflare\.com/, (r) => r.abort());
-  await page.route(/\/\.netlify\/functions\//, async (route) => {
+  await R.route(/fonts\.(googleapis|gstatic)\.com|googletagmanager|google-analytics|i\.ytimg\.com|cdnjs\.cloudflare\.com/, (r) => r.abort());
+  await R.route(/\/\.netlify\/functions\//, async (route) => {
     const req = route.request();
     const url = new URL(req.url());
     const name = url.pathname.split("/").pop();
