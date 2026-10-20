@@ -239,6 +239,18 @@
       box.querySelectorAll("button").forEach((x) => { x.disabled = false; });
     }
   }
+  // Aprobar pide un segundo toque, igual que en el reproductor (armApprove
+  // en revision.js): el primero avisa y, si no confirma en 4 segundos,
+  // vuelve a «Aprobar».
+  function armQuick(btn, kind) {
+    if (btn.classList.contains("is-armed")) return true;
+    const label = btn.querySelector("span");
+    btn.classList.add("is-armed");
+    label.textContent = `Tocá de nuevo para aprobar ${WHAT[kind] || ""}`.trim();
+    clearTimeout(btn._t);
+    btn._t = setTimeout(() => { if (btn.isConnected) { btn.classList.remove("is-armed"); label.textContent = "Aprobar"; } }, 4000);
+    return false;
+  }
   document.addEventListener("click", (e) => {
     const b = e.target.closest("[data-quick]");
     if (!b) return;
@@ -246,7 +258,7 @@
     if (!box) return;
     const form = box.querySelector(".review-form");
     const top = box.querySelector(":scope > .review-actions");
-    if (b.dataset.quick === "aprobada") quickSend(box, "aprobada");
+    if (b.dataset.quick === "aprobada") { if (armQuick(b, box.dataset.kind)) { clearTimeout(b._t); quickSend(box, "aprobada"); } }
     else if (b.dataset.quick === "cambios") { form.hidden = false; top.hidden = true; form.querySelector("textarea").focus(); }
     else if (b.dataset.quick === "cancelar") { form.hidden = true; top.hidden = false; }
   });

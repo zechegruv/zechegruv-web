@@ -314,6 +314,8 @@ body:is(.is-artist, .is-artist-view) .songs-done { border-radius: 20px; }
 .review-btn { border-radius: 999px; text-transform: none; letter-spacing: 0; font-family: var(--body, inherit); font-weight: 600; }
 .review-ghost { background: transparent; }
 .review-btn:disabled { opacity: .55; cursor: not-allowed; }
+/* «Aprobar» confirmado con un segundo toque (canciones.js → armQuick), como en el reproductor. */
+.dv .review-actions .review-btn.is-armed { background: #9FD49A; border-color: #9FD49A; color: #241105; transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease; }
 .review-state { font-size: 14px; font-weight: 600; color: #9FD49A; }
 .review-state.is-wait { color: var(--orange-soft); }
 .song-review.is-ok { flex-direction: row; }
