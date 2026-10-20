@@ -749,6 +749,19 @@
     }
   }
 
+  // Borrar una nota sin mandar. Si era de voz, también se borra su audio del
+  // espacio notas-voz (el artista borra solo lo suyo y solo lo que todavía
+  // no mandó: 032_portal.sql), así no quedan audios sueltos.
+  function dropNote(i) {
+    const [gone] = cur.notes.splice(i, 1);
+    saveDraft();
+    paintNotes();
+    paintFoot();
+    if (gone && gone.voice && cur.mode === "review" && P.me && gone.voice.startsWith(`${P.me.id}/`)) {
+      db.storage.from("notas-voz").remove([gone.voice]).catch(() => {});
+    }
+  }
+
   // ---------- Eventos ----------
   root.addEventListener("click", (e) => {
     const pin = e.target.closest("[data-pin]");
@@ -760,7 +773,7 @@
     const vo = e.target.closest("[data-voice]");
     if (vo) { playVoice(+vo.dataset.voice, vo); return; }
     const del = e.target.closest("[data-del]");
-    if (del) { cur.notes.splice(+del.dataset.del, 1); saveDraft(); paintNotes(); paintFoot(); return; }
+    if (del) { dropNote(+del.dataset.del); return; }
     const b = e.target.closest("[data-rv]");
     if (!b) return;
     const act = b.dataset.rv;
