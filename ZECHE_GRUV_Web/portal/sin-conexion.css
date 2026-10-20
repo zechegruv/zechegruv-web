@@ -1,0 +1,36 @@
+/* ZECHE GRUV — Portal: instalable y sin conexión (sin-conexion.js).
+   Misma piel que Mi proyecto (artista.css) y que el reproductor
+   (revision.css): tarjetas #2E1607, pastillas redondas, naranja de la marca. */
+
+/* ---------- Aviso para instalar (solo artistas, solo en Mi proyecto) ---------- */
+.zgi {
+  display: flex; align-items: center; gap: 14px; margin: 4px 0 20px;
+  padding: 14px 14px 14px 16px; border-radius: 20px;
+  background: #2E1607; border: 1px solid rgba(240, 224, 192, .1);
+  animation: zhRise 600ms cubic-bezier(.16, 1, .3, 1) 240ms both;
+  transition: opacity 200ms ease-out, transform 200ms ease-out;
+}
+.zgi[hidden] { display: none; }
+.zgi.is-out { opacity: 0; transform: translateY(-6px) scale(.98); }
+body:not(.is-artist) .zgi,
+body.is-artist[data-atab]:not([data-atab="proyecto"]) .zgi { display: none; }
+.zgi-ico { flex-shrink: 0; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: rgba(240, 120, 0, .16); color: var(--orange-soft, #F5A623); }
+.zgi-ico svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.zgi-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.zgi-text > b { font-size: 15px; font-weight: 600; color: var(--cream, #FFF4DC); }
+.zgi-text > span { font-size: 13.5px; line-height: 1.45; color: var(--muted, #C9A980); }
+.zgi-text > span b { color: var(--cream, #FFF4DC); font-weight: 600; }
+.zgi-share { display: inline-grid; place-items: center; width: 22px; height: 22px; vertical-align: -6px; border-radius: 6px; background: rgba(240, 224, 192, .1); color: var(--cream, #FFF4DC); }
+.zgi-share svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.zgi .zgi-btn { flex-shrink: 0; border-radius: 999px; min-height: 40px; padding: 0 18px; text-transform: none; letter-spacing: 0; font-weight: 600; transition: transform 160ms ease-out, background-color 200ms ease; }
+.zgi .zgi-btn:active { transform: scale(.97); }
+.zgi-x { flex-shrink: 0; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: none; border: 1px solid rgba(240, 224, 192, .14); color: var(--muted, #C9A980); cursor: pointer; transition: border-color 200ms ease, color 200ms ease, transform 160ms ease-out; }
+.zgi-x svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; }
+.zgi-x:active { transform: scale(.9); }
+@media (hover: hover) and (pointer: fine) { .zgi-x:hover { border-color: var(--cream, #FFF4DC); color: var(--cream, #FFF4DC); } }
+@media (max-width: 640px) {
+  .zgi { flex-wrap: wrap; align-items: flex-start; padding: 14px; }
+  .zgi-text { flex-basis: calc(100% - 110px); }
+  .zgi .zgi-btn { order: 3; flex: 1 1 100%; min-height: 46px; }
+}
+@media (prefers-reduced-motion: reduce) { .zgi { animation: none; transition: opacity 200ms ease; } .zgi.is-out { transform: none; } }

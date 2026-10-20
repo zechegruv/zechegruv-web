@@ -295,6 +295,8 @@
     else showProfile(me);
     // La escena: el próximo evento del sello, como aviso y después franja (escena.js).
     if (me.role === "artist" && window.ZGEscena) window.ZGEscena.start(me);
+    // Instalable y sin conexión (sin-conexion.js): aviso para instalar y lo pendiente.
+    if (window.ZGOffline) window.ZGOffline.ready(me);
   }
 
   $("loginForm").addEventListener("submit", async (event) => {

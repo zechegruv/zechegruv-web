@@ -1,0 +1,17 @@
+{
+  "name": "ZECHE GRUV · Portal",
+  "short_name": "ZG Portal",
+  "description": "Tus canciones, mezclas y masters de ZECHE GRUV, en tu celu.",
+  "lang": "es-AR",
+  "id": "/portal/",
+  "start_url": "/portal/",
+  "scope": "/portal/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#4B2509",
+  "background_color": "#4B2509",
+  "icons": [
+    { "src": "/assets/favicon/android-chrome-192x192.png?v=3", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/assets/favicon/android-chrome-512x512.png?v=3", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}

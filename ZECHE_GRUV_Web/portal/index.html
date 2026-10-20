@@ -11,6 +11,12 @@
   <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon/favicon-16x16.png?v=3">
   <link rel="apple-touch-icon" sizes="180x180" href="/assets/favicon/apple-touch-icon.png?v=3">
   <meta name="theme-color" content="#4B2509">
+  <!-- Instalable en el celu (manifest propio del portal, sin-conexion.js) -->
+  <link rel="manifest" href="/portal/manifest.webmanifest">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="ZG Portal">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -25,6 +31,7 @@
   <link rel="stylesheet" href="reprogramar.css">
   <link rel="stylesheet" href="pulido.css">
   <link rel="stylesheet" href="estado.css">
+  <link rel="stylesheet" href="sin-conexion.css">
   <!-- Medición de visitas (Google Analytics 4) -->
   <script src="/assets/js/medicion.js?v=__BUILD__"></script>
 </head>
@@ -1296,6 +1303,7 @@
   <script src="zg-select.js"></script>
   <script src="../assets/data/artists.js"></script>
   <script src="portal.js"></script>
+  <script src="sin-conexion.js"></script>
   <script src="distribucion.js"></script>
   <script src="generos.js"></script>
   <script src="archivos.js"></script>
