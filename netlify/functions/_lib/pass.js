@@ -68,6 +68,25 @@ const rpc = (name, args) => db(`rpc/${name}`, { method: "POST", body: args });
 const audit = (action, entity, entityId, detail, actorId) =>
   db("pass_audit", { method: "POST", body: { action, entity, entity_id: String(entityId || ""), detail: detail || {}, actor_id: actorId || null } });
 
+// ---------- Límite de pedidos ----------
+// Cuenta un pedido de esta conexión (o de lo que se pase en "who") en la
+// base y dice si todavía está dentro del límite: máx pedidos cada tantos
+// minutos (supabase/031_pass.sql, pass_rate_hit). La IP o el mail no se
+// guardan tal cual: van convertidos en un código que no se puede revertir.
+// Si la base no responde (o falta correr 031), deja pasar: el límite es una
+// protección extra, no puede frenar la venta.
+const clientIp = (event) => {
+  const h = (event && event.headers) || {};
+  return String(h["x-nf-client-connection-ip"] || String(h["x-forwarded-for"] || "").split(",")[0] || "").trim();
+};
+async function withinLimit(scope, who, max, minutes) {
+  if (!who) return true;
+  const key = `${scope}:${crypto.createHmac("sha256", serviceKey() || "zg").update(String(who)).digest("hex").slice(0, 32)}`;
+  const res = await rpc("pass_rate_hit", { p_key: key, p_max: max, p_minutes: minutes });
+  if (!res.ok) { console.error("ZG PASS: no se pudo revisar el límite de pedidos", dbDetail(res)); return true; }
+  return res.data !== false;
+}
+
 // ---------- Mercado Pago ----------
 async function mp(path, { method = "GET", body, idempotencyKey } = {}) {
   const headers = { Authorization: `Bearer ${mpToken()}` };
@@ -192,4 +211,4 @@ async function sendTickets(orderId, base) {
 // A dónde llegan los avisos internos (inscripciones al open mic, etc.).
 const notifyEmail = () => clean(process.env.PASS_NOTIFY_EMAIL) || "zechegruv@gmail.com";
 
-module.exports = { SUPABASE_URL, PUBLIC_URL, UUID, json, siteUrl, testMode, serviceKey, mpToken, db, dbWithLineup, dbDetail, rpc, audit, mp, validWebhookSignature, settlePayment, esc, sendMail, sendTickets, notifyEmail };
+module.exports = { SUPABASE_URL, PUBLIC_URL, UUID, json, siteUrl, testMode, serviceKey, mpToken, db, dbWithLineup, dbDetail, rpc, audit, clientIp, withinLimit, mp, validWebhookSignature, settlePayment, esc, sendMail, sendTickets, notifyEmail };

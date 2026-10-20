@@ -5,9 +5,13 @@
 // dirección a la que hay que mandar a la persona para pagar.
 //
 // El navegador nunca manda precios ni totales: solo qué quiere comprar.
-const { json, db, rpc, mp, siteUrl, testMode, serviceKey, mpToken, UUID } = require("./_lib/pass");
+const { json, db, rpc, mp, siteUrl, testMode, serviceKey, mpToken, UUID, clientIp, withinLimit } = require("./_lib/pass");
 
 const HOLD_MINUTES = 15;
+// Cada reserva retiene lugares 15 minutos: desde una misma conexión se
+// permiten hasta 6 reservas cada 15 minutos (alcanza de sobra para quien
+// compra de verdad y frena a quien quiera trabar lugares con mails inventados).
+const MAX_PER_IP = 6;
 const ERRORS = {
   ZG_SOLD_OUT: [409, "sold_out", "No quedan lugares suficientes para esa cantidad."],
   ZG_LIMIT: [409, "limit", "Con ese mail ya se alcanzó el máximo de entradas por persona para este evento."],
@@ -39,6 +43,10 @@ exports.handler = async (event) => {
   const ev = found.data[0];
   const type = ev && ev.pass_ticket_types.find((t) => t.id === typeId);
   if (!type) return json(404, { error: "No encontramos ese evento." });
+
+  if (!(await withinLimit("checkout", clientIp(event), MAX_PER_IP, HOLD_MINUTES))) {
+    return json(429, { code: "too_many", error: "Hiciste muchos intentos seguidos. Esperá unos minutos y probá de nuevo." });
+  }
 
   const reserved = await rpc("pass_reserve", {
     p_event: ev.id, p_type: typeId, p_qty: quantity,
