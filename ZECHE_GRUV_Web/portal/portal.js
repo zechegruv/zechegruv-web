@@ -218,6 +218,10 @@
     return res;
   }
 
+  // Si ya eligió su contraseña: queda anotado en la cuenta al crearla o al
+  // entrar con mail y contraseña (user_metadata.password_set).
+  const hasPassword = (user) => !!(user && user.user_metadata && user.user_metadata.password_set);
+
   async function start() {
     if (linkToken) {
       const { error } = await db.auth.verifyOtp({ token_hash: linkToken, type: linkType === "invite" ? "invite" : "recovery" });
@@ -225,6 +229,13 @@
       if (error) linkError = error.message;
     }
     const { data: { session } } = await db.auth.getSession();
+    // Volvió a tocar el link del mail (que ya se usó) con la sesión abierta:
+    // no es un error, sigue adentro. Si es la invitación y todavía no creó
+    // su contraseña (se marca al crearla, ver recoveryForm), se la pide.
+    if (linkError && session) {
+      linkError = null;
+      recovering = linkType === "invite" && !hasPassword(session.user);
+    }
     if (linkError) {
       showView("login");
       setMsg($("loginMsg"), "Ese link ya se usó o venció. Escribí tu mail y tocá “¿Olvidaste tu contraseña?” para recibir uno nuevo.", true);
@@ -305,6 +316,8 @@
       return;
     }
     $("loginPassword").value = "";
+    // Entró con contraseña: queda anotado que ya la tiene (cuentas de antes).
+    if (!hasPassword(data.user)) db.auth.updateUser({ data: { password_set: true } }).catch(() => {});
     await enter(data.user.id);
   });
 
@@ -359,7 +372,7 @@
     event.preventDefault();
     const password = $("recoveryPassword").value;
     if (password.length < 8) { setMsg($("recoveryMsg"), "La contraseña tiene que tener al menos 8 caracteres.", true); return; }
-    const { data, error } = await db.auth.updateUser({ password });
+    const { data, error } = await db.auth.updateUser({ password, data: { password_set: true } });
     if (error) { setMsg($("recoveryMsg"), "No pudimos guardar la contraseña. Pedí un link nuevo.", true); return; }
     recovering = false;
     await enter(data.user.id);
