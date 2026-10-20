@@ -1,0 +1,5 @@
+PASA  reproductor: con el link vencido pide las canciones de nuevo y sigue con el link nuevo
+PASA  reproductor: si el link nuevo también falla, reintenta una sola vez y avisa
+PASA  Archivos: con el link vencido vuelve a pedir la carpeta y reproduce con el link nuevo
+
+3/3 pasan

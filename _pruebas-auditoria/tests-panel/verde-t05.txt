@@ -1,0 +1,5 @@
+  ok   aparece la sesión de mezcla aunque haya 130 de grabación antes
+  ok   aparece la sesión de master sin Etapa (por el nombre)
+  ok   no aparece una tarea que no es de mezcla ni master
+  ok   aparece la entrega de «Ola» aunque haya 104 canciones antes
+VERDE t05 tareas y canciones paginadas

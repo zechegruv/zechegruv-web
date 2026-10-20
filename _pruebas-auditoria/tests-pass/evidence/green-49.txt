@@ -1,0 +1,4 @@
+PASS  49 · pass-order no devuelve 'detail' con el error de la base
+PASS  49 · pass-events no devuelve 'detail' con el error de la base
+
+Functions: 2 ok, 0 con fallas

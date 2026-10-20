@@ -1,0 +1,7 @@
+FALLA error de red al leer el perfil: «No pudimos conectarnos» + Reintentar, sin cerrar sesión
+      Error: cerró la sesión por un corte de red
+          at assert (/tmp/claude-0/-home-claude/2270288a-1217-54a8-b69a-eb1219f0b3b3/scratchpad/fix/tests-portal/harness.js:64:47)
+          at /tmp/claude-0/-home-claude/2270288a-1217-54a8-b69a-eb1219f0b3b3/scratchpad/fix/tests-portal/t19-perfil-sin-red.js:16:7
+PASA  el perfil no existe (sin filas): ahí sí cierra la sesión y avisa
+
+1/2 pasan

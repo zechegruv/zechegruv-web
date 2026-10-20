@@ -1,0 +1,4 @@
+  ok   se dibuja el checklist
+  ok   los dos tildes se mandaron
+  ok   de a uno (nunca dos a la vez)
+VERDE t26b checklist en el navegador

@@ -1,0 +1,4 @@
+  FALLA trae los 620 eventos -> 100
+  FALLA pide de a 250 -> https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=2026-10-19T00%3A00%3A00-03%3A00&timeMax=2026-12-18T00%3A00%3A00-03%3A00&singleEvents=true&orderBy=startTime&maxResults=100
+  FALLA recorre las páginas (3 pedidos) -> 1
+ROJO  t04 eventos paginados: 3 fallas

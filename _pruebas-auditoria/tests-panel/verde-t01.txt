@@ -1,0 +1,19 @@
+tickCalendar (aprobar / entregar)
+  ok   «Luna» tilda solo []
+  ok   «Mar» tilda solo []
+  ok   «Amor» tilda solo []
+  ok   «Soltando Etiquetas» tilda solo ["corr"]
+  ok   «Seu amor» tilda solo ["entSeu"]
+  ok   «Brisa» tilda solo ["tag"]
+admin-reschedule (mover la entrega)
+  ok   «Luna» no mueve «Entrega: Mix Luna Llena Pazz»
+  ok   crea su propia «Entrega: Mix Luna Pazz»
+  ok   la entrega creada lleva la marca de la canción
+  ok   la segunda vez la encuentra por la marca y la mueve
+admin-tasks ✓ de una sesión (tickSessionEvent)
+  ok   tildar «Mar» no tilda «Mix – Otra (Layla Mar)»
+admin-tasks Inicio (vencidas que se movieron en el calendario)
+  ok   no escribe en Notion la tarea «Luna» por «Luna Llena»
+  ok   «Luna» sigue vencida (no toma el día de «Luna Llena»)
+  ok   «Soltando Etiquetas» sí se pone igual que el calendario
+VERDE t01 búsqueda de eventos

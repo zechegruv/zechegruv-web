@@ -1,0 +1,4 @@
+  ok   se dibuja el checklist
+  ok   los dos tildes se mandaron
+  FALLA de a uno (nunca dos a la vez) -> 2
+ROJO  t26b checklist en el navegador: 1 fallas

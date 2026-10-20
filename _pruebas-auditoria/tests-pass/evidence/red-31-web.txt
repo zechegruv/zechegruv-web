@@ -1,0 +1,4 @@
+FAIL  31 · la puerta ya no ofrece cargar el código a mano (solo QR)
+      campo de código a mano: esperaba 0, vino 2
+
+Navegador: 0 ok, 1 con fallas

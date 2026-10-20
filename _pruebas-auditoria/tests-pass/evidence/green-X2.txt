@@ -1,0 +1,4 @@
+PASS  X2 · medición: ni la página ni la de origen llevan la clave (?t= / ?k=)
+PASS  X2 · las páginas de ZG PASS piden no mandar la dirección completa como origen
+
+Navegador: 2 ok, 0 con fallas

@@ -1,0 +1,4 @@
+  ok   se pidió Avisos dos veces (al abrir y después de la entrega automática)
+  ok   no aparece el aviso viejo de la respuesta a medias
+  ok   sigue el aviso que ya estaba
+VERDE t28c avisos a medias

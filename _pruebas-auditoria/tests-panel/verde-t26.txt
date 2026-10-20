@@ -1,0 +1,5 @@
+  ok   tres tildes a la vez: quedan los tres
+  ok   cada respuesta trae la lista guardada
+  ok   destildar uno deja los otros
+  ok   sin 030 corrido igual tilda (como antes)
+VERDE t26 checklist

@@ -1,0 +1,4 @@
+  ok   rechaza hoy a las 00:00 (ya pasó)
+  ok   no toca Notion ni el calendario
+  ok   los huecos de hoy arrancan después de ahora + 15 min
+VERDE t38 hora pasada

@@ -1,0 +1,3 @@
+PASS  31 · la puerta ya no ofrece cargar el código a mano (solo QR)
+
+Navegador: 1 ok, 0 con fallas

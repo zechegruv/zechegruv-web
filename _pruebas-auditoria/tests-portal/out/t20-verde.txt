@@ -1,0 +1,5 @@
+PASA  sesión abierta y todavía sin contraseña: muestra «Creá tu contraseña»
+PASA  sesión abierta y con contraseña: entra directo al portal
+PASA  sin sesión: sigue avisando que el link ya se usó o venció
+
+3/3 pasan

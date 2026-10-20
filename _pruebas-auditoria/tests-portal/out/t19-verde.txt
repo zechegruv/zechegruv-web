@@ -1,0 +1,4 @@
+PASA  error de red al leer el perfil: «No pudimos conectarnos» + Reintentar, sin cerrar sesión
+PASA  el perfil no existe (sin filas): ahí sí cierra la sesión y avisa
+
+2/2 pasan

@@ -1,0 +1,7 @@
+PASA  Tus canciones: la función responde 401
+PASA  Archivos: la función responde 401
+PASA  Tu show: la función responde 401
+PASA  Reproductor: se vence la sesión antes de mandar las notas
+PASA  Tus canciones: se vence la sesión y se vuelven a pedir
+
+5/5 pasan

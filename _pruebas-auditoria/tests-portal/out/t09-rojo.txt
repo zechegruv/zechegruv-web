@@ -1,0 +1,10 @@
+FALLA sale por las pestañas sin conexión y, al volver la conexión, lo escrito se guarda igual
+      Error: en la base quedó: ""
+          at assert (/tmp/claude-0/-home-claude/2270288a-1217-54a8-b69a-eb1219f0b3b3/scratchpad/fix/tests-portal/harness.js:64:47)
+          at /tmp/claude-0/-home-claude/2270288a-1217-54a8-b69a-eb1219f0b3b3/scratchpad/fix/tests-portal/t09-letras-sin-conexion.js:27:7
+FALLA si cierra el portal sin conexión, al volver a entrar lo pendiente se recupera y se guarda
+      Error: en la base quedó: ""
+          at assert (/tmp/claude-0/-home-claude/2270288a-1217-54a8-b69a-eb1219f0b3b3/scratchpad/fix/tests-portal/harness.js:64:47)
+          at /tmp/claude-0/-home-claude/2270288a-1217-54a8-b69a-eb1219f0b3b3/scratchpad/fix/tests-portal/t09-letras-sin-conexion.js:46:7
+
+0/2 pasan

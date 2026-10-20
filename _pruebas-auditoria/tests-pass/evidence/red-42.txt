@@ -1,0 +1,5 @@
+FAIL  42 · página del evento: un nombre largo en el line up no hace scroll horizontal
+      ancho de la página: 447px
+PASS  42 · entrada: un nombre largo en el line up no hace scroll horizontal
+
+Navegador: 1 ok, 1 con fallas

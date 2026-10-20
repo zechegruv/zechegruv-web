@@ -1,0 +1,4 @@
+  ok   primera entrega: un mail
+  FALLA segunda entrega 10 min después: le llega otro mail -> {"mails":1,"r":{"ok":true,"kind":"mezcla","action":"entregada","at":"2026-10-19T23:59:11.206Z","saved":true,"tasks":[],"calendar":"sin-evento","next":null,"notified":false}}
+  FALLA doble clic: un solo mail más -> 1
+ROJO  t35 aviso de Entregado: 2 fallas

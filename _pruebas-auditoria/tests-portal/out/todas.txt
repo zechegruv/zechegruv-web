@@ -1,0 +1,113 @@
+== t06-ficha-por-nombre
+PASA  cambiarse el nombre visible no muestra canciones de otro artista
+PASA  cambiarse el nombre visible no deja aprobar canciones de otro artista
+PASA  por nombre completo (que no edita el artista) se encuentra y queda fija en artist_private
+PASA  por mail se encuentra, queda fija, y después agregarle un emoji al nombre no le saca sus canciones
+PASA  una ficha guardada a mano no se pisa
+
+5/5 pasan
+== t07-titulo-en-el-nombre
+PASA  «Estoy vivo - Mix v2.wav» es la mezcla de «Estoy vivo» (no una versión en vivo)
+PASA  la maqueta de «Mix de emociones» es la maqueta (no la mezcla)
+PASA  un archivo que solo tiene el título («Estoy vivo.wav») no es entrega ni versión en vivo
+PASA  Masters → Para show en vivo: no se toma como el master para aprobar
+PASA  sigue igual: «Faro - Vivo.wav» es en vivo y «Faro master.wav» el master
+PASA  Archivos: en la carpeta de la canción «Estoy vivo», «Estoy vivo - Mix v2.wav» lleva la etiqueta Mezcla
+PASA  Archivos: la maqueta suelta de «Mix de emociones» no se etiqueta como Mezcla
+PASA  Archivos: Masters → Para show en vivo queda del lado de vivo
+
+8/8 pasan
+== t08-fecha-de-subida
+PASA  la mezcla subida después del pedido de cambios aparece para escuchar (aunque se haya exportado antes)
+PASA  un audio exportado antes del arranque automático pero subido después cuenta como entrega
+PASA  la entrega automática lo marca entregado en Notion
+PASA  si se reemplaza el archivo en OneDrive, vale la fecha más nueva (subida o modificación en el servidor)
+
+4/4 pasan
+== t08b-notas-guardadas
+PASA  las notas guardadas con la fecha vieja del archivo siguen apareciendo
+
+1/1 pasan
+== t09-letras-sin-conexion
+PASA  sale por las pestañas sin conexión y, al volver la conexión, lo escrito se guarda igual
+PASA  si cierra el portal sin conexión, al volver a entrar lo pendiente se recupera y se guarda
+
+2/2 pasan
+== t10a-envio-repetido
+PASA  mandar dos veces el mismo pedido de cambios guarda uno y avisa una sola vez
+PASA  un pedido distinto (otra nota) sí se guarda
+PASA  el mismo contenido en otra canción no cuenta como repetido
+PASA  aprobar dos veces seguidas responde bien las dos veces y cierra la etapa una sola vez
+
+4/4 pasan
+== t10b-cerrar-mientras-envia
+PASA  cierra mientras se envía: igual se borran las notas guardadas y la canción queda en «cambios»
+
+1/1 pasan
+== t11-sin-supabase
+PASA  la librería de Supabase se pide con una versión exacta (2.x.y)
+PASA  sin la librería: mensaje claro con «Reintentar» (y reintentar recarga)
+
+2/2 pasan
+== t18-sesion-vencida
+PASA  Tus canciones: la función responde 401
+PASA  Archivos: la función responde 401
+PASA  Tu show: la función responde 401
+PASA  Reproductor: se vence la sesión antes de mandar las notas
+PASA  Tus canciones: se vence la sesión y se vuelven a pedir
+
+5/5 pasan
+== t19-perfil-sin-red
+PASA  error de red al leer el perfil: «No pudimos conectarnos» + Reintentar, sin cerrar sesión
+PASA  el perfil no existe (sin filas): ahí sí cierra la sesión y avisa
+
+2/2 pasan
+== t20-link-de-invitacion
+PASA  sesión abierta y todavía sin contraseña: muestra «Creá tu contraseña»
+PASA  sesión abierta y con contraseña: entra directo al portal
+PASA  sin sesión: sigue avisando que el link ya se usó o venció
+
+3/3 pasan
+== t21-aprobar-doble-toque
+PASA  el primer toque en «Aprobar» no aprueba: pide confirmar; el segundo sí
+PASA  si no confirma, a los 4 segundos vuelve a «Aprobar»
+
+2/2 pasan
+== t22-medir-solo-la-actual
+PASA  abre: mide solo la versión nueva; al elegir «Versión 2», recién ahí la mide
+
+1/1 pasan
+== t23-link-de-audio-vencido
+PASA  reproductor: con el link vencido pide las canciones de nuevo y sigue con el link nuevo
+PASA  reproductor: si el link nuevo también falla, reintenta una sola vez y avisa
+PASA  Archivos: con el link vencido vuelve a pedir la carpeta y reproduce con el link nuevo
+
+3/3 pasan
+== t24-canciones-sin-esperar
+PASA  responde con la mezcla para escuchar sin escribir en Notion ni mandar mails en el camino
+
+1/1 pasan
+== t50-limpieza
+PASA  letras: crear una letra y salir por las pestañas sin escribir no deja una «Sin título»
+PASA  letras: si escribió algo, salir por las pestañas la conserva
+PASA  notas de voz: borrar una nota de voz sin mandar borra también su audio
+PASA  YouTube: «Agregar» no se habilita hasta tener el título del video
+PASA  YouTube: si no se pudo leer el título, se pide al guardar (y no se guarda sin título)
+
+5/5 pasan
+== tE1-subida
+PASA  al abrir la subida, OneDrive recibe el tamaño real del archivo (fileSize)
+PASA  un artista pausado no puede mandar partes de una subida ya abierta
+PASA  un artista pausado tampoco puede consultar el estado de la subida
+PASA  una parte que dice un total más grande que el máximo se rechaza
+
+4/4 pasan
+== tE2E3-pistas-de-shows
+PASA  E3: la subcarpeta de pistas se llama como el nombre completo del artista
+PASA  E2: repetir «done» con los mismos archivos no los registra de nuevo ni manda otro mail
+PASA  E2: una tanda nueva sí avisa (solo con lo nuevo)
+PASA  E2: con la subida de pistas ya cerrada, «done» no registra ni manda mails
+
+4/4 pasan
+
+TODAS PASAN

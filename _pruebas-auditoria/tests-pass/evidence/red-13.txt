@@ -1,0 +1,6 @@
+FAIL  13 · webhook: consulta del pago con 503 → responde 500 (Mercado Pago reintenta)
+      status: esperaba 500, vino 200
+FAIL  13 · webhook: consulta del pago con 429 → responde 500
+      status: esperaba 500, vino 200
+PASS  13 · webhook: pago inexistente (404 real) → responde 200 (no hay nada que reintentar)
+FAIL  14 · si el mail falló al confirmar, el aviso siguiente (already_paid) lo vuelve a mandar

@@ -1,0 +1,5 @@
+  FALLA el paso a Master ya está anotado cuando se cambia Notion -> Mix
+  FALLA la función programada no lo vuelve a procesar -> [{"song":"Faro","stage":"Master","actions":["entrega 2026-10-20"]}]
+  ok   Notion falló: no se cerró
+  ok   Notion falló: song_stage_log vuelve a Mix con su fecha
+ROJO  t37 paso a Master: 2 fallas

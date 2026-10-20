@@ -1,0 +1,11 @@
+FALLA cambiarse el nombre visible no muestra canciones de otro artista
+      vio canciones ajenas: ["Faro"]
+FALLA cambiarse el nombre visible no deja aprobar canciones de otro artista
+      status 200 {"ok":true,"review":{"kind":"mezcla","action":"aprobada","note":null,"marks":[],"version":null,"at":"2026-10-19T23:50:13.572Z"},"saved":true,"synced":true,"next":{"stage":"master","step":4,"entrega":"Mezcla aprobada","ready":false,"review":null,"delivery":{"kind":"master","state":"proceso","file":null,"versions":[],"demo":null,"review":null,"manual":null,"by":null}}}
+FALLA por nombre completo (que no edita el artista) se encuentra y queda fija en artist_private
+      no la guardó: null
+FALLA por mail se encuentra, queda fija, y después agregarle un emoji al nombre no le saca sus canciones
+      no guardó la ficha encontrada por mail
+PASA  una ficha guardada a mano no se pisa
+
+1/5 pasan

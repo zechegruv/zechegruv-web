@@ -1,0 +1,4 @@
+PASS  30 · lista larga: se manda en tandas chicas y cada invitado lleva su clave
+PASS  30 · si una tanda se corta, al reenviar cada invitado lleva la misma clave (no se duplica)
+
+Navegador: 2 ok, 0 con fallas

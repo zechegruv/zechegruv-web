@@ -1,0 +1,6 @@
+PASA  mandar dos veces el mismo pedido de cambios guarda uno y avisa una sola vez
+PASA  un pedido distinto (otra nota) sí se guarda
+PASA  el mismo contenido en otra canción no cuenta como repetido
+PASA  aprobar dos veces seguidas responde bien las dos veces y cierra la etapa una sola vez
+
+4/4 pasan

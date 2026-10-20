@@ -1,0 +1,13 @@
+servidor
+  ok   Notion 500: no dice que falta conectar
+  ok   base no compartida: sí dice que falta (not_shared)
+  ok   sin NOTION_TOKEN: sí dice que falta conectar
+  ok   todo bien: trae los números
+navegador
+  ok   error pasajero: no dice «Conectá Notion»
+  ok   dice «No pudimos traer los ingresos, probá en un rato»
+  ok   ofrece reintentar
+  ok   al reintentar, vuelve a pedirlos y los muestra
+  ok   si la función falla (500): tampoco dice «Conectá Notion»
+  ok   si de verdad falta la conexión: «Conectá Notion»
+VERDE t39 ingresos

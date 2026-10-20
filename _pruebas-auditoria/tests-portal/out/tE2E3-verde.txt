@@ -1,0 +1,6 @@
+PASA  E3: la subcarpeta de pistas se llama como el nombre completo del artista
+PASA  E2: repetir «done» con los mismos archivos no los registra de nuevo ni manda otro mail
+PASA  E2: una tanda nueva sí avisa (solo con lo nuevo)
+PASA  E2: con la subida de pistas ya cerrada, «done» no registra ni manda mails
+
+4/4 pasan

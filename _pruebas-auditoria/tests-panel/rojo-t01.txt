@@ -1,0 +1,19 @@
+tickCalendar (aprobar / entregar)
+  FALLA «Luna» tilda solo [] -> ["entLunaLlena","lunaLlena"]
+  FALLA «Mar» tilda solo [] -> ["otra"]
+  FALLA «Amor» tilda solo [] -> ["entSeu"]
+  ok   «Soltando Etiquetas» tilda solo ["corr"]
+  ok   «Seu amor» tilda solo ["entSeu"]
+  FALLA «Brisa» tilda solo ["tag"] -> ["tagOtro"]
+admin-reschedule (mover la entrega)
+  FALLA «Luna» no mueve «Entrega: Mix Luna Llena Pazz» -> {"date":"2026-10-23"}
+  FALLA crea su propia «Entrega: Mix Luna Pazz» -> {"notion":true,"calendar":"movido","undo":{"state":"movido","id":"entLunaLlena","old":{"start":{"date":"2026-10-20"},"end":{"date":"2026-10-21"}}}}
+  FALLA la entrega creada lleva la marca de la canción
+  FALLA la segunda vez la encuentra por la marca y la mueve -> {"notion":true,"calendar":"movido","undo":{"state":"movido","id":"entLunaLlena","old":{"start":{"date":"2026-10-23"},"end":{"date":"2026-10-24"}}}}
+admin-tasks ✓ de una sesión (tickSessionEvent)
+  FALLA tildar «Mar» no tilda «Mix – Otra (Layla Mar)» -> {"ok":true,"prev":"PENDIENTE","calendar":"tildado"}
+admin-tasks Inicio (vencidas que se movieron en el calendario)
+  FALLA no escribe en Notion la tarea «Luna» por «Luna Llena»
+  FALLA «Luna» sigue vencida (no toma el día de «Luna Llena») -> {"id":"d1000000-0000-4000-8000-000000000002","kind":"sesion","url":"https://notion.so/d1000000000040008000000000000002","name":"Mix Luna Pazz","start":"2026-10-20T15:00:00-03:00","end":"2026-10-20T17:00:00-03:00","timed":true,"days":1,"urgency":"manana","state":"PENDIENTE","stage":"Mezcla","fromCalendar":true,"late":"2026-10-18T15:00:00-03:00","artist":"Pazz","song":"Luna","clientId":"a1000000-0000-4000-8000-000000000001","rule":null}
+  ok   «Soltando Etiquetas» sí se pone igual que el calendario
+ROJO  t01 búsqueda de eventos: 11 fallas

@@ -1,0 +1,17 @@
+FALLA «Estoy vivo - Mix v2.wav» es la mezcla de «Estoy vivo» (no una versión en vivo)
+      quedó: ["vivo"]
+FALLA la maqueta de «Mix de emociones» es la maqueta (no la mezcla)
+      no la tomó como maqueta
+FALLA un archivo que solo tiene el título («Estoy vivo.wav») no es entrega ni versión en vivo
+      {"versions":{"mezcla":[],"master":[]},"vivo":{"name":"Estoy vivo.wav","folder":null,"kind":"vivo","modified":"2026-10-18T15:00:00Z","size":1000,"url":"https://dl.example/Estoy%20vivo.wav?v=1","fresh":true}}
+FALLA Masters → Para show en vivo: no se toma como el master para aprobar
+      master: Faro master.wav
+PASA  sigue igual: «Faro - Vivo.wav» es en vivo y «Faro master.wav» el master
+FALLA Archivos: en la carpeta de la canción «Estoy vivo», «Estoy vivo - Mix v2.wav» lleva la etiqueta Mezcla
+      etiqueta: vivo
+FALLA Archivos: la maqueta suelta de «Mix de emociones» no se etiqueta como Mezcla
+      etiqueta: mezcla
+FALLA Archivos: Masters → Para show en vivo queda del lado de vivo
+      etiqueta: master
+
+1/8 pasan

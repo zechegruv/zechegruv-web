@@ -1,0 +1,9 @@
+FALLA mandar dos veces el mismo pedido de cambios guarda uno y avisa una sola vez
+      filas guardadas: 2
+FALLA un pedido distinto (otra nota) sí se guarda
+      no guardó el pedido nuevo
+PASA  el mismo contenido en otra canción no cuenta como repetido
+FALLA aprobar dos veces seguidas responde bien las dos veces y cierra la etapa una sola vez
+      status 200 / 409: {"error":"Esta canción ya no está en mezcla. Actualizá la página."}
+
+1/4 pasan

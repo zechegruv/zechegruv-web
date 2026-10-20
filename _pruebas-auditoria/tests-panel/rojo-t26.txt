@@ -1,0 +1,5 @@
+  FALLA tres tildes a la vez: quedan los tres -> [2]
+  ok   cada respuesta trae la lista guardada
+  FALLA destildar uno deja los otros -> {"ok":true,"resolved":[2]}
+  ok   sin 030 corrido igual tilda (como antes)
+ROJO  t26 checklist: 2 fallas

@@ -1,0 +1,7 @@
+PASA  letras: crear una letra y salir por las pestañas sin escribir no deja una «Sin título»
+PASA  letras: si escribió algo, salir por las pestañas la conserva
+PASA  notas de voz: borrar una nota de voz sin mandar borra también su audio
+PASA  YouTube: «Agregar» no se habilita hasta tener el título del video
+PASA  YouTube: si no se pudo leer el título, se pide al guardar (y no se guarda sin título)
+
+5/5 pasan

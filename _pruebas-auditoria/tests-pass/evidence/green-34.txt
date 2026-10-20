@@ -1,0 +1,4 @@
+PASS  34 · inicio: el catálogo muestra títulos con comillas y '<' tal cual, sin romper la tarjeta
+PASS  34 · página de artista: top canciones y lanzamientos escapados
+
+Navegador: 2 ok, 0 con fallas

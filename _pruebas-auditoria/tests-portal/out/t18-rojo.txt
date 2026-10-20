@@ -1,0 +1,22 @@
+FALLA Tus canciones: la función responde 401
+      Error: no volvió a la pantalla de ingreso
+          at assert (/tmp/claude-0/-home-claude/2270288a-1217-54a8-b69a-eb1219f0b3b3/scratchpad/fix/tests-portal/harness.js:64:47)
+          at /tmp/claude-0/-home-claude/2270288a-1217-54a8-b69a-eb1219f0b3b3/scratchpad/fix/tests-portal/t18-sesion-vencida.js:17:7
+FALLA Archivos: la función responde 401
+      Error: no volvió a la pantalla de ingreso
+          at assert (/tmp/claude-0/-home-claude/2270288a-1217-54a8-b69a-eb1219f0b3b3/scratchpad/fix/tests-portal/harness.js:64:47)
+          at /tmp/claude-0/-home-claude/2270288a-1217-54a8-b69a-eb1219f0b3b3/scratchpad/fix/tests-portal/t18-sesion-vencida.js:17:7
+FALLA Tu show: la función responde 401
+      Error: no volvió a la pantalla de ingreso
+          at assert (/tmp/claude-0/-home-claude/2270288a-1217-54a8-b69a-eb1219f0b3b3/scratchpad/fix/tests-portal/harness.js:64:47)
+          at /tmp/claude-0/-home-claude/2270288a-1217-54a8-b69a-eb1219f0b3b3/scratchpad/fix/tests-portal/t18-sesion-vencida.js:17:7
+FALLA Reproductor: se vence la sesión antes de mandar las notas
+      Error: no volvió a la pantalla de ingreso
+          at assert (/tmp/claude-0/-home-claude/2270288a-1217-54a8-b69a-eb1219f0b3b3/scratchpad/fix/tests-portal/harness.js:64:47)
+          at /tmp/claude-0/-home-claude/2270288a-1217-54a8-b69a-eb1219f0b3b3/scratchpad/fix/tests-portal/t18-sesion-vencida.js:17:7
+FALLA Tus canciones: se vence la sesión y se vuelven a pedir
+      Error: no volvió a la pantalla de ingreso
+          at assert (/tmp/claude-0/-home-claude/2270288a-1217-54a8-b69a-eb1219f0b3b3/scratchpad/fix/tests-portal/harness.js:64:47)
+          at /tmp/claude-0/-home-claude/2270288a-1217-54a8-b69a-eb1219f0b3b3/scratchpad/fix/tests-portal/t18-sesion-vencida.js:17:7
+
+0/5 pasan

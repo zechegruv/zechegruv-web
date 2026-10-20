@@ -1,0 +1,14 @@
+PASS  12 · reservar de nuevo con el mismo mail libera la reserva pendiente propia (no ZG_LIMIT)
+PASS  12 · una entrada PAGA del mismo mail sigue contando para el límite
+PASS  12 · la orden guarda el link de pago (pay_url)
+PASS  47 · pago con la reserva vencida respeta el cupo del tipo de entrada
+PASS  47 · pago con la reserva vencida y cupo libre se confirma
+PASS  30/33 · misma clave de idempotencia devuelve la misma orden (no emite dos veces)
+PASS  30/33 · la clave de otro evento no devuelve esa orden
+PASS  31 · los códigos visibles nuevos son aleatorios (sin 0/O/1/I/L), únicos y no correlativos
+PASS  31 · las entradas ya vendidas conservan su código
+PASS  X1 · límite de reservas por IP: 6 cada 15 minutos
+PASS  X3 · código de puerta: cada intento fallido suma en la base, 10 bloquean, el correcto pone en 0
+PASS  X3 · 20 intentos en paralelo: cuenta exactamente 10 y bloquea el resto
+
+SQL: 12 ok, 0 con fallas

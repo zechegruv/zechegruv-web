@@ -1,0 +1,17 @@
+36: Google conectado pero no responde
+  ok   no dice «falta conectar Google Calendar»
+  ok   no dice que no encontró hueco
+  ok   queda pendiente para la próxima pasada
+  ok   en la próxima pasada se agenda y avisa
+  ok   y ya no queda pendiente
+  ok   modificaciones: no responde «Google no conectado»
+29: sin hueco en 21 días
+  ok   le llega «No pude agendar la mezcla de «Nube»»
+  ok   queda pendiente para reintentar
+  ok   al reintentar sin hueco, no repite el mail
+  ok   y sigue pendiente
+  ok   cuando aparece un hueco, se agenda sola
+29: Notion no deja crear la tarea
+  ok   le llega «No pude agendar la mezcla de «Brisa»»
+  ok   queda pendiente para reintentar
+VERDE t29-36 agendar la mezcla

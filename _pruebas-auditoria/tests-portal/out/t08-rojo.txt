@@ -1,0 +1,10 @@
+FALLA la mezcla subida después del pedido de cambios aparece para escuchar (aunque se haya exportado antes)
+      estado: cambios
+FALLA un audio exportado antes del arranque automático pero subido después cuenta como entrega
+      no lo tomó como subido desde el arranque
+FALLA la entrega automática lo marca entregado en Notion
+      no la entregó: []
+FALLA si se reemplaza el archivo en OneDrive, vale la fecha más nueva (subida o modificación en el servidor)
+      fecha: 2026-10-01T00:00:00Z
+
+0/4 pasan

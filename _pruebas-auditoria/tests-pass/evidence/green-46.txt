@@ -1,0 +1,3 @@
+PASS  46 · al pasar a inglés, la franja y el botón del evento cambian de idioma
+
+Navegador: 1 ok, 0 con fallas

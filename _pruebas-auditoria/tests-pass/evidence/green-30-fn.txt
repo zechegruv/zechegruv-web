@@ -1,0 +1,5 @@
+PASS  30 · cada invitado lleva su clave al reservar (gl:<clave>)
+PASS  30 · reenviar el mismo invitado (orden ya emitida) da ok sin emitir otra
+PASS  30 · el servidor no acepta tandas grandes (se mandan de a pocos desde el navegador)
+
+Functions: 3 ok, 0 con fallas

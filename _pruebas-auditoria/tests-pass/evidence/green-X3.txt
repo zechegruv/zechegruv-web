@@ -1,0 +1,4 @@
+PASS  X3 · el código de puerta se valida con el conteo atómico de la base
+PASS  X3 · sin 031 corrido todavía, el código de puerta sigue andando como antes
+
+Functions: 2 ok, 0 con fallas

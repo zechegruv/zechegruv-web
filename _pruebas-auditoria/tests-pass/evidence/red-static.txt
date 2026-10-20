@@ -1,0 +1,19 @@
+FAIL  43 · las páginas de ZG PASS y la plantilla de artistas piden medicion.js con la versión de la publicación
+      con versión fija: pass/index.html, pass/openmic/index.html, pass/orden/index.html, pass/pistas/index.html, scripts/artist-page-template.html
+FAIL  43 · el build reemplaza __BUILD__ en inicio, ZG PASS y artistas
+      pass/orden sin la versión
+FAIL  48 · páginas de artistas: canonical, og:* y twitter:card
+      faltan: <link rel="canonical" href="https://www.zechegruv.com/artistas/layla-mar.html"> | <meta property="og:url" content="https://www.zechegruv.com/artistas/layla-mar.html"> | <meta property="og:title" content="Layla Mar | <meta property="og:description" content=" | <meta property="og:image" content="https:// | <meta name="twitter:card" content="summary_large_image">
+FAIL  48 · páginas de artistas: el inicio se enlaza con "/" (no ../index.html)
+      sigue con ../index.html
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    import importlib.util,sys;s=importlib.util.spec_from_file_location('g','/tmp/zg-build-OpnoYp/ZECHE_GRUV_Web/scripts/generate_artist_pages.py');g=importlib.util.module_from_spec(s);s.loader.exec_module(g);print(g.render(open('/tmp/claude-0/-home-claude/2270288a-1217-54a8-b69a-eb1219f0b3b3/scratchpad/fix/pass/ZECHE_GRUV_Web/scripts/artist-page-template.html').read(), {'name':'Ana "La" & Cía','id':'x','img':'abc','photo':'','slug':'ana'}, {}))
+                                                                                                                                                                                                                      ^^^^^^^^
+AttributeError: module 'g' has no attribute 'render'
+FAIL  48 · un nombre con comillas o & no rompe las etiquetas
+      Command failed: python3 -I -c "import importlib.util,sys;s=importlib.util.spec_from_file_location('g','/tmp/zg-build-OpnoYp/ZECHE_GRUV_Web/scripts/generate_artist_pages.py');g=importlib.util.module_from_spec(s);s.loader.exec_module(g);print(g.render(open('/tmp/claude-0/-home-claude/2270288a-1217-54a8-b69a-eb1219f0b3b3/scratchpad/fix/pass/ZECHE_GRUV_Web/scripts/artist-page-template.html').read(), {'name':'Ana \"La\" & Cía','id':'x','img':'abc','photo':'','slug':'ana'}, {}))"
+FAIL  45 · el texto de la subida de pistas dice todos los formatos que se aceptan
+      el texto de ayuda no menciona: M4A,PDF,TXT
+
+Estáticas: 0 ok, 6 con fallas

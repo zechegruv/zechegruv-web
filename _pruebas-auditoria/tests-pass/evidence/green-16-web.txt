@@ -1,0 +1,4 @@
+PASS  16 · sin la librería del QR, la entrada paga se muestra igual (imagen del servidor)
+PASS  16 · un error al dibujar no corta el refresco
+
+Navegador: 2 ok, 0 con fallas

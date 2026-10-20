@@ -1,0 +1,10 @@
+PASA  «Estoy vivo - Mix v2.wav» es la mezcla de «Estoy vivo» (no una versión en vivo)
+PASA  la maqueta de «Mix de emociones» es la maqueta (no la mezcla)
+PASA  un archivo que solo tiene el título («Estoy vivo.wav») no es entrega ni versión en vivo
+PASA  Masters → Para show en vivo: no se toma como el master para aprobar
+PASA  sigue igual: «Faro - Vivo.wav» es en vivo y «Faro master.wav» el master
+PASA  Archivos: en la carpeta de la canción «Estoy vivo», «Estoy vivo - Mix v2.wav» lleva la etiqueta Mezcla
+PASA  Archivos: la maqueta suelta de «Mix de emociones» no se etiqueta como Mezcla
+PASA  Archivos: Masters → Para show en vivo queda del lado de vivo
+
+8/8 pasan

@@ -1,0 +1,3 @@
+PASA  las notas guardadas con la fecha vieja del archivo siguen apareciendo
+
+1/1 pasan

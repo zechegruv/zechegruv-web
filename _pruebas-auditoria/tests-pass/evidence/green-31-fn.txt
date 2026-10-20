@@ -1,0 +1,8 @@
+PASS  31 · la puerta no acepta códigos escritos a mano: ni valida ni dice de quién es
+PASS  31 · la puerta no marca ingresos por código escrito a mano
+PASS  31 · QR escaneado de otro evento: dice 'otro evento' sin el nombre ni el código
+PASS  31 · ingreso con QR de otro evento: tampoco devuelve el nombre
+PASS  31 · QR escaneado del evento sigue funcionando igual
+PASS  31 · panel (admin): el código a mano solo busca en el evento elegido, nunca muestra otro
+
+Functions: 6 ok, 0 con fallas

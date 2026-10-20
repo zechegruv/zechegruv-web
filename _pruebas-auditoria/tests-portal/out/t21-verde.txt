@@ -1,0 +1,4 @@
+PASA  el primer toque en «Aprobar» no aprueba: pide confirmar; el segundo sí
+PASA  si no confirma, a los 4 segundos vuelve a «Aprobar»
+
+2/2 pasan

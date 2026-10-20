@@ -1,0 +1,6 @@
+FAIL  X2 · medición: ni la página ni la de origen llevan la clave (?t= / ?k=)
+      no se limpia page_referrer
+FAIL  X2 · las páginas de ZG PASS piden no mandar la dirección completa como origen
+      page.getAttribute: Timeout 30000ms exceeded.
+
+Navegador: 0 ok, 2 con fallas

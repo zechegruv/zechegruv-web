@@ -1,0 +1,4 @@
+FAIL  45 · el texto de la subida de pistas dice todos los formatos que se aceptan
+      el texto de ayuda no menciona: M4A,RAR,PDF,TXT
+
+Estáticas: 0 ok, 1 con fallas

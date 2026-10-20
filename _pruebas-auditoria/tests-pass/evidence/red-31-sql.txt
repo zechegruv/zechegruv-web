@@ -1,0 +1,5 @@
+FAIL  31 · los códigos visibles nuevos son aleatorios (sin 0/O/1/I/L), únicos y no correlativos
+      ERROR:  formato: ZG-26-000001
+PASS  31 · las entradas ya vendidas conservan su código
+
+SQL: 1 ok, 1 con fallas

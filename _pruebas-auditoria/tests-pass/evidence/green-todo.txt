@@ -1,0 +1,95 @@
+== node --check de los .js tocados ==
+== SQL (Postgres 16 real) ==
+PASS  12 · reservar de nuevo con el mismo mail libera la reserva pendiente propia (no ZG_LIMIT)
+PASS  12 · una entrada PAGA del mismo mail sigue contando para el límite
+PASS  12 · la orden guarda el link de pago (pay_url)
+PASS  47 · pago con la reserva vencida respeta el cupo del tipo de entrada
+PASS  47 · pago con la reserva vencida y cupo libre se confirma
+PASS  30/33 · misma clave de idempotencia devuelve la misma orden (no emite dos veces)
+PASS  30/33 · la clave de otro evento no devuelve esa orden
+PASS  31 · los códigos visibles nuevos son aleatorios (sin 0/O/1/I/L), únicos y no correlativos
+PASS  31 · las entradas ya vendidas conservan su código
+PASS  31 · si el código al azar ya existe, se genera otro (unicidad garantizada)
+PASS  X1 · límite de reservas por IP: 6 cada 15 minutos
+PASS  X3 · código de puerta: cada intento fallido suma en la base, 10 bloquean, el correcto pone en 0
+PASS  X3 · 20 intentos en paralelo: cuenta exactamente 10 y bloquea el resto
+
+SQL: 13 ok, 0 con fallas
+== Netlify Functions ==
+PASS  13 · webhook: consulta del pago con 503 → responde 500 (Mercado Pago reintenta)
+PASS  13 · webhook: consulta del pago con 429 → responde 500
+PASS  13 · webhook: pago inexistente (404 real) → responde 200 (no hay nada que reintentar)
+PASS  14 · si el mail falló al confirmar, el aviso siguiente (already_paid) lo vuelve a mandar
+PASS  14 · con el mail ya enviado, un aviso repetido no lo manda de nuevo
+PASS  17 · si falla pass_taken, el evento NO sale como agotado
+PASS  17 · con el dato, un evento lleno sigue saliendo agotado
+PASS  49 · pass-order no devuelve 'detail' con el error de la base
+PASS  49 · pass-events no devuelve 'detail' con el error de la base
+PASS  12 · al iniciar la compra se guarda el link de pago con la orden
+PASS  12 · la orden pendiente y viva devuelve su link de pago
+PASS  12 · la orden vencida no devuelve link de pago
+PASS  X1 · con el límite de la conexión alcanzado no se reserva (429)
+PASS  X1 · la clave del límite no guarda la IP tal cual
+PASS  30 · cada invitado lleva su clave al reservar (gl:<clave>)
+PASS  30 · reenviar el mismo invitado (orden ya emitida) da ok sin emitir otra
+PASS  30 · el servidor no acepta tandas grandes (se mandan de a pocos desde el navegador)
+PASS  31 · la puerta no acepta códigos escritos a mano: ni valida ni dice de quién es
+PASS  31 · la puerta no marca ingresos por código escrito a mano
+PASS  31 · QR escaneado de otro evento: dice 'otro evento' sin el nombre ni el código
+PASS  31 · ingreso con QR de otro evento: tampoco devuelve el nombre
+PASS  31 · QR escaneado del evento sigue funcionando igual
+PASS  31 · panel (admin): el código a mano solo busca en el evento elegido, nunca muestra otro
+PASS  33 · la venta en puerta manda su clave al reservar (door:<clave>)
+PASS  33 · reintento de la misma venta: devuelve la misma entrada, sin error ni otra emisión
+PASS  33 · sin 031 corrido todavía, la venta en puerta sigue andando (sin la clave)
+PASS  X3 · el código de puerta se valida con el conteo atómico de la base
+PASS  X3 · sin 031 corrido todavía, el código de puerta sigue andando como antes
+PASS  32 · con el mail se ve el nombre pero no los códigos de las entradas
+PASS  32 · límite por IP: 20 cada 15 minutos, sin guardar la IP a la vista
+PASS  32 · pasado el límite: 429, sin datos
+PASS  32 · las partes de la subida no gastan intentos
+PASS  32 · el link con la clave sigue funcionando como hoy (con códigos)
+PASS  32 · inscripción por la vía del mail: le llega una confirmación al comprador, una sola vez
+PASS  32 · inscripción con el link de la orden: no hace falta la confirmación extra
+PASS  44 · dos 'done' a la vez: el aviso de inscripción sale una sola vez
+
+Functions: 36 ok, 0 con fallas
+== Estáticas ==
+PASS  43 · las páginas de ZG PASS y la plantilla de artistas piden medicion.js con la versión de la publicación
+PASS  43 · el build reemplaza __BUILD__ en inicio, ZG PASS y artistas
+PASS  48 · páginas de artistas: canonical, og:* y twitter:card
+PASS  48 · páginas de artistas: el inicio se enlaza con "/" (no ../index.html)
+PASS  48 · un nombre con comillas o & no rompe las etiquetas
+PASS  45 · el texto de la subida de pistas dice todos los formatos que se aceptan
+
+Estáticas: 6 ok, 0 con fallas
+== Navegador (Chromium 375 px) ==
+PASS  12 · volvió sin pagar: 'Volver a intentar' lleva al mismo pago de Mercado Pago
+PASS  12 · sin link de pago (reserva vencida) el botón vuelve al evento
+PASS  15 · al recargar después de pagar se sigue mandando el número de pago
+PASS  15 · sin número de pago no afirma que no se cobró
+PASS  15 · si después se confirma, la misma página muestra la entrada
+PASS  15 · pago rechazado por Mercado Pago: sí dice que no se cobró
+PASS  16 · sin la librería del QR, la entrada paga se muestra igual (imagen del servidor)
+PASS  16 · un error al dibujar no corta el refresco
+PASS  41 · venta sin mail: no dice 'a null'
+PASS  41 · con mail sigue diciendo a dónde se mandó
+PASS  31 · la puerta ya no ofrece cargar el código a mano (solo QR)
+PASS  33 · venta en puerta: si se corta la conexión, el reintento lleva la misma clave
+PASS  33 · venta en puerta: una venta nueva (o con datos cambiados) lleva otra clave
+PASS  30 · lista larga: se manda en tandas chicas y cada invitado lleva su clave
+PASS  30 · si una tanda se corta, al reenviar cada invitado lleva la misma clave (no se duplica)
+PASS  32 · con el mail: elige la entrada sin ver códigos (y no dice 'undefined')
+PASS  32 · demasiados intentos: avisa en la misma pantalla del mail
+PASS  34 · inicio: el catálogo muestra títulos con comillas y '<' tal cual, sin romper la tarjeta
+PASS  34 · página de artista: top canciones y lanzamientos escapados
+PASS  42 · página del evento: un nombre largo en el line up no hace scroll horizontal
+PASS  42 · entrada: un nombre largo en el line up no hace scroll horizontal
+PASS  46 · al pasar a inglés, la franja y el botón del evento cambian de idioma
+PASS  X2 · medición: ni la página ni la de origen llevan la clave (?t= / ?k=)
+PASS  X2 · las páginas de ZG PASS piden no mandar la dirección completa como origen
+PASS  45 · pistas: el texto de ayuda lista los formatos que se aceptan
+
+Navegador: 25 ok, 0 con fallas
+
+TODO EN VERDE

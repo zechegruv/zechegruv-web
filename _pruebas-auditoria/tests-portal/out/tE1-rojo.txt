@@ -1,0 +1,10 @@
+FALLA al abrir la subida, OneDrive recibe el tamaño real del archivo (fileSize)
+      pedido: {"item":{"@name.conflictBehavior":"rename"}}
+FALLA un artista pausado no puede mandar partes de una subida ya abierta
+      status 502
+FALLA un artista pausado tampoco puede consultar el estado de la subida
+      status 502
+FALLA una parte que dice un total más grande que el máximo se rechaza
+      status 502
+
+0/4 pasan

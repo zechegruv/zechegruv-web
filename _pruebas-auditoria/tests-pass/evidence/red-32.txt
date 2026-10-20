@@ -1,0 +1,13 @@
+FAIL  32 · con el mail se ve el nombre pero no los códigos de las entradas
+      mostró el código: {"event":{"slug":"show","kind":"show","name":"Show de prueba","starts_at":"2026-10-29T00:00:10.059Z"},"open":true,"closed_reason":"","deadline":null,"buyer":{"name":"Cata Cantante","email":"cantante@example.com"},"tickets":[{"code":"ZG-26-K7Q4X2","holder_name":"Cata Cantante","signup":null}]}
+FAIL  32 · límite por IP: 20 cada 15 minutos, sin guardar la IP a la vista
+      no se llamó a pass_rate_hit
+FAIL  32 · pasado el límite: 429, sin datos
+      status: esperaba 429, vino 200
+PASS  32 · las partes de la subida no gastan intentos
+PASS  32 · el link con la clave sigue funcionando como hoy (con códigos)
+FAIL  32 · inscripción por la vía del mail: le llega una confirmación al comprador, una sola vez
+      confirmaciones al comprador: esperaba 1, vino 0
+PASS  32 · inscripción con el link de la orden: no hace falta la confirmación extra
+
+Functions: 3 ok, 4 con fallas

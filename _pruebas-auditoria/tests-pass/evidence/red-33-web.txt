@@ -1,0 +1,6 @@
+FAIL  33 · venta en puerta: si se corta la conexión, el reintento lleva la misma clave
+      claves distintas: ,
+FAIL  33 · venta en puerta: una venta nueva (o con datos cambiados) lleva otra clave
+      claves: ,,: esperaba 3, vino 1
+
+Navegador: 0 ok, 2 con fallas

@@ -1,0 +1,8 @@
+  ok   429 dos veces al leer la canción: se reintenta y queda «Esperando aprobación»
+  ok   503 dos veces: igual queda «Esperando aprobación»
+  ok   si no se pudo leer la canción, no sale «Vencida»
+  ok   429 al consultar Tareas: se reintenta y responde bien
+Avisos
+  ok   Avisos: con 429 se reintenta y no queda a medias
+  ok   Avisos: si Notion no responde, avisa que está a medias (el Inicio deja lo que ya mostraba)
+VERDE t28 Notion 429

@@ -1,0 +1,17 @@
+36: Google conectado pero no responde
+  FALLA no dice «falta conectar Google Calendar» -> ["«Faro» pasó a Mezcla: falta conectar Google Calendar"]
+  ok   no dice que no encontró hueco
+  FALLA queda pendiente para la próxima pasada -> [{"id":"00000000-0000-4000-8000-000000000001","created_at":"2026-10-20T00:01:39.598Z","key":"pendiente-google|b2900000-0000-4000-8000-000000000001","kind":"pendiente-google","song_id":"b2900000-0000-4000-8000-000000000001"}]
+  ok   en la próxima pasada se agenda y avisa
+  ok   y ya no queda pendiente
+  FALLA modificaciones: no responde «Google no conectado» -> {"scheduled":false,"google":true}
+29: sin hueco en 21 días
+  FALLA le llega «No pude agendar la mezcla de «Nube»» -> []
+  FALLA queda pendiente para reintentar
+  FALLA al reintentar sin hueco, no repite el mail -> []
+  FALLA y sigue pendiente
+  FALLA cuando aparece un hueco, se agenda sola -> []
+29: Notion no deja crear la tarea
+  FALLA le llega «No pude agendar la mezcla de «Brisa»» -> []
+  FALLA queda pendiente para reintentar
+ROJO  t29-36 agendar la mezcla: 10 fallas

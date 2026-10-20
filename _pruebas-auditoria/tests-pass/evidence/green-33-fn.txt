@@ -1,0 +1,4 @@
+PASS  33 · la venta en puerta manda su clave al reservar (door:<clave>)
+PASS  33 · reintento de la misma venta: devuelve la misma entrada, sin error ni otra emisión
+
+Functions: 2 ok, 0 con fallas

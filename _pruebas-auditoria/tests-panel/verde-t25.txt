@@ -1,0 +1,9 @@
+  ok   una sola fila «entregada» en song_approvals
+  ok   un solo mail al artista
+  ok   el evento queda «✓ Entrega…» (un solo ✓)
+  ok   la nota del ✓ queda una sola vez en el evento
+  ok   una sola de las dos pasadas lo procesó
+  ok   con Notion caído, esta pasada no la marca
+  ok   la pasada siguiente sí la marca
+  ok   tildar un evento que otro ya tildó no deja «✓ ✓»
+VERDE t25 entrega doble

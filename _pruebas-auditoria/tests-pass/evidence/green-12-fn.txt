@@ -1,0 +1,5 @@
+PASS  12 · al iniciar la compra se guarda el link de pago con la orden
+PASS  12 · la orden pendiente y viva devuelve su link de pago
+PASS  12 · la orden vencida no devuelve link de pago
+
+Functions: 3 ok, 0 con fallas

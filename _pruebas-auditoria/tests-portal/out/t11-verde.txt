@@ -1,0 +1,4 @@
+PASA  la librería de Supabase se pide con una versión exacta (2.x.y)
+PASA  sin la librería: mensaje claro con «Reintentar» (y reintentar recarga)
+
+2/2 pasan

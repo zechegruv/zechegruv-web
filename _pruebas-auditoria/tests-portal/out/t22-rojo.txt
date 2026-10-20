@@ -1,0 +1,6 @@
+FALLA abre: mide solo la versión nueva; al elegir «Versión 2», recién ahí la mide
+      Error: descargó al abrir: Viento mix v3.wav, Viento mix v2.wav, Viento mix v1.wav, Viento maqueta.wav
+          at assert (/tmp/claude-0/-home-claude/2270288a-1217-54a8-b69a-eb1219f0b3b3/scratchpad/fix/tests-portal/harness.js:64:47)
+          at /tmp/claude-0/-home-claude/2270288a-1217-54a8-b69a-eb1219f0b3b3/scratchpad/fix/tests-portal/t22-medir-solo-la-actual.js:30:7
+
+0/1 pasan

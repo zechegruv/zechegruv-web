@@ -1,0 +1,6 @@
+FAIL  32 · con el mail: elige la entrada sin ver códigos (y no dice 'undefined')
+      valores: esperaba ["11111111-aaaa-4aaa-8aaa-000000000001","11111111-aaaa-4aaa-8aaa-000000000002"], vino ["undefined","undefined"]
+FAIL  32 · demasiados intentos: avisa en la misma pantalla del mail
+      page.waitForFunction: Timeout 9000ms exceeded.
+
+Navegador: 0 ok, 2 con fallas

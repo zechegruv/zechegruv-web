@@ -1,0 +1,10 @@
+FALLA la librería de Supabase se pide con una versión exacta (2.x.y)
+      Error: versión no fija: https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2
+          at assert (/tmp/claude-0/-home-claude/2270288a-1217-54a8-b69a-eb1219f0b3b3/scratchpad/fix/tests-portal/harness.js:64:47)
+          at /tmp/claude-0/-home-claude/2270288a-1217-54a8-b69a-eb1219f0b3b3/scratchpad/fix/tests-portal/t11-sin-supabase.js:12:5
+FALLA sin la librería: mensaje claro con «Reintentar» (y reintentar recarga)
+      Error: sigue en: Cargando…
+          at assert (/tmp/claude-0/-home-claude/2270288a-1217-54a8-b69a-eb1219f0b3b3/scratchpad/fix/tests-portal/harness.js:64:47)
+          at /tmp/claude-0/-home-claude/2270288a-1217-54a8-b69a-eb1219f0b3b3/scratchpad/fix/tests-portal/t11-sin-supabase.js:21:7
+
+0/2 pasan

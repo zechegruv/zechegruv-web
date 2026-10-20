@@ -1,0 +1,5 @@
+PASS  48 · páginas de artistas: canonical, og:* y twitter:card
+PASS  48 · páginas de artistas: el inicio se enlaza con "/" (no ../index.html)
+PASS  48 · un nombre con comillas o & no rompe las etiquetas
+
+Estáticas: 3 ok, 0 con fallas

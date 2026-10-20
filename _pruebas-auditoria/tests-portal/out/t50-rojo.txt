@@ -1,0 +1,19 @@
+FALLA letras: crear una letra y salir por las pestañas sin escribir no deja una «Sin título»
+      Error: quedaron 1 letras vacías
+          at assert (/tmp/claude-0/-home-claude/2270288a-1217-54a8-b69a-eb1219f0b3b3/scratchpad/fix/tests-portal/harness.js:64:47)
+          at /tmp/claude-0/-home-claude/2270288a-1217-54a8-b69a-eb1219f0b3b3/scratchpad/fix/tests-portal/t50-limpieza.js:24:7
+PASA  letras: si escribió algo, salir por las pestañas la conserva
+FALLA notas de voz: borrar una nota de voz sin mandar borra también su audio
+      Error: []
+          at assert (/tmp/claude-0/-home-claude/2270288a-1217-54a8-b69a-eb1219f0b3b3/scratchpad/fix/tests-portal/harness.js:64:47)
+          at /tmp/claude-0/-home-claude/2270288a-1217-54a8-b69a-eb1219f0b3b3/scratchpad/fix/tests-portal/t50-limpieza.js:54:7
+FALLA YouTube: «Agregar» no se habilita hasta tener el título del video
+      Error: «Agregar» se habilitó mientras buscaba el título
+          at assert (/tmp/claude-0/-home-claude/2270288a-1217-54a8-b69a-eb1219f0b3b3/scratchpad/fix/tests-portal/harness.js:64:47)
+          at /tmp/claude-0/-home-claude/2270288a-1217-54a8-b69a-eb1219f0b3b3/scratchpad/fix/tests-portal/t50-limpieza.js:73:7
+FALLA YouTube: si no se pudo leer el título, se pide al guardar (y no se guarda sin título)
+      Error: guardó el video sin título
+          at assert (/tmp/claude-0/-home-claude/2270288a-1217-54a8-b69a-eb1219f0b3b3/scratchpad/fix/tests-portal/harness.js:64:47)
+          at /tmp/claude-0/-home-claude/2270288a-1217-54a8-b69a-eb1219f0b3b3/scratchpad/fix/tests-portal/t50-limpieza.js:92:7
+
+1/5 pasan

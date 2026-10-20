@@ -1,0 +1,4 @@
+PASS  33 · venta en puerta: si se corta la conexión, el reintento lleva la misma clave
+PASS  33 · venta en puerta: una venta nueva (o con datos cambiados) lleva otra clave
+
+Navegador: 2 ok, 0 con fallas

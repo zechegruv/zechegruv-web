@@ -1,0 +1,4 @@
+FAIL  46 · al pasar a inglés, la franja y el botón del evento cambian de idioma
+      fecha: Sáb 21 nov · 20:00 h → Sáb 21 nov · 20:00 h
+
+Navegador: 0 ok, 1 con fallas

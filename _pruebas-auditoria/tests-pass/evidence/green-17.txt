@@ -1,0 +1,4 @@
+PASS  17 · si falla pass_taken, el evento NO sale como agotado
+PASS  17 · con el dato, un evento lleno sigue saliendo agotado
+
+Functions: 2 ok, 0 con fallas

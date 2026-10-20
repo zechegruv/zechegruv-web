@@ -1,0 +1,4 @@
+FALLA responde con la mezcla para escuchar sin escribir en Notion ni mandar mails en el camino
+      escribió al abrir: [["notion","PATCH","abababab-0000-4000-8000-000000000001"],["db","INSERT","song_approvals"],["db","INSERT","portal_reminders"]] mails=1
+
+0/1 pasan

@@ -1,0 +1,19 @@
+FAIL  12 · volvió sin pagar: 'Volver a intentar' lleva al mismo pago de Mercado Pago
+      botón: esperaba "https://www.mercadopago.com.ar/checkout/v1/redirect?pref_id=pref-1", vino "/pass/?e=show"
+PASS  12 · sin link de pago (reserva vencida) el botón vuelve al evento
+FAIL  15 · al recargar después de pagar se sigue mandando el número de pago
+      pidió sin payment_id: http://127.0.0.1:43375/.netlify/functions/pass-order?t=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+FAIL  15 · sin número de pago no afirma que no se cobró
+      dice: 
+FAIL  15 · si después se confirma, la misma página muestra la entrada
+      page.waitForSelector: Timeout 12000ms exceeded.
+PASS  15 · pago rechazado por Mercado Pago: sí dice que no se cobró
+FAIL  16 · sin la librería del QR, la entrada paga se muestra igual (imagen del servidor)
+      page.waitForSelector: Timeout 6000ms exceeded.
+FAIL  16 · un error al dibujar no corta el refresco
+      page.waitForSelector: Timeout 9000ms exceeded.
+FAIL  41 · venta sin mail: no dice 'a null'
+      dice: Te la mandamos también a null. Podés sacarle una captura de pantalla: el QR es lo que se muestra en la puerta.
+PASS  41 · con mail sigue diciendo a dónde se mandó
+
+Navegador: 3 ok, 7 con fallas

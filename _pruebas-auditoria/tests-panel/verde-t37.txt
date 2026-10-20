@@ -1,0 +1,5 @@
+  ok   el paso a Master ya está anotado cuando se cambia Notion
+  ok   la función programada no lo vuelve a procesar
+  ok   Notion falló: no se cerró
+  ok   Notion falló: song_stage_log vuelve a Mix con su fecha
+VERDE t37 paso a Master

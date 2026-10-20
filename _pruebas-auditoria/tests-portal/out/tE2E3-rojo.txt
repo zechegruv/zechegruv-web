@@ -1,0 +1,10 @@
+FALLA E3: la subcarpeta de pistas se llama como el nombre completo del artista
+      carpetas creadas: Edición 9 | Shows | Sol ✨ Nocturno
+FALLA E2: repetir «done» con los mismos archivos no los registra de nuevo ni manda otro mail
+      mails: 2
+FALLA E2: una tanda nueva sí avisa (solo con lo nuevo)
+      el mail no fue solo por lo nuevo
+FALLA E2: con la subida de pistas ya cerrada, «done» no registra ni manda mails
+      status 200
+
+0/4 pasan

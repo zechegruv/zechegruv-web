@@ -1,0 +1,6 @@
+PASA  al abrir la subida, OneDrive recibe el tamaño real del archivo (fileSize)
+PASA  un artista pausado no puede mandar partes de una subida ya abierta
+PASA  un artista pausado tampoco puede consultar el estado de la subida
+PASA  una parte que dice un total más grande que el máximo se rechaza
+
+4/4 pasan

@@ -1,0 +1,8 @@
+  ok   responde con error
+  FALLA la tarea nueva queda archivada en Notion -> ["00000000-0000-4000-8000-000000000001"]
+  FALLA la «Entrega:» recién creada se borra del calendario -> ["Entrega: Mix Faro 1 Pazz"]
+  ok   la fecha de entrega vuelve a la de antes
+  ok   dice que se dejó todo como estaba
+  FALLA si deshacer falla, no dice «Se dejó todo como estaba» -> Google Calendar no dejó crear la sesión. Se dejó todo como estaba.
+  FALLA y avisa qué quedó sin deshacer -> Google Calendar no dejó crear la sesión. Se dejó todo como estaba.
+ROJO  t03 reprogramar deshace lo creado: 4 fallas

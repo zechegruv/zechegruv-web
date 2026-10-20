@@ -1,0 +1,18 @@
+FAIL  12 · reservar de nuevo con el mismo mail libera la reserva pendiente propia (no ZG_LIMIT)
+      ERROR:  ZG_LIMIT
+PASS  12 · una entrada PAGA del mismo mail sigue contando para el límite
+FAIL  12 · la orden guarda el link de pago (pay_url)
+      ERROR:  division by zero
+FAIL  47 · pago con la reserva vencida respeta el cupo del tipo de entrada
+      ERROR:  resultado paid
+PASS  47 · pago con la reserva vencida y cupo libre se confirma
+FAIL  30/33 · misma clave de idempotencia devuelve la misma orden (no emite dos veces)
+      ERROR:  function public.pass_reserve(unknown, unknown, integer, unknown, unknown, unknown, unknown, integer, unknown, unknown, unknown, unknown, boolean, unknown) does not exist
+FAIL  30/33 · la clave de otro evento no devuelve esa orden
+      ERROR:  function public.pass_reserve(unknown, unknown, integer, unknown, unknown, unknown, unknown, integer, unknown, unknown, unknown, unknown, boolean, unknown) does not exist
+FAIL  X1 · límite de reservas por IP: 6 cada 15 minutos
+      ERROR:  function public.pass_rate_hit(unknown, integer, integer) does not exist
+FAIL  X3 · código de puerta: cada intento fallido suma en la base, 10 bloquean, el correcto pone en 0
+      ERROR:  function public.pass_door_try(uuid, unknown) does not exist
+
+SQL: 2 ok, 7 con fallas

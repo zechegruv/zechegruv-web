@@ -1,0 +1,12 @@
+PASS  12 · volvió sin pagar: 'Volver a intentar' lleva al mismo pago de Mercado Pago
+PASS  12 · sin link de pago (reserva vencida) el botón vuelve al evento
+PASS  15 · al recargar después de pagar se sigue mandando el número de pago
+PASS  15 · sin número de pago no afirma que no se cobró
+PASS  15 · si después se confirma, la misma página muestra la entrada
+PASS  15 · pago rechazado por Mercado Pago: sí dice que no se cobró
+FAIL  16 · sin la librería del QR, la entrada paga se muestra igual (imagen del servidor)
+      page.waitForSelector: Timeout 6000ms exceeded.
+FAIL  16 · un error al dibujar no corta el refresco
+      page.waitForSelector: Timeout 9000ms exceeded.
+
+Navegador: 6 ok, 2 con fallas

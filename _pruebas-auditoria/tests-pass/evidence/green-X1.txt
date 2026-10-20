@@ -1,0 +1,4 @@
+PASS  X1 · con el límite de la conexión alcanzado no se reserva (429)
+PASS  X1 · la clave del límite no guarda la IP tal cual
+
+Functions: 2 ok, 0 con fallas

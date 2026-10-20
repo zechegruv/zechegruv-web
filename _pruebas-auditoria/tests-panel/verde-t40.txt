@@ -1,0 +1,4 @@
+  ok   el artista recibe un solo mail
+  ok   queda publicado con su link
+  ok   solo una de las dos pasadas dice que lo publicó
+VERDE t40 zil sin mail doble

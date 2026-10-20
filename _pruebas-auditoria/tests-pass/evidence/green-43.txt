@@ -1,0 +1,4 @@
+PASS  43 · las páginas de ZG PASS y la plantilla de artistas piden medicion.js con la versión de la publicación
+PASS  43 · el build reemplaza __BUILD__ en inicio, ZG PASS y artistas
+
+Estáticas: 2 ok, 0 con fallas

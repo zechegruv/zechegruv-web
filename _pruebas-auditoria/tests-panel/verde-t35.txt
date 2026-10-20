@@ -1,0 +1,4 @@
+  ok   primera entrega: un mail
+  ok   segunda entrega 10 min después: le llega otro mail
+  ok   doble clic: un solo mail más
+VERDE t35 aviso de Entregado

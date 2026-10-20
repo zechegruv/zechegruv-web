@@ -1,0 +1,4 @@
+  ok   se pidió Avisos dos veces (al abrir y después de la entrega automática)
+  FALLA no aparece el aviso viejo de la respuesta a medias -> ["Pazz aprobó la mezcla de «Aviso viejo»","Pazz aprobó la mezcla de «Faro»"]
+  ok   sigue el aviso que ya estaba
+ROJO  t28c avisos a medias: 1 fallas

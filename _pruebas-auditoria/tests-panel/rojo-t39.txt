@@ -1,0 +1,13 @@
+servidor
+  FALLA Notion 500: no dice que falta conectar -> {"connected":false,"goal":5000000,"month":"octubre","problem":"notion_error"}
+  FALLA base no compartida: sí dice que falta (not_shared) -> {"connected":false,"goal":5000000,"month":"octubre","problem":"not_shared"}
+  FALLA sin NOTION_TOKEN: sí dice que falta conectar -> {"connected":false,"goal":5000000,"month":"octubre"}
+  ok   todo bien: trae los números
+navegador
+  FALLA error pasajero: no dice «Conectá Notion» -> Ingresos del mesmeta $100Conectá NotionSe llena solo con tu base “Gastos e ingresos” de Notion cuando la conectemos.
+  FALLA dice «No pudimos traer los ingresos, probá en un rato» -> Ingresos del mesmeta $100Conectá NotionSe llena solo con tu base “Gastos e ingresos” de Notion cuando la conectemos.
+  FALLA ofrece reintentar
+  FALLA al reintentar, vuelve a pedirlos y los muestra -> {"calls":1,"txt":"Ingresos del mesmeta $100Conectá NotionSe llena solo con tu base “Gastos e ingresos” de Notion cuando la conectemos."}
+  FALLA si la función falla (500): tampoco dice «Conectá Notion» -> Ingresos del mesConectá NotionSe llena solo con tu base “Gastos e ingresos” de Notion cuando la conectemos.
+  ok   si de verdad falta la conexión: «Conectá Notion»
+ROJO  t39 ingresos: 8 fallas

@@ -1,0 +1,4 @@
+FAIL  44 · dos 'done' a la vez: el aviso de inscripción sale una sola vez
+      mails de aviso: esperaba 1, vino 2
+
+Functions: 0 ok, 1 con fallas

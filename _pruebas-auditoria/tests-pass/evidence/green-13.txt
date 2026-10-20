@@ -1,0 +1,5 @@
+PASS  13 · webhook: consulta del pago con 503 → responde 500 (Mercado Pago reintenta)
+PASS  13 · webhook: consulta del pago con 429 → responde 500
+PASS  13 · webhook: pago inexistente (404 real) → responde 200 (no hay nada que reintentar)
+
+Functions: 3 ok, 0 con fallas

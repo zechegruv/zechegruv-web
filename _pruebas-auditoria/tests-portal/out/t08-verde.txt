@@ -1,0 +1,6 @@
+PASA  la mezcla subida después del pedido de cambios aparece para escuchar (aunque se haya exportado antes)
+PASA  un audio exportado antes del arranque automático pero subido después cuenta como entrega
+PASA  la entrega automática lo marca entregado en Notion
+PASA  si se reemplaza el archivo en OneDrive, vale la fecha más nueva (subida o modificación en el servidor)
+
+4/4 pasan

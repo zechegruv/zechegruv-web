@@ -1,0 +1,4 @@
+PASA  sale por las pestañas sin conexión y, al volver la conexión, lo escrito se guarda igual
+PASA  si cierra el portal sin conexión, al volver a entrar lo pendiente se recupera y se guarda
+
+2/2 pasan

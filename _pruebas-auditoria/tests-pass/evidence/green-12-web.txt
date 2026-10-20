@@ -1,0 +1,4 @@
+PASS  12 · volvió sin pagar: 'Volver a intentar' lleva al mismo pago de Mercado Pago
+PASS  12 · sin link de pago (reserva vencida) el botón vuelve al evento
+
+Navegador: 2 ok, 0 con fallas

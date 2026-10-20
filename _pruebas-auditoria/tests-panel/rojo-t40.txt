@@ -1,0 +1,4 @@
+  FALLA el artista recibe un solo mail -> 2
+  ok   queda publicado con su link
+  FALLA solo una de las dos pasadas dice que lo publicó -> [true,true]
+ROJO  t40 zil sin mail doble: 2 fallas

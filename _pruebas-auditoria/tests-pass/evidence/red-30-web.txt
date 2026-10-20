@@ -1,0 +1,6 @@
+FAIL  30 · lista larga: se manda en tandas chicas y cada invitado lleva su clave
+      tandas: 12
+FAIL  30 · si una tanda se corta, al reenviar cada invitado lleva la misma clave (no se duplica)
+      page.waitForFunction: Timeout 6000ms exceeded.
+
+Navegador: 0 ok, 2 con fallas

@@ -1,0 +1,6 @@
+FAIL  34 · inicio: el catálogo muestra títulos con comillas y '<' tal cual, sin romper la tarjeta
+      texto, data-* y alt: esperaba ["Tema \"con\" comillas <b>y</b> & más","Tema \"con\" comillas <b>y</b> & más","Tema \"con\" comillas <b>y</b> & más — cover art"], vino ["Tema \"con\" comillas y & más","Tema ","Tema "]
+FAIL  34 · página de artista: top canciones y lanzamientos escapados
+      top canción: esperaba ["Tema \"con\" comillas <b>y</b> & más","Artista <i>raro</i> & \"otro\"","Tema \"con\" comillas <b>y</b> & más",0], vino ["Tema \"con\" comillas y & más","Artista raro & \"otro\"","Tema ",2]
+
+Navegador: 0 ok, 2 con fallas

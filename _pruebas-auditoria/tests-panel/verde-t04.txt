@@ -1,0 +1,4 @@
+  ok   trae los 620 eventos
+  ok   pide de a 250
+  ok   recorre las páginas (3 pedidos)
+VERDE t04 eventos paginados

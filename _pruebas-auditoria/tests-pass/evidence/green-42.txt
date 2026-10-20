@@ -1,0 +1,4 @@
+PASS  42 · página del evento: un nombre largo en el line up no hace scroll horizontal
+PASS  42 · entrada: un nombre largo en el line up no hace scroll horizontal
+
+Navegador: 2 ok, 0 con fallas

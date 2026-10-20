@@ -1,0 +1,3 @@
+PASS  45 · el texto de la subida de pistas dice todos los formatos que se aceptan
+
+Estáticas: 1 ok, 0 con fallas

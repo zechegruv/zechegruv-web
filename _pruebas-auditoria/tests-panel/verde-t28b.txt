@@ -1,0 +1,4 @@
+  ok   los 12 pedidos responden bien
+  ok   nunca más de 3 a la vez
+  ok   con 429 sin fin, se rinde a los 3 intentos y devuelve 429
+VERDE t28b turnos de Notion

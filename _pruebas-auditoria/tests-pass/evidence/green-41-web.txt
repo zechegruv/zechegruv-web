@@ -1,0 +1,4 @@
+PASS  41 · venta sin mail: no dice 'a null'
+PASS  41 · con mail sigue diciendo a dónde se mandó
+
+Navegador: 2 ok, 0 con fallas

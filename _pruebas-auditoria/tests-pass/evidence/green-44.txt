@@ -1,0 +1,3 @@
+PASS  44 · dos 'done' a la vez: el aviso de inscripción sale una sola vez
+
+Functions: 1 ok, 0 con fallas

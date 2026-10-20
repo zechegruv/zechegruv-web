@@ -1,0 +1,14 @@
+FALLA reproductor: con el link vencido pide las canciones de nuevo y sigue con el link nuevo
+      Error: sigue con: http://127.0.0.1:42127/audio/niebla.wav?tok=viejo (No pudimos abrir el audio. Cerrá y volvé a abrir (el link se renueva cada tanto).)
+          at assert (/tmp/claude-0/-home-claude/2270288a-1217-54a8-b69a-eb1219f0b3b3/scratchpad/fix/tests-portal/harness.js:64:47)
+          at /tmp/claude-0/-home-claude/2270288a-1217-54a8-b69a-eb1219f0b3b3/scratchpad/fix/tests-portal/t23-link-de-audio-vencido.js:33:7
+FALLA reproductor: si el link nuevo también falla, reintenta una sola vez y avisa
+      Error: pedidos de canciones: 1
+          at assert (/tmp/claude-0/-home-claude/2270288a-1217-54a8-b69a-eb1219f0b3b3/scratchpad/fix/tests-portal/harness.js:64:47)
+          at /tmp/claude-0/-home-claude/2270288a-1217-54a8-b69a-eb1219f0b3b3/scratchpad/fix/tests-portal/t23-link-de-audio-vencido.js:51:7
+FALLA Archivos: con el link vencido vuelve a pedir la carpeta y reproduce con el link nuevo
+      Error: audios: http://127.0.0.1:40355/audio/niebla.wav?tok=viejo, ,  — No pudimos reproducir este audio. Volvé a abrir la sección y probá de nuevo.
+          at assert (/tmp/claude-0/-home-claude/2270288a-1217-54a8-b69a-eb1219f0b3b3/scratchpad/fix/tests-portal/harness.js:64:47)
+          at /tmp/claude-0/-home-claude/2270288a-1217-54a8-b69a-eb1219f0b3b3/scratchpad/fix/tests-portal/t23-link-de-audio-vencido.js:75:7
+
+0/3 pasan

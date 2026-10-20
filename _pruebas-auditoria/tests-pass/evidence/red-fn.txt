@@ -1,0 +1,58 @@
+FAIL  13 · webhook: consulta del pago con 503 → responde 500 (Mercado Pago reintenta)
+      status: esperaba 500, vino 200
+FAIL  13 · webhook: consulta del pago con 429 → responde 500
+      status: esperaba 500, vino 200
+PASS  13 · webhook: pago inexistente (404 real) → responde 200 (no hay nada que reintentar)
+FAIL  14 · si el mail falló al confirmar, el aviso siguiente (already_paid) lo vuelve a mandar
+      mails enviados: esperaba 1, vino 0
+PASS  14 · con el mail ya enviado, un aviso repetido no lo manda de nuevo
+FAIL  17 · si falla pass_taken, el evento NO sale como agotado
+      sold_out: esperaba false, vino true
+PASS  17 · con el dato, un evento lleno sigue saliendo agotado
+FAIL  49 · pass-order no devuelve 'detail' con el error de la base
+      devolvió detail: {"error":"No pudimos cargar tu orden. Probá de nuevo en un rato.","detail":"404 42P01"}
+FAIL  49 · pass-events no devuelve 'detail' con el error de la base
+      devolvió detail: {"error":"No pudimos cargar los eventos. Probá de nuevo en un rato.","detail":"404 42P01"}
+FAIL  12 · al iniciar la compra se guarda el link de pago con la orden
+      pay_url guardado: esperaba "https://www.mercadopago.com.ar/checkout/v1/redirect?pref_id=pref-1", vino undefined
+FAIL  12 · la orden pendiente y viva devuelve su link de pago
+      pay_url: esperaba "https://www.mercadopago.com.ar/checkout/v1/redirect?pref_id=pref-1", vino undefined
+PASS  12 · la orden vencida no devuelve link de pago
+FAIL  X1 · con el límite de la conexión alcanzado no se reserva (429)
+      status: esperaba 429, vino 200
+FAIL  X1 · la clave del límite no guarda la IP tal cual
+      no se llamó a pass_rate_hit
+FAIL  30 · cada invitado lleva su clave al reservar (gl:<clave>)
+      p_idem: esperaba "gl:k-0001-abcdef", vino undefined
+FAIL  30 · reenviar el mismo invitado (orden ya emitida) da ok sin emitir otra
+      ok (No pudimos confirmar la entrada. Probá de nuevo.): esperaba true, vino false
+FAIL  30 · el servidor no acepta tandas grandes (se mandan de a pocos desde el navegador)
+      status: esperaba 400, vino 200
+FAIL  31 · código a mano sin apellido: no dice de quién es
+      devolvió el nombre: {"result":"ok","code":"ZG-26-000123","holder_name":"María José Pérez","type":"General","comp":false}
+PASS  31 · código a mano + apellido que coincide (sin tildes/mayúsculas) → válida
+FAIL  31 · código a mano + apellido que NO coincide → no válida y sin nombre
+      result: esperaba "unknown", vino "ok"
+FAIL  31 · código de OTRO evento (aunque el apellido coincida) no devuelve el nombre
+      devolvió el nombre: {"result":"wrong_event","code":"ZG-26-000124","holder_name":"Juan Otro","type":"General","comp":false}
+FAIL  31 · QR escaneado de otro evento: dice 'otro evento' sin el nombre
+      devolvió el nombre
+PASS  31 · QR escaneado del evento sigue funcionando igual (sin apellido)
+PASS  31 · ingreso por código a mano + apellido marca la entrada
+FAIL  33 · la venta en puerta manda su clave al reservar (door:<clave>)
+      p_idem: esperaba "door:venta-abc-12345678", vino undefined
+FAIL  33 · reintento de la misma venta: devuelve la misma entrada, sin error ni otra emisión
+      status ({"error":"No pudimos confirmar la entrada. Probá de nuevo."}): esperaba 200, vino 502
+FAIL  X3 · el código de puerta se valida con el conteo atómico de la base
+      llamadas a pass_door_try: esperaba 1, vino 0
+FAIL  32 · con slug + mail no se ven nombres ni códigos
+      filtró datos: {"event":{"slug":"show","kind":"show","name":"Show de prueba","starts_at":"2026-10-28T23:54:49.768Z"},"open":true,"closed_reason":"","deadline":null,"buyer":{"name":"Cata Cantante","email":"cantante@example.com"},"tickets":[{"code":"ZG-26-000300","holder_name":"Cata Cantante","signup":null}]}
+FAIL  32 · pedir el link: llega un mail con la clave de la orden y la página solo dice que se mandó
+      status: esperaba 200, vino 400
+FAIL  32 · mail sin compra: misma respuesta y ningún mail
+      respuesta: esperaba {"sent":true}, vino {"error":"No encontramos una entrada comprada con esos datos."}
+PASS  32 · el link con la clave sigue funcionando como hoy
+FAIL  44 · dos 'done' a la vez: el aviso de inscripción sale una sola vez
+      mails de aviso: esperaba 1, vino 2
+
+Functions: 8 ok, 24 con fallas

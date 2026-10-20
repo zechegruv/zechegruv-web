@@ -1,0 +1,3 @@
+PASA  abre: mide solo la versión nueva; al elegir «Versión 2», recién ahí la mide
+
+1/1 pasan

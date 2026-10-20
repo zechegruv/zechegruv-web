@@ -1,0 +1,31 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>prueba lista de invitados</title></head><body>
+<!-- Página de prueba: carga el zgpass-eventos.js real del panel con un administrador de mentira. -->
+<div hidden>
+  <form id="zgpEditor"></form><form id="zgpDoorForm"></form>
+  <dialog id="zgpKind"></dialog><dialog id="zgpConfig"></dialog><dialog id="zgpDoor"></dialog>
+  <input type="file" id="zeFlyerFile">
+  <select id="zgpEvent"><option value="e1">e1</option></select>
+</div>
+<div id="stubs" hidden></div>
+<form id="glForm">
+  <p id="glNoEvents"></p><div id="glEvents"></div>
+  <div class="gl-type"><select id="glType"></select></div>
+  <div id="glRows"></div>
+  <button type="button" id="glAdd">+</button>
+  <button type="submit" id="glSend">Enviar</button>
+  <p id="glMsg"></p>
+</form>
+<script>
+  const ids = "zeAddType zeAddress zeBack zeCapacity zeDate zeDescription zeEnd zeEyebrow zeFlyerBtn zeFlyerImg zeFlyerRemove zeInfo zeKind zeLead zeLineup zeMax zeMsg zeName zeOpenmic zeOpenmicDeadline zeReview zeSave zeShowBlock zeShowsDeadline zeTime zeTitle zeTypes zeVenue zgpBarMsg zgpBody zgpConfigClose zgpDoorAdd zgpDoorBtn zgpDoorClose zgpDoorLabel zgpDoorList zgpDoorMsg zgpDoorTitle zgpEdit zgpKindCancel zgpNew zgpReview zgpReviewChecks zgpReviewEdit zgpReviewList zgpReviewMsg zgpReviewPublish zgpStatus".split(" ");
+  ids.forEach((id) => { const n = document.createElement(id.startsWith("ze") && !/Btn|Back|Add|Remove|Review|Save/.test(id) ? "input" : "button"); n.id = id; document.getElementById("stubs").append(n); });
+  const ev = { id: "e1", name: "Show de prueba", kind: "show", status: "published", starts_at: new Date(Date.now() + 9 * 864e5).toISOString(), ticket_types: [{ id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", name: "General", active: true }] };
+  window.ZGPortal = { db: {}, $: (id) => document.getElementById(id), setMsg: (n, t, e) => { n.textContent = t || ""; n.classList.toggle("is-error", !!e); } };
+  window.ZGPassAdmin = {
+    events: [ev], current: ev, reload: async () => {},
+    call: async (body) => { const r = await fetch("/.netlify/functions/pass-admin", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }); const d = await r.json(); if (!r.ok) throw new Error(d.error || "error"); return d; },
+  };
+</script>
+<script src="/pass/ticket.js"></script>
+<script src="/portal/zgpass-eventos.js"></script>
+<script>window.ZGEventos.loadGuestlist();</script>
+</body></html>

@@ -1,0 +1,4 @@
+PASS  14 · si el mail falló al confirmar, el aviso siguiente (already_paid) lo vuelve a mandar
+PASS  14 · con el mail ya enviado, un aviso repetido no lo manda de nuevo
+
+Functions: 2 ok, 0 con fallas

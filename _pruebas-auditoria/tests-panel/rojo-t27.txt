@@ -1,0 +1,2 @@
+  FALLA el lanzamiento del 2026-11-06 dice «Vie 6 nov» -> ["Jue 5 nov"]
+ROJO  t27 fecha de Lo que viene: 1 fallas

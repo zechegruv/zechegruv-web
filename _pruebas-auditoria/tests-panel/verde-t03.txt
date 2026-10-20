@@ -1,0 +1,8 @@
+  ok   responde con error
+  ok   la tarea nueva queda archivada en Notion
+  ok   la «Entrega:» recién creada se borra del calendario
+  ok   la fecha de entrega vuelve a la de antes
+  ok   dice que se dejó todo como estaba
+  ok   si deshacer falla, no dice «Se dejó todo como estaba»
+  ok   y avisa qué quedó sin deshacer
+VERDE t03 reprogramar deshace lo creado
