@@ -76,7 +76,10 @@ async function finish(ev, signup, finalName) {
   if (signup.uploaded_at) return;
   const patch = { uploaded_at: new Date().toISOString(), updated_at: new Date().toISOString() };
   if (finalName) patch.file_name = finalName;
-  await db(`pass_openmic?id=eq.${signup.id}&uploaded_at=is.null`, { method: "PATCH", body: patch });
+  // Solo sigue quien de verdad marcó la fila (si llegan dos "listo" a la
+  // vez, el segundo ya no la encuentra sin marcar): así el aviso sale una vez.
+  const marked = await db(`pass_openmic?id=eq.${signup.id}&uploaded_at=is.null`, { method: "PATCH", prefer: "return=representation", body: patch });
+  if (!marked.ok || !Array.isArray(marked.data) || !marked.data.length) return;
   const row = (label, value) => `<tr><td style="padding:6px 16px 6px 0;color:#8a6a45;font-size:13px">${label}</td><td style="padding:6px 0;font-size:15px"><strong>${esc(value)}</strong></td></tr>`;
   await sendMail({
     to: notifyEmail(),
