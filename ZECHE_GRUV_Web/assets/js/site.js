@@ -988,6 +988,8 @@ function applyLanguage(lang) {
   renderSingle();
   renderEpAlbum();
   renderEventVideoSound();
+  // La franja y el botón del próximo evento (si ya cargó).
+  if (window.zgEventLang) window.zgEventLang();
 
   langSelect.value = lang;
 }
@@ -1708,54 +1710,70 @@ window.addEventListener("load", () => {
   const TZ = "America/Argentina/Buenos_Aires";
   const clean = (t) => t.replace(/[.,]/g, "");
   const cap = (t) => t.charAt(0).toUpperCase() + t.slice(1);
-  const fmtDate = (iso) => cap(clean(new Intl.DateTimeFormat("es-AR", { timeZone: TZ, weekday: "short", day: "numeric", month: "short" }).format(new Date(iso))));
-  const fmtTime = (iso) => new Intl.DateTimeFormat("es-AR", { timeZone: TZ, hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date(iso)) + " h";
+  // Fecha y hora del evento en el idioma elegido (la de la web es es-AR).
+  const LOCALES = { es: "es-AR", en: "en-US", pt: "pt-BR", fr: "fr-FR", it: "it-IT", de: "de-DE", ru: "ru-RU" };
+  const SOLD_OUT = { es: "Agotado", en: "Sold out", pt: "Esgotado", fr: "Complet", it: "Esaurito", de: "Ausverkauft", ru: "Распродано" };
+  const FEW_LEFT = { es: (n) => `¡Últimas ${n}!`, en: (n) => `Only ${n} left!`, pt: (n) => `Últimos ${n}!`, fr: (n) => `Plus que ${n} !`, it: (n) => `Ultimi ${n}!`, de: (n) => `Nur noch ${n}!`, ru: (n) => `Осталось ${n}!` };
+  const lang = () => (typeof currentLang === "string" && LOCALES[currentLang] ? currentLang : "es");
+  const fmtDate = (iso) => cap(clean(new Intl.DateTimeFormat(LOCALES[lang()], { timeZone: TZ, weekday: "short", day: "numeric", month: "short" }).format(new Date(iso))));
+  const fmtTime = (iso) => new Intl.DateTimeFormat(LOCALES[lang()], { timeZone: TZ, hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date(iso)) + (lang() === "es" ? " h" : "");
+
+  let ev = null;
+  let heroBtn = null;
+
+  // Textos que dependen del idioma (fecha, aviso y botón). Se rearma al
+  // cargar el evento y cada vez que se cambia el idioma (applyLanguage).
+  function paintLang() {
+    if (!ev) return;
+    const when = `${fmtDate(ev.starts_at)} · ${fmtTime(ev.starts_at)}`;
+    document.getElementById("nextEventMeta").textContent = [when, ev.venue_name].filter(Boolean).join(" · ");
+    const note = document.getElementById("nextEventNote");
+    note.textContent = ev.sold_out ? SOLD_OUT[lang()] : ev.few_left ? FEW_LEFT[lang()](ev.few_left) : "";
+    if (ev.sold_out) return;
+    const cta = (typeof I18N === "object" && I18N[lang()] && I18N[lang()].tickets_cta) || document.querySelector(".promo-cta [data-i18n]").textContent;
+    if (heroBtn) heroBtn.textContent = `${cta} · ${fmtDate(ev.starts_at)}`;
+    document.getElementById("promoWhen").textContent = when;
+  }
+  window.zgEventLang = paintLang;
 
   fetch("/.netlify/functions/pass-events")
     .then((r) => (r.ok ? r.json() : null))
     .then((data) => {
-      const ev = data && (data.events || []).find((e) => e.on_sale || e.sold_out);
+      ev = data && (data.events || []).find((e) => e.on_sale || e.sold_out);
       if (!ev) return;
       const url = `/pass/?e=${encodeURIComponent(ev.slug)}`;
       if (window.ZGPass) window.ZGPass.eventSchema(ev);
-      const when = `${fmtDate(ev.starts_at)} · ${fmtTime(ev.starts_at)}`;
 
       // Tarjeta "Próxima fecha"
       const card = document.getElementById("nextEvent");
       document.getElementById("nextEventName").textContent = ev.name;
-      document.getElementById("nextEventMeta").textContent = [when, ev.venue_name].filter(Boolean).join(" · ");
       const lineup = document.getElementById("nextEventLineup");
       lineup.replaceChildren(...(ev.lineup || []).map((n) => { const b = document.createElement("b"); b.textContent = n; return b; }));
       lineup.hidden = !(ev.lineup || []).length;
       document.getElementById("nextEventText").textContent = ev.description || "";
       const btn = document.getElementById("nextEventBtn");
       btn.href = url;
-      const note = document.getElementById("nextEventNote");
-      if (ev.sold_out) note.textContent = "Agotado";
-      else if (ev.few_left) note.textContent = `¡Últimas ${ev.few_left}!`;
       document.getElementById("nextEventMic").hidden = !ev.openmic_open;
       card.hidden = false;
 
-      if (ev.sold_out) return;
-      const cta = document.querySelector(".promo-cta [data-i18n]").textContent;
+      if (ev.sold_out) return paintLang();
 
       // En la portada, un botón más al lado de los otros dos.
       const heroButtons = document.querySelector(".hero-buttons");
       if (heroButtons) {
-        const heroBtn = document.createElement("a");
+        heroBtn = document.createElement("a");
         heroBtn.className = "btn hero-ticket";
         heroBtn.href = url;
-        heroBtn.textContent = `${cta} · ${fmtDate(ev.starts_at)}`;
         heroButtons.append(heroBtn);
       }
 
       // Franja fija arriba de todo.
       const bar = document.getElementById("promoBar");
       bar.href = url;
-      document.getElementById("promoWhen").textContent = when;
       document.getElementById("promoVenue").textContent = ev.venue_name || "";
       document.getElementById("promoName").textContent = ev.name;
       document.getElementById("promoLineup").textContent = (ev.lineup || []).join(" · ");
+      paintLang();
       bar.hidden = false;
       document.body.classList.add("has-promo");
     })
