@@ -180,6 +180,16 @@
     };
   }
 
+  // Quién toca se actualiza solo con el line up (pass-admin → _lib/lineup.js).
+  const listNames = (xs) => xs.length <= 1 ? xs.join("") : `${xs.slice(0, -1).join(", ")} y ${xs[xs.length - 1]}`;
+  function lineupNote(l) {
+    if (!l) return "";
+    const parts = [];
+    if (l.artists.length) parts.push(` Del sello tocan ${listNames([...new Set(l.artists)])}${l.notified && l.notified.length ? ` (les mandé el mail para subir sus pistas a ${listNames(l.notified)})` : ""}.`);
+    if (l.others.length) parts.push(` ${listNames(l.others.map((n) => `«${n}»`))} no ${l.others.length === 1 ? "tiene" : "tienen"} cuenta en el portal: si ${l.others.length === 1 ? "sube" : "suben"} pistas, ${l.others.length === 1 ? "sumalo" : "sumalos"} como invitado en Carpetas.`);
+    return parts.join("");
+  }
+
   async function save(thenReview) {
     let data;
     try { data = collect(); } catch (err) { return setMsg($("zeMsg"), err.message, true); }
@@ -189,7 +199,7 @@
       const out = await A.call({ action: "event_save", event_id: editing ? editing.id : undefined, ...data });
       await A.reload(out.id);
       closeEditor();
-      setMsg($("zgpBarMsg"), editing ? "Cambios guardados." : data.event.kind === "show" ? "Evento creado en borrador. Completá las carpetas y quién sube pistas en la pestaña Carpetas." : "Evento creado en borrador.");
+      setMsg($("zgpBarMsg"), `${editing ? "Cambios guardados." : data.event.kind === "show" ? "Evento creado en borrador. Completá las carpetas en la pestaña Carpetas." : "Evento creado en borrador."}${lineupNote(out.lineup)}`);
       if (thenReview) review(A.current);
     } catch (err) {
       setMsg($("zeMsg"), err.message, true);

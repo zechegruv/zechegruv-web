@@ -70,6 +70,27 @@ function guestMail(ev, name, link, plural) {
 }
 
 // Aviso al artista del sello: ya puede subir sus pistas desde su portal.
+// Mail "ya podés subir tus pistas" a los artistas del sello que tocan y
+// todavía no lo recibieron (una sola vez por artista y evento). Solo si la
+// carpeta Shows del evento está lista y el evento no pasó.
+async function notifyShowArtists(ev, event, root) {
+  const notified = [];
+  const base = root === undefined ? await folders.rootLink() : root;
+  if (!folders.available(ev, "shows", base) || Date.parse(ev.starts_at) <= Date.now() || ev.status === "cancelled") return notified;
+  const pending = await db(`pass_show_artists?event_id=eq.${ev.id}&notified_at=is.null&select=profile_id,profiles(email,display_name,full_name,active)`);
+  for (const r of pending.ok ? pending.data : []) {
+    const p = r.profiles;
+    if (!p || !p.email || p.active === false) continue;
+    const name = p.display_name || p.full_name || "";
+    const sent = await sendMail({ to: p.email, replyTo: notifyEmail(), ...artistMail(ev, name, `${siteUrl(event)}/portal/`) }).catch(() => false);
+    if (sent) {
+      await db(`pass_show_artists?event_id=eq.${ev.id}&profile_id=eq.${r.profile_id}`, { method: "PATCH", body: { notified_at: new Date().toISOString() } });
+      notified.push(name);
+    }
+  }
+  return notified;
+}
+
 function artistMail(ev, name, portal) {
   const tz = { timeZone: "America/Argentina/Buenos_Aires" };
   const day = new Intl.DateTimeFormat("es-AR", { ...tz, weekday: "long", day: "numeric", month: "long" }).format(new Date(ev.starts_at));
@@ -153,7 +174,10 @@ exports.handler = async (event) => {
     if (types.some((t) => !t.name || !(t.price >= 0))) return json(400, { error: "Cada tipo de entrada necesita nombre y precio." });
 
     let ev;
+    let oldLineup = [];
     if (editing) {
+      const old = await db(`pass_events?id=eq.${eventId}&select=lineup`);
+      oldLineup = (old.ok && old.data && old.data[0] && old.data[0].lineup) || [];
       const res = await db(`pass_events?id=eq.${eventId}&is_test=eq.${testMode()}`, { method: "PATCH", prefer: "return=representation", body: fields });
       if (!res.ok || !res.data[0]) return json(502, { error: "No pudimos guardar el evento." });
       ev = res.data[0];
@@ -186,9 +210,23 @@ exports.handler = async (event) => {
       if (!keep.has(t.id)) await db(`pass_ticket_types?id=eq.${t.id}`, { method: "PATCH", body: { active: false } });
     }
     await audit(editing ? "evento_editado" : "evento_creado", "event", ev.id, { name: ev.name }, adminId);
-    // Las carpetas de la edición (Open Mic y Shows) se crean solas.
-    const folders_ok = await folders.ensure(ev);
-    return json(200, { id: ev.id, slug: ev.slug, folders_ok });
+    // Quién toca se actualiza solo con el line up (_lib/lineup.js): los
+    // nombres que son artistas del sello quedan en pass_show_artists, y a
+    // los recién sumados les llega el mail para subir sus pistas.
+    let lineup = null;
+    if (ev.kind === "show") {
+      lineup = await require("./_lib/lineup").syncFromLineup(ev, oldLineup).catch((err) => { console.error("ZG PASS: line up", err && err.message); return null; });
+    }
+    // Las carpetas de la edición (Open Mic y Shows) se crean solas, con la de
+    // cada artista que toca.
+    const root = await folders.rootLink(ev.kind);
+    const playing = lineup ? (await db(`pass_show_artists?event_id=eq.${ev.id}&select=profiles(display_name,full_name)`)).data || [] : [];
+    const folders_ok = await folders.ensure(ev, playing.map((r) => r.profiles && (r.profiles.display_name || r.profiles.full_name)).filter(Boolean), root);
+    const notified = lineup && lineup.added.length ? await notifyShowArtists(ev, event) : [];
+    return json(200, {
+      id: ev.id, slug: ev.slug, folders_ok,
+      lineup: lineup && { artists: lineup.matched.map((m) => m.artist), others: lineup.unmatched, added: lineup.added.length, removed: lineup.removed.length, notified },
+    });
   }
 
   // ---------- Configuración: carpetas madre (Shows & Open Mic y Campamento Creativo) ----------
@@ -317,20 +355,7 @@ exports.handler = async (event) => {
     const foldersOk = await folders.ensure(ev, [...lineupRows.map((r) => r.profiles && (r.profiles.display_name || r.profiles.full_name)), ...guestRows.map((g) => g.name)], root);
 
     // Aviso por mail a los artistas del sello que todavía no lo recibieron.
-    const notified = [];
-    if (folders.available(ev, "shows", root) && Date.parse(ev.starts_at) > Date.now() && ev.status !== "cancelled") {
-      const pending = await db(`pass_show_artists?event_id=eq.${eventId}&notified_at=is.null&select=profile_id,profiles(email,display_name,full_name,active)`);
-      for (const r of pending.ok ? pending.data : []) {
-        const p = r.profiles;
-        if (!p || !p.email || p.active === false) continue;
-        const name = p.display_name || p.full_name || "";
-        const sent = await sendMail({ to: p.email, replyTo: notifyEmail(), ...artistMail(ev, name, `${siteUrl(event)}/portal/`) }).catch(() => false);
-        if (sent) {
-          await db(`pass_show_artists?event_id=eq.${eventId}&profile_id=eq.${r.profile_id}`, { method: "PATCH", body: { notified_at: new Date().toISOString() } });
-          notified.push(name);
-        }
-      }
-    }
+    const notified = await notifyShowArtists(ev, event, root);
     await audit("evento_shows", "event", eventId, { name: ev.name, artistas: ids.length, avisados: notified.length }, adminId);
     return json(200, { saved: true, notified, folders_ok: foldersOk });
   }
