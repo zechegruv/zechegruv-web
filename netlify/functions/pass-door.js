@@ -17,7 +17,7 @@
 //           códigos escritos a mano, ni se muestran datos de otros eventos)
 //   issue   { ticket_type_id, quantity, first_name, last_name, email?, method, checkin? }
 //           method: cash | transfer | mercadopago
-const { json, db, serviceKey, testMode } = require("./_lib/pass");
+const { json, db, rpc, serviceKey, testMode } = require("./_lib/pass");
 const { eventStats, checkTicket, issueTickets } = require("./_lib/pass-ops");
 
 const AFTER = 24 * 3600 * 1000;
@@ -42,13 +42,27 @@ exports.handler = async (event) => {
   if (access.failed_attempts >= MAX_TRIES) return json(423, { error: "Este acceso se bloqueó por demasiados códigos incorrectos. Pedile un link nuevo a ZECHE GRUV." });
   const pin = String(body.pin || "");
   if (!pin) return json(401, { need_pin: true });
-  if (pin !== access.pin) {
-    const tries = access.failed_attempts + 1;
-    await db(`pass_door_access?id=eq.${access.id}`, { method: "PATCH", body: { failed_attempts: tries } });
+  const wrongPin = (tries) => {
     const left = MAX_TRIES - tries;
     return json(401, { need_pin: true, error: left > 0 ? `Código incorrecto. Te quedan ${left} ${left === 1 ? "intento" : "intentos"}.` : "Código incorrecto. El acceso se bloqueó: pedile un link nuevo a ZECHE GRUV." });
+  };
+  // La base compara el código y cuenta el intento en una sola operación
+  // (supabase/031_pass.sql): con pedidos en paralelo cada intento suma de a
+  // uno y nadie prueba más de los permitidos.
+  const tried = await rpc("pass_door_try", { p_access: access.id, p_pin: pin, p_max: MAX_TRIES });
+  if (tried.ok && tried.data) {
+    if (tried.data.result === "locked") return json(423, { error: "Este acceso se bloqueó por demasiados códigos incorrectos. Pedile un link nuevo a ZECHE GRUV." });
+    if (tried.data.result !== "ok") return wrongPin(Number(tried.data.tries) || MAX_TRIES);
+  } else {
+    // Sin 031 corrido todavía: la forma anterior (leer y escribir).
+    console.error("ZG PASS: pass_door_try no respondió, se usa el conteo anterior", tried.status);
+    if (pin !== access.pin) {
+      const tries = access.failed_attempts + 1;
+      await db(`pass_door_access?id=eq.${access.id}`, { method: "PATCH", body: { failed_attempts: tries } });
+      return wrongPin(tries);
+    }
+    if (access.failed_attempts) await db(`pass_door_access?id=eq.${access.id}`, { method: "PATCH", body: { failed_attempts: 0 } });
   }
-  if (access.failed_attempts) await db(`pass_door_access?id=eq.${access.id}`, { method: "PATCH", body: { failed_attempts: 0 } });
 
   if (body.action === "info") {
     const s = await eventStats(ev);
