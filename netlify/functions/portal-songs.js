@@ -355,12 +355,13 @@ exports.handler = async (event) => {
       supabase(`/rest/v1/song_approvals?profile_id=eq.${artistId}&select=*&order=created_at.desc&limit=300`, serviceKey),
       folder ? listAudio(folder).catch(() => []) : Promise.resolve([]),
     ]);
-    // Entregas automáticas: si hay una mezcla o un master nuevo en la
-    // carpeta, se marca entregado en Notion y se cierra su sesión
-    // (_lib/auto-entregas.js). Si falla, la página se muestra igual.
-    if (folder && audios.length) {
-      await require("./_lib/auto-entregas").syncArtist({ profileId: artistId, pageId, folder, songPages, audios }).catch((e) => console.error("auto-entregas:", e && e.message));
-    }
+    // Las entregas automáticas (marcar entregado en Notion, cerrar la sesión,
+    // tildar el calendario y avisarle por mail: _lib/auto-entregas.js) ya no
+    // se hacen acá: el artista esperaba todo eso cada vez que abría sus
+    // canciones. Las hace la función programada cada 15 minutos y el Inicio
+    // del panel. Lo que ve el artista no cambia: el audio nuevo de la
+    // carpeta ya alcanza para que le aparezca para escuchar y aprobar
+    // (deliveryOf), aunque Notion se actualice unos minutos después.
     const songs = withDelivery(base, matchAudio(base, audios), Array.isArray(reviews) ? reviews : []);
     return json(200, { configured: true, ...split(songs), next: nextSession(tasks, songs) });
   } catch (err) {
