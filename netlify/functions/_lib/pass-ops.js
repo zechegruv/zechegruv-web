@@ -81,8 +81,23 @@ async function checkTicket(eventId, body, actorId, opts = {}) {
     return json(200, done.data.result === "wrong_event" ? view : { ...view, used_at: done.data.used_at || ticket.used_at });
 }
 
+// Reserva con la clave única del pedido. Si la base todavía no tiene la
+// versión de pass_reserve con p_idem (falta correr supabase/031_pass.sql),
+// se repite sin ella para no frenar la venta.
+async function reserveOnce(args, idem) {
+  if (!idem) return rpc("pass_reserve", args);
+  const res = await rpc("pass_reserve", { ...args, p_idem: idem });
+  if (res.ok || !/PGRST202|p_idem|pass_reserve/.test(JSON.stringify(res.data || ""))) return res;
+  console.error("ZG PASS: pass_reserve sin p_idem (¿falta correr 031?)");
+  return rpc("pass_reserve", args);
+}
+
 // Venta en puerta (y bonificadas, solo si opts.allowComp).
-//   opts: { allowComp, allowPrice, door: nombre de quien vende en puerta }
+//   opts: { allowComp, allowPrice, door: nombre de quien vende en puerta,
+//           idemPrefix: de dónde viene el pedido (door, admin, gl) }
+//   body.idem: clave única de esta venta, generada en el navegador. Si se
+//   corta la conexión y se reintenta con la misma clave, la base devuelve la
+//   misma orden: nunca se emiten entradas dobles.
 async function issueTickets(event, eventId, body, actorId, opts = {}) {
     const typeId = String(body.ticket_type_id || "");
     const quantity = Number(body.quantity);
@@ -98,12 +113,15 @@ async function issueTickets(event, eventId, body, actorId, opts = {}) {
     const unitPrice = comp ? 0 : !opts.allowPrice || body.unit_price === undefined || body.unit_price === "" ? null : Number(body.unit_price);
     if (unitPrice !== null && !(unitPrice >= 0)) return json(400, { error: "Precio inválido." });
 
-    const reserved = await rpc("pass_reserve", {
+    const idemRaw = String(body.idem || "");
+    const idem = /^[A-Za-z0-9-]{8,64}$/.test(idemRaw) ? `${opts.idemPrefix || "door"}:${idemRaw}` : null;
+
+    const reserved = await reserveOnce({
       p_event: eventId, p_type: typeId, p_qty: quantity,
       p_first_name: firstName, p_last_name: lastName, p_email: email || null,
       p_channel: comp ? "admin" : "door", p_hold_minutes: 5, p_unit_price: unitPrice,
       p_modality: comp ? "comp" : "normal", p_admin: actorId, p_test: testMode(),
-    });
+    }, idem);
     if (!reserved.ok) {
       const code = reserved.data && reserved.data.message;
       if (code === "ZG_SOLD_OUT") return json(409, { error: "No quedan lugares suficientes para esa cantidad." });
@@ -111,13 +129,24 @@ async function issueTickets(event, eventId, body, actorId, opts = {}) {
       return json(502, { error: "No pudimos emitir la entrada. Probá de nuevo." });
     }
     const order = reserved.data;
+    // reused: es un reintento de una venta que ya había llegado. Si ya quedó
+    // confirmada ("already_paid") se devuelve tal cual, sin registrarla de nuevo.
+    const reused = order.reused === true;
     const paid = await rpc("pass_confirm_paid", { p_order: order.order_id, p_method: comp ? "none" : body.method, p_amount: order.total });
-    if (!paid.ok || !paid.data || paid.data.result !== "paid") return json(502, { error: "No pudimos confirmar la entrada. Probá de nuevo." });
+    const result = paid.ok && paid.data && paid.data.result;
+    if (result !== "paid" && !(reused && result === "already_paid")) return json(502, { error: "No pudimos confirmar la entrada. Probá de nuevo." });
 
-    await audit(comp ? "entrada_bonificada" : "venta_en_puerta", "order", order.order_id, {
-      number: order.number, quantity, holder: `${firstName} ${lastName}`, method: body.method, total: Number(order.total), ...(opts.door ? { puerta: opts.door } : {}),
-    }, actorId);
-    const emailed = email ? await sendTickets(order.order_id, siteUrl(event)) : false;
+    if (result === "paid") {
+      await audit(comp ? "entrada_bonificada" : "venta_en_puerta", "order", order.order_id, {
+        number: order.number, quantity, holder: `${firstName} ${lastName}`, method: body.method, total: Number(order.total), ...(opts.door ? { puerta: opts.door } : {}),
+      }, actorId);
+    }
+    let emailed = email ? await sendTickets(order.order_id, siteUrl(event)) : false;
+    if (email && !emailed && reused) {
+      // En un reintento el mail pudo haber salido la primera vez.
+      const sent = await db(`pass_orders?id=eq.${order.order_id}&select=email_sent_at`);
+      emailed = !!(sent.ok && sent.data[0] && sent.data[0].email_sent_at);
+    }
     // La persona está entrando en este momento: se registra el ingreso sin
     // tener que escanear la entrada recién emitida.
     if (body.checkin === true) {

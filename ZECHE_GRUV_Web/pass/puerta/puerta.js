@@ -192,9 +192,18 @@
     $("doorTotal").textContent = type ? `Total a cobrar: ${fmtMoney(type.price * qty)}` : "";
   }
 
+  // Clave única de la venta en curso: se manda con cada intento. Si se corta
+  // la conexión y se vuelve a tocar "Emitir", va la misma clave y el
+  // servidor devuelve la venta que ya había llegado (no emite otra). Se
+  // renueva al terminar bien o al cambiar algún dato (ya es otra venta).
+  let saleKey = "";
+  const newKey = () => (window.crypto && crypto.randomUUID ? crypto.randomUUID() : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`);
+
   async function issue(event) {
     event.preventDefault();
+    if (!saleKey) saleKey = newKey();
     const body = {
+      idem: saleKey,
       action: "issue",
       ticket_type_id: $("zgpType").value,
       quantity: Number($("zgpQty").value),
@@ -216,6 +225,7 @@
       $("zgpIssued").replaceChildren(...out.tickets.map((t, i) => renderTicket({ kind: ev.kind, name: ev.name, starts_at: ev.starts_at, venue_name: ev.venue_name }, t, i + 1, out.tickets.length)));
       ["zgpFirst", "zgpLast", "zgpEmail"].forEach((id) => { $(id).value = ""; });
       $("zgpQty").value = 1;
+      saleKey = "";
       syncTotal();
       refresh();
     } catch (err) {
@@ -285,6 +295,7 @@
   $("zgpType").addEventListener("change", syncTotal);
   $("zgpQty").addEventListener("input", syncTotal);
   $("zgpIssueForm").addEventListener("submit", issue);
+  ["input", "change"].forEach((type) => $("zgpIssueForm").addEventListener(type, () => { saleKey = ""; }));
 
   start();
 })();

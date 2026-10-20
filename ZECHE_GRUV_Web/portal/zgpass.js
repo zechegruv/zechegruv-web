@@ -266,10 +266,18 @@
     $("zgpIssueSubmit").textContent = comp ? "Emitir cortesía" : "Emitir entrada";
   }
 
+  // Clave única de la venta en curso (igual que en la puerta): un reintento
+  // tras un corte de conexión manda la misma y no se emite dos veces. Se
+  // renueva al terminar bien o al cambiar algún dato.
+  let saleKey = "";
+  const newKey = () => (window.crypto && crypto.randomUUID ? crypto.randomUUID() : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`);
+
   async function issue(ev) {
     ev.preventDefault();
+    if (!saleKey) saleKey = newKey();
     const body = {
       action: "issue",
+      idem: saleKey,
       event_id: current.id,
       ticket_type_id: $("zgpType").value,
       quantity: Number($("zgpQty").value),
@@ -293,6 +301,7 @@
       $("zgpIssued").replaceChildren(...out.tickets.map((t, i) => renderTicket(eventView, t, i + 1, out.tickets.length)));
       ["zgpFirst", "zgpLast", "zgpEmail"].forEach((id) => { $(id).value = ""; });
       $("zgpQty").value = 1;
+      saleKey = "";
       load(current.id);
     } catch (err) {
       setMsg($("zgpIssueMsg"), err.message, true);
@@ -607,6 +616,7 @@
   $("zgpType").addEventListener("change", syncPrice);
   $("zgpMethod").addEventListener("change", syncPrice);
   $("zgpIssueForm").addEventListener("submit", issue);
+  ["input", "change"].forEach((type) => $("zgpIssueForm").addEventListener(type, () => { saleKey = ""; }));
   $("zgpSearch").addEventListener("input", renderTickets);
   $("zgpFilters").addEventListener("click", (e) => { const b = e.target.closest(".chip-btn"); if (b) { filter = b.dataset.filter; renderTickets(); } });
   $("zgpTable").addEventListener("click", async (event) => {

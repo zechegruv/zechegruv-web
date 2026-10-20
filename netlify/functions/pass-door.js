@@ -15,7 +15,9 @@
 //   checkin { token }                     → marcar como ingresada
 //           (en la puerta se entra solo escaneando el QR: no se aceptan
 //           códigos escritos a mano, ni se muestran datos de otros eventos)
-//   issue   { ticket_type_id, quantity, first_name, last_name, email?, method, checkin? }
+//   issue   { ticket_type_id, quantity, first_name, last_name, email?, method, checkin?, idem }
+//           idem: clave única de la venta (la arma la página): un reintento
+//           con la misma clave devuelve la misma venta, no emite otra
 //           method: cash | transfer | mercadopago
 const { json, db, rpc, serviceKey, testMode } = require("./_lib/pass");
 const { eventStats, checkTicket, issueTickets } = require("./_lib/pass-ops");
@@ -76,7 +78,7 @@ exports.handler = async (event) => {
   if (body.action === "peek" || body.action === "checkin") return checkTicket(ev.id, body, null);
   if (body.action === "issue") {
     if (body.method === "comp") return json(403, { error: "Las bonificadas solo las emite el administrador." });
-    return issueTickets(event, ev.id, body, null, { allowComp: false, allowPrice: false, door: access.label });
+    return issueTickets(event, ev.id, body, null, { allowComp: false, allowPrice: false, door: access.label, idemPrefix: "door" });
   }
   return json(400, { error: "Acción desconocida." });
 };

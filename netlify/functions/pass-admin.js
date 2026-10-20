@@ -465,7 +465,7 @@ exports.handler = async (event) => {
   }
 
   // ---------- Venta en puerta y bonificadas ----------
-  if (body.action === "issue") return issueTickets(event, eventId, body, adminId, { allowComp: true, allowPrice: true });
+  if (body.action === "issue") return issueTickets(event, eventId, body, adminId, { allowComp: true, allowPrice: true, idemPrefix: "admin" });
 
   return json(400, { error: "Acción desconocida." });
 };
