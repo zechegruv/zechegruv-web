@@ -65,7 +65,10 @@ exports.handler = async (event) => {
     const code = data.error_code || data.code || "";
     if (code === "email_exists" || res.status === 422) return json(409, { error: "Ya existe una cuenta con ese mail." });
     if (res.status === 429 || code === "over_email_send_rate_limit") return json(429, { error: "Se enviaron muchos mails seguidos. Esperá unos minutos y probá de nuevo." });
-    return json(502, { error: "No pudimos enviar la invitación. Revisá la configuración de mail en Supabase." });
+    // Lo que dijo Supabase, para saber qué revisar (SMTP, plantilla, límite…).
+    const why = String(data.msg || data.message || data.error_description || data.error || code || `HTTP ${res.status}`).slice(0, 200);
+    console.error("portal-invite: Supabase no mandó la invitación", res.status, code, why);
+    return json(502, { error: `No pudimos enviar la invitación. Supabase dijo: «${why}».` });
   }
   if (team || producer) {
     const roleSet = await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${data.id}`, {
