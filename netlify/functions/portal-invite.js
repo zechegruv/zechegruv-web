@@ -1,4 +1,4 @@
-// POST /.netlify/functions/portal-invite   { email, display_name }
+// POST /.netlify/functions/portal-invite   { email, display_name[, role: "distribution" | "producer"] }
 // Crea la cuenta de un artista y le manda el mail de invitación de ZECHE
 // GRUV, con el link para su primer ingreso (ahí elige su contraseña).
 //
@@ -50,12 +50,15 @@ exports.handler = async (event) => {
   // Equipo de distribución (014_distribucion_equipo.sql): otro mail de
   // invitación ("team" en la plantilla) y su rol apenas se crea la cuenta.
   const team = body.role === "distribution";
+  // Productor (036_productor.sql): solo seguimiento de los artistas que se
+  // le asignen; su propio texto en el mail ("producer" en la plantilla).
+  const producer = body.role === "producer";
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json(400, { error: "Ese mail no parece válido." });
 
   const res = await fetch(`${SUPABASE_URL}/auth/v1/invite?redirect_to=${encodeURIComponent(PORTAL_URL)}`, {
     method: "POST",
     headers: { ...service, "Content-Type": "application/json" },
-    body: JSON.stringify({ email, data: team ? { display_name: displayName, team: true } : { display_name: displayName } }),
+    body: JSON.stringify({ email, data: team ? { display_name: displayName, team: true } : producer ? { display_name: displayName, producer: true } : { display_name: displayName } }),
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
@@ -64,11 +67,11 @@ exports.handler = async (event) => {
     if (res.status === 429 || code === "over_email_send_rate_limit") return json(429, { error: "Se enviaron muchos mails seguidos. Esperá unos minutos y probá de nuevo." });
     return json(502, { error: "No pudimos enviar la invitación. Revisá la configuración de mail en Supabase." });
   }
-  if (team) {
+  if (team || producer) {
     const roleSet = await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${data.id}`, {
       method: "PATCH",
       headers: { ...service, "Content-Type": "application/json" },
-      body: JSON.stringify({ role: "distribution" }),
+      body: JSON.stringify({ role: producer ? "producer" : "distribution" }),
     });
     if (!roleSet.ok) return json(200, { id: data.id, email, roleError: true });
   }

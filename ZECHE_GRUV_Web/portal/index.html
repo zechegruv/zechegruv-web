@@ -33,6 +33,7 @@
   <link rel="stylesheet" href="estado.css">
   <link rel="stylesheet" href="sin-conexion.css">
   <link rel="stylesheet" href="notificaciones.css">
+  <link rel="stylesheet" href="productor.css">
   <!-- Medición de visitas (Google Analytics 4) -->
   <script src="/assets/js/medicion.js?v=__BUILD__"></script>
 </head>
@@ -169,6 +170,9 @@
           <button class="vw-tab vw-tab-admin" type="button" role="tab" data-vtab="admin">Admin</button>
         </div>
       </div>
+
+      <!-- Productor: sus artistas, con Canciones y Archivos de solo lectura (productor.js) -->
+      <div id="panel-producer" hidden></div>
 
       <!-- Administrador: Inicio (admin-home.js) -->
       <div id="panel-home" hidden></div>
@@ -384,6 +388,8 @@
               <select id="inviteRole">
                 <option value="artist">Artista</option>
                 <option value="distribution">Equipo de distribución (solo ve y edita los lanzamientos)</option>
+                <option value="artist_producer">Productor/Artista (su portal de artista + vista de productor)</option>
+                <option value="producer">Productor (solo ve canciones y archivos de los artistas que le asignes)</option>
               </select>
             </div>
           </div>
@@ -1328,5 +1334,6 @@
   <script src="/pass/pistas-card.js"></script>
   <script src="shows.js"></script>
   <script src="escena.js"></script>
+  <script src="productor.js"></script>
 </body>
 </html>

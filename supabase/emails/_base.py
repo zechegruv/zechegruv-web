@@ -71,22 +71,26 @@ here = os.path.dirname(os.path.abspath(__file__))
 # (portal-invite.js lo manda al elegir Tipo de cuenta: Equipo de
 # distribución); si no, la de artistas. Se usa "if .Data.team" y no una
 # comparación, para que una invitación sin ese dato no rompa el mail.
-def team_or_artist(team, artist):
-    return "{{ if .Data.team }}" + team + "{{ else }}" + artist + "{{ end }}"
+# La de productor (036_productor.sql) sale con "producer".
+def team_or_artist(team, artist, producer=None):
+    if producer is None:
+        return "{{ if .Data.team }}" + team + "{{ else }}" + artist + "{{ end }}"
+    return "{{ if .Data.team }}" + team + "{{ else if .Data.producer }}" + producer + "{{ else }}" + artist + "{{ end }}"
 
 HELLO = "Hola{{ if .Data.display_name }}, <b>{{ .Data.display_name }}</b>{{ end }}."
 
 invite = mail(
     "invite",
-    team_or_artist("Bienvenida<br>al equipo.", "Tu espacio ya<br>está listo."),
+    team_or_artist("Bienvenida<br>al equipo.", "Tu espacio ya<br>está listo.", "Todo el proceso,<br>a la vista."),
     HELLO + " " + team_or_artist(
         "Cada canción que sale de ZECHE GRUV pasa por tus manos antes de llegar a Spotify. En tu cuenta vas a ver los lanzamientos que envían los artistas: títulos, fechas, créditos, splits y portada, con el Excel listo para cargar en la distribuidora. Cuando lo cargues, lo marcás y el artista sabe que su música ya está en camino.",
         "Bienvenid@ al portal de artistas de ZECHE GRUV, donde vas a encontrar toda la data de tu proyecto en un solo lugar: tus referencias y letras, los exports y masters de cada canción, tu membresía y el formulario para distribuir tu música.",
+        "Te abrí una cuenta de productor en el portal de ZECHE GRUV. Desde acá ves en qué etapa está cada canción de los artistas con los que trabajamos juntos, escuchás la mezcla y el master apenas los entrego y bajás las referencias, letras, exports y masters de cada uno, sin tener que pedirlos por WhatsApp.",
     ),
     box(row("Usuario", "{{ .Email }}") + "\n" + row("Contraseña", "La elegís vos en tu primer ingreso") + "\n" + row("Dirección del portal", '<a href="https://zechegruv.com/portal/" style="color:#F5A623;text-decoration:none;">zechegruv.com/portal</a>')),
     "Entrar por primera vez",
     "Este link es personal y sirve una sola vez: vence en 24 horas. Si se venció, entrá a zechegruv.com/portal, tocá “¿Olvidaste tu contraseña?” y te mandamos uno nuevo.",
-    team_or_artist("Equipo de distribución", "Portal de artistas"),
+    team_or_artist("Equipo de distribución", "Portal de artistas", "Portal de productores"),
 )
 io.open(os.path.join(here, "invitacion.html"), "w", encoding="utf-8").write(invite)
 

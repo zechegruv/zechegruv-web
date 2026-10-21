@@ -87,5 +87,5 @@
       };
     },
   };
-  window.supabase = { createClient: () => ({ auth, storage, from: builder, rpc: async () => ({ data: null, error: null }) }) };
+  window.supabase = { createClient: () => ({ auth, storage, from: builder, rpc: async (fn) => ({ data: SB.rpc && fn in SB.rpc ? JSON.parse(JSON.stringify(SB.rpc[fn])) : null, error: null }) }) };
 })();

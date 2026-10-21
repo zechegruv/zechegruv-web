@@ -23,6 +23,10 @@ const SECTIONS = {
   membresia: "Membresía",
 };
 
+// Lo que ve un productor (036_productor.sql): todo menos Membresía.
+const PRODUCER_SECTIONS = ["referencias", "letras", "exports", "masters"];
+const { producerCanSee } = require("./_lib/productor");
+
 // Secciones donde el portal deja subir archivos (ver portal-upload.js).
 const UPLOAD_SECTIONS = ["referencias", "letras"];
 
@@ -187,14 +191,23 @@ exports.handler = async (event) => {
   if (!caller) return json(500, { error: BAD_KEY });
   if (caller[0] && caller[0].role !== "admin" && caller[0].active === false) return json(403, { error: INACTIVE });
 
-  // Un artista siempre ve lo suyo; solo el administrador puede pedir otro perfil.
+  // Un artista siempre ve lo suyo; el administrador puede pedir otro perfil, y
+  // el productor (036_productor.sql) solo los artistas que tiene asignados,
+  // sin Membresía y sin poder subir.
+  // Un Productor/Artista (037) ve su propia carpeta completa como artista;
+  // la restricción vale solo cuando mira la de otro.
+  const isAdmin = !!(caller[0] && caller[0].role === "admin");
+  let producer = false; // mirando como productor
   let artistId = user.id;
   if (q.artist && q.artist !== user.id) {
     if (!/^[0-9a-f-]{36}$/i.test(q.artist)) return json(400, { error: "Artista inválido." });
-    const me = await supabase(`/rest/v1/profiles?id=eq.${user.id}&select=role`, serviceKey);
-    if (!me) return json(500, { error: BAD_KEY });
-    if (!me[0] || me[0].role !== "admin") return json(403, { error: "No tenés permiso para ver esa carpeta." });
+    if (!isAdmin) {
+      if (!PRODUCER_SECTIONS.includes(q.section) || !(await producerCanSee(caller[0], q.artist, serviceKey))) return json(403, { error: "No tenés permiso para ver esa carpeta." });
+      producer = true;
+    }
     artistId = q.artist;
+  } else if (caller[0] && caller[0].role === "producer") {
+    return json(200, { configured: false, exists: false, files: [], groups: [] });
   }
 
   const rows = await supabase(`/rest/v1/artist_private?profile_id=eq.${artistId}&select=onedrive_link,onedrive_edit_link`, serviceKey);
@@ -206,7 +219,7 @@ exports.handler = async (event) => {
 
   try {
     // Se puede subir desde el portal si la sección lo admite y hay link de edición cargado.
-    const canUpload = UPLOAD_SECTIONS.includes(q.section) && !!rows[0].onedrive_edit_link;
+    const canUpload = !producer && UPLOAD_SECTIONS.includes(q.section) && !!rows[0].onedrive_edit_link;
     return json(200, { configured: true, canUpload, ...(await listSection(link, folderName)) });
   } catch (err) {
     return json(502, { error: "No pudimos leer la carpeta de OneDrive. Probá de nuevo en un momento." });

@@ -1,0 +1,303 @@
+/* ZECHE GRUV — Portal: cuenta de Productor (productor.js).
+   Misma piel que el portal nuevo del artista (crema, marrón, naranja),
+   en una sola columna: sus artistas → Canciones · Archivos. */
+
+body.is-producer {
+  --panel: #2E1607;
+  --panel-2: #241105;
+  --r: 22px;
+  --display: "Bricolage Grotesque", "Manrope", sans-serif;
+  --body: "Geist", "Manrope", system-ui, sans-serif;
+  --mono: "Geist Mono", "DM Mono", monospace;
+  --ease: cubic-bezier(.23, 1, .32, 1);
+  background: #2B160A;
+  font-family: var(--body);
+}
+
+/* La vista de productor es apenas más clara que la del artista (y con una
+   línea naranja bajo la barra de arriba), para que siempre se note en qué
+   vista se está. El cambio de un fondo al otro es suave. */
+body { transition: background-color 450ms ease; }
+body.is-producer {
+  --panel: #3A1F0D;
+  --panel-2: #2F190B;
+}
+body.is-producer nav {
+  background: rgba(50, 26, 11, .97);
+  border-bottom-color: rgba(240, 120, 0, .28);
+  box-shadow: inset 0 -2px 0 rgba(240, 120, 0, .55);
+  transition: background-color 450ms ease, box-shadow 450ms ease;
+}
+body.is-producer .pr-head .eyebrow { color: var(--orange-soft); }
+body.is-producer .pr-head .eyebrow::before {
+  content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+  background: var(--orange); margin-right: 8px; vertical-align: 1px;
+  box-shadow: 0 0 0 4px rgba(240, 120, 0, .18);
+}
+body.is-producer .title, body.is-producer .card-title { font-family: var(--display); letter-spacing: -.02em; }
+body.is-producer .card { background: var(--panel); border-color: rgba(240, 224, 192, .1); border-radius: var(--r); padding: 22px; }
+body.is-producer .btn { font-family: var(--body); text-transform: none; letter-spacing: 0; font-size: 14px; font-weight: 600; padding: 11px 18px; border-radius: 999px; }
+body.is-producer input { border-radius: 12px; font-family: var(--body); }
+body.is-producer label { font-family: var(--body); text-transform: none; letter-spacing: 0; font-size: 13px; font-weight: 600; }
+
+#panel-producer { max-width: 760px; margin: 0 auto; padding-bottom: 120px; }
+
+/* ---------- Inicio ---------- */
+.pr-head { margin: 8px 0 26px; animation: prUp .5s var(--ease) both; }
+.pr-head .eyebrow { font-family: var(--mono); letter-spacing: .14em; }
+.pr-lead { color: var(--beige); opacity: .85; max-width: 52ch; line-height: 1.55; margin-top: 10px; }
+
+.pr-grid { display: grid; gap: 12px; }
+.pr-artist {
+  display: flex; align-items: center; gap: 16px; width: 100%; text-align: left;
+  padding: 16px 18px; border-radius: var(--r); cursor: pointer;
+  background: var(--panel); color: var(--cream); border: 1px solid rgba(240, 224, 192, .1);
+  font: inherit;
+  transition: transform 180ms var(--ease), border-color 200ms ease, background-color 200ms ease;
+  animation: prUp .5s var(--ease) both; animation-delay: calc(var(--i, 0) * 60ms + 80ms);
+}
+.pr-artist:hover { border-color: rgba(240, 120, 0, .45); background: #44240F; }
+.pr-artist:active { transform: scale(.985); }
+.pr-artist:focus-visible { outline: 2px solid var(--orange-soft); outline-offset: 3px; }
+.pr-av-wrap { flex: none; }
+.pr-av { width: 56px; height: 56px; font-size: 22px; }
+.pr-artist-text { display: grid; gap: 3px; min-width: 0; flex: 1; }
+.pr-artist-text b { font-family: var(--display); font-size: 18px; letter-spacing: -.01em; }
+.pr-artist-sub { color: var(--muted); font-size: 13px; }
+.pr-arrow { color: var(--orange-soft); transition: transform 200ms var(--ease); }
+.pr-artist:hover .pr-arrow { transform: translateX(4px); }
+.pr-badge {
+  flex: none; font-family: var(--mono); font-size: 11px; letter-spacing: .06em;
+  color: #1B0D04; background: var(--orange-soft); border-radius: 999px; padding: 5px 10px;
+  animation: prPop .4s var(--ease) both;
+}
+
+.pr-empty { display: flex; gap: 16px; align-items: center; }
+.pr-empty img { width: 46px; height: 46px; animation: prSpin 30s linear infinite; }
+.pr-empty p { color: var(--beige); line-height: 1.5; }
+
+.pr-account { margin-top: 28px; }
+.pr-account > summary { cursor: pointer; font-weight: 700; list-style: none; display: flex; justify-content: space-between; }
+.pr-account > summary::after { content: "+"; color: var(--orange-soft); transition: transform 200ms var(--ease); }
+.pr-account[open] > summary::after { transform: rotate(45deg); }
+.pr-account form { margin-top: 16px; }
+
+/* ---------- Un artista ---------- */
+.pr-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 4px 0 16px; animation: prUp .4s var(--ease) both; }
+.pr-back {
+  display: inline-flex; align-items: center; gap: 4px; background: none; border: 0; color: var(--beige);
+  font: inherit; font-size: 14px; cursor: pointer; padding: 6px 8px 6px 0; border-radius: 10px;
+}
+.pr-back svg { width: 20px; height: 20px; transition: transform 200ms var(--ease); }
+.pr-back:hover svg { transform: translateX(-3px); }
+.pr-who { display: inline-flex; align-items: center; gap: 10px; min-width: 0; }
+.pr-who b { font-family: var(--display); font-size: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pr-who-av { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border); flex: none; }
+.pr-who-empty { display: grid; place-items: center; background: var(--panel); color: var(--orange-soft); font-size: 15px; font-weight: 800; line-height: 1; }
+
+.pr-tabs {
+  position: relative; display: inline-flex; gap: 4px; padding: 4px; margin-bottom: 18px;
+  background: var(--panel-2); border: 1px solid rgba(240, 224, 192, .1); border-radius: 999px;
+}
+.pr-tab {
+  position: relative; z-index: 1; border: 0; background: none; color: var(--beige);
+  font: inherit; font-size: 14px; font-weight: 600; padding: 9px 18px; border-radius: 999px; cursor: pointer;
+  transition: color 200ms ease;
+}
+.pr-tab.is-active { color: var(--cream); }
+.pr-ind {
+  position: absolute; top: 4px; bottom: 4px; left: 0; border-radius: 999px;
+  background: rgba(240, 120, 0, .22); box-shadow: inset 0 0 0 1px rgba(240, 120, 0, .45);
+  transition: transform 320ms var(--ease), width 320ms var(--ease);
+}
+
+.pr-body { animation: prFade .35s ease both; }
+.pr-loading { padding: 18px 2px; }
+.pr-msg p { color: var(--beige); margin-bottom: 12px; line-height: 1.5; }
+.pr-msg p:last-child { margin-bottom: 0; }
+.pr-news {
+  display: inline-block; margin-bottom: 14px; padding: 8px 14px; border-radius: 999px;
+  background: rgba(245, 166, 35, .14); color: var(--orange-soft); font-size: 13px; font-weight: 600;
+  animation: prPop .45s var(--ease) both;
+}
+.pr-card { margin-bottom: 14px; }
+.pr-card-head { display: flex; align-items: baseline; justify-content: space-between; }
+.pr-card-head .card-title { margin-bottom: 14px; }
+
+/* Canciones */
+.pr-songs { list-style: none; display: grid; gap: 10px; }
+.pr-song {
+  padding: 16px; border-radius: 16px; background: var(--panel-2); border: 1px solid rgba(240, 224, 192, .08);
+  animation: prUp .45s var(--ease) both; animation-delay: calc(var(--i, 0) * 50ms);
+}
+.pr-song.is-new { border-color: rgba(245, 166, 35, .5); }
+.pr-song-top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.pr-song-name { display: grid; gap: 2px; flex: 1; min-width: 0; }
+.pr-song-name b { font-size: 16px; }
+.pr-song-name span { color: var(--muted); font-size: 13px; }
+.pr-stage { font-family: var(--mono); font-size: 12px; letter-spacing: .06em; color: var(--orange-soft); }
+.pr-new { font-family: var(--mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: #1B0D04; background: var(--orange-soft); padding: 3px 8px; border-radius: 999px; }
+
+.pr-steps {
+  list-style: none; display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 14px 0 2px; position: relative;
+}
+.pr-steps li { display: grid; gap: 6px; font-size: 11px; color: var(--muted); }
+.pr-steps li::before {
+  content: ""; height: 4px; border-radius: 4px; background: rgba(240, 224, 192, .12);
+}
+.pr-steps li.is-done::before { background: var(--orange); transform-origin: left; animation: prGrow .6s var(--ease) both; }
+.pr-steps li.is-current::before {
+  background: linear-gradient(90deg, var(--orange) 50%, rgba(240, 224, 192, .12) 50%);
+  transform-origin: left; animation: prGrow .7s var(--ease) .15s both;
+}
+.pr-steps li.is-current { color: var(--cream); font-weight: 600; }
+@media (max-width: 520px) { .pr-steps li span { display: none; } .pr-steps li.is-current span { display: inline; white-space: nowrap; } }
+
+.pr-dv { display: flex; align-items: center; gap: 10px; margin-top: 12px; font-size: 14px; color: var(--beige); line-height: 1.45; }
+.pr-dv > span:nth-child(2) { flex: 1; }
+.pr-dot { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+.pr-dot.is-work { background: var(--muted); animation: prPulse 1.8s ease-in-out infinite; }
+.pr-dot.is-ready { background: var(--orange-soft); box-shadow: 0 0 0 4px rgba(245, 166, 35, .18); }
+.pr-dot.is-ok { background: #7BC67E; }
+
+.pr-done > summary { display: flex; align-items: baseline; justify-content: space-between; cursor: pointer; list-style: none; }
+.pr-done > summary .card-title { margin: 0; }
+.pr-done-list { list-style: none; display: grid; gap: 2px; margin-top: 14px; }
+.pr-done-row {
+  display: flex; align-items: center; gap: 12px; padding: 10px 2px; border-top: 1px solid rgba(240, 224, 192, .08);
+  animation: prUp .4s var(--ease) both; animation-delay: calc(var(--i, 0) * 40ms);
+}
+.pr-done-row .pr-song-name { flex: 1; }
+.pr-when { color: var(--muted); font-size: 13px; white-space: nowrap; }
+.pr-foot { color: var(--muted); font-size: 12px; text-align: center; margin: 18px 0 0; }
+
+/* Botones de escuchar y bajar */
+.pr-acts { display: inline-flex; gap: 6px; flex: none; }
+.pr-play, .pr-down {
+  width: 38px; height: 38px; display: grid; place-items: center; border-radius: 50%;
+  border: 1px solid rgba(240, 224, 192, .18); background: transparent; color: var(--cream); cursor: pointer;
+  transition: transform 160ms var(--ease), background-color 200ms ease, border-color 200ms ease, color 200ms ease;
+}
+.pr-play svg, .pr-down svg { width: 18px; height: 18px; }
+.pr-play { background: var(--orange); border-color: var(--orange); }
+.pr-play.is-on { background: var(--cream); border-color: var(--cream); color: #1B0D04; }
+.pr-play:hover { background: #ff8a14; }
+.pr-down:hover { border-color: var(--orange-soft); color: var(--orange-soft); }
+.pr-play:active, .pr-down:active { transform: scale(.92); }
+.pr-play:focus-visible, .pr-down:focus-visible { outline: 2px solid var(--orange-soft); outline-offset: 2px; }
+
+/* Archivos */
+.pr-sections { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 14px; scrollbar-width: none; }
+.pr-sections::-webkit-scrollbar { display: none; }
+.pr-sec {
+  flex: none; display: inline-flex; align-items: center; gap: 8px; padding: 9px 14px; border-radius: 999px;
+  border: 1px solid rgba(240, 224, 192, .14); background: var(--panel); color: var(--beige);
+  font: inherit; font-size: 14px; font-weight: 600; cursor: pointer;
+  transition: background-color 200ms ease, border-color 200ms ease, color 200ms ease, transform 160ms var(--ease);
+}
+.pr-sec svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.pr-sec.is-active { background: rgba(240, 120, 0, .18); border-color: rgba(240, 120, 0, .55); color: var(--cream); }
+.pr-sec:active { transform: scale(.96); }
+.pr-sec-hint { color: var(--muted); font-size: 13px; margin-bottom: 10px; }
+.pr-files { list-style: none; display: grid; }
+.pr-file { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid rgba(240, 224, 192, .07); }
+.pr-file:first-child { border-top: 0; }
+.pr-file-name { display: grid; gap: 2px; flex: 1; min-width: 0; }
+.pr-file-name b { font-size: 14px; font-weight: 600; overflow-wrap: anywhere; }
+.pr-file-name small { color: var(--muted); font-size: 12px; }
+.pr-group { border-top: 1px solid rgba(240, 224, 192, .1); padding: 12px 0 2px; animation: prUp .4s var(--ease) both; animation-delay: calc(var(--i, 0) * 40ms); }
+.pr-group > summary { display: flex; align-items: center; justify-content: space-between; cursor: pointer; list-style: none; padding-bottom: 8px; }
+.pr-group > summary::-webkit-details-marker, .pr-done > summary::-webkit-details-marker, .pr-account > summary::-webkit-details-marker { display: none; }
+.pr-group[open] > .pr-files { animation: prFade .3s ease both; }
+
+/* Reproductor */
+.pr-player {
+  position: fixed; left: 50%; bottom: max(16px, env(safe-area-inset-bottom)); z-index: 60;
+  width: min(720px, calc(100vw - 32px)); transform: translateX(-50%);
+  display: flex; align-items: center; gap: 12px; padding: 10px 12px;
+  background: rgba(36, 17, 5, .97); border: 1px solid rgba(240, 120, 0, .35); border-radius: 18px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, .45);
+}
+.pr-player.is-in { animation: prSlide .42s var(--ease) both; }
+.pr-pbtn { width: 44px; height: 44px; flex: none; display: grid; place-items: center; border-radius: 50%; border: 0; background: var(--orange); color: var(--cream); cursor: pointer; transition: transform 160ms var(--ease); }
+.pr-pbtn:active { transform: scale(.92); }
+.pr-pbtn svg { width: 20px; height: 20px; }
+.pr-pmain { flex: 1; min-width: 0; display: grid; gap: 4px; }
+.pr-pinfo { display: flex; gap: 8px; align-items: baseline; min-width: 0; }
+.pr-ptitle { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pr-psub { color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pr-pbar { display: flex; align-items: center; gap: 10px; }
+.pr-pbar input { flex: 1; accent-color: var(--orange); min-width: 0; }
+.pr-ptime { font-family: var(--mono); font-size: 11px; color: var(--muted); white-space: nowrap; }
+.pr-pclose { flex: none; width: 34px; height: 34px; border-radius: 50%; border: 0; background: none; color: var(--muted); cursor: pointer; font-size: 14px; }
+.pr-pclose:hover { color: var(--cream); }
+
+/* ---------- Administrador: en el perfil de un productor ---------- */
+.pr-admin { margin-top: 18px; }
+.pr-admin .hint { margin-bottom: 14px; }
+.pr-pick { display: flex; flex-wrap: wrap; gap: 8px; }
+.pr-chip {
+  display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px 8px 10px; border-radius: 999px;
+  border: 1px solid rgba(240, 224, 192, .18); background: transparent; color: var(--beige);
+  font: inherit; font-size: 14px; cursor: pointer;
+  transition: background-color 200ms ease, border-color 200ms ease, color 200ms ease, transform 160ms cubic-bezier(.23, 1, .32, 1);
+}
+.pr-chip:active { transform: scale(.96); }
+.pr-chip-box { width: 16px; height: 16px; border-radius: 5px; border: 1.5px solid currentColor; display: grid; place-items: center; transition: background-color 200ms ease; }
+.pr-chip.is-on { background: rgba(240, 120, 0, .18); border-color: rgba(240, 120, 0, .6); color: var(--cream); }
+.pr-chip.is-on .pr-chip-box { background: var(--orange); border-color: var(--orange); }
+.pr-chip.is-on .pr-chip-box::after { content: ""; width: 8px; height: 4px; border: solid var(--cream); border-width: 0 0 2px 2px; transform: rotate(-45deg) translate(1px, -1px); }
+.pr-chip[aria-busy="true"] { opacity: .6; }
+
+/* ---------- Productor/Artista: interruptor Artista · Productor ---------- */
+.pr-mode {
+  position: relative; display: inline-grid; grid-template-columns: 1fr 1fr; padding: 3px;
+  background: #241105; border: 1px solid rgba(240, 224, 192, .16); border-radius: 999px;
+  font-family: var(--body, "Manrope", sans-serif);
+}
+.pr-mode button {
+  position: relative; z-index: 1; border: 0; background: none; color: var(--muted);
+  font: inherit; font-size: 13px; font-weight: 600; padding: 7px 14px; border-radius: 999px; cursor: pointer;
+  transition: color 220ms ease;
+}
+.pr-mode button.is-active { color: var(--cream); }
+.pr-mode button:focus-visible { outline: 2px solid var(--orange-soft); outline-offset: 1px; }
+.pr-mode-thumb {
+  position: absolute; top: 3px; bottom: 3px; left: 3px; width: calc(50% - 3px); border-radius: 999px;
+  background: var(--orange); box-shadow: 0 4px 14px rgba(240, 120, 0, .35);
+  transition: transform 380ms cubic-bezier(.23, 1, .32, 1);
+}
+.pr-mode[data-mode="producer"] .pr-mode-thumb { transform: translateX(100%); }
+.nav-right .pr-mode { margin-right: 10px; }
+/* El cambio de vista entra suave */
+body.pr-switching main { animation: prFade .4s ease both; }
+@media (min-width: 901px) {
+  /* En la compu, con la barra lateral del artista: abajo, arriba de Salir */
+  body.is-artist .pr-mode { position: fixed; left: 26px; bottom: 82px; z-index: 43; width: calc(var(--side-w, 260px) - 52px); margin: 0; }
+  body.is-artist.is-dual .nav-tabs:not([hidden]) { padding-bottom: 150px; }
+}
+@media (max-width: 520px) {
+  .pr-mode button { font-size: 12px; padding: 6px 10px; }
+  .nav-right .pr-mode { margin-right: 6px; }
+  body.is-dual .nav-mark-text { display: none; }
+}
+
+/* En el panel, la tarjeta va solo en la pestaña Admin del artista */
+body.is-artist-view:not([data-atab="admin"]) .pr-admin { display: none !important; }
+.pr-switch-row { display: flex; gap: 18px; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; }
+.pr-switch-row > div { flex: 1; min-width: 240px; }
+.pr-switch-row .btn { white-space: nowrap; }
+.pr-switch-row + .pr-follow { margin-top: 22px; padding-top: 20px; border-top: 1px solid rgba(240, 224, 192, .1); }
+.pr-follow .hint { margin-bottom: 14px; }
+
+/* ---------- Movimiento ---------- */
+@keyframes prUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes prFade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes prPop { from { opacity: 0; transform: scale(.85); } to { opacity: 1; transform: none; } }
+@keyframes prGrow { from { transform: scaleX(0); } to { transform: none; } }
+@keyframes prPulse { 0%, 100% { opacity: .35; } 50% { opacity: 1; } }
+@keyframes prSlide { from { opacity: 0; transform: translate(-50%, 24px); } to { opacity: 1; transform: translate(-50%, 0); } }
+@keyframes prSpin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  body.is-producer *, .pr-player, .pr-admin *, .pr-mode * { animation: none !important; transition: none !important; }
+}

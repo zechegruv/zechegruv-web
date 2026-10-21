@@ -67,7 +67,7 @@
   let recovering = linkType === "invite" || linkType === "recovery";
 
   // ---------- Utilidades ----------
-  const PANELS = ["home", "profile", "artists", "releases", "release", "files", "lyric", "pass", "estado"];
+  const PANELS = ["home", "profile", "artists", "releases", "release", "files", "lyric", "pass", "estado", "producer"];
   function showPanel(name) {
     PANELS.forEach((p) => { $(`panel-${p}`).hidden = p !== name; });
     window.scrollTo(0, 0);
@@ -90,6 +90,8 @@
     const artist = name === "app" && !!me && me.role === "artist";
     document.body.classList.toggle("is-artist", artist);
     $("artistTabs").hidden = !artist;
+    // Productor (productor.js): una sola columna, misma piel que el artista.
+    document.body.classList.toggle("is-producer", name === "app" && !!me && me.role === "producer");
   }
 
   function setMsg(el, text, isError) {
@@ -292,7 +294,11 @@
     else if (admin) { openTab("home"); }
     // Equipo de distribución: entra directo a los lanzamientos de todos.
     else if (me.role === "distribution") window.ZGDistribution.openList(null);
+    // Productor: sus artistas, solo seguimiento (productor.js).
+    else if (me.role === "producer") window.ZGProducer.open(me);
     else showProfile(me);
+    // Productor/Artista (037): el interruptor Artista · Productor (productor.js).
+    if (window.ZGProducer) window.ZGProducer.ready(me);
     // La escena: el próximo evento del sello, como aviso y después franja (escena.js).
     if (me.role === "artist" && window.ZGEscena) window.ZGEscena.start(me);
     // Instalable y sin conexión (sin-conexion.js): aviso para instalar y lo pendiente.
@@ -404,7 +410,13 @@
       else window.ZGArtistView.leave();
     }
 
-    $("profileRole").textContent = p.role === "admin" ? "Administrador" : p.role === "distribution" ? "Equipo de distribución" : "Artista ZECHE GRUV";
+    $("profileRole").textContent = p.role === "admin" ? "Administrador" : p.role === "distribution" ? "Equipo de distribución" : p.role === "producer" ? "Productor" : "Artista ZECHE GRUV";
+    // Perfil de un productor (lo abre el administrador): sin carpetas ni
+    // canciones propias; en su lugar, qué artistas sigue (productor.js).
+    const producerProfile = p.role === "producer";
+    $("spaceCard").hidden = producerProfile;
+    // Y en un artista (pestaña Admin): si también es productor (037).
+    if (window.ZGProducer) window.ZGProducer.adminZone(p, admin && !own);
     $("profileName").textContent = nameOf(p);
     paintAvatar($("profileAvatar"), $("profileAvatarEmpty"), p);
 
@@ -428,7 +440,10 @@
 
     // El administrador mirando a un artista: los títulos dicen de quién es.
     $("spaceTitle").textContent = own ? "Tu espacio" : `Espacio de ${nameOf(p)}`;
-    $("profileFormTitle").textContent = own ? "Perfil" : "Datos del artista";
+    $("profileFormTitle").textContent = own ? "Perfil" : p.role === "producer" ? "Datos del productor" : "Datos del artista";
+    $("fDisplayName").previousElementSibling.textContent = p.role === "producer" ? "Nombre" : "Nombre artístico";
+    // Spotify, Apple ID y formato son de artista: en un productor no van.
+    ["fSpotify", "fApple", "fFormat"].forEach((id) => { $(id).closest(".field").hidden = p.role === "producer"; });
     $("fDisplayName").value = p.display_name || "";
     // La foto la cambia cada artista desde su propia cuenta.
     $("photoBtn").hidden = !own;
@@ -460,6 +475,13 @@
     setMsg($("profileMsg"), "");
     setMsg($("passwordMsg"), "");
 
+    if (producerProfile) {
+      $("songsCard").hidden = true;
+      $("welcomeCard").hidden = true;
+      $("projectCards").hidden = true;
+      $("showCards").replaceChildren();
+      return;
+    }
     // Tus canciones (canciones.js).
     if (window.ZGSongs) window.ZGSongs.load(p);
     // Tu show: subir pistas para los shows en los que toca (shows.js).
@@ -773,7 +795,7 @@
   // Tipo de cuenta en la invitación: para el equipo de distribución no van
   // carpetas, Spotify, formato ni Notion.
   function syncInviteRole() {
-    const team = $("inviteRole").value === "distribution";
+    const team = ["distribution", "producer"].includes($("inviteRole").value); // cuentas sin carpeta propia
     document.querySelectorAll("#inviteForm .artist-only").forEach((el) => { el.hidden = team; });
     $("inviteEmailLabel").textContent = team ? "Mail" : "Mail del artista";
     $("inviteNameLabel").textContent = team ? "Nombre" : "Nombre artístico";
@@ -782,7 +804,8 @@
 
   // Alta de una cuenta del equipo de distribución: misma invitación que un
   // artista y, apenas existe la cuenta, se le pone el rol (014_distribucion_equipo.sql).
-  async function inviteTeam(email, display_name) {
+  async function inviteTeam(email, display_name, role) {
+    const producer = role === "producer";
     const msg = $("inviteMsg");
     $("inviteSubmit").disabled = true;
     setMsg(msg, "Enviando invitación…");
@@ -791,7 +814,7 @@
       const res = await fetch("/.netlify/functions/portal-invite", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
-        body: JSON.stringify({ email, display_name, role: "distribution" }),
+        body: JSON.stringify({ email, display_name, role: producer ? "producer" : "distribution" }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "No pudimos enviar la invitación. Probá de nuevo.");
@@ -800,6 +823,12 @@
       $("inviteRole").value = "artist";
       syncInviteRole();
       await showArtists();
+      if (producer) {
+        setMsg(msg, saved.error
+          ? `Invitación enviada a ${data.email}, pero no pudimos darle el acceso de productor. ¿Ya corriste 036_productor.sql en Supabase?`
+          : `Invitación enviada a ${data.email}. Abrí su fila en la lista y elegí qué artistas sigue: hasta entonces no ve ninguno.`, !!saved.error);
+        return;
+      }
       setMsg(msg, saved.error
         ? `Invitación enviada a ${data.email}, pero no pudimos darle el acceso de distribución. ¿Ya corriste 014_distribucion_equipo.sql en Supabase?`
         : `Invitación enviada a ${data.email}. Cuando entre, va a ver solo los lanzamientos de los artistas.`, !!saved.error);
@@ -817,10 +846,12 @@
     const msg = $("inviteMsg");
     const email = $("inviteEmail").value.trim();
     const display_name = $("inviteName").value.trim();
-    const team = $("inviteRole").value === "distribution";
+    const team = ["distribution", "producer"].includes($("inviteRole").value);
+    // Productor/Artista (037): se invita como artista y se le prende la vista de productor.
+    const dual = $("inviteRole").value === "artist_producer";
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setMsg(msg, team ? "Escribí su mail." : "Escribí el mail del artista.", true); return; }
     if (!display_name) { setMsg(msg, team ? "Escribí su nombre: es como la saludamos en el mail." : "Escribí el nombre artístico: es como lo saludamos en el mail.", true); return; }
-    if (team) { await inviteTeam(email, display_name); return; }
+    if (team) { await inviteTeam(email, display_name, $("inviteRole").value); return; }
     // Datos que quedan asociados al perfil apenas se crea la cuenta.
     // Un solo link de carpeta (de edición): sirve para ver, descargar y subir.
     const folderEdit = $("inviteFolderEdit").value.trim();
@@ -859,8 +890,21 @@
         const saved = await db.from("profiles").update({ spotify_artist_id: spotifyId, format }).eq("id", data.id);
         if (saved.error) linked = false;
       }
+      let dualOk = true;
+      if (dual) {
+        const saved = await db.from("profiles").update({ also_producer: true }).eq("id", data.id);
+        if (saved.error) dualOk = false;
+      }
       ["inviteEmail", "inviteName", "inviteFolderEdit", "inviteSpotify", "inviteFormat", "inviteNotion"].forEach((id) => { $(id).value = ""; });
+      $("inviteRole").value = "artist";
+      syncInviteRole();
       await showArtists();
+      if (dual) {
+        setMsg(msg, !dualOk
+          ? `Invitación enviada a ${data.email}, pero no pudimos prenderle la vista de productor. ¿Ya corriste 037_productor_artista.sql? Lo podés prender desde su perfil (pestaña Admin).`
+          : `Invitación enviada a ${data.email}. Entra a su portal de artista y arriba tiene el interruptor para la vista de productor. Elegí en su perfil (pestaña Admin) qué artistas sigue.`, !dualOk || !linked);
+        return;
+      }
       setMsg(msg, linked
         ? `Invitación enviada a ${data.email}. Su perfil ya quedó con los datos que cargaste.`
         : `Invitación enviada a ${data.email}, pero no pudimos guardar todos sus datos. Abrí su fila y completalos.`, !linked);
@@ -911,7 +955,8 @@
         cell(p.email),
         p.role === "admin" ? cell("Administrador", "tag-admin")
           : p.role === "distribution" ? cell("Distribución", "tag-admin")
-          : cell(FORMAT_LABEL[p.format]),
+          : p.role === "producer" ? cell("Productor", "tag-admin")
+          : cell([FORMAT_LABEL[p.format], p.also_producer ? "Productor/Artista" : ""].filter(Boolean).join(" · ")),
         cell(p.spotify_artist_id ? "Vinculado" : "Sin vincular"),
         p.role === "admin" ? cell("—") : cell(isActive(p) ? "Activo" : "Inactivo", isActive(p) ? "tag-on" : "tag-off"),
       );

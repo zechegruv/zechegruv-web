@@ -111,6 +111,8 @@ exports.handler = async (event) => {
   const caller = await supabase(`/rest/v1/profiles?id=eq.${user.id}&select=*`, serviceKey);
   if (!caller) return json(500, { error: BAD_KEY });
   if (caller[0] && caller[0].role !== "admin" && caller[0].active === false) return json(403, { error: INACTIVE });
+  // Productor (036_productor.sql): solo mira, nunca sube.
+  if (caller[0] && caller[0].role === "producer") return json(403, { error: "Tu cuenta es de solo lectura." });
 
   try {
     // ---- Partes de una subida ya abierta ----

@@ -6,7 +6,9 @@
 //
 // - Hay que mandar la sesión de Supabase (Authorization: Bearer <token>).
 // - Cada artista ve solo sus canciones; el administrador puede pedir las de
-//   cualquiera con ?artist=<id del perfil>.
+//   cualquiera con ?artist=<id del perfil>, y un productor (036_productor.sql)
+//   las de los artistas que tiene asignados, en versión de solo seguimiento
+//   (_lib/productor.js: sin lo que dijo el artista ni la próxima sesión).
 // - Qué ficha de Notion corresponde a cada artista vive en artist_private
 //   (notion_page_id), que solo lee el administrador y esta function.
 // - Solo lectura, y solo estos datos: nombre, feat, etapa y fecha de
@@ -46,6 +48,7 @@ const TASKS_DS = process.env.NOTION_TASKS_DS || "0b31e043-55b6-82df-ab70-074084f
 const CLIENTS_DS = process.env.NOTION_CLIENTS_DS || "d291e043-55b6-83fc-a0c7-0759bf96279f";
 const TZ = "America/Argentina/Buenos_Aires";
 const { listAudio, matchAudio } = require("./_lib/song-audio");
+const { producerCanSee, forProducer } = require("./_lib/productor");
 
 // Etapas tal como están en Notion ("Etapa actual") -> cómo se ven en el
 // portal. Las del proceso van en orden; desde Distribución el master ya
@@ -313,12 +316,21 @@ exports.handler = async (event) => {
   // Artista inactivo: sin acceso, aunque su sesión todavía no haya vencido.
   if (!admin && me[0] && me[0].active === false) return json(403, { error: INACTIVE });
 
-  // Un artista siempre ve lo suyo; solo el administrador puede pedir otro perfil.
+  // Un artista siempre ve lo suyo; el administrador puede pedir otro perfil, y
+  // un productor (036_productor.sql, o un artista Productor/Artista, 037) solo
+  // los artistas que tiene asignados, en versión de seguimiento.
   let artistId = user.id;
+  let producer = false; // mirando como productor
   if (q.artist && q.artist !== user.id) {
     if (!/^[0-9a-f-]{36}$/i.test(q.artist)) return json(400, { error: "Artista inválido." });
-    if (!admin) return json(403, { error: "No tenés permiso para ver esas canciones." });
+    if (!admin) {
+      if (!(await producerCanSee(me[0], q.artist, serviceKey))) return json(403, { error: "No tenés permiso para ver esas canciones." });
+      producer = true;
+    }
     artistId = q.artist;
+  } else if (me[0] && me[0].role === "producer") {
+    // El productor no tiene canciones propias.
+    return json(200, { configured: false, active: [], done: [], next: null });
   }
 
   if (!notionToken()) return json(500, { error: "Falta NOTION_TOKEN en las variables de entorno de Netlify." });
@@ -359,6 +371,11 @@ exports.handler = async (event) => {
     // carpeta ya alcanza para que le aparezca para escuchar y aprobar
     // (deliveryOf), aunque Notion se actualice unos minutos después.
     const songs = withDelivery(base, matchAudio(base, audios), Array.isArray(reviews) ? reviews : []);
+    // Productor: solo seguimiento (sin lo que dijo el artista ni sus sesiones).
+    if (producer) {
+      const view = split(songs);
+      return json(200, { configured: true, active: view.active.map(forProducer), done: view.done.map(forProducer), next: null });
+    }
     return json(200, { configured: true, ...split(songs), next: nextSession(tasks, songs) });
   } catch (err) {
     // 404: la integración no tiene acceso a la base (hay que conectarla en Notion).
