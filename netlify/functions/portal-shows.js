@@ -112,10 +112,9 @@ async function whoIs(event, body) {
   }
   return {
     kind: "artist", id: artist.id, name: artist.display_name || artist.full_name || "Artista", email: artist.email,
-    // La subcarpeta en Shows va con el nombre completo (lo carga el
-    // administrador), no con el que el artista edita en su perfil: si se lo
-    // cambia, sus pistas siguen yendo a la misma carpeta.
-    folderName: artist.full_name || `Artista ${String(artist.id).slice(0, 8)}`,
+    // La subcarpeta en Shows va con el mismo nombre con el que el panel la
+    // crea al confirmar el line up (pass-admin.js: display_name || full_name).
+    folderName: artist.display_name || artist.full_name || `Artista ${String(artist.id).slice(0, 8)}`,
     filter: `profile_id=eq.${artist.id}`, row: { profile_id: artist.id },
   };
 }
