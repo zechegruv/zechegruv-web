@@ -293,8 +293,8 @@ exports.handler = async (event) => {
     const [artists, chosen, guests, files, root] = await Promise.all([
       db("profiles?role=eq.artist&select=*&order=display_name.asc"),
       db(`pass_show_artists?event_id=eq.${eventId}&select=*`),
-      db(`pass_show_guests?event_id=eq.${eventId}&revoked_at=is.null&select=id,name,email,token,gift_session,plural,created_at&order=created_at.asc`),
-      db(`pass_show_files?event_id=eq.${eventId}&select=profile_id,guest_id,file_name,file_size,uploaded_at&order=uploaded_at.asc`),
+      db(`pass_show_guests?event_id=eq.${eventId}&revoked_at=is.null&select=*&order=created_at.asc`),
+      db(`pass_show_files?event_id=eq.${eventId}&select=*&order=uploaded_at.asc`),
       folders.rootLink(),
     ]);
     if (!artists.ok || !chosen.ok || !guests.ok || !files.ok) return json(502, { error: "No pudimos cargar el line up. ¿Ya corriste los SQL 016 y 017 en Supabase?" });
@@ -307,7 +307,16 @@ exports.handler = async (event) => {
       chosen: chosen.data.map((r) => r.profile_id),
       notified: chosen.data.filter((r) => r.notified_at).map((r) => r.profile_id),
       guests: guests.data.map((g) => ({ id: g.id, name: g.name, email: g.email, gift_session: g.gift_session, plural: g.plural, link: guestLink(event, g.token) })),
-      files: files.data,
+      // En el orden del setlist de cada uno (lo sin ordenar, por hora de subida).
+      files: files.data
+        .map((f, i) => ({ ...f, i }))
+        .sort((a, b) => (Number.isFinite(a.position) ? a.position : 1e6) - (Number.isFinite(b.position) ? b.position : 1e6) || a.i - b.i)
+        .map(({ profile_id, guest_id, file_name, file_size, uploaded_at }) => ({ profile_id, guest_id, file_name, file_size, uploaded_at })),
+      // Quién ya tocó "Enviar pistas" (SQL 038): { id: fecha }.
+      sent: Object.fromEntries([
+        ...chosen.data.filter((r) => r.submitted_at).map((r) => [r.profile_id, r.submitted_at]),
+        ...guests.data.filter((g) => g.submitted_at).map((g) => [g.id, g.submitted_at]),
+      ]),
     });
   }
 

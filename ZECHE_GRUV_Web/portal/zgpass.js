@@ -506,7 +506,11 @@
     const nameOf = Object.fromEntries([...data.artists.map((a) => [a.id, a.name]), ...data.guests.map((g) => [g.id, `${g.name} (invitado)`])]);
     const rows = data.files.map((f) => {
       const tr = el("tr");
-      tr.append(el("td", "", nameOf[f.profile_id || f.guest_id] || "—"), el("td", "", f.file_name), el("td", "", fmtSize(f.file_size)), el("td", "", `${fmtDate(f.uploaded_at)} ${fmtTime(f.uploaded_at)}`));
+      const who = f.profile_id || f.guest_id;
+      const sentAt = data.sent && data.sent[who];
+      const nameTd = el("td", "", nameOf[who] || "—");
+      nameTd.append(el("small", sentAt ? "zgp-sent" : "zgp-missing", sentAt ? ` · enviadas ✓` : " · sin enviar"));
+      tr.append(nameTd, el("td", "", f.file_name), el("td", "", fmtSize(f.file_size)), el("td", "", `${fmtDate(f.uploaded_at)} ${fmtTime(f.uploaded_at)}`));
       return tr;
     });
     const withFiles = new Set(data.files.map((f) => f.profile_id || f.guest_id));

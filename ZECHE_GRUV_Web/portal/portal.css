@@ -2336,6 +2336,55 @@ a.ref-title:hover { color: var(--orange-soft); }
   color: var(--muted);
 }
 
+/* Borrador de pistas: orden del setlist, quitar, guardar y enviar */
+.show-files li { align-items: center; }
+.show-files li.is-new { animation: show-in .32s cubic-bezier(.2,.8,.2,1) both; }
+.show-num {
+  font-family: "DM Mono", monospace;
+  font-size: 11px;
+  letter-spacing: .08em;
+  color: var(--orange-soft);
+  min-width: 2ch;
+}
+.show-tools { display: inline-flex; gap: 4px; margin-left: 4px; }
+.show-tool {
+  min-width: 30px;
+  height: 30px;
+  padding: 0 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--beige);
+  font: 600 12px/1 inherit;
+  cursor: pointer;
+  transition: border-color .18s ease, color .18s ease, background-color .18s ease, transform .12s ease;
+}
+.show-tool:hover:not(:disabled) { border-color: var(--orange-soft); color: var(--cream); }
+.show-tool:active:not(:disabled) { transform: scale(.94); }
+.show-tool:disabled { opacity: .35; cursor: default; }
+.show-remove.is-armed { border-color: var(--orange); background: var(--orange); color: #fff; }
+.show-state {
+  position: relative;
+  margin-top: 18px;
+  font-size: 14px;
+  color: var(--beige);
+  transition: color .25s ease;
+}
+.show-state.is-sent { color: var(--orange-soft); font-weight: 600; }
+.show-buttons { display: flex; flex-wrap: wrap; gap: 10px; }
+.show-buttons .btn { transition: opacity .2s ease, transform .15s ease; }
+.show-buttons .btn:active:not(:disabled) { transform: scale(.97); }
+@keyframes show-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@media (max-width: 640px) {
+  .show-files li { flex-wrap: wrap; }
+  .show-tools { margin-left: auto; }
+  .show-buttons { width: 100%; }
+  .show-buttons .btn { flex: 1 1 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .show-files li.is-new { animation: none; }
+  .show-tool, .show-buttons .btn, .show-state { transition: none; }
+}
+
 /* ---------- ZG PASS: shows y carpetas ---------- */
 
 
@@ -2818,3 +2867,5 @@ body:has(.escena-bar.is-on) nav { top: 44px; }
 .genre-hint.is-off { color: var(--orange, #F07800); }
 @keyframes genreIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .genre-list { animation: none; } }
+
+.zgp-sent { color: var(--orange-soft); }

@@ -3,8 +3,11 @@
 // llegan a la carpeta "Shows" del evento en OneDrive (la de su edición
 // dentro de la carpeta madre, o su link propio: _lib/pass-folders.js), en
 // una subcarpeta con su nombre.
-// Solo agrega archivos: no se borra, mueve ni renombra nada, y si el nombre
-// ya existe OneDrive guarda el nuevo aparte. Nadie recibe el link.
+// Lo subido queda como borrador: mientras la subida está abierta, quien toca
+// puede quitar archivos y ordenar su setlist, guardar, y al final "Enviar"
+// (recién ahí le llega el mail a Zeche con el setlist). Si cambia algo
+// después de enviar, vuelve a borrador hasta que lo envíe de nuevo.
+// Si el nombre ya existe, OneDrive guarda el nuevo aparte. Nadie recibe el link.
 //
 // Dos formas de entrar:
 //   · Artista del sello: su sesión del portal (Authorization: Bearer <token>).
@@ -22,7 +25,11 @@
 //   simple { event_id, name, data(base64) }      → archivos chicos, de una sola vez
 //   chunk  { uploadUrl, start, end, total, data(base64) } → reenvía una parte
 //   status { uploadUrl }                         → qué partes faltan
-//   done   { event_id, files: [{ name, size }] } → terminó una tanda: se registra y se avisa por mail
+//   done   { event_id, files: [{ name, size }], draft } → terminó una tanda: se registra (con draft: queda
+//            como borrador y no avisa; sin draft, la versión anterior de la página: avisa por mail)
+//   remove { event_id, file_id }                → quita un archivo (de OneDrive y de la lista)
+//   save   { event_id, order: [file_id] }        → guarda el orden del setlist
+//   send   { event_id, order? }                  → envía las pistas: le llega el setlist a Zeche
 // (El invitado no manda event_id: su link es de un solo evento.)
 const { SUPABASE_URL, UUID, json, db, esc, sendMail, notifyEmail, serviceKey, testMode } = require("./_lib/pass");
 const drive = require("./_lib/onedrive");
@@ -62,6 +69,7 @@ const showView = (ev, files, who, root) => {
   return {
     event_id: ev.id, name: ev.name, starts_at: ev.starts_at, venue_name: ev.venue_name, venue_address: ev.venue_address,
     open: !reason, closed_reason: reason, deadline: ev.shows_deadline || ev.starts_at, files,
+    sent_at: who.sentAt || null, can_send: who.sentAt !== undefined,
   };
 };
 
@@ -85,12 +93,12 @@ async function folderFor(ev, who) {
 async function whoIs(event, body) {
   if (body.k !== undefined) {
     if (!/^[0-9a-f]{64}$/.test(String(body.k))) return { error: json(404, { error: GUEST_GONE }) };
-    const res = await db(`pass_show_guests?token=eq.${body.k}&select=id,name,email,folder_link,gift_session,plural,revoked_at,pass_events(${EVENT})`);
+    const res = await db(`pass_show_guests?token=eq.${body.k}&select=*,pass_events(${EVENT})`);
     const g = res.ok && res.data[0];
     if (!g || g.revoked_at || !g.pass_events || g.pass_events.is_test !== testMode()) return { error: json(404, { error: GUEST_GONE }) };
     if (Date.now() > Date.parse(g.pass_events.starts_at) + GUEST_DAYS_AFTER) return { error: json(410, { error: "Este link ya venció: el show ya pasó. ¡Gracias por subirte al escenario con nosotros!" }) };
     return {
-      kind: "guest", id: g.id, name: g.name, email: g.email, folderLink: g.folder_link, gift: g.gift_session, plural: g.plural,
+      kind: "guest", id: g.id, name: g.name, email: g.email, folderLink: g.folder_link, gift: g.gift_session, plural: g.plural, sentAt: "submitted_at" in g ? g.submitted_at || null : undefined,
       filter: `guest_id=eq.${g.id}`, row: { guest_id: g.id }, guestEvent: g.pass_events,
     };
   }
@@ -123,13 +131,32 @@ async function whoIs(event, body) {
 async function eventFor(who, eventId) {
   if (who.kind === "guest") return who.guestEvent;
   if (!UUID.test(String(eventId || ""))) return null;
-  const res = await db(`pass_show_artists?event_id=eq.${eventId}&profile_id=eq.${who.id}&select=pass_events(${EVENT})`);
-  return res.ok && res.data[0] ? res.data[0].pass_events : null;
+  const res = await db(`pass_show_artists?event_id=eq.${eventId}&profile_id=eq.${who.id}&select=*,pass_events(${EVENT})`);
+  if (!res.ok || !res.data[0]) return null;
+  who.sentAt = "submitted_at" in res.data[0] ? res.data[0].submitted_at || null : undefined; // undefined: falta el SQL 038
+  return res.data[0].pass_events;
 }
 
+// Dónde se guarda si ya envió (submitted_at, SQL 038).
+const sentPath = (who, ev) => (who.kind === "guest" ? `pass_show_guests?id=eq.${who.id}` : `pass_show_artists?event_id=eq.${ev.id}&profile_id=eq.${who.id}`);
+async function setSent(who, ev, at) {
+  if (who.sentAt === undefined) return false; // falta el SQL 038
+  if ((who.sentAt || null) === at) return true;
+  const res = await db(sentPath(who, ev), { method: "PATCH", body: { submitted_at: at } });
+  if (res.ok) who.sentAt = at;
+  return res.ok;
+}
+
+// Lo que subió, en el orden de su setlist (lo que todavía no ordenó, al final
+// por hora de subida).
 const filesOf = async (who, ev) => {
-  const res = await db(`pass_show_files?event_id=eq.${ev.id}&${who.filter}&select=file_name,file_size,uploaded_at&order=uploaded_at.asc`);
-  return res.ok ? res.data : [];
+  const res = await db(`pass_show_files?event_id=eq.${ev.id}&${who.filter}&select=*&order=uploaded_at.asc`);
+  if (!res.ok) return [];
+  const pos = (f) => (Number.isFinite(f.position) ? f.position : 1e6);
+  return res.data
+    .map((f, i) => ({ ...f, i }))
+    .sort((a, b) => pos(a) - pos(b) || a.i - b.i)
+    .map((f) => ({ id: f.id, file_name: f.file_name, file_size: f.file_size, uploaded_at: f.uploaded_at }));
 };
 
 exports.handler = async (event) => {
@@ -164,13 +191,16 @@ exports.handler = async (event) => {
         const ev = who.guestEvent;
         return json(200, { guest: { name: who.name, gift_session: who.gift === true, plural: who.plural === true }, shows: [showView(ev, await filesOf(who, ev), who, root)] });
       }
-      const res = await db(`pass_show_artists?profile_id=eq.${who.id}&select=pass_events(${EVENT})`);
+      const res = await db(`pass_show_artists?profile_id=eq.${who.id}&select=*,pass_events(${EVENT})`);
       if (!res.ok) return json(200, { shows: [] }); // p. ej. todavía no se corrió 016_shows_pistas.sql
       const since = Date.now() - 12 * 3600 * 1000;
-      const events = res.data.map((r) => r.pass_events)
-        .filter((ev) => ev && ev.is_test === testMode() && ev.status !== "cancelled" && Date.parse(ev.starts_at) > since)
-        .sort((a, b) => Date.parse(a.starts_at) - Date.parse(b.starts_at));
-      return json(200, { shows: await Promise.all(events.map(async (ev) => showView(ev, await filesOf(who, ev), who, root))) });
+      const rows = res.data
+        .filter((r) => r.pass_events && r.pass_events.is_test === testMode() && r.pass_events.status !== "cancelled" && Date.parse(r.pass_events.starts_at) > since)
+        .sort((a, b) => Date.parse(a.pass_events.starts_at) - Date.parse(b.pass_events.starts_at));
+      return json(200, { shows: await Promise.all(rows.map(async (r) => {
+        const one = { ...who, sentAt: "submitted_at" in r ? r.submitted_at || null : undefined };
+        return showView(r.pass_events, await filesOf(one, r.pass_events), one, root);
+      })) });
     }
 
     const ev = await eventFor(who, body.event_id);
@@ -183,12 +213,19 @@ exports.handler = async (event) => {
     if (body.action === "done") {
       const closed = closedReason(ev, who, root, Date.now() - DONE_GRACE_MS);
       if (closed) return json(409, { error: closed });
+      const draft = body.draft === true;
       const seen = new Set((await filesOf(who, ev)).map((f) => f.file_name));
       const files = (Array.isArray(body.files) ? body.files : []).slice(0, 50)
         .map((f) => ({ name: drive.cleanName(f && f.name), size: Number(f && f.size) || null }))
         .filter((f) => f.name && !seen.has(f.name) && (seen.add(f.name), true));
-      if (!files.length) return json(200, { done: true, repeated: true });
+      if (!files.length) return json(200, { done: true, repeated: true, files: await filesOf(who, ev) });
       await Promise.all(files.map((f) => db("pass_show_files", { method: "POST", body: { event_id: ev.id, ...who.row, file_name: f.name, file_size: f.size } })));
+      // Página nueva: queda como borrador hasta que toque "Enviar" (si ya
+      // había enviado, ahora tiene cambios sin enviar).
+      if (draft) {
+        await setSent(who, ev, null);
+        return json(200, { done: true, files: await filesOf(who, ev), sent_at: null });
+      }
       const list = files.map((f) => `<li style="padding:3px 0">${esc(f.name)}${f.size ? ` <span style="color:#8a6a45">(${(f.size / MB).toFixed(1)} MB)</span>` : ""}</li>`).join("");
       await sendMail({
         to: notifyEmail(),
@@ -198,6 +235,60 @@ exports.handler = async (event) => {
           + `<p style="color:#8a6a45;font-size:13px">${who.folderLink ? "Ya están en su carpeta." : `Ya están en la carpeta Shows del evento, en la subcarpeta “${esc(drive.cleanName(who.folderName || who.name))}”.`}</p></div>`,
       }).catch((e) => console.error("ZG shows: mail", e));
       return json(200, { done: true });
+    }
+
+    // ---- Editar el borrador: quitar un archivo ----
+    if (body.action === "remove") {
+      const closed = closedReason(ev, who, root);
+      if (closed) return json(409, { error: closed });
+      if (!UUID.test(String(body.file_id || ""))) return json(400, { error: "Archivo inválido." });
+      const fRes = await db(`pass_show_files?id=eq.${body.file_id}&event_id=eq.${ev.id}&${who.filter}&select=id,file_name`);
+      const file = fRes.ok && fRes.data[0];
+      if (!file) return json(404, { error: "Ese archivo ya no está en tu lista." });
+      const where = await folderFor(ev, who);
+      if (where.error) return json(502, { error: where.error });
+      const gone = await drive.remove(where.target, file.file_name);
+      if (gone === "error") return json(502, { error: "OneDrive no nos dejó quitarlo. Probá de nuevo en un momento." });
+      const del = await db(`pass_show_files?id=eq.${file.id}`, { method: "DELETE" });
+      if (!del.ok) return json(502, { error: "No pudimos quitarlo de la lista. ¿Ya se corrió el SQL 038 en Supabase?" });
+      await setSent(who, ev, null);
+      return json(200, { removed: true, files: await filesOf(who, ev), sent_at: who.sentAt || null });
+    }
+
+    // ---- Guardar el orden (y, con "send", enviarlas) ----
+    if (body.action === "save" || body.action === "send") {
+      const sending = body.action === "send";
+      const closed = closedReason(ev, who, root, sending ? Date.now() - DONE_GRACE_MS : Date.now());
+      if (closed) return json(409, { error: closed });
+      if (who.sentAt === undefined) return json(503, { error: "Falta un paso de nuestro lado para poder enviar. Avisanos por WhatsApp y lo resolvemos." });
+      const current = await filesOf(who, ev);
+      const ids = new Set(current.map((f) => f.id));
+      const order = (Array.isArray(body.order) ? body.order : []).map(String).filter((id) => ids.has(id));
+      if (order.length) {
+        // Lo que no vino en el pedido queda al final, en el orden que tenía.
+        const full = [...new Set([...order, ...current.map((f) => f.id)])];
+        const changed = full.some((id, i) => current[i].id !== id);
+        if (changed) {
+          const results = await Promise.all(full.map((id, i) => db(`pass_show_files?id=eq.${id}`, { method: "PATCH", body: { position: i + 1 } })));
+          if (results.some((r) => !r.ok)) return json(502, { error: "No pudimos guardar el orden. Probá de nuevo." });
+          if (!sending) await setSent(who, ev, null);
+        }
+      }
+      const files = await filesOf(who, ev);
+      if (!sending) return json(200, { saved: true, files, sent_at: who.sentAt || null });
+
+      if (!files.length) return json(400, { error: "Todavía no subiste ninguna pista." });
+      const at = new Date().toISOString();
+      if (!(await setSent(who, ev, at))) return json(502, { error: "No pudimos enviarlas. Probá de nuevo." });
+      const list = files.map((f, i) => `<li style="padding:3px 0">${esc(f.file_name)}${f.file_size ? ` <span style="color:#8a6a45">(${(f.file_size / MB).toFixed(1)} MB)</span>` : ""}</li>`).join("");
+      await sendMail({
+        to: notifyEmail(),
+        replyTo: who.email || undefined,
+        subject: `Pistas enviadas: ${who.name}${who.kind === "guest" ? " (invitado)" : ""} — ${ev.name}`,
+        html: `<div style="font-family:Arial,sans-serif;color:#241105"><p><strong>${esc(who.name)}</strong>${who.kind === "guest" ? " (invitado)" : ""} envió sus pistas para <strong>${esc(ev.name)}</strong>. Este es su setlist, en orden:</p><ol>${list}</ol>`
+          + `<p style="color:#8a6a45;font-size:13px">${who.folderLink ? "Están en su carpeta." : `Están en la carpeta Shows del evento, en la subcarpeta “${esc(drive.cleanName(who.folderName || who.name))}”.`}</p></div>`,
+      }).catch((e) => console.error("ZG shows: mail", e));
+      return json(200, { sent: true, files, sent_at: at });
     }
 
     // ---- Abrir una subida ----
