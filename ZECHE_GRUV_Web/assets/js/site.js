@@ -500,6 +500,19 @@ const ADDONS = {
   cover: { price: 45000, label: "Portada" },
 };
 const PACK_DISCOUNT = { single: 0, ep: 0.35, album: 0.40 };
+
+// Mientras se hace la transición de precios, los packs (Single, EP,
+// Álbum y sus extras) NO muestran valores: en su lugar aparece
+// "Consultá el valor por WhatsApp" y el mensaje sale sin montos.
+// Para volver a mostrar los precios, poné esto en true.
+const SHOW_PACK_PRICES = false;
+const consultPriceHTML = (t, cardBtnId) =>
+  `<button type="button" class="package-price-consult" data-click="${cardBtnId}">${t.pkg_price_consult}</button>`;
+// El "Consultá el valor" del precio dispara el mismo botón de la tarjeta.
+document.addEventListener("click", (e) => {
+  const b = e.target.closest(".package-price-consult");
+  if (b) document.getElementById(b.dataset.click)?.click();
+});
 const SINGLE_PRICE = 400000;
 
 const fmtARS = (n) => "$" + Math.round(n).toLocaleString("es-AR");
@@ -526,7 +539,7 @@ function readAddons(containerEl, pack) {
     const price = free ? 0 : addonPrice(key, pack);
     const priceEl = input.closest(".package-check-row").querySelector(".pc-price");
     // Sin formato elegido (EP / Álbum) todavía no se muestra ningún precio.
-    if (!pack) priceEl.innerHTML = "";
+    if (!pack || !SHOW_PACK_PRICES) priceEl.innerHTML = "";
     else if (free) priceEl.innerHTML = `<s>${fmtARS(ADDONS[key].price)}</s>${t.pkg_addon_free}`;
     else if (price < ADDONS[key].price) priceEl.innerHTML = `<s>${fmtARS(ADDONS[key].price)}</s>+${fmtARS(price)}`;
     else priceEl.innerHTML = `+${fmtARS(price)}`;
@@ -535,7 +548,9 @@ function readAddons(containerEl, pack) {
   return picked;
 }
 const addonsTotal = (picked) => picked.reduce((sum, a) => sum + a.price, 0);
-const addonsText = (picked) => picked.map(a => `${a.label} (${a.price ? "+" + fmtARS(a.price) : "bonificada"})`).join(", ");
+const addonsText = (picked) => SHOW_PACK_PRICES
+  ? picked.map(a => `${a.label} (${a.price ? "+" + fmtARS(a.price) : "bonificada"})`).join(", ")
+  : picked.map(a => a.label).join(", ");
 
 // Single — reserva directa, precio fijo (+ extras si los suma)
 const singlePriceEl = document.getElementById("single-price");
@@ -544,12 +559,20 @@ const singleAddonsEl = document.getElementById("single-addons");
 function renderSingle() {
   const t = I18N[currentLang];
   const total = SINGLE_PRICE + addonsTotal(readAddons(singleAddonsEl, "single"));
-  singlePriceEl.innerHTML = `${fmtARS(total)} <span>${t.pkg_currency}</span>`;
+  singlePriceEl.innerHTML = SHOW_PACK_PRICES
+    ? `${fmtARS(total)} <span>${t.pkg_currency}</span>`
+    : consultPriceHTML(t, "single-quote-btn");
 }
 singleAddonsEl.addEventListener("change", renderSingle);
 
 document.getElementById("single-quote-btn").addEventListener("click", () => {
   const picked = readAddons(singleAddonsEl, "single");
+  if (!SHOW_PACK_PRICES) {
+    let msg = "Hola! Quiero arrancar con el pack Single. ¿Me pasás el valor?";
+    if (picked.length) msg += `\nMe interesa sumar: ${addonsText(picked)}`;
+    window.open(waLink(msg), "_blank", "noopener");
+    return;
+  }
   let msg = `Hola! Quiero reservar el pack Single (${fmtARS(SINGLE_PRICE)} ARS).`;
   if (picked.length) {
     msg += `\nExtras: ${addonsText(picked)}\nTotal: ${fmtARS(SINGLE_PRICE + addonsTotal(picked))} ARS`;
@@ -634,19 +657,21 @@ function renderEpAlbum() {
   // Los extras (video / portada) se pagan una sola vez, aparte de la
   // mensualidad, con el descuento del formato elegido.
   const picked = readAddons(epalbumAddonsEl, epalbumFormat);
-  epalbumExtrasEl.textContent = epalbumFormat && picked.length
+  epalbumExtrasEl.textContent = SHOW_PACK_PRICES && epalbumFormat && picked.length
     ? `+ ${fmtARS(addonsTotal(picked))} ${t.pkg_currency} · ${t.pkg_addons_once}`
     : "";
 
   if (!epalbumFormat) {
-    epalbumPriceEl.innerHTML = `<span class="package-price-placeholder">${t.pkg_epalbum_choose_hint}</span>`;
+    epalbumPriceEl.innerHTML = `<span class="package-price-placeholder">${SHOW_PACK_PRICES ? t.pkg_epalbum_choose_hint : t.pkg_epalbum_choose_hint_consult}</span>`;
     epalbumSaveEl.textContent = "";
     epalbumSongsInput.placeholder = "Ej: 5";
     return;
   }
 
   const cfg = EPALBUM[epalbumFormat];
-  epalbumPriceEl.innerHTML = `<span>${cfg.price}</span> <span>${t.pkg_currency_monthly}</span>`;
+  epalbumPriceEl.innerHTML = SHOW_PACK_PRICES
+    ? `<span>${cfg.price}</span> <span>${t.pkg_currency_monthly}</span>`
+    : consultPriceHTML(t, "epalbum-quote-btn");
   epalbumSaveEl.textContent = t[cfg.saveKey];
   epalbumSongsInput.placeholder = cfg.placeholder;
 }
@@ -694,8 +719,14 @@ document.getElementById("epalbum-quote-btn").addEventListener("click", () => {
   renderEpAlbum();
   const cfg = EPALBUM[epalbumFormat];
   const songs = epalbumSongsInput.value;
-  let msg = `Hola! Quiero cotizar un ${cfg.label} (${cfg.price} ARS por mes, hasta terminar el proyecto).\nCantidad de canciones: ${songs}`;
   const picked = readAddons(epalbumAddonsEl, epalbumFormat);
+  if (!SHOW_PACK_PRICES) {
+    let msg = `Hola! Quiero hacer un ${cfg.label} y consultar el valor.\nCantidad de canciones: ${songs}`;
+    if (picked.length) msg += `\nMe interesa sumar: ${addonsText(picked)}`;
+    window.open(waLink(msg), "_blank", "noopener");
+    return;
+  }
+  let msg = `Hola! Quiero cotizar un ${cfg.label} (${cfg.price} ARS por mes, hasta terminar el proyecto).\nCantidad de canciones: ${songs}`;
   if (picked.length) {
     msg += `\nExtras (pago único, con descuento de pack): ${addonsText(picked)}\nTotal extras: ${fmtARS(addonsTotal(picked))} ARS`;
   }
@@ -873,6 +904,8 @@ const I18N = {
     pkg_album_save: "Ahorrás +40% vs. contratar todo por separado.",
     pkg_songs_label: "Cantidad de canciones",
     pkg_epalbum_choose_hint: "Elegí un formato para ver el precio",
+    pkg_epalbum_choose_hint_consult: "Elegí EP o Álbum y consultá el valor por WhatsApp",
+    pkg_price_consult: "Consultá el valor por WhatsApp ↗",
     pkg_range_min: "El mínimo para un proyecto son 3 canciones.",
     pkg_songs_required: "Contanos cuántas canciones va a tener tu proyecto: lo necesitamos para armar el contrato antes de comenzar.",
     pkg_range_to_ep: "Con menos de 8 canciones, tu proyecto es un EP.",
