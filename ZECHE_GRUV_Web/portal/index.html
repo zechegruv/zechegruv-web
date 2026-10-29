@@ -540,6 +540,7 @@
         <div class="le-bar">
           <button class="le-btn le-back" type="button" id="lyricBack"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 6.5L9 12l5.5 5.5"/></svg><span>Letras</span></button>
           <span class="lyric-save" id="lyricSave" role="status"></span>
+          <button class="le-btn" type="button" id="lyricChords" aria-pressed="false" title="Acordes: escribí el cifrado arriba de cada verso"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V6l11-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/></svg><span>Acordes</span></button>
           <button class="le-btn" type="button" id="lyricRead" aria-pressed="false" title="Modo estudio: la letra grande y la pantalla prendida para leer mientras grabás"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12s3.2-6 9-6 9 6 9 6-3.2 6-9 6-9-6-9-6z"/><circle cx="12" cy="12" r="2.6"/></svg><span>Estudio</span></button>
           <button class="le-btn" type="button" id="lyricCopy"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="11" height="12" rx="2"/><path d="M5 15V6a2 2 0 012-2h8"/></svg><span>Copiar</span></button>
         </div>
@@ -548,6 +549,7 @@
           <input class="lyric-title" type="text" id="lyricTitle" maxlength="120" placeholder="Título de la canción" aria-label="Título de la canción" list="lyricSongs" autocomplete="off">
           <datalist id="lyricSongs"></datalist>
           <div class="le-map" id="lyricMap" role="navigation" aria-label="Estructura de la canción"></div>
+          <div class="lc-bar" id="lyricChordBar" role="group" aria-label="Acordes" hidden></div>
           <div class="lyric-parts" id="lyricSections"></div>
           <div class="le-add">
             <button class="le-add-btn" type="button" id="lyricAddBtn" aria-expanded="false" aria-controls="lyricAdd"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Agregar parte</span></button>

@@ -21,6 +21,13 @@
 // Orden: cada parte tiene a la izquierda una manija (seis puntitos) para
 // agarrarla y arrastrarla adonde quieras; las demás se corren solas para
 // hacerle lugar. Con el teclado, la manija se mueve con ↑ / ↓.
+//
+// Acordes: el botón «Acordes» de arriba muestra, sobre cada verso, un
+// renglón para escribir el cifrado (Am, F, C… o Lam, Fa, Do…). Letra y
+// acordes van en letra de ancho fijo, así cada acorde queda justo sobre la
+// sílaba donde cae. Se guardan en la parte como { chords: [renglón por
+// verso] }; si después se agregan o quitan versos, cada acorde sigue a su
+// verso. Con − / + se transpone toda la canción de a medio tono.
 (() => {
   const P = window.ZGPortal;
   const { db, $ } = P;
@@ -71,6 +78,81 @@
   let dirty = false;
   let openPop = null;  // { i, what: "kind" | "more" | "voice" }
   let extraVoices = []; // voces sumadas a mano en esta letra que todavía no cantan ninguna parte
+  let chordsOn = false; // se ve el cifrado sobre la letra
+
+  // ---------- Acordes ----------
+  const hasChords = (s) => Array.isArray(s.chords) && s.chords.some((c) => String(c || "").trim());
+  // Cada acorde sigue a su verso: si la cantidad de versos no cambió, se
+  // quedan por posición (se corrigió una palabra); si se agregaron o
+  // quitaron, los de arriba y los de abajo se mantienen y los del medio
+  // buscan su verso por el texto.
+  function realign(s, oldText, newText) {
+    if (!hasChords(s)) return;
+    const o = oldText.split("\n"), n = newText.split("\n");
+    if (o.length === n.length) return;
+    const old = s.chords;
+    let p = 0;
+    while (p < o.length && p < n.length && o[p] === n[p]) p++;
+    let q = 0;
+    while (q < o.length - p && q < n.length - p && o[o.length - 1 - q] === n[n.length - 1 - q]) q++;
+    const pool = {};
+    for (let i = p; i < o.length - q; i++) if (String(old[i] || "").trim()) (pool[o[i]] = pool[o[i]] || []).push(old[i]);
+    s.chords = n.map((line, i) => {
+      if (i < p) return old[i] || "";
+      if (i >= n.length - q) return old[o.length - (n.length - i)] || "";
+      return pool[line] && pool[line].length ? pool[line].shift() : "";
+    });
+  }
+  // Transponer de a medio tono, en cifrado americano (C, Am, F#7, Bb/D) o
+  // latino (Do, Lam, Fa#7, Sib/Re). Si el acorde nuevo es más largo se come
+  // un espacio de los que siguen, así no se corre lo que viene después.
+  const NOTES = {
+    us: { sharp: ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"], flat: ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"] },
+    la: { sharp: ["Do", "Do#", "Re", "Re#", "Mi", "Fa", "Fa#", "Sol", "Sol#", "La", "La#", "Si"], flat: ["Do", "Reb", "Re", "Mib", "Mi", "Fa", "Solb", "Sol", "Lab", "La", "Sib", "Si"] },
+  };
+  const ROOT = /^(Do|Re|Mi|Fa|Sol|La|Si|[A-G])(#|b)?/;
+  function shiftNote(text, steps) {
+    const m = text.match(ROOT);
+    if (!m) return text;
+    const sys = /^[A-G]$/.test(m[1]) ? "us" : "la";
+    let i = NOTES[sys].sharp.indexOf(m[1]) + (m[2] === "#" ? 1 : m[2] === "b" ? -1 : 0);
+    const names = m[2] === "b" ? NOTES[sys].flat : NOTES[sys].sharp;
+    return names[(((i + steps) % 12) + 12) % 12] + text.slice(m[0].length);
+  }
+  function shiftChord(tok, steps) {
+    if (!ROOT.test(tok)) return tok;
+    const [main, ...bass] = tok.split("/");
+    return [shiftNote(main, steps), ...bass.map((b) => shiftNote(b, steps))].join("/");
+  }
+  function transposeLine(line, steps) {
+    let out = "", debt = 0;
+    String(line || "").split(/( +)/).forEach((part) => {
+      if (!part) return;
+      if (/^ +$/.test(part)) {
+        const keep = Math.max(1, part.length - debt);
+        debt -= part.length - keep;
+        out += " ".repeat(keep);
+        return;
+      }
+      const t = shiftChord(part, steps);
+      debt += t.length - part.length;
+      if (debt < 0) { out += t + " ".repeat(-debt); debt = 0; } else out += t;
+    });
+    return out;
+  }
+  function chordsBlock(s, i) {
+    if (!s.text.trim()) return `<p class="lc-empty">Escribí la letra de esta parte y después le ponés los acordes.</p>`;
+    const lines = s.text.split("\n");
+    const width = Math.max(12, ...lines.map((l) => l.length), ...(s.chords || []).map((c) => String(c || "").length)) + 4;
+    return `<div class="lc" style="--w:${width}ch">${lines.map((line, l) => line.trim()
+      ? `<div class="lc-row"><input class="lc-in" type="text" data-l="${l}" value="${esc((s.chords || [])[l] || "")}" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" enterkeyhint="next" aria-label="Acordes del verso ${l + 1}"${i === 0 && l === 0 && !hasChords(s) ? ' placeholder="Am      F       C"' : ""}><span class="lc-ly">${esc(line)}</span></div>`
+      : '<div class="lc-gap"></div>').join("")}</div>`;
+  }
+  function setChordsUi() {
+    $("lyricChords").setAttribute("aria-pressed", chordsOn ? "true" : "false");
+    document.body.classList.toggle("le-chords", chordsOn);
+    $("lyricChordBar").hidden = !chordsOn;
+  }
 
   // ---------- Quién canta (feats) ----------
   const ALL = "todos";
@@ -242,8 +324,11 @@
 
   // ---------- Editor ----------
   function openEditor(item, isNew) {
-    doc = { id: item.id, title: item.title || "", sections: (item.sections || []).map((s) => ({ kind: KIND_LABEL[s.kind] ? s.kind : "otra", text: String(s.text || ""), voice: cleanVoice(s.voice) })) };
+    doc = { id: item.id, title: item.title || "", sections: (item.sections || []).map((s) => ({ kind: KIND_LABEL[s.kind] ? s.kind : "otra", text: String(s.text || ""), voice: cleanVoice(s.voice), chords: Array.isArray(s.chords) ? s.chords.map((c) => String(c || "")) : [] })) };
     extraVoices = [];
+    chordsOn = doc.sections.some(hasChords);
+    shifted = 0;
+    setChordsUi();
     dirty = false;
     openPop = null;
     setReading(false);
@@ -296,7 +381,7 @@
           <button type="button" data-act="remove" class="is-danger">${IC.del}<span>Quitar</span></button>
         </div>` : ""}
         ${pop === "voice" ? voicePop(s) : ""}
-        <textarea class="lyric-text" rows="1" spellcheck="true" aria-label="${esc(label)}" placeholder="${esc(PLACEHOLDER[s.kind])}">${esc(s.text)}</textarea>
+        ${chordsOn ? chordsBlock(s, i) : `<textarea class="lyric-text" rows="1" spellcheck="true" aria-label="${esc(label)}" placeholder="${esc(PLACEHOLDER[s.kind])}">${esc(s.text)}</textarea>`}
         <span class="lp-meta" aria-live="off">${esc(m)}</span>
       </section>`;
   }
@@ -333,6 +418,7 @@
     if (!box) return;
     const part = box.closest(".lp");
     const i = +part.dataset.i;
+    realign(doc.sections[i], doc.sections[i].text, box.value);
     doc.sections[i].text = box.value;
     fit(box);
     part.querySelector(".lp-meta").textContent = meter(box.value);
@@ -390,7 +476,7 @@
       openPop = null;
       renderParts();
     } else if (act === "dup") {
-      doc.sections.splice(i + 1, 0, { ...doc.sections[i] });
+      doc.sections.splice(i + 1, 0, { ...doc.sections[i], chords: [...(doc.sections[i].chords || [])] });
       openPop = null;
       renderParts(i + 1);
     } else {
@@ -562,10 +648,72 @@
     if (!btn) return;
     const kind = btn.dataset.add;
     const chorus = btn.dataset.copy && doc.sections.find((s) => s.kind === "estribillo" && s.text.trim());
-    doc.sections.push({ kind, text: chorus ? chorus.text : "" });
+    doc.sections.push({ kind, text: chorus ? chorus.text : "", chords: chorus ? [...(chorus.chords || [])] : [] });
     closePicker();
     openPop = null;
     renderParts(doc.sections.length - 1);
+    schedule();
+  });
+
+  // ---------- Acordes: botón, renglones y transponer ----------
+  let shifted = 0; // medios tonos que se movió en esta visita (solo para mostrarlo)
+  $("lyricChords").addEventListener("click", () => {
+    chordsOn = !chordsOn;
+    openPop = null;
+    setChordsUi();
+    renderParts();
+    if (chordsOn) {
+      const first = document.querySelector("#lyricSections .lc-in");
+      if (first && !document.body.classList.contains("le-reading")) first.focus({ preventScroll: true });
+      if (window.zgTrack) window.zgTrack("portal_acordes", {});
+    }
+  });
+  $("lyricSections").addEventListener("input", (event) => {
+    const box = event.target.closest(".lc-in");
+    if (!box) return;
+    const s = doc.sections[+box.closest(".lp").dataset.i];
+    const l = +box.dataset.l;
+    s.chords = s.chords || [];
+    while (s.chords.length < l) s.chords.push("");
+    s.chords[l] = box.value;
+    const block = box.closest(".lc");
+    const need = box.value.length + 4;
+    if (need > parseInt(block.style.getPropertyValue("--w"), 10)) block.style.setProperty("--w", `${need}ch`);
+    schedule();
+  });
+  // Enter o ↓ pasa al renglón de acordes de abajo; ↑ al de arriba.
+  $("lyricSections").addEventListener("keydown", (event) => {
+    const box = event.target.closest(".lc-in");
+    if (!box || !["Enter", "ArrowDown", "ArrowUp"].includes(event.key)) return;
+    const all = [...document.querySelectorAll("#lyricSections .lc-in")];
+    const k = all.indexOf(box) + (event.key === "ArrowUp" ? -1 : 1);
+    if (k < 0 || k >= all.length) return;
+    event.preventDefault();
+    const next = all[k];
+    next.focus({ preventScroll: true });
+    const pos = Math.min(box.selectionStart, next.value.length);
+    next.setSelectionRange(pos, pos);
+    next.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  });
+  $("lyricChordBar").innerHTML = `<span class="lc-bar-label">Transponer</span>
+    <button type="button" class="lc-step" data-step="-1" aria-label="Bajar medio tono">−</button>
+    <span class="lc-shift" id="lyricShift" aria-live="polite">Tono original</span>
+    <button type="button" class="lc-step" data-step="1" aria-label="Subir medio tono">+</button>
+    <span class="lc-tip">Escribí los acordes sobre la sílaba donde caen. Enter pasa al verso de abajo.</span>`;
+  function shiftLabel() {
+    if (!shifted) return "Tono original";
+    const n = Math.abs(shifted) / 2;
+    const txt = n === 0.5 ? "½ tono" : `${Math.floor(n)}${n % 1 ? " ½" : ""} ${n >= 2 ? "tonos" : "tono"}`;
+    return `${shifted > 0 ? "+" : "−"}${txt}`;
+  }
+  $("lyricChordBar").addEventListener("click", (event) => {
+    const btn = event.target.closest("[data-step]");
+    if (!btn || !doc || !doc.sections.some(hasChords)) return;
+    const step = +btn.dataset.step;
+    doc.sections.forEach((s) => { if (hasChords(s)) s.chords = s.chords.map((c) => transposeLine(c, step)); });
+    shifted = (((shifted + step + 6) % 12) + 12) % 12 - 6;
+    renderParts();
+    $("lyricShift").textContent = shiftLabel();
     schedule();
   });
 
@@ -578,6 +726,7 @@
     $("lyricRead").setAttribute("aria-pressed", on ? "true" : "false");
     $("lyricRead").querySelector("span").textContent = on ? "Editar" : "Estudio";
     document.querySelectorAll("#lyricSections .lyric-text").forEach((t) => { t.readOnly = on; fit(t); });
+    document.querySelectorAll("#lyricSections .lc-in").forEach((t) => { t.readOnly = on; });
     $("lyricTitle").readOnly = on;
     try {
       if (on && navigator.wakeLock) wakeLock = await navigator.wakeLock.request("screen");
@@ -697,7 +846,16 @@
     }
     dirty = false;
     const id = doc.id;
-    const changes = { title: doc.title.trim(), sections: doc.sections.map((s) => (s.voice ? { kind: s.kind, text: s.text, voice: s.voice } : { kind: s.kind, text: s.text })) };
+    const changes = { title: doc.title.trim(), sections: doc.sections.map((s) => {
+      const out = { kind: s.kind, text: s.text };
+      if (s.voice) out.voice = s.voice;
+      if (hasChords(s)) {
+        const c = s.text.split("\n").map((_, l) => String((s.chords || [])[l] || "").replace(/\s+$/, ""));
+        while (c.length && !c[c.length - 1]) c.pop();
+        out.chords = c;
+      }
+      return out;
+    }) };
     // La lista ya muestra lo último escrito, aunque todavía no se haya guardado.
     const item = lyrics.find((l) => l.id === id);
     if (item) Object.assign(item, changes);
@@ -750,7 +908,10 @@
   // pegar en un mensaje o en el formulario de distribución.
   $("lyricCopy").addEventListener("click", async () => {
     const names = labels(doc.sections);
-    const body = doc.sections.map((s, i) => [s, names[i]]).filter(([s]) => s.text.trim()).map(([s, name]) => `[${name}${s.voice ? ` · ${voiceName(s.voice)}` : ""}]\n${s.text.trim()}`).join("\n\n");
+    // Con los acordes a la vista, se copian arriba de cada verso.
+    const withChords = (s) => !chordsOn || !hasChords(s) ? s.text.trim()
+      : s.text.split("\n").map((line, l) => { const c = String((s.chords || [])[l] || "").replace(/\s+$/, ""); return c && line.trim() ? `${c}\n${line}` : line; }).join("\n").trim();
+    const body = doc.sections.map((s, i) => [s, names[i]]).filter(([s]) => s.text.trim()).map(([s, name]) => `[${name}${s.voice ? ` · ${voiceName(s.voice)}` : ""}]\n${withChords(s)}`).join("\n\n");
     const text = [doc.title.trim(), body].filter(Boolean).join("\n\n");
     const label = $("lyricCopy").querySelector("span");
     try {
@@ -794,5 +955,5 @@
   new MutationObserver(navOffset).observe(document.body, { attributes: true, attributeFilter: ["class"] });
   navOffset();
 
-  window.ZGLyrics = { load, _syllables: syllables };
+  window.ZGLyrics = { load, _syllables: syllables, _transpose: transposeLine, _realign: realign };
 })();
