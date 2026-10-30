@@ -1,0 +1,67 @@
+/* ---------- Estilo redondeado (alineado con la web nueva) ----------
+   Va al final de todas las hojas: solo redondea esquinas y pasa
+   botones, chips y pestañas a forma de píldora. No cambia colores,
+   tamaños ni el orden de nada. */
+
+:root {
+  --r-card: 22px;
+  --r-box: 16px;
+  --r-field: 12px;
+  --r-pill: 999px;
+}
+
+/* Tarjetas y bloques grandes */
+.card,
+.access-zone,
+.danger-zone,
+#view-login .cta-card { border-radius: var(--r-card); }
+
+.dialog { border-radius: 24px; }
+
+.table-wrap { border-radius: var(--r-box); overflow: hidden; }
+.notice,
+.player,
+.file-group,
+.lyrics-list,
+.lyric-part,
+.pistas-how,
+.kind-option,
+.zgp-event,
+.zgp-stats,
+.zgp-stat,
+.zgp-menu,
+.zg-select-list,
+.escena-card,
+.show-tool { border-radius: var(--r-box); }
+
+.cover-preview,
+.ref-preview,
+.review-flyer,
+.escena-flyer { border-radius: 14px; }
+.ze-flyer-row img { border-radius: 10px; }
+
+/* Campos */
+.field input,
+.field select,
+.field textarea,
+.zg-select-btn,
+.ref-link { border-radius: var(--r-field); }
+.field input[type="file"] { border-radius: var(--r-field); }
+
+/* Botones, chips y etiquetas: píldoras */
+.btn,
+.btn-cta,
+#view-login .cta-card .btn-cta,
+.chip,
+.chip-btn,
+.zgp-tag,
+.escena-lineup span { border-radius: var(--r-pill); }
+
+/* Barras de progreso y recorrido de etapas: puntas redondas */
+.upload-progress,
+.upload-progress i { border-radius: var(--r-pill); }
+.stages { gap: 6px; }
+.stages li::before { height: 5px; border-radius: var(--r-pill); }
+
+/* Filas de canciones del administrador: la fila resaltada acompaña el redondeo */
+.table tbody tr:focus-visible { outline-offset: -2px; }
