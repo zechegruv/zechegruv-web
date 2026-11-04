@@ -157,13 +157,16 @@ function deliveryOf(song, files, rows) {
     events.sort((a, b) => b[0] - a[0]);
     state = events.length ? events[0][1] : "proceso";
   }
-  const out = state === "proceso" || !file ? null : { name: file.name, url: file.url, modified: file.modified, size: file.size || 0 };
+  const out = state === "proceso" || !file ? null : { name: file.name, url: file.url, modified: file.modified, size: file.size || 0, num: file.num || null };
   const slot = files[song.id] || {};
-  const pub = (a) => (a ? { name: a.name, url: a.url, modified: a.modified, size: a.size || 0 } : null);
+  const pub = (a) => (a ? { name: a.name, url: a.url, modified: a.modified, size: a.size || 0, num: a.num || null } : null);
   // Para comparar: las versiones anteriores de esta misma etapa (A/B) y la
   // maqueta (antes y después). Solo si hay algo entregado para escuchar.
   const versions = out ? ((slot.versions && slot.versions[kind]) || []).filter((a) => a.name !== out.name || a.modified !== out.modified).slice(0, 3).map(pub) : [];
-  return { kind, state, file: out, versions, demo: out ? pub(slot.demo) : null, review: reviewOut(lastArtist), manual: manualHere, by: last ? last.source || "artist" : null };
+  // Versión nueva de una mezcla que el artista ya había aprobado (Zeche la
+  // rehízo, auto-entregas.js → reopenMix): el portal se lo explica.
+  const revised = state === "aprobar" && !!lastArtist && lastArtist.action === "aprobada" && !!out && time(out.modified) > time(lastArtist.created_at);
+  return { kind, state, file: out, versions, demo: out ? pub(slot.demo) : null, review: reviewOut(lastArtist), manual: manualHere, by: last ? last.source || "artist" : null, revised };
 }
 
 function withDelivery(songs, files, rows) {

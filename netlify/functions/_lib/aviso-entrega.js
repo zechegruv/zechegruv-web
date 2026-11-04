@@ -18,11 +18,19 @@ const firstName = (n) => String(n || "").trim().split(/\s+/)[0] || "";
 
 // Textos: formales pero cercanos, directos y en primera persona (Zeche),
 // sin frases poéticas. Cuatro casos: mezcla, corrección de mezcla, master, corrección de master.
-function deliveryMail({ name, song, kind, again, notes }) {
+function deliveryMail({ name, song, kind, again, notes, revised }) {
   const master = kind === "master";
   const hi = name ? `${esc(name)}, ` : "";
   const s = `«${esc(song)}»`;
-  const c = master
+  // Mezcla nueva después de que el artista ya había aprobado la anterior
+  // (auto-entregas.js → reopenMix): Zeche la revisó y la mejoró.
+  const c = revised && !master
+    ? { subject: `Hice una versión nueva de la mezcla de «${song}»`, eyebrow: "Mezcla · versión nueva",
+        title: `${hi}volví a escuchar la mezcla de ${s} y le hice una versión nueva`,
+        body: "Aunque ya la habías aprobado, quise mejorarla antes de pasar al master. En el portal podés escuchar la nueva y compararla con la anterior en el mismo segundo.",
+        next: "Si te gusta cómo quedó, aprobala y pasamos al master. Si querés cambiar algo, dejá tu modificación en el segundo exacto (también podés grabarla en audio) y lo ajusto.",
+        cta: "Escuchar la mezcla nueva" }
+    : master
     ? again
       ? { subject: `Ya están tus cambios en el master de «${song}»`, eyebrow: "Master · versión nueva",
           title: `${hi ? `${hi}ya` : "Ya"} están hechas las modificaciones que pediste en el master de ${s}`,
@@ -60,7 +68,7 @@ function deliveryMail({ name, song, kind, again, notes }) {
 
 // profileId: el artista (Supabase). song: { id, title }. kind: mezcla|master.
 // version: algo que identifique esta entrega (archivo + fecha, o "manual|<hora>").
-async function notifyArtistDelivered({ profileId, song, kind, version }) {
+async function notifyArtistDelivered({ profileId, song, kind, version, revised = false }) {
   if (!profileId || !song || !song.id) return { sent: false, why: "datos" };
   // "*": trae también whatsapp_avisos (033), y anda igual antes de correrlo.
   const prof = await db(`profiles?id=eq.${profileId}&select=*`);
@@ -69,14 +77,14 @@ async function notifyArtistDelivered({ profileId, song, kind, version }) {
   // ¿Es la versión nueva después de que pidió cambios? (lo último que dijo el artista)
   const last = await db(`song_approvals?song_id=eq.${encodeURIComponent(song.id)}&kind=eq.${kind}&select=action,source,marks&order=created_at.desc&limit=20`);
   const lastArtist = ((last.ok && last.data) || []).find((r) => (r.source || "artist") === "artist");
-  const again = !!(lastArtist && lastArtist.action === "cambios");
+  const again = !revised && !!(lastArtist && lastArtist.action === "cambios");
   const notes = again && Array.isArray(lastArtist.marks) ? lastArtist.marks.length : 0;
   // Una sola vez por versión.
   const key = `entrega-aviso|${song.id}|${kind}|${String(version || "").slice(0, 200)}`;
   const claim = await db("portal_reminders?on_conflict=key", { method: "POST", prefer: "resolution=ignore-duplicates,return=representation", body: { key, kind: "entrega-aviso", profile_id: profileId, song_id: song.id } });
   if (!claim.ok || !claim.data || !claim.data[0]) return { sent: false, why: "ya-avisado" };
   const name = firstName(p.display_name || p.full_name);
-  const mail = deliveryMail({ name, song: song.title, kind, again, notes });
+  const mail = deliveryMail({ name, song: song.title, kind, again, notes, revised });
   const ok = await sendMail({ to: p.email, from: "ZG Portal <portal@zechegruv.com>", replyTo: notifyEmail(), ...mail }).catch(() => false);
   // Además del mail, un WhatsApp (whatsapp.js): mezcla lista, master listo o
   // modificaciones listas. Una sola vez por versión ("wa|" + la misma clave).

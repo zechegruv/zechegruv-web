@@ -7,7 +7,12 @@
 // Dónde se busca: los archivos sueltos de la carpeta del artista y las
 // subcarpetas Exports y Masters (con sus subcarpetas por canción).
 //
-// Mayúsculas o minúsculas da igual ("MIX", "Mix", "mix"). Un archivo con
+// Mayúsculas o minúsculas da igual ("MIX", "Mix", "mix").
+// En Exports y en Masters alcanza con el título y el número de versión:
+// «OKEY V4.wav», «OKEY 4.wav» o «OKEY v 4.wav» es la mezcla 4 si está en
+// Exports y el master 4 si está en Masters (no hace falta escribir "Mix").
+// El número de versión («Mix 3», «Mix v3», «mix3», «V3», «3») se guarda
+// para mostrarle al artista «Mix 4» y «Mix 3» al comparar. Un archivo con
 // "vivo" en el nombre es la versión para show en vivo: no se toma como
 // mezcla ni master para aprobar (va aparte, en Masters → Para show en vivo).
 // Todo lo que está en una subcarpeta para vivo ("Para show en vivo") también.
@@ -108,7 +113,26 @@ function extraKindOf(name, title, folder) {
   if (/ (maqueta|demo)\d* /.test(n)) return "demo";
   return null;
 }
-const anyKind = (name, title, folder) => kindOf(name, title, folder) || extraKindOf(name, title, folder);
+// Sección de la carpeta del artista que dice qué es un archivo nombrado solo
+// con el título y el número de versión.
+const SECTION_KIND = { exports: "mezcla", masters: "master" };
+// ¿Lo que queda del nombre, sin el título, es solo un número de versión?
+// «v4», «4», «v 4», «version 4», «ver4».
+const bareVersion = (rest) => /^(v|ver|version)? ?\d{1,3}$/.test(String(rest).trim());
+function sectionKindOf(name, title, section) {
+  const kind = SECTION_KIND[section];
+  if (!kind || !title) return null; // sin saber la canción no se adivina
+  return bareVersion(withoutTitle(String(name).replace(AUDIO, ""), title)) ? kind : null;
+}
+const anyKind = (name, title, folder, section) => kindOf(name, title, folder) || extraKindOf(name, title, folder) || sectionKindOf(name, title, section);
+
+// Número de versión del archivo: «Mix 4», «Mix v4», «mix4», «Master 2»,
+// «V3» o el número suelto al final («OKEY 4»). null si no tiene.
+function versionOf(name, title) {
+  const n = withoutTitle(String(name).replace(AUDIO, ""), title).trim();
+  const m = n.match(/(?:^| )(?:mix|mezcla|mixdown|master|mastered|mstr|v|ver|version) ?(\d{1,3})(?= |$)/) || n.match(/(?:^| )(\d{1,3})$/);
+  return m ? Number(m[1]) : null;
+}
 
 // Fecha del audio: cuándo llegó a OneDrive (la del servidor: se subió o se
 // reemplazó, la más nueva), no la del archivo en la compu de Zeche
@@ -121,10 +145,11 @@ const serverDate = (item) => {
   return dates.sort((a, b) => Date.parse(b) - Date.parse(a))[0];
 };
 
-const toAudio = (item, folder) => {
+const toAudio = (item, folder, section) => {
   return {
     name: item.name,
     folder: folder || null,
+    section: section || null,
     // Provisorio: al saber de qué canción es, se vuelve a mirar sin su
     // título (matchAudio).
     kind: anyKind(item.name, null, folder),
@@ -138,9 +163,11 @@ const toAudio = (item, folder) => {
 // aprobar; los anteriores sirven igual para comparar versiones y para el kit.
 // Acá todavía no se sabe de qué canción es cada archivo: pasan todos los que
 // podrían ser algo (con el título incluido) y matchAudio decide.
-const audioOf = (items, folder) => items
-  .filter((i) => i.file && AUDIO.test(i.name) && (anyKind(i.name) || (folder && anyKind(i.name, null, folder))))
-  .map((i) => toAudio(i, folder))
+// En Exports y Masters pasan todos los audios: uno nombrado solo con el
+// título y la versión («OKEY V4.wav») se reconoce recién al saber la canción.
+const audioOf = (items, folder, section) => items
+  .filter((i) => i.file && AUDIO.test(i.name) && (SECTION_KIND[section] || anyKind(i.name) || (folder && anyKind(i.name, null, folder))))
+  .map((i) => toAudio(i, folder, section))
   .map((a) => ({ ...a, fresh: (Date.parse(a.modified || "") || 0) >= AUTO_SINCE }));
 
 // Todos los audios de mezcla y master de la carpeta del artista.
@@ -154,10 +181,11 @@ async function listAudio(shareLink) {
   const sections = top.filter((c) => c.folder && FOLDERS.includes(norm(c.name)));
   await Promise.all(sections.map(async (sec) => {
     const items = await children(driveId, sec.id);
-    found.push(...audioOf(items, null));
+    const section = norm(sec.name);
+    found.push(...audioOf(items, null, section));
     const subs = items.filter((i) => i.folder && i.folder.childCount);
     await Promise.all(subs.map(async (sub) => {
-      found.push(...audioOf(await children(driveId, sub.id), sub.name));
+      found.push(...audioOf(await children(driveId, sub.id), sub.name, section));
     }));
   }));
   return found;
@@ -187,15 +215,15 @@ function matchAudio(songs, audios) {
     const song = titled.find((s) => hay.includes(` ${s.key} `));
     if (song) {
       // Ya se sabe de qué canción es: se clasifica sin su título.
-      const kind = anyKind(a.name, song.title, a.folder);
-      if (kind) put(song.id, { ...a, kind });
+      const kind = anyKind(a.name, song.title, a.folder, a.section);
+      if (kind) put(song.id, { ...a, kind, num: versionOf(a.name, song.title) });
     } else if (a.fresh && (a.kind === "mezcla" || a.kind === "master")) loose.push(a);
   });
   // Sin título en el nombre: si hay una sola canción en esa etapa, es suya.
   const STEP = { mezcla: 3, master: 4 };
   loose.forEach((a) => {
     const candidates = songs.filter((s) => s.step === STEP[a.kind]);
-    if (candidates.length === 1) put(candidates[0].id, a);
+    if (candidates.length === 1) put(candidates[0].id, { ...a, num: versionOf(a.name, null) });
   });
   Object.values(out).forEach((slot) => {
     Object.values(slot.versions).forEach((list) => list.sort((x, y) => (y.modified || "").localeCompare(x.modified || "")));
@@ -203,4 +231,4 @@ function matchAudio(songs, audios) {
   return out;
 }
 
-module.exports = { listAudio, matchAudio, kindOf, extraKindOf, norm };
+module.exports = { listAudio, matchAudio, kindOf, extraKindOf, versionOf, norm };

@@ -141,6 +141,72 @@ async function deliver({ profileId, clientId, song, kind, file, deliveryDate }) 
   return { song: song.title, kind, file: file.name, tasks, calendar, saved: saved.ok, notified: !!(notice && notice.sent) };
 }
 
+// ---------- Mezcla nueva después de aprobada ----------
+// El artista aprobó una mezcla (la canción pasó sola a Master) y después Zeche
+// sube una mezcla nueva («OKEY 4.wav» después de aprobada la 3): la canción
+// vuelve sola a Mezcla para que el artista la escuche, la compare con la
+// anterior en el mismo segundo y la apruebe o pida modificaciones. Sin tocar
+// nada en Notion ni en el panel:
+//   1. Notion → Canciones: Etapa actual = Mix, Entrega = Mezcla entregada y
+//      sin fecha de entrega (la mezcla ya está entregada).
+//   2. song_stage_log vuelve a Mix (al aprobar, cierre-etapa.js → claimMaster
+//      la pasa otra vez a Master y agenda el master).
+//   3. El master se suspende hasta que apruebe esta mezcla: las tareas de
+//      Master abiertas de esa canción quedan INACTIVA y sus eventos del
+//      calendario con ✓ sin ocupar el horario.
+//   4. song_approvals: 'entregada' de mezcla (source admin), así el portal la
+//      muestra para aprobar, y al artista le llega el aviso de versión nueva
+//      (mail, WhatsApp y push, aviso-entrega.js → revised).
+// Solo si el master todavía no está aprobado, la mezcla subió después de la
+// última respuesta sobre la mezcla y del paso a Master, y no hay un master
+// más nuevo que esa mezcla. Una sola vez por archivo (portal_reminders).
+// Solo mezclas subidas desde que existe esto (3 nov 2026): una mezcla vieja
+// que quedó en la carpeta no hace volver atrás canciones ya aprobadas.
+const REOPEN_SINCE = Date.parse("2026-11-03T00:00:00-03:00");
+async function reopenMix({ profileId, clientId, song, file, master, rows, rawPage }) {
+  const at = time(file.modified);
+  if (at < REOPEN_SINCE) return null;
+  if (song.entrega === LABEL.master.aprobada) return null;
+  if (master && time(master.modified) > at) return null;
+  const lastMix = rows.find((r) => sameId(r.song_id, song.id) && r.kind === "mezcla");
+  if (lastMix && time(lastMix.created_at) >= at) return null;
+  const log = await db(`song_stage_log?song_id=eq.${encodeURIComponent(song.id)}&select=stage,changed_at`).catch(() => null);
+  const row = log && log.ok && log.data && log.data[0];
+  if (row && row.stage === "Master" && time(row.changed_at) >= at) return null;
+  if (!lastMix && !row) return null; // sin rastro de cuándo se aprobó: no se adivina
+
+  const claimKey = `reabre-mezcla|${song.id}|${file.name}|${file.modified}`.slice(0, 500);
+  const claim = await db("portal_reminders?on_conflict=key", { method: "POST", prefer: "resolution=ignore-duplicates,return=representation", body: { key: claimKey, kind: "entrega", profile_id: profileId, song_id: song.id } });
+  if (!claim.ok || !claim.data || !claim.data[0]) return null;
+
+  const upd = await notion(`/pages/${song.id}`, { method: "PATCH", body: JSON.stringify({ properties: {
+    "Etapa actual": { select: { name: "Mix" } }, Entrega: { select: { name: LABEL.mezcla.entregada } }, "Fecha de entrega": { date: null },
+  } }) });
+  if (!upd.ok) {
+    await db(`portal_reminders?key=eq.${encodeURIComponent(claimKey)}`, { method: "DELETE" }).catch(() => null);
+    return { song: song.title, kind: "mezcla", error: `notion ${upd.status}` };
+  }
+  if (row) await db(`song_stage_log?song_id=eq.${encodeURIComponent(song.id)}`, { method: "PATCH", body: { stage: "Mix", changed_at: new Date().toISOString() } }).catch(() => null);
+
+  // El master queda en pausa: tareas abiertas → INACTIVA, eventos con ✓.
+  const et = require("./auto-etapas");
+  const openMaster = await et._openTasks(song.id, ["Master"]).catch(() => []);
+  const paused = await Promise.all(openMaster.map((tk) => notion(`/pages/${tk.id}`, { method: "PATCH", body: JSON.stringify({ properties: { "Estado de Tarea": { select: { name: "INACTIVA" } } } }) })));
+  const pausedNames = openMaster.filter((tk, i) => paused[i].ok).map((tk) => plain(tk.properties.Nombre && tk.properties.Nombre.title));
+  const p = (rawPage && rawPage.properties) || {};
+  const delivery = p["Fecha de entrega"] && p["Fecha de entrega"].date && p["Fecha de entrega"].date.start;
+  const calendar = await require("./cierre-etapa").tickCalendar({ ...song, clientId: song.clientId || clientId }, "master", delivery ? delivery.slice(0, 10) : null, new Date(),
+    `Master en pausa: subiste una mezcla nueva («${file.name}») y vuelve a aprobación del artista. El master se agenda solo cuando la apruebe`).catch(() => "error");
+
+  const saved = await db("song_approvals", { method: "POST", prefer: "return=minimal", body: {
+    profile_id: profileId, song_id: song.id, song_title: song.title, kind: "mezcla", action: "entregada", source: "admin",
+    note: `Mezcla nueva («${file.name}») subida después de aprobada la anterior: vuelve a aprobación.`.slice(0, 1000),
+  } });
+  if (!saved.ok) console.error("reabre-mezcla song_approvals:", saved.status);
+  const notice = await require("./aviso-entrega").notifyArtistDelivered({ profileId, song, kind: "mezcla", version: `${file.name}|${file.modified}`, revised: true }).catch(() => null);
+  return { song: song.title, kind: "mezcla", file: file.name, reopened: true, paused: pausedNames, calendar, saved: saved.ok, notified: !!(notice && notice.sent) };
+}
+
 // ---------- Recordatorio al artista ----------
 // Si una mezcla o un master lleva 3 días esperando que el artista lo
 // escuche (y no respondió nada), le llega un mail cálido de ZG Portal. Si
@@ -223,17 +289,25 @@ async function syncArtist({ profileId, pageId, folder, songPages, audios, remind
   if (!open.length) return [];
 
   const files = matchAudio(songs, audios || await listAudio(folder));
+  // En Master con una mezcla nueva subida: candidata a volver a aprobación.
+  const remix = open.filter((s) => s.step === 4 && files[s.id] && files[s.id].mezcla);
   const todo = open.map((s) => ({ song: s, kind: KIND_OF_STEP[s.step] })).filter(({ song, kind }) => files[song.id] && files[song.id][kind]);
-  if (!todo.length) return [];
+  if (!todo.length && !remix.length) return [];
 
   const rows = await db(`song_approvals?profile_id=eq.${profileId}&select=song_id,kind,action,source,created_at&order=created_at.desc&limit=300`);
   if (!rows.ok) return []; // sin la tabla no hay forma de saber qué ya se procesó
   const out = [];
+  const reopened = new Set();
+  for (const song of remix) {
+    const r = await reopenMix({ profileId, clientId: pageId, song, file: files[song.id].mezcla, master: files[song.id].master, rows: rows.data, rawPage: raw[song.id] }).catch((e) => ({ song: song.title, kind: "mezcla", error: String(e && e.message).slice(0, 80) }));
+    if (r) { out.push(r); if (r.reopened) reopened.add(song.id); }
+  }
   if (remind) {
     const reminded = await remindArtist({ profileId, email: remind.email, name: remind.name, songs: open, files, rows: rows.data }).catch(() => []);
     reminded.forEach((r) => out.push({ ...r, reminder: true }));
   }
   for (const { song, kind } of todo) {
+    if (reopened.has(song.id)) continue; // ya volvió a Mezcla en esta pasada
     const file = files[song.id][kind];
     if (song.entrega === LABEL[kind].aprobada) continue; // ya está aprobada
     const last = rows.data.find((r) => sameId(r.song_id, song.id) && r.kind === kind);
@@ -274,4 +348,4 @@ async function syncAll({ remind = false } = {}) {
   return { ok: true, artists: artists.length, delivered, errors, reminders };
 }
 
-module.exports = { syncArtist, syncAll, _taskKind: taskKind, _closeTasks: closeTasks, _remindArtist: remindArtist, _remindMail: remindMail };
+module.exports = { syncArtist, syncAll, _reopenMix: reopenMix, _taskKind: taskKind, _closeTasks: closeTasks, _remindArtist: remindArtist, _remindMail: remindMail };

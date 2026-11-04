@@ -159,14 +159,18 @@
     const mode = own && d.state === "aprobar" ? "review" : "view";
     const key = draftKey(song);
     cur = {
-      song, kind: d.kind, own, mode, file: d.file, key, onSent, state: d.state, review,
+      song, kind: d.kind, own, mode, file: d.file, key, onSent, state: d.state, review, revised: !!d.revised,
       notes: mode === "review" ? (store.get(key) || []) : ((review && review.marks) || []).map((m) => ({ ...m })),
       general: mode === "review" ? (store.get(key + ":g") || "") : ((review && review.note) || ""),
     };
     // Para comparar: esta versión, las anteriores (A/B) y la maqueta (antes y después).
+    // Con el número del archivo («OKEY 4.wav», «Mix v3»): «Mix 4 · nueva» y
+    // «Mix 3», igual que en la carpeta. Sin número, como siempre.
     const total = (d.versions || []).length + 1;
-    cur.sources = [{ label: total > 1 ? "Nueva" : NOUN[d.kind], file: d.file, kind: "now" }]
-      .concat((d.versions || []).map((v, i) => ({ label: total === 2 ? "Anterior" : `Versión ${total - 1 - i}`, file: v, kind: "old" })))
+    const SHORT = { mezcla: "Mix", master: "Master" };
+    const named = (f) => (f && f.num ? `${SHORT[d.kind]} ${f.num}` : null);
+    cur.sources = [{ label: total > 1 ? (named(d.file) ? `${named(d.file)} · nueva` : "Nueva") : (named(d.file) || NOUN[d.kind]), file: d.file, kind: "now" }]
+      .concat((d.versions || []).map((v, i) => ({ label: named(v) || (total === 2 ? "Anterior" : `Versión ${total - 1 - i}`), file: v, kind: "old" })))
       .concat(d.demo ? [{ label: "Maqueta", file: d.demo, kind: "demo" }] : []);
     cur.srcIdx = 0;
     cur.lastOther = 1;
@@ -644,7 +648,9 @@
     const r = cur.review;
     let html = "", tone = "";
     if (cur.mode === "review") {
-      html = r && r.action === "cambios"
+      html = cur.revised
+        ? `<b>Versión nueva de la mezcla.</b> Ya habías aprobado la anterior, pero Zeche la volvió a escuchar y la mejoró antes del master. Compará las dos en el mismo segundo y contanos.`
+        : r && r.action === "cambios"
         ? `<b>Versión nueva.</b> Zeche ya trabajó lo que le pediste el ${esc(fmtDay(r.at))}. Escuchala y contanos.`
         : `<b>${cur.kind === "mezcla" ? "Mezcla lista" : "Master listo"}.</b> ${cur.kind === "mezcla" ? "Escuchala" : "Escuchalo"} con auriculares o en un buen parlante, de principio a fin.`;
     } else if (cur.state === "cambios") {
@@ -657,7 +663,9 @@
       html = r ? `<b>${cur.own ? "Aprobaste" : "Aprobó"} ${WHAT[cur.kind]} el ${esc(fmtDay(r.at))}.</b>` : `<b>${cur.kind === "mezcla" ? "Mezcla aprobada" : "Master aprobado"}.</b>`;
     } else if (!cur.own) {
       tone = "wait";
-      html = r && r.action === "cambios"
+      html = cur.revised
+        ? `<b>Mezcla nueva entregada.</b> Ya había aprobado la anterior: esperando que escuche esta y la apruebe.`
+        : r && r.action === "cambios"
         ? `<b>Versión nueva entregada.</b> Esperando que la escuche. Abajo, las notas que dejó sobre la anterior.`
         : `<b>${cur.kind === "mezcla" ? "Mezcla entregada" : "Master entregado"}.</b> Esperando que ${cur.kind === "mezcla" ? "la" : "lo"} escuche y ${cur.kind === "mezcla" ? "la" : "lo"} apruebe.`;
     }
