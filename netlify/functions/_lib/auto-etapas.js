@@ -346,6 +346,10 @@ async function onDistribution(song) {
   // Si ya la pidió el portal al aprobar el artista, no se hace dos veces.
   const fin = await require("./masters-finales").trigger(song.id).catch(() => "error");
   out.actions.push(`versiones finales ${fin}`);
+  // Distribución automática en pausa (hasta probar la API de ZIL): ni tarea
+  // ni aviso al equipo, aunque la pases a Distribución (DISTRIBUCION_AUTO=1
+  // en Netlify la vuelve a prender).
+  if (!ce().distributionAuto()) { out.actions.push("distribución automática en pausa"); return out; }
   // Si distribuye por su cuenta: ni tarea ni aviso al equipo.
   if (!ours) { out.actions.push("no distribuye con ZG"); return out; }
   const already = await openTasks(song.id, ["Distribución"]);

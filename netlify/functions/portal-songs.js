@@ -104,7 +104,9 @@ function toSong(page) {
     feat: plain(p.Feat && p.Feat.rich_text) || null,
     stage: step >= 0 ? STAGES[step][1] : DONE[stageName] || null,
     step, // 0 a 4 en proceso; -1 si terminó o no tiene etapa
-    done: stageName in DONE,
+    // Con el master aprobado ya es Terminada, aunque siga en Master (la
+    // distribución automática está en pausa: la pasa Zeche a mano).
+    done: stageName in DONE || (stageName === "Master" && (p.Entrega && p.Entrega.select && p.Entrega.select.name) === "Master aprobado"),
     release: dateOf(p["Fecha de lanzamiento"]),
     updated: page.last_edited_time || null,
     // Estado a mano de la mezcla o el master (Notion → "Entrega"): lo marcan

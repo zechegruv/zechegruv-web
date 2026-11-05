@@ -19,8 +19,11 @@
 //        Queda anotado el paso a Master en song_stage_log, así la función
 //        programada no lo vuelve a procesar.
 //   Master aprobado
-//     1. Notion: Entrega = "Master aprobado", Etapa actual = Distribución y
-//        sin fecha de entrega (ya no hay nada que entregar).
+//     1. Notion: Entrega = "Master aprobado" y sin fecha de entrega (ya no
+//        hay nada que entregar). Distribución automática en pausa (nov 2026,
+//        hasta probar la API de ZIL): la canción queda en Master y la pasás
+//        vos a Distribución. Para volver a pasarla sola: DISTRIBUCION_AUTO=1
+//        en Netlify.
 //     2. Tareas de Master abiertas → COMPLETADO.
 //     3. Calendario: "Entrega: Master …" y sesiones de master por venir con ✓.
 //     El resto sigue como siempre: la función programada (cada 15 min) crea la
@@ -39,6 +42,9 @@ const OFF = "-03:00";
 const LABEL = { mezcla: "Mezcla aprobada", master: "Master aprobado" };
 const STAGE = { mezcla: "Mix", master: "Master" };
 const NEXT = { mezcla: "Master", master: "Distribución" };
+// Distribución automática (pasar sola a Distribución, tarea y aviso al
+// equipo): en pausa salvo DISTRIBUCION_AUTO=1 en Netlify.
+const distributionAuto = () => process.env.DISTRIBUCION_AUTO === "1";
 const plain = (rich) => (rich || []).map((t) => t.plain_text || "").join("").trim();
 const dayAR = (d) => new Intl.DateTimeFormat("en-CA", { timeZone: TZ }).format(d);
 const addDays = (date, n) => new Date(Date.parse(`${date}T12:00:00Z`) + n * 86400000).toISOString().slice(0, 10);
@@ -140,7 +146,8 @@ async function closeStage({ page, kind, now = new Date() }) {
     delivery: p["Fecha de entrega"] && p["Fecha de entrega"].date && p["Fecha de entrega"].date.start ? p["Fecha de entrega"].date.start.slice(0, 10) : null,
   };
   const out = { kind, notion: false, tasks: [], calendar: null, master: null };
-  const props = { Entrega: { select: { name: LABEL[kind] } }, "Etapa actual": { select: { name: NEXT[kind] } } };
+  const props = { Entrega: { select: { name: LABEL[kind] } } };
+  if (kind === "mezcla" || distributionAuto()) props["Etapa actual"] = { select: { name: NEXT[kind] } };
   if (kind === "master") props["Fecha de entrega"] = { date: null };
   const patch = () => notion(`/pages/${song.id}`, { method: "PATCH", body: JSON.stringify({ properties: props }) });
   // Mezcla aprobada: primero se anota el paso a Master (ver claimMaster).
@@ -253,4 +260,4 @@ function nextSong(kind) {
   return null; // master: el portal ya lo muestra aprobado; pasa a Terminadas al recargar
 }
 
-module.exports = { closeStage, deliverStage, reopenStage, nextSong, tickCalendar, _masterDate: masterDate };
+module.exports = { closeStage, deliverStage, reopenStage, nextSong, tickCalendar, distributionAuto, _masterDate: masterDate };
