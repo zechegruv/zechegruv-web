@@ -10,6 +10,7 @@ create table if not exists public.masters_finales (
   source_version text,                      -- nombre del master que aprobó el artista
   folder_url     text,                      -- link a Masters/<canción>
   files          jsonb,                     -- [{ key, label, name, size }]
+  moved          jsonb,                     -- versiones anteriores que pasaron a Exports
   loudness       jsonb,                     -- { lufs, lra, truePeak, mp3Peak, source }
   error          text,
   started_at     timestamptz not null default now(),
@@ -18,3 +19,6 @@ create table if not exists public.masters_finales (
 
 alter table public.masters_finales enable row level security;
 -- Sin políticas: solo la clave secreta (service_role) lee y escribe.
+
+-- Si ya habías corrido una versión anterior de este archivo:
+alter table public.masters_finales add column if not exists moved jsonb;

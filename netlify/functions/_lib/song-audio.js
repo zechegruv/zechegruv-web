@@ -156,6 +156,7 @@ const toAudio = (item, folder, section) => {
     modified: serverDate(item),
     size: item.size || 0,
     url: item["@content.downloadUrl"] || null,
+    id: item.id || null, // para moverlo (masters-finales.js)
   };
 };
 

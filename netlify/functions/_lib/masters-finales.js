@@ -22,6 +22,9 @@
 // artista aprueba otra versión del master más adelante, se vuelve a armar
 // con la nueva (los archivos de la carpeta se reemplazan).
 //
+// Las versiones anteriores del master de esa canción (sueltas en Masters o
+// en su carpeta) se mueven a Exports / <Canción> (se crea si no está): en
+// Masters queda solo la carpeta de la canción con lo final.
 // Si la carpeta de la canción ya existe en Masters, se usa esa. La detección
 // de entregas (song-audio.js) reconoce estos archivos por el nombre ("(Master
 // aprobado)", "(WAV 24bit 48kHz)", ...) y no los toma como master nuevo.
@@ -42,6 +45,7 @@ const plain = (rich) => (rich || []).map((t) => t.plain_text || "").join("").tri
 const sameId = (a, b) => String(a || "").replace(/-/g, "") === String(b || "").replace(/-/g, "");
 
 const FOLDER_MASTERS = "Masters";
+const FOLDER_EXPORTS = "Exports";
 const MAX_ATTEMPTS = 3;
 const STALE_MS = 20 * 60 * 1000; // una corrida "procesando" más vieja que esto se cortó
 const CHUNK = 320 * 1024 * 32; // 10 MiB (múltiplo de 320 KiB, como pide OneDrive)
@@ -78,6 +82,17 @@ async function trigger(songId, { version = null, force = false } = {}) {
 
 // Los archivos que arma esto (para que song-audio.js no los tome como entregas).
 const FINAL_NAME = /\((master aprobado|wav 24 ?bit 48 ?khz|wav 16 ?bit 44[.,]1 ?khz|mp3 320 ?kbps)\)(\s*\(\d+\))?\.[a-z0-9]{2,4}$/i;
+
+const APPROVED_NAME = /\(master aprobado\)(?:\s*\(\d+\))?\.([a-z0-9]{2,4})$/i;
+
+// Al pasar a Exports, una versión de master nombrada solo con el título y el
+// número («OKEY V4.wav») lleva "Master" en el nombre («OKEY Master V4.wav»):
+// en Exports, sin esa palabra, el portal la tomaría por una mezcla.
+function exportName(name) {
+  if (/(^|[^a-z])(master|mastered|mstr)\d*([^a-z]|$)/i.test(String(name).replace(/\.[a-z0-9]{2,4}$/i, ""))) return null;
+  const out = String(name).replace(/(\s*[-_]?\s*)((?:v|ver|version)?\s?\d{1,3})(\.[a-z0-9]{2,4})$/i, " Master $2$3");
+  return out !== name ? out : String(name).replace(/(\.[a-z0-9]{2,4})$/i, " Master$1");
+}
 
 // Nombre de archivo prolijo: "Pazz - Seu amor (WAV 24bit 48kHz).wav".
 const fileBase = (artist, title) => drive.cleanName([artist, title].filter(Boolean).join(" - ")) || "Master";
@@ -184,7 +199,7 @@ async function approvedAudio(song, link, versionHint) {
   const mine = songs.find((s) => sameId(s.id, song.id));
   const slot = (mine && matchAudio(songs, audios)[mine.id]) || null;
   const masters = (slot && slot.versions && slot.versions.master) || [];
-  if (!masters.length) return null;
+  if (!masters.length) return { best: null, all: [] };
   let wanted = versionHint;
   if (!wanted) {
     const last = await db(`song_approvals?song_id=eq.${song.id}&kind=eq.master&action=eq.aprobada&select=version&order=created_at.desc&limit=1`);
@@ -196,9 +211,9 @@ async function approvedAudio(song, link, versionHint) {
     }
   }
   const byName = wanted && masters.find((a) => a.name === wanted);
-  // Entre las del mismo nombre o, si no, la más nueva; mejor un WAV que un MP3.
+  // La aprobada o, si no figura, la más nueva.
   const best = byName || slot.master || masters[0];
-  return best || null;
+  return best ? { best, all: masters } : null;
 }
 
 async function download(url, file) {
@@ -262,23 +277,65 @@ async function build(songId, { version = null, force = false } = {}) {
     if (!owner || !(owner.edit || owner.view)) throw new Error("El artista no tiene la carpeta de OneDrive cargada en el portal.");
     if (!owner.edit) throw new Error("Falta el link de edición de la carpeta del artista (para poder crear la carpeta y subir).");
 
-    const audio = await approvedAudio(song, owner.edit, version);
+    // Masters / <Canción> (si ya existe, esa misma) y Exports / <Canción>.
+    const root = await drive.folder(owner.edit);
+    if (root.error) throw new Error(`OneDrive: ${root.error}.`);
+    const folderName = drive.cleanName(song.title) || "Sin título";
+    const masters = await drive.subfolder(root, FOLDER_MASTERS);
+    const dest = masters && await drive.subfolder(masters, folderName);
+    if (!dest) throw new Error(`OneDrive no dejó crear la carpeta Masters/${song.title}.`);
+    const destItems = (await drive.list(dest)) || [];
+
+    const found = await approvedAudio(song, owner.edit, version);
+    let audio = found && found.best;
+    // Una corrida anterior ya pudo haber movido el aprobado a su carpeta:
+    // si no aparece suelto, se usa el que quedó ahí.
+    const keptApproved = destItems.find((i) => i.file && APPROVED_NAME.test(i.name));
+    if (!audio && keptApproved) audio = { name: keptApproved.name, url: keptApproved["@content.downloadUrl"], id: null, kept: true };
     if (!audio || !audio.url) throw new Error("No encontré el audio del master en la carpeta del artista.");
     const names = namesFor(song.artist, song.title, audio.name);
     const src = path.join(work, names.original);
     await download(audio.url, src);
 
-    // Masters / <Canción>
-    const root = await drive.folder(owner.edit);
-    if (root.error) throw new Error(`OneDrive: ${root.error}.`);
-    const masters = await drive.subfolder(root, FOLDER_MASTERS);
-    const dest = masters && await drive.subfolder(masters, drive.cleanName(song.title) || "Sin título");
-    if (!dest) throw new Error(`OneDrive no dejó crear la carpeta Masters/${song.title}.`);
+    // Las versiones anteriores del master (y, si se aprobó otra versión
+    // más adelante, el aprobado de antes) se van a Exports / <Canción>.
+    // Solo las de esta canción y que estaban en Masters; las versiones en
+    // vivo no se tocan. Nunca se pisa nada: si el nombre ya existe en
+    // Exports, OneDrive le agrega un número.
+    let exportsDest = null;
+    const toExports = async () => {
+      if (exportsDest) return exportsDest;
+      const ex = await drive.subfolder(root, FOLDER_EXPORTS);
+      exportsDest = ex && await drive.subfolder(ex, folderName);
+      if (!exportsDest) throw new Error(`OneDrive no dejó crear la carpeta Exports/${song.title}.`);
+      return exportsDest;
+    };
+    const moved = [], notMoved = [];
+    const sendToExports = async (item, name) => {
+      const ok = await drive.move(root, item.id, await toExports(), name || null, "rename").catch(() => null);
+      (ok ? moved : notMoved).push(name || item.name);
+      return ok;
+    };
+    if (keptApproved && !audio.kept) {
+      // Ya había un aprobado (de una versión anterior): pasa a Exports con
+      // un nombre que diga que fue el aprobado antes.
+      await sendToExports(keptApproved, keptApproved.name.replace(APPROVED_NAME, (m, ext) => `(Master aprobado antes).${ext}`));
+    }
 
-    // Primero el master que aprobó, tal cual; después cada versión apenas
-    // está hecha (se sube y se borra del disco temporal).
+    // El aprobado entra a Masters / <Canción> con su nombre final (se mueve,
+    // no queda duplicado). Si OneDrive no deja moverlo, se sube una copia.
     const files = [{ key: "original", label: "Master aprobado (original)", name: names.original, size: fs.statSync(src).size }];
-    await upload(dest, names.original, src);
+    let approvedMoved = false;
+    if (audio.id) approvedMoved = !!(await drive.move(root, audio.id, dest, names.original, "replace").catch(() => null));
+    else if (audio.kept) approvedMoved = audio.name === names.original;
+    if (!approvedMoved) await upload(dest, names.original, src);
+
+    // Las demás versiones de esta canción que estaban en Masters (sueltas o
+    // en subcarpetas), a Exports.
+    const others = ((found && found.all) || []).filter((a) => a.id && a.id !== audio.id && a.section === "masters" && !FINAL_NAME.test(a.name));
+    for (const a of others) await sendToExports(a, exportName(a.name));
+
+    // Cada versión apenas está hecha: se sube y se borra del disco temporal.
     const meta = { title: song.title, artist: song.artist, publisher: "ZECHE GRUV" };
     const made = await makeVersions(src, path.join(work, "versiones"), names, meta, {
       onFile: async (f) => { await upload(dest, f.name, f.path); fs.rmSync(f.path, { force: true }); },
@@ -288,7 +345,7 @@ async function build(songId, { version = null, force = false } = {}) {
     const folderUrl = (folderInfo && folderInfo.webUrl) || null;
 
     const summary = files.map((f) => ({ key: f.key, label: f.label, name: f.name, size: f.size }));
-    await finish(id, { status: "lista", error: null, source_version: audio.name, folder_url: folderUrl, files: summary, loudness: { ...made.loudness, mp3Peak: made.mp3Peak, source: made.source } });
+    await finish(id, { status: "lista", error: null, source_version: audio.name, folder_url: folderUrl, files: summary, moved: { toExports: moved, failed: notMoved, approvedMoved }, loudness: { ...made.loudness, mp3Peak: made.mp3Peak, source: made.source } });
 
     const src16 = made.source;
     await sendMail({
@@ -300,6 +357,9 @@ async function build(songId, { version = null, force = false } = {}) {
 <ul style="margin:0 0 14px;padding-left:18px;font-size:14px;line-height:1.7">${summary.map((f) => `<li>${esc(f.name)} <span style="color:#C9A980">(${mb(f.size)})</span></li>`).join("")}</ul>
 <p style="margin:0 0 6px;font-size:13px;color:#C9A980">Master aprobado: ${esc(audio.name)} · ${src16.bits ? `${src16.bits} bit` : esc(String(src16.codec || "").toUpperCase())}${src16.rate ? ` · ${src16.rate / 1000} kHz` : ""}</p>
 <p style="margin:0 0 14px;font-size:13px;color:#C9A980">Loudness: ${fmtNum(made.loudness.lufs, "LUFS")} integrado · true peak ${fmtNum(made.loudness.truePeak, "dBTP")} · rango ${fmtNum(made.loudness.lra, "LU")}</p>
+${moved.length ? `<p style="margin:0 0 14px;font-size:13px;line-height:1.5;color:#C9A980">Pasé a <b>Exports → ${esc(song.title)}</b> las versiones anteriores: ${moved.map(esc).join(", ")}.</p>` : ""}
+${notMoved.length ? `<p style="margin:0 0 14px;font-size:13px;line-height:1.5;color:#FF9C7A">No pude mover a Exports: ${notMoved.map(esc).join(", ")}. Quedaron en Masters.</p>` : ""}
+${approvedMoved ? "" : `<p style="margin:0 0 14px;font-size:13px;line-height:1.5;color:#FF9C7A">No pude mover el master aprobado (${esc(audio.name)}): subí una copia a la carpeta y el original quedó donde estaba.</p>`}
 ${made.notes.length ? `<div style="margin:0 0 14px;padding:12px 14px;background:#2E1607;border-radius:12px;font-size:13px;line-height:1.5;color:#FFD9A0">${made.notes.map(esc).join("<br>")}</div>` : ""}
 ${folderUrl ? `<a href="${esc(folderUrl)}" style="display:inline-block;background:#F5A623;color:#241105;font-weight:700;text-decoration:none;padding:12px 18px;border-radius:999px">Abrir la carpeta</a>` : ""}`),
     }).catch(() => false);
@@ -334,4 +394,4 @@ async function retryPending() {
   return { retried: due.length };
 }
 
-module.exports = { build, trigger, retryPending, validKey, _namesFor: namesFor, _claim: claim, FINAL_NAME };
+module.exports = { build, trigger, retryPending, validKey, _namesFor: namesFor, _claim: claim, _exportName: exportName, FINAL_NAME };

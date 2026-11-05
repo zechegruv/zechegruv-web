@@ -114,4 +114,34 @@ async function info(t) {
   return res.ok ? res.json() : null;
 }
 
-module.exports = { UPLOAD_HOST, auth, cleanName, folder, subfolder, remove, createUploadSession, putSmall, putChunk, sessionStatus, info };
+// Archivos y carpetas de adentro de una carpeta.
+async function list(t) {
+  const out = [];
+  let url = `${ONEDRIVE_API}/drives/${t.driveId}/items/${t.itemId}/children?$top=200`;
+  while (url) {
+    const res = await fetch(url, { headers: t.headers });
+    if (!res.ok) return null;
+    const page = await res.json();
+    out.push(...(page.value || []));
+    url = page["@odata.nextLink"] || null;
+  }
+  return out;
+}
+
+// Mueve un archivo (por su id) a otra carpeta, con otro nombre si se pasa.
+// conflict: "rename" (por defecto: si ya hay uno igual, guarda con otro
+// nombre, nunca pisa) o "replace". Devuelve el nombre con el que quedó, o null.
+async function move(t, itemId, dest, name, conflict = "rename") {
+  const body = { parentReference: { driveId: dest.driveId, id: dest.itemId }, "@name.conflictBehavior": conflict === "replace" ? "replace" : "rename" };
+  if (name) body.name = name;
+  const res = await fetch(`${ONEDRIVE_API}/drives/${t.driveId}/items/${itemId}?@name.conflictBehavior=${body["@name.conflictBehavior"]}`, {
+    method: "PATCH",
+    headers: { ...t.headers, "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) return null;
+  const out = await res.json().catch(() => ({}));
+  return out.name || name || true;
+}
+
+module.exports = { UPLOAD_HOST, auth, cleanName, folder, subfolder, remove, createUploadSession, putSmall, putChunk, sessionStatus, info, list, move };
