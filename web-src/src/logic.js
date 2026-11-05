@@ -1,7 +1,7 @@
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    this.state = { intro: 'on', introSun: '', heroSel: 4, heroPicked: false, here: '', floatOff: false, errName: false, errWa: false, crFrom: null, heroQ: '', heroOn: false, heroFocus: false, crQ: '', crSel: 0, crTag: 'todos', crPlay: false, demo: 'off', demoCh: 0, demoPlay: true, demoN: 0, mode: 'demo', pos: 0, playing: false, q: 0, qTick: 0, step: 0, plan: 'mes', labMM: false, custom: false, cxMode: 0, cxMenu: false, cxSel: [], cxReady: false, ev: null, cat: null, sending: false, from: 'web', pack: -1, faq: -1, table: false, pTick: 0, sent: false, origin: -1, now: Date.now() };
+    this.state = { intro: 'on', introSun: '', heroSel: 4, heroPicked: false, here: '', floatOff: false, errName: false, errWa: false, crFrom: null, heroQ: '', heroOn: false, heroFocus: false, crQ: '', crSel: 0, crTag: 'todos', crPlay: false, demo: 'off', demoCh: 0, demoPlay: true, demoN: 0, mode: 'demo', pos: 0, playing: false, q: 0, qTick: 0, step: 0, plan: 'mes', labMM: false, custom: false, cxMode: 0, cxMenu: false, cxSel: [], cxReady: false, cxHours: 2, cxDetail: {}, ev: null, cat: null, sending: false, from: 'web', pack: -1, faq: -1, table: false, pTick: 0, sent: false, origin: -1, now: Date.now() };
     this.hero = null;
     this.stack = null;
   }
@@ -314,23 +314,25 @@ class Component extends DCLogic {
     });
     // Armá tu pack: modalidad y servicios sueltos (mínimo 2 para consultar).
     // Lo que llega a Netlify y a WhatsApp queda en español.
+    // [nombre en español (va a Netlify y WhatsApp), nombre en pantalla,
+    //  'horas' = se elige la duración, o el ejemplo para contar el proyecto]
     var CX_SERVICES = [
-      ['Producción de tu canción', T('Producción de tu canción')],
+      ['Sesión de grabación', T('Sesión de grabación'), 'horas'],
       ['Instrumental a medida', T('Instrumental a medida')],
-      ['Sesión de grabación', T('Sesión de grabación')],
       ['Grabación de instrumentos y coros', T('Grabación de instrumentos y coros')],
-      ['Mezcla', T('Mezcla')],
-      ['Mastering', 'Mastering'],
-      ['Mezcla por stems', T('Mezcla por stems')],
-      ['Pistas para shows en vivo', T('Pistas para shows en vivo')],
+      ['Mezcla', T('Mezcla'), T('Contanos el proyecto: cuántas canciones, género, cuántas pistas')],
+      ['Mastering', 'Mastering', T('Contanos el proyecto: cuántas canciones y para qué salida')],
+      ['Mezcla por stems', T('Mezcla por stems'), T('Contanos el proyecto: cuántas canciones y cuántos stems')],
+      ['Pistas y Tune en tu show en vivo', T('Pistas y Tune en tu show en vivo'), T('Contanos el show: fecha, lugar, duración y cuántos temas')],
       ['Distribución', T('Distribución')],
-      ['Portada', T('Portada')],
-      ['Videoclip', 'Videoclip'],
-      ['VideoLyrics', 'VideoLyrics']
+      ['Portada', T('Portada')]
     ];
+    var CX_HOURS = [2, 3, 4];
     var CX_MODES = [['Presencial', T('Presencial')], ['Virtual', 'Virtual']];
     var cxSel = st.cxSel || [];
-    var cxOk = cxSel.length >= 2;
+    var cxDetail = st.cxDetail || {};
+    var needs = function (i) { var x = CX_SERVICES[i][2]; return x && x !== 'horas'; };
+    var cxOk = cxSel.length >= 2 && cxSel.every(function (i) { return !needs(i) || String(cxDetail[i] || '').trim().length >= 3; });
     var cxModes = CX_MODES.map(function (m, i) {
       var on = st.cxMode === i;
       return { label: m[1], checked: on ? 'true' : 'false', pick: function () { if (!on) self.setState({ cxMode: i }); },
@@ -339,16 +341,33 @@ class Component extends DCLogic {
     var cxKnob = 'position: absolute; top: 4px; bottom: 4px; left: 4px; width: 104px; border-radius: 999px; background: #F07800; transition: transform 400ms cubic-bezier(.23,1,.32,1); transform: translateX(' + (st.cxMode * 104) + 'px)';
     var cxServices = CX_SERVICES.map(function (sv, i) {
       var on = cxSel.indexOf(i) >= 0;
+      var isHours = sv[2] === 'horas', hasDetail = needs(i);
       return { label: sv[1], checked: on ? 'true' : 'false',
+        cell: 'cx-cell' + (on && (isHours || hasDetail) ? ' cx-wide' : ''),
         pick: function () { var next = on ? cxSel.filter(function (x) { return x !== i; }) : cxSel.concat([i]).sort(function (a, b) { return a - b; }); self.setState({ cxSel: next }); },
         style: 'color: ' + (on ? '#FFF4DC' : '#E2C9A2') + '; font-weight: ' + (on ? '600' : '400'),
         box: 'flex: none; width: 18px; height: 18px; box-sizing: border-box; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; transition: background-color 200ms ease, border-color 200ms ease; ' + (on ? 'background: #F07800; border: 1.5px solid #F07800' : 'border: 1.5px solid rgba(240, 224, 192, 0.45)'),
-        tick: 'transition: opacity 200ms ease, transform 250ms cubic-bezier(.23,1,.32,1); opacity: ' + (on ? '1' : '0') + '; transform: scale(' + (on ? '1' : '0.6') + ')' };
+        tick: 'transition: opacity 200ms ease, transform 250ms cubic-bezier(.23,1,.32,1); opacity: ' + (on ? '1' : '0') + '; transform: scale(' + (on ? '1' : '0.6') + ')',
+        showHours: on && isHours, hoursLabel: T('Duración de la sesión'),
+        hours: CX_HOURS.map(function (h) {
+          var hs = st.cxHours === h;
+          return { label: h + ' h', checked: hs ? 'true' : 'false', pick: function () { self.setState({ cxHours: h }); },
+            style: 'font: inherit; font-size: 13.5px; font-weight: 600; padding: 7px 14px; border-radius: 999px; cursor: pointer; transition: background-color 200ms ease, color 200ms ease; ' + (hs ? 'background: #F07800; color: #241105; border: 1px solid #F07800' : 'background: transparent; color: #F0E0C0; border: 1px solid rgba(240, 224, 192, 0.3)') };
+        }),
+        showDetail: on && hasDetail, detailLabel: hasDetail ? sv[2] : '', detailHint: hasDetail ? sv[2] : '', detail: cxDetail[i] || '',
+        onDetail: function (e) { var d = {}; for (var k in self.state.cxDetail) d[k] = self.state.cxDetail[k]; d[i] = e.target.value; self.setState({ cxDetail: d }); }
+      };
     });
-    var cxNames = cxSel.map(function (i) { return CX_SERVICES[i][1]; });
+    var cxNames = cxSel.map(function (i) { return CX_SERVICES[i][1] + (CX_SERVICES[i][2] === 'horas' ? ' ' + st.cxHours + ' h' : ''); });
     var cxTrigger = !cxSel.length ? T('Elegí los servicios')
       : (cxSel.length <= 2 ? cxNames.join(' + ') : T('{n} servicios').replace('{n}', cxSel.length));
-    var cxValue = st.pack === 4 && cxOk ? cxSel.map(function (i) { return CX_SERVICES[i][0]; }).join(', ') : '';
+    // Lo que llega a Netlify: "Sesión de grabación (3 h), Mezcla (2 canciones de trap)".
+    var cxList = cxSel.map(function (i) {
+      var sv = CX_SERVICES[i];
+      var extra = sv[2] === 'horas' ? st.cxHours + ' h' : (needs(i) ? String(cxDetail[i] || '').trim() : '');
+      return sv[0] + (extra ? ' (' + extra + ')' : '');
+    }).join(', ');
+    var cxValue = st.pack === 4 && cxOk ? cxList : '';
     var cxModeValue = st.pack === 4 && cxOk ? CX_MODES[st.cxMode][0] : '';
 
     var packNames = ['Zeche Lab', 'Zeche Release', 'Full Gruv', T('Todavía no sé')].concat(st.cxReady ? [T('Pack a medida')] : []);
@@ -366,7 +385,7 @@ class Component extends DCLogic {
         style: 'font: inherit; font-size: 14px; font-weight: 500; padding: 9px 15px; border-radius: 999px; cursor: pointer; ' + (sel ? 'background: #F07800; color: #241105; border: 1px solid #F07800' : 'background: transparent; color: #F0E0C0; border: 1px solid rgba(240, 224, 192, 0.3)') };
     });
     var packEs = ['Zeche Lab', 'Zeche Release', 'Full Gruv', 'Todavía no sé', 'Pack a medida'];
-    var packValue = st.pack === 4 ? 'Pack a medida (' + CX_MODES[st.cxMode][0].toLowerCase() + '): ' + cxSel.map(function (i) { return CX_SERVICES[i][0]; }).join(', ') : st.pack >= 0 ? packEs[st.pack] + (st.pack === 0 && st.labMM ? ' + mezcla y master' : '') + (st.pack < 3 && plan.months > 1 ? ' (plan de ' + plan.months + ' meses)' : '') : '';
+    var packValue = st.pack === 4 ? 'Pack a medida (' + CX_MODES[st.cxMode][0].toLowerCase() + '): ' + cxList : st.pack >= 0 ? packEs[st.pack] + (st.pack === 0 && st.labMM ? ' + mezcla y master' : '') + (st.pack < 3 && plan.months > 1 ? ' (plan de ' + plan.months + ' meses)' : '') : '';
     var originValue = st.origin >= 0 ? originsList[st.origin][1] : '';
     // Bandeja de discos
     // Todo el catálogo, del más nuevo al más viejo (el mismo que la web trae de Spotify).

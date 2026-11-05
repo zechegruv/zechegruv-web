@@ -440,6 +440,12 @@ header nav .zg-btn{padding:10px 15px !important;font-size:14px !important}
 .cx-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;padding-top:6px}
 .cx-item{display:flex;align-items:center;gap:10px;width:100%;background:transparent;border:0;border-radius:12px;font:inherit;font-size:14.5px;text-align:left;padding:9px 10px;cursor:pointer;transition:background-color 200ms ease,color 200ms ease}
 .cx-item:hover{background:rgba(240,224,192,.06)}
+.cx-cell{display:flex;flex-direction:column;min-width:0}
+.cx-cell.cx-wide{grid-column:1/-1}
+.cx-sub{padding:0 10px 8px 38px}
+.cx-detail{width:100%;box-sizing:border-box;background:#241105;border:1px solid rgba(240,224,192,.22);border-radius:12px;color:#FFF4DC;font:inherit;font-size:14px;padding:10px 12px;transition:border-color 200ms ease,box-shadow 200ms ease}
+.cx-detail::placeholder{color:#B39272}
+.cx-detail:focus{outline:none;border-color:#F07800;box-shadow:0 0 0 3px rgba(240,120,0,.2)}
 .cx-item:focus-visible,.cx-trigger:focus-visible{outline:2px solid #F07800;outline-offset:2px}
 @media (max-width:560px){.cx-list{grid-template-columns:1fr}.cx-row > *{flex:1 1 100%}.cx-row [role=radiogroup]{flex:0 0 auto}.cx-send{order:5}}
 @media (prefers-reduced-motion:reduce){.cx *{transition:none !important}}
@@ -805,7 +811,7 @@ header nav .zg-btn{padding:10px 15px !important;font-size:14px !important}
 <button type="button" class="zg-press cx-trigger" onClick="{{ cxToggleMenu }}" aria-expanded="{{ cxMenuExpanded }}" aria-controls="zg-cx-menu" style="flex: 1 1 200px; display: inline-flex; align-items: center; justify-content: space-between; gap: 10px; background: #241105; border: 1px solid rgba(240, 224, 192, 0.22); color: #FFF4DC; font: inherit; font-weight: 500; font-size: 15px; padding: 11px 16px; border-radius: 999px; cursor: pointer; text-align: left; min-width: 0"><span style="min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ cxTrigger }}</span><span aria-hidden="true" style="{{ cxChevron }}"><svg width="12" height="12" viewBox="0 0 12 12"><path d="M2 4l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></span></button>
 <button type="button" class="zg-press cx-send" onClick="{{ cxSend }}" aria-disabled="{{ cxDisabled }}" style="{{ cxSendStyle }}">Consultar presupuesto</button>
 <div id="zg-cx-menu" class="{{ cxMenuAcc }} cx-menu"><div><div class="cx-list" role="group" aria-label="Servicios">
-<sc-for list="{{ cxServices }}" as="sv" hint-placeholder-count="11"><button type="button" role="checkbox" class="cx-item" onClick="{{ sv.pick }}" aria-checked="{{ sv.checked }}" style="{{ sv.style }}"><span aria-hidden="true" style="{{ sv.box }}"><svg width="11" height="11" viewBox="0 0 12 12" style="{{ sv.tick }}"><path d="M2.5 6.3l2.3 2.3L9.5 3.8" fill="none" stroke="#241105" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>{{ sv.label }}</button></sc-for>
+<sc-for list="{{ cxServices }}" as="sv" hint-placeholder-count="9"><div class="{{ sv.cell }}"><button type="button" role="checkbox" class="cx-item" onClick="{{ sv.pick }}" aria-checked="{{ sv.checked }}" style="{{ sv.style }}"><span aria-hidden="true" style="{{ sv.box }}"><svg width="11" height="11" viewBox="0 0 12 12" style="{{ sv.tick }}"><path d="M2.5 6.3l2.3 2.3L9.5 3.8" fill="none" stroke="#241105" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>{{ sv.label }}</button><sc-if value="{{ sv.showHours }}" hint-placeholder-val="{{ false }}"><div role="radiogroup" aria-label="{{ sv.hoursLabel }}" class="cx-sub" style="display: flex; gap: 6px"><sc-for list="{{ sv.hours }}" as="hr" hint-placeholder-count="3"><button type="button" role="radio" class="zg-press" onClick="{{ hr.pick }}" aria-checked="{{ hr.checked }}" style="{{ hr.style }}">{{ hr.label }}</button></sc-for></div></sc-if><sc-if value="{{ sv.showDetail }}" hint-placeholder-val="{{ false }}"><div class="cx-sub"><input type="text" class="cx-detail" maxlength="160" aria-label="{{ sv.detailLabel }}" placeholder="{{ sv.detailHint }}" value="{{ sv.detail }}" onInput="{{ sv.onDetail }}"></div></sc-if></div></sc-for>
 </div></div></div>
 </div>
 </div>
