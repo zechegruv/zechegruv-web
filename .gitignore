@@ -14,3 +14,7 @@ diseno/manuales/
 # Tour en video del portal (video-tour): dependencias y grabaciones pesadas
 video-tour/node_modules/
 video-tour/grabaciones/
+
+# Armado del inicio (web-src): dependencias y archivos intermedios
+web-src/node_modules/
+web-src/.gen/

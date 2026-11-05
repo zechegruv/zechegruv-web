@@ -1,0 +1,15 @@
+{
+  "name": "zechegruv-web-src",
+  "private": true,
+  "description": "Arma el inicio de zechegruv.com (node compile.mjs). No es parte de las funciones de Netlify.",
+  "type": "module",
+  "scripts": {
+    "build": "node compile.mjs"
+  },
+  "dependencies": {
+    "esbuild": "^0.24.0",
+    "htmlparser2": "^9.1.0",
+    "preact": "^10.24.3",
+    "preact-render-to-string": "^6.5.11"
+  }
+}

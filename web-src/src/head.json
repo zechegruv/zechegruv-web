@@ -1,0 +1,23 @@
+{
+  "es": {
+    "title": "ZECHE GRUV — Sello y estudio en Buenos Aires",
+    "description": "Sello discográfico independiente y estudio en Buenos Aires. Tu canción nace acá: la armamos desde cero, la grabamos y la lanzamos, sesión a sesión, con Yaco Santana.",
+    "ogTitle": "ZECHE GRUV — Encontrá tu ADN sonoro.",
+    "locale": "es_AR",
+    "url": "https://www.zechegruv.com/"
+  },
+  "en": {
+    "title": "ZECHE GRUV — Record label and studio in Buenos Aires",
+    "description": "Independent record label and studio in Buenos Aires. Your song is born here: we build it from scratch, record it and release it, session by session, with Yaco Santana.",
+    "ogTitle": "ZECHE GRUV — Find your sound DNA.",
+    "locale": "en_US",
+    "url": "https://www.zechegruv.com/en/"
+  },
+  "pt": {
+    "title": "ZECHE GRUV — Selo e estúdio em Buenos Aires",
+    "description": "Selo independente e estúdio em Buenos Aires. Sua música nasce aqui: a gente cria do zero, grava e lança, sessão a sessão, com Yaco Santana.",
+    "ogTitle": "ZECHE GRUV — Encontre seu DNA sonoro.",
+    "locale": "pt_BR",
+    "url": "https://www.zechegruv.com/pt/"
+  }
+}

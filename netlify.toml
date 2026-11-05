@@ -8,7 +8,7 @@
   # se buscan con find, así anda con cualquier cantidad de páginas.
   # Y el service worker del portal (portal/sw.js): con la versión nueva, el
   # celu se entera de que hay cambios y borra lo guardado de la anterior.
-  command = "sed -i \"s/__BUILD__/${COMMIT_REF:-local}/g\" ZECHE_GRUV_Web/index.html ZECHE_GRUV_Web/portal/index.html ZECHE_GRUV_Web/portal/sw.js ZECHE_GRUV_Web/assets/js/site.js && find ZECHE_GRUV_Web/pass ZECHE_GRUV_Web/artistas -name '*.html' -exec sed -i \"s/__BUILD__/${COMMIT_REF:-local}/g\" {} +"
+  command = "sed -i \"s/__BUILD__/${COMMIT_REF:-local}/g\" ZECHE_GRUV_Web/index.html ZECHE_GRUV_Web/en/index.html ZECHE_GRUV_Web/pt/index.html ZECHE_GRUV_Web/portal/index.html ZECHE_GRUV_Web/portal/sw.js ZECHE_GRUV_Web/assets/js/site.js && find ZECHE_GRUV_Web/pass ZECHE_GRUV_Web/artistas -name '*.html' -exec sed -i \"s/__BUILD__/${COMMIT_REF:-local}/g\" {} +"
 
 [functions]
   node_bundler = "esbuild"
@@ -96,6 +96,11 @@
   for = "/assets/i18n/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
+# Inicio nuevo (web-src/): estilos y código con ?v=<versión>, un año.
+[[headers]]
+  for = "/assets/web/home.*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
 [[headers]]
   for = "/assets/grain-v1.webp"
   [headers.values]
@@ -103,6 +108,14 @@
 
 # Fotos, portadas y videos: un día. Si se reemplaza una imagen con el mismo
 # nombre, a más tardar al día siguiente todos ven la nueva.
+[[headers]]
+  for = "/assets/web/*.webp"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"
+[[headers]]
+  for = "/assets/web/*.mp4"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"
 [[headers]]
   for = "/assets/camps/*"
   [headers.values]
