@@ -183,7 +183,9 @@ async function listAudio(shareLink) {
     const items = await children(driveId, sec.id);
     const section = norm(sec.name);
     found.push(...audioOf(items, null, section));
-    const subs = items.filter((i) => i.folder && i.folder.childCount);
+    // Masters → Aprobados: la carpeta de versiones finales que se arma sola
+    // al aprobar el master (masters-finales.js). No es una entrega nueva.
+    const subs = items.filter((i) => i.folder && i.folder.childCount && !(section === "masters" && norm(i.name) === "aprobados"));
     await Promise.all(subs.map(async (sub) => {
       found.push(...audioOf(await children(driveId, sub.id), sub.name, section));
     }));

@@ -175,6 +175,12 @@ exports.handler = async (event) => {
   // así el mail ya dice cómo quedó todo.
   const closed = action === "aprobada" ? await closeStage({ page: page.data, kind }).catch((e) => ({ notion: false, error: String(e && e.message) })) : null;
   if (closed && !closed.notion) console.error("cierre-etapa:", closed.error || "notion");
+  // Master aprobado: se arma sola la carpeta Masters/Aprobados/<canción> con
+  // el master que aprobó y sus versiones finales (_lib/masters-finales.js).
+  // Corre de fondo: el artista no espera.
+  if (action === "aprobada" && kind === "master" && closed && closed.notion) {
+    await require("./_lib/masters-finales").trigger(songId, { version }).catch(() => null);
+  }
   const closedLine = !closed ? "" : closed.notion
     ? `La canción pasó sola a ${kind === "mezcla" ? "Master" : "Distribución"} en Notion${closed.tasks.length ? ` y quedó completada la tarea ${closed.tasks.map((n) => `«${n}»`).join(", ")}` : ""}.${closed.master && closed.master.session ? ` Te agendé la sesión de master: ${fmtWhen(closed.master.session.start)} h (Notion y Google Calendar), con la entrega ese día. Si no te sirve, movela desde el Inicio (Reprogramar).` : closed.master && closed.master.date ? ` Entrega del master: ${closed.master.date}.` : ""}${closed.calendar === "error" ? " Ojo: Google Calendar no respondió, revisá el evento." : ""}`
     : "Ojo: Notion no dejó cerrar la etapa. Revisá la canción (Entrega, Etapa actual y su tarea).";
@@ -211,7 +217,7 @@ ${note ? `<p style="margin:0 0 14px;padding:14px 16px;background:#2E1607;border-
 ${marks.length ? `<table role="presentation" style="width:100%;border-collapse:separate;border-spacing:0 6px;margin:0 0 14px">${marks.map((m) => `<tr><td style="width:64px;vertical-align:top;padding:12px 0 12px 14px;background:#2E1607;border-radius:12px 0 0 12px;font-family:'Courier New',monospace;font-size:15px;font-weight:700;color:#F5A623">${clock(m.t)}</td><td style="padding:12px 14px;background:#2E1607;border-radius:0 12px 12px 0;font-size:15px;line-height:1.45">${esc(m.text)}${voiceLinks[marks.indexOf(m)] ? ` <a href="${voiceLinks[marks.indexOf(m)]}" style="color:#F5A623;font-weight:700;text-decoration:none">▶ Escuchar nota de voz</a>` : ""}</td></tr>`).join("")}</table>` : ""}
 ${version ? `<p style="margin:0 0 10px;font-size:12px;color:#C9A980">Escuchó: ${esc(version)}</p>` : ""}
 ${saved.ok ? "" : `<p style="margin:0 0 10px;font-size:12px;color:#FF9C7A">Ojo: no quedó guardado en el portal (${esc(dbDetail(saved))}). Las notas están solo en este mail y en Notion.</p>`}
-<p style="margin:0;font-size:13px;color:#C9A980">${action === "aprobada" && kind === "master" ? `${esc(closedLine)} En unos minutos le avisamos al equipo de distribución.` : action === "aprobada" ? `${esc(closedLine)} Ya podés arrancar con el master.` : esc(reopenLine) + (marks.length ? "En el portal (su perfil → Canciones) tenés el audio con cada nota marcada: tocás una y salta a ese momento. " : "") + "Respondé este mail para hablar con el artista."}</p>
+<p style="margin:0;font-size:13px;color:#C9A980">${action === "aprobada" && kind === "master" ? `${esc(closedLine)} En unos minutos le avisamos al equipo de distribución y te llega otro mail con la carpeta de versiones finales (Masters → Aprobados).` : action === "aprobada" ? `${esc(closedLine)} Ya podés arrancar con el master.` : esc(reopenLine) + (marks.length ? "En el portal (su perfil → Canciones) tenés el audio con cada nota marcada: tocás una y salta a ese momento. " : "") + "Respondé este mail para hablar con el artista."}</p>
 </div>`,
     }).catch(() => false),
     notion("/comments", {

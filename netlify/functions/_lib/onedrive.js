@@ -66,11 +66,13 @@ async function subfolder(parent, name) {
 }
 
 // Abre una subida por partes y devuelve la dirección a la que mandarlas.
-async function createUploadSession(target, name) {
+// conflict: "rename" (por defecto: nunca pisa nada) o "replace" (solo para
+// archivos que arma el portal, como las versiones finales de un master).
+async function createUploadSession(target, name, conflict = "rename") {
   const res = await fetch(`${target.itemPath(name)}/createUploadSession`, {
     method: "POST",
     headers: { ...target.headers, "Content-Type": "application/json" },
-    body: JSON.stringify({ item: { "@name.conflictBehavior": "rename" } }),
+    body: JSON.stringify({ item: { "@name.conflictBehavior": conflict === "replace" ? "replace" : "rename" } }),
   });
   const session = res.ok ? await res.json() : null;
   return session && session.uploadUrl ? session.uploadUrl : null;
@@ -106,4 +108,10 @@ async function remove(parent, name) {
   return del.ok || del.status === 404 ? "deleted" : "error";
 }
 
-module.exports = { UPLOAD_HOST, auth, cleanName, folder, subfolder, remove, createUploadSession, putSmall, putChunk, sessionStatus };
+// Datos de una carpeta o archivo (para el link webUrl de una carpeta).
+async function info(t) {
+  const res = await fetch(`${ONEDRIVE_API}/drives/${t.driveId}/items/${t.itemId}`, { headers: t.headers });
+  return res.ok ? res.json() : null;
+}
+
+module.exports = { UPLOAD_HOST, auth, cleanName, folder, subfolder, remove, createUploadSession, putSmall, putChunk, sessionStatus, info };

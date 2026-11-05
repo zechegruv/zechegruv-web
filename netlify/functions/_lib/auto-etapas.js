@@ -341,6 +341,11 @@ async function onDistribution(song) {
     const c = await ce().tickCalendar(song, kind, song.delivery, new Date(), "La canción pasó a Distribución").catch(() => "error");
     if (/^tildados/.test(c)) out.actions.push(`calendario ${kind} ${c}`);
   }
+  // Carpeta del master aprobado con sus versiones finales (WAV 24/48,
+  // WAV 16/44.1, MP3 320), distribuya o no con ZG (_lib/masters-finales.js).
+  // Si ya la pidió el portal al aprobar el artista, no se hace dos veces.
+  const fin = await require("./masters-finales").trigger(song.id).catch(() => "error");
+  out.actions.push(`versiones finales ${fin}`);
   // Si distribuye por su cuenta: ni tarea ni aviso al equipo.
   if (!ours) { out.actions.push("no distribuye con ZG"); return out; }
   const already = await openTasks(song.id, ["Distribución"]);

@@ -19,6 +19,13 @@
 [functions."auto-entregas"]
   schedule = "*/15 * * * *"
 
+# Carpeta del master aprobado con sus versiones finales (WAV 24 bit 48 kHz,
+# WAV 16 bit 44.1 kHz y MP3 320): función de fondo (hasta 15 minutos) con
+# ffmpeg adentro (netlify/functions/_lib/masters-finales.js).
+[functions."masters-finales-background"]
+  external_node_modules = ["ffmpeg-static"]
+  included_files = ["node_modules/ffmpeg-static/ffmpeg"]
+
 # Estado de los lanzamientos en las tiendas (ZIL): cada hora, al minuto 23.
 # Mantiene al artista al tanto y le avisa cuando ya está publicado
 # (netlify/functions/zil-sync.js).

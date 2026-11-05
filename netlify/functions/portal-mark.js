@@ -77,6 +77,8 @@ exports.handler = async (event) => {
   let synced = null;
   if (action === "aprobada") {
     synced = await closeStage({ page: page.data, kind }).catch(() => ({ notion: false }));
+    // Master aprobado (marcado por vos): carpeta de versiones finales, de fondo.
+    if (kind === "master" && synced && synced.notion) await require("./_lib/masters-finales").trigger(songId).catch(() => null);
     if (!synced.notion) return json(502, { error: "Notion no dejó guardarlo (falta la columna «Entrega» o la integración no puede editar). Probá de nuevo en un momento." });
   } else {
     const props = { Entrega: { select: { name: LABEL[kind][action] } } };
