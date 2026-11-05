@@ -4,7 +4,7 @@
 // "Master aprobado" y la canción pasa a Distribución), en su carpeta de
 // OneDrive se arma sola:
 //
-//   Masters / Aprobados / <Canción> /
+//   Masters / <Canción> /
 //     <Artista> - <Canción> (Master aprobado).wav   ← el que aprobó, tal cual
 //     <Artista> - <Canción> (WAV 24bit 48kHz).wav
 //     <Artista> - <Canción> (WAV 16bit 44.1kHz).wav
@@ -22,8 +22,9 @@
 // artista aprueba otra versión del master más adelante, se vuelve a armar
 // con la nueva (los archivos de la carpeta se reemplazan).
 //
-// La subcarpeta Aprobados no la mira la detección de entregas
-// (song-audio.js): lo que hay ahí no cuenta como master nuevo para aprobar.
+// Si la carpeta de la canción ya existe en Masters, se usa esa. La detección
+// de entregas (song-audio.js) reconoce estos archivos por el nombre ("(Master
+// aprobado)", "(WAV 24bit 48kHz)", ...) y no los toma como master nuevo.
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
@@ -41,7 +42,6 @@ const plain = (rich) => (rich || []).map((t) => t.plain_text || "").join("").tri
 const sameId = (a, b) => String(a || "").replace(/-/g, "") === String(b || "").replace(/-/g, "");
 
 const FOLDER_MASTERS = "Masters";
-const FOLDER_APPROVED = "Aprobados";
 const MAX_ATTEMPTS = 3;
 const STALE_MS = 20 * 60 * 1000; // una corrida "procesando" más vieja que esto se cortó
 const CHUNK = 320 * 1024 * 32; // 10 MiB (múltiplo de 320 KiB, como pide OneDrive)
@@ -75,6 +75,9 @@ async function trigger(songId, { version = null, force = false } = {}) {
     clearTimeout(timer);
   }
 }
+
+// Los archivos que arma esto (para que song-audio.js no los tome como entregas).
+const FINAL_NAME = /\((master aprobado|wav 24 ?bit 48 ?khz|wav 16 ?bit 44[.,]1 ?khz|mp3 320 ?kbps)\)(\s*\(\d+\))?\.[a-z0-9]{2,4}$/i;
 
 // Nombre de archivo prolijo: "Pazz - Seu amor (WAV 24bit 48kHz).wav".
 const fileBase = (artist, title) => drive.cleanName([artist, title].filter(Boolean).join(" - ")) || "Master";
@@ -265,13 +268,12 @@ async function build(songId, { version = null, force = false } = {}) {
     const src = path.join(work, names.original);
     await download(audio.url, src);
 
-    // Masters / Aprobados / <Canción>
+    // Masters / <Canción>
     const root = await drive.folder(owner.edit);
     if (root.error) throw new Error(`OneDrive: ${root.error}.`);
     const masters = await drive.subfolder(root, FOLDER_MASTERS);
-    const approved = masters && await drive.subfolder(masters, FOLDER_APPROVED);
-    const dest = approved && await drive.subfolder(approved, drive.cleanName(song.title) || "Sin título");
-    if (!dest) throw new Error("OneDrive no dejó crear la carpeta Masters/Aprobados.");
+    const dest = masters && await drive.subfolder(masters, drive.cleanName(song.title) || "Sin título");
+    if (!dest) throw new Error(`OneDrive no dejó crear la carpeta Masters/${song.title}.`);
 
     // Primero el master que aprobó, tal cual; después cada versión apenas
     // está hecha (se sube y se borra del disco temporal).
@@ -294,7 +296,7 @@ async function build(songId, { version = null, force = false } = {}) {
       from: "ZG Portal <portal@zechegruv.com>",
       subject: `Versiones finales listas: «${song.title}»${song.artist ? ` de ${song.artist}` : ""}`,
       html: mailBox(`«${esc(song.title)}»${song.artist ? ` · ${esc(song.artist)}` : ""}: carpeta del master lista`,
-        `<p style="margin:0 0 12px;font-size:15px;line-height:1.5">En su carpeta de OneDrive, en <b>Masters → Aprobados → ${esc(song.title)}</b>, quedaron:</p>
+        `<p style="margin:0 0 12px;font-size:15px;line-height:1.5">En su carpeta de OneDrive, en <b>Masters → ${esc(song.title)}</b>, quedaron:</p>
 <ul style="margin:0 0 14px;padding-left:18px;font-size:14px;line-height:1.7">${summary.map((f) => `<li>${esc(f.name)} <span style="color:#C9A980">(${mb(f.size)})</span></li>`).join("")}</ul>
 <p style="margin:0 0 6px;font-size:13px;color:#C9A980">Master aprobado: ${esc(audio.name)} · ${src16.bits ? `${src16.bits} bit` : esc(String(src16.codec || "").toUpperCase())}${src16.rate ? ` · ${src16.rate / 1000} kHz` : ""}</p>
 <p style="margin:0 0 14px;font-size:13px;color:#C9A980">Loudness: ${fmtNum(made.loudness.lufs, "LUFS")} integrado · true peak ${fmtNum(made.loudness.truePeak, "dBTP")} · rango ${fmtNum(made.loudness.lra, "LU")}</p>
@@ -332,4 +334,4 @@ async function retryPending() {
   return { retried: due.length };
 }
 
-module.exports = { build, trigger, retryPending, validKey, _namesFor: namesFor, _claim: claim, FOLDER_APPROVED };
+module.exports = { build, trigger, retryPending, validKey, _namesFor: namesFor, _claim: claim, FINAL_NAME };

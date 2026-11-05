@@ -8,7 +8,7 @@ create table if not exists public.masters_finales (
   status         text not null default 'procesando' check (status in ('procesando', 'lista', 'error')),
   attempts       int  not null default 1,
   source_version text,                      -- nombre del master que aprobó el artista
-  folder_url     text,                      -- link a Masters/Aprobados/<canción>
+  folder_url     text,                      -- link a Masters/<canción>
   files          jsonb,                     -- [{ key, label, name, size }]
   loudness       jsonb,                     -- { lufs, lra, truePeak, mp3Peak, source }
   error          text,

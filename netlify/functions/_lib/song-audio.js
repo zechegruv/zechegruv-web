@@ -165,8 +165,12 @@ const toAudio = (item, folder, section) => {
 // podrían ser algo (con el título incluido) y matchAudio decide.
 // En Exports y Masters pasan todos los audios: uno nombrado solo con el
 // título y la versión («OKEY V4.wav») se reconoce recién al saber la canción.
+// Las versiones finales que se arman solas al aprobar el master (Masters →
+// <canción> → "… (Master aprobado).wav", "… (WAV 24bit 48kHz).wav", etc.,
+// masters-finales.js) no son una entrega nueva: no cuentan.
+const FINAL_NAME = /\((master aprobado|wav 24 ?bit 48 ?khz|wav 16 ?bit 44[.,]1 ?khz|mp3 320 ?kbps)\)(\s*\(\d+\))?\.[a-z0-9]{2,4}$/i;
 const audioOf = (items, folder, section) => items
-  .filter((i) => i.file && AUDIO.test(i.name) && (SECTION_KIND[section] || anyKind(i.name) || (folder && anyKind(i.name, null, folder))))
+  .filter((i) => i.file && AUDIO.test(i.name) && !FINAL_NAME.test(i.name) && (SECTION_KIND[section] || anyKind(i.name) || (folder && anyKind(i.name, null, folder))))
   .map((i) => toAudio(i, folder, section))
   .map((a) => ({ ...a, fresh: (Date.parse(a.modified || "") || 0) >= AUTO_SINCE }));
 
@@ -183,9 +187,7 @@ async function listAudio(shareLink) {
     const items = await children(driveId, sec.id);
     const section = norm(sec.name);
     found.push(...audioOf(items, null, section));
-    // Masters → Aprobados: la carpeta de versiones finales que se arma sola
-    // al aprobar el master (masters-finales.js). No es una entrega nueva.
-    const subs = items.filter((i) => i.folder && i.folder.childCount && !(section === "masters" && norm(i.name) === "aprobados"));
+    const subs = items.filter((i) => i.folder && i.folder.childCount);
     await Promise.all(subs.map(async (sub) => {
       found.push(...audioOf(await children(driveId, sub.id), sub.name, section));
     }));
