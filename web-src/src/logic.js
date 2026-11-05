@@ -203,8 +203,8 @@ class Component extends DCLogic {
     var PRICE = {
       lab: [260000, 230000, 200000],
       labMM: [350000, 325000, 300000], // Lab con mezcla y master
-      release: [420000, 370000, 320000],
-      full: [550000, 500000, 400000]
+      release: [400000, 350000, 300000],
+      full: [500000, 450000, 400000]
     };
     var pIdx = Math.max(0, PLANS.findIndex(function (x) { return x.id === st.plan; }));
     var plan = PLANS[pIdx];
@@ -276,7 +276,6 @@ class Component extends DCLogic {
       [T('¿Puedo cambiar de pack?'), T('Sí, cualquier mes. Subís cuando tenés más para hacer y bajás cuando necesitás un respiro.')],
       [T('¿Cuándo se paga?'), T('Entre el 1 y el 10 de cada mes. Con el plan de 3 o 6 meses pagás cada mes el precio con descuento.')],
       [T('¿Y si necesito grabar más?'), T('Sumás horas extra a $40.000 la hora, en cualquier pack.')],
-      [T('¿Qué pasa si corto el plan antes de terminarlo?'), T('Pagás la diferencia del descuento de los meses que hicimos. Nada más.')],
       [T('¿Los precios cambian?'), T('Se actualizan cada 3 meses, siempre con 30 días de aviso.')]
     ];
     var faqs = FAQ.map(function (f, i) {
