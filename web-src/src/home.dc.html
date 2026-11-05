@@ -435,6 +435,15 @@ header nav .zg-btn{padding:10px 15px !important;font-size:14px !important}
 }
 @media (max-width:360px){header nav .zg-ghost{display:none}}
 .pd-side,.pd-stage{min-width:0}
+/* Armá tu pack */
+.cx-menu{flex:1 1 100%;order:4}
+.cx-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;padding-top:6px}
+.cx-item{display:flex;align-items:center;gap:10px;width:100%;background:transparent;border:0;border-radius:12px;font:inherit;font-size:14.5px;text-align:left;padding:9px 10px;cursor:pointer;transition:background-color 200ms ease,color 200ms ease}
+.cx-item:hover{background:rgba(240,224,192,.06)}
+.cx-item:focus-visible,.cx-trigger:focus-visible{outline:2px solid #F07800;outline-offset:2px}
+@media (max-width:560px){.cx-list{grid-template-columns:1fr}.cx-row > *{flex:1 1 100%}.cx-row [role=radiogroup]{flex:0 0 auto}.cx-send{order:5}}
+@media (prefers-reduced-motion:reduce){.cx *{transition:none !important}}
+
 
 </style>
 </helmet>
@@ -782,7 +791,25 @@ header nav .zg-btn{padding:10px 15px !important;font-size:14px !important}
 </div>
 
 <div class="zg-rv" style="display: flex; flex-direction: column; gap: 8px">
-<button type="button" class="zg-press zg-ghost" onClick="{{ toggleTable }}" aria-expanded="{{ tableExpanded }}" style="align-self: center; background: transparent; border: 1px solid rgba(240, 224, 192, 0.4); color: #F0E0C0; font: inherit; font-weight: 500; font-size: 16px; padding: 14px 24px; border-radius: 999px; cursor: pointer; display: inline-flex; align-items: center; gap: 10px">{{ tableLabel }}<span aria-hidden="true" style="{{ tableIcon }}">+</span></button>
+<div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px">
+<button type="button" class="zg-press zg-ghost" onClick="{{ toggleTable }}" aria-expanded="{{ tableExpanded }}" style="background: transparent; border: 1px solid rgba(240, 224, 192, 0.4); color: #F0E0C0; font: inherit; font-weight: 500; font-size: 16px; padding: 14px 24px; border-radius: 999px; cursor: pointer; display: inline-flex; align-items: center; gap: 10px">{{ tableLabel }}<span aria-hidden="true" style="{{ tableIcon }}">+</span></button>
+<button type="button" class="zg-press zg-ghost" onClick="{{ toggleCustom }}" aria-expanded="{{ customExpanded }}" aria-controls="zg-custom" style="background: transparent; border: 1px solid rgba(240, 224, 192, 0.4); color: #F0E0C0; font: inherit; font-weight: 500; font-size: 16px; padding: 14px 24px; border-radius: 999px; cursor: pointer; display: inline-flex; align-items: center; gap: 10px">Armá tu pack<span aria-hidden="true" style="{{ customIcon }}">+</span></button>
+</div>
+<div id="zg-custom" class="{{ customAcc }}"><div><div style="padding-top: 16px; display: flex; justify-content: center">
+<div class="cx" style="width: 100%; max-width: 680px; box-sizing: border-box; background: #2E1607; border: 1px solid rgba(240, 224, 192, 0.14); border-radius: 22px; padding: 18px">
+<div class="cx-row" style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center">
+<div role="radiogroup" aria-label="Modalidad" style="position: relative; display: flex; background: #241105; border-radius: 999px; padding: 4px">
+<span aria-hidden="true" style="{{ cxKnob }}"></span>
+<sc-for list="{{ cxModes }}" as="m" hint-placeholder-count="2"><button type="button" role="radio" class="zg-press" onClick="{{ m.pick }}" aria-checked="{{ m.checked }}" style="{{ m.style }}">{{ m.label }}</button></sc-for>
+</div>
+<button type="button" class="zg-press cx-trigger" onClick="{{ cxToggleMenu }}" aria-expanded="{{ cxMenuExpanded }}" aria-controls="zg-cx-menu" style="flex: 1 1 200px; display: inline-flex; align-items: center; justify-content: space-between; gap: 10px; background: #241105; border: 1px solid rgba(240, 224, 192, 0.22); color: #FFF4DC; font: inherit; font-weight: 500; font-size: 15px; padding: 11px 16px; border-radius: 999px; cursor: pointer; text-align: left; min-width: 0"><span style="min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ cxTrigger }}</span><span aria-hidden="true" style="{{ cxChevron }}"><svg width="12" height="12" viewBox="0 0 12 12"><path d="M2 4l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></span></button>
+<button type="button" class="zg-press cx-send" onClick="{{ cxSend }}" aria-disabled="{{ cxDisabled }}" style="{{ cxSendStyle }}">Consultar presupuesto</button>
+<div id="zg-cx-menu" class="{{ cxMenuAcc }} cx-menu"><div><div class="cx-list" role="group" aria-label="Servicios">
+<sc-for list="{{ cxServices }}" as="sv" hint-placeholder-count="11"><button type="button" role="checkbox" class="cx-item" onClick="{{ sv.pick }}" aria-checked="{{ sv.checked }}" style="{{ sv.style }}"><span aria-hidden="true" style="{{ sv.box }}"><svg width="11" height="11" viewBox="0 0 12 12" style="{{ sv.tick }}"><path d="M2.5 6.3l2.3 2.3L9.5 3.8" fill="none" stroke="#241105" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>{{ sv.label }}</button></sc-for>
+</div></div></div>
+</div>
+</div>
+</div></div></div>
 <div class="{{ tableAcc }}"><div><div class="pk-tblwrap" style="padding-top: 16px">
 <div class="pk-tbl" role="table" aria-label="Qué incluye cada pack">
 <span role="columnheader"></span><span role="columnheader" style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 18px; border-top: 0">Zeche Lab</span><span role="columnheader" style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 18px; border-top: 0">Zeche Release</span><span role="columnheader" style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 18px; border-top: 0; background: #F07800; color: #241105; border-radius: 14px 14px 0 0">Full Gruv</span>
@@ -814,6 +841,8 @@ header nav .zg-btn{padding:10px 15px !important;font-size:14px !important}
 <input type="hidden" name="form-name" value="visita-estudio">
 <input type="hidden" name="pack" value="{{ packValue }}">
 <input type="hidden" name="como_nos_conocio" value="{{ originValue }}">
+<input type="hidden" name="servicios" value="{{ cxValue }}">
+<input type="hidden" name="modalidad" value="{{ cxModeValue }}">
 <input type="hidden" name="origen_boton" value="{{ fromValue }}">
 <input type="hidden" name="idioma" value="{{ langValue }}">
 <p style="position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden" aria-hidden="true"><label>No completar: <input name="bot-field" tabindex="-1" autocomplete="off"></label></p>

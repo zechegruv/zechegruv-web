@@ -1,7 +1,7 @@
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    this.state = { intro: 'on', introSun: '', heroSel: 4, heroPicked: false, here: '', floatOff: false, errName: false, errWa: false, crFrom: null, heroQ: '', heroOn: false, heroFocus: false, crQ: '', crSel: 0, crTag: 'todos', crPlay: false, demo: 'off', demoCh: 0, demoPlay: true, demoN: 0, mode: 'demo', pos: 0, playing: false, q: 0, qTick: 0, step: 0, plan: 'mes', labMM: false, ev: null, cat: null, sending: false, from: 'web', pack: -1, faq: -1, table: false, pTick: 0, sent: false, origin: -1, now: Date.now() };
+    this.state = { intro: 'on', introSun: '', heroSel: 4, heroPicked: false, here: '', floatOff: false, errName: false, errWa: false, crFrom: null, heroQ: '', heroOn: false, heroFocus: false, crQ: '', crSel: 0, crTag: 'todos', crPlay: false, demo: 'off', demoCh: 0, demoPlay: true, demoN: 0, mode: 'demo', pos: 0, playing: false, q: 0, qTick: 0, step: 0, plan: 'mes', labMM: false, custom: false, cxMode: 0, cxMenu: false, cxSel: [], cxReady: false, ev: null, cat: null, sending: false, from: 'web', pack: -1, faq: -1, table: false, pTick: 0, sent: false, origin: -1, now: Date.now() };
     this.hero = null;
     this.stack = null;
   }
@@ -312,7 +312,46 @@ class Component extends DCLogic {
         tableCells.push({ t: v, cls: k === 2 ? 'pk-f' : '', style: 'font-weight: 600; color: ' + (v === N ? '#7E6247' : (v === Y ? (k === 2 ? '#F07800' : '#F5A623') : '#FFF4DC')) + (v === Y ? '; font-size: 18px' : '') });
       });
     });
-    var packNames = ['Zeche Lab', 'Zeche Release', 'Full Gruv', T('Todavía no sé')];
+    // Armá tu pack: modalidad y servicios sueltos (mínimo 2 para consultar).
+    // Lo que llega a Netlify y a WhatsApp queda en español.
+    var CX_SERVICES = [
+      ['Producción de tu canción', T('Producción de tu canción')],
+      ['Instrumental a medida', T('Instrumental a medida')],
+      ['Sesión de grabación', T('Sesión de grabación')],
+      ['Grabación de instrumentos y coros', T('Grabación de instrumentos y coros')],
+      ['Mezcla', T('Mezcla')],
+      ['Mastering', 'Mastering'],
+      ['Mezcla por stems', T('Mezcla por stems')],
+      ['Pistas para shows en vivo', T('Pistas para shows en vivo')],
+      ['Distribución', T('Distribución')],
+      ['Portada', T('Portada')],
+      ['Videoclip', 'Videoclip'],
+      ['VideoLyrics', 'VideoLyrics']
+    ];
+    var CX_MODES = [['Presencial', T('Presencial')], ['Virtual', 'Virtual']];
+    var cxSel = st.cxSel || [];
+    var cxOk = cxSel.length >= 2;
+    var cxModes = CX_MODES.map(function (m, i) {
+      var on = st.cxMode === i;
+      return { label: m[1], checked: on ? 'true' : 'false', pick: function () { if (!on) self.setState({ cxMode: i }); },
+        style: 'position: relative; z-index: 1; width: 104px; border: 0; font: inherit; font-weight: 600; font-size: 14px; padding: 9px 0; border-radius: 999px; cursor: pointer; background: transparent; transition: color 250ms ease; color: ' + (on ? '#241105' : '#F0E0C0') };
+    });
+    var cxKnob = 'position: absolute; top: 4px; bottom: 4px; left: 4px; width: 104px; border-radius: 999px; background: #F07800; transition: transform 400ms cubic-bezier(.23,1,.32,1); transform: translateX(' + (st.cxMode * 104) + 'px)';
+    var cxServices = CX_SERVICES.map(function (sv, i) {
+      var on = cxSel.indexOf(i) >= 0;
+      return { label: sv[1], checked: on ? 'true' : 'false',
+        pick: function () { var next = on ? cxSel.filter(function (x) { return x !== i; }) : cxSel.concat([i]).sort(function (a, b) { return a - b; }); self.setState({ cxSel: next }); },
+        style: 'color: ' + (on ? '#FFF4DC' : '#E2C9A2') + '; font-weight: ' + (on ? '600' : '400'),
+        box: 'flex: none; width: 18px; height: 18px; box-sizing: border-box; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; transition: background-color 200ms ease, border-color 200ms ease; ' + (on ? 'background: #F07800; border: 1.5px solid #F07800' : 'border: 1.5px solid rgba(240, 224, 192, 0.45)'),
+        tick: 'transition: opacity 200ms ease, transform 250ms cubic-bezier(.23,1,.32,1); opacity: ' + (on ? '1' : '0') + '; transform: scale(' + (on ? '1' : '0.6') + ')' };
+    });
+    var cxNames = cxSel.map(function (i) { return CX_SERVICES[i][1]; });
+    var cxTrigger = !cxSel.length ? T('Elegí los servicios')
+      : (cxSel.length <= 2 ? cxNames.join(' + ') : T('{n} servicios').replace('{n}', cxSel.length));
+    var cxValue = st.pack === 4 && cxOk ? cxSel.map(function (i) { return CX_SERVICES[i][0]; }).join(', ') : '';
+    var cxModeValue = st.pack === 4 && cxOk ? CX_MODES[st.cxMode][0] : '';
+
+    var packNames = ['Zeche Lab', 'Zeche Release', 'Full Gruv', T('Todavía no sé')].concat(st.cxReady ? [T('Pack a medida')] : []);
     var packChips = packNames.map(function (o, i) {
       var sel = st.pack === i;
       return { label: o, pressed: sel ? 'true' : 'false', pick: function () { self.setState({ pack: sel ? -1 : i }); },
@@ -326,8 +365,8 @@ class Component extends DCLogic {
       return { label: o[0], pressed: sel ? 'true' : 'false', pick: function () { self.setState({ origin: sel ? -1 : i }); },
         style: 'font: inherit; font-size: 14px; font-weight: 500; padding: 9px 15px; border-radius: 999px; cursor: pointer; ' + (sel ? 'background: #F07800; color: #241105; border: 1px solid #F07800' : 'background: transparent; color: #F0E0C0; border: 1px solid rgba(240, 224, 192, 0.3)') };
     });
-    var packEs = ['Zeche Lab', 'Zeche Release', 'Full Gruv', 'Todavía no sé'];
-    var packValue = st.pack >= 0 ? packEs[st.pack] + (st.pack === 0 && st.labMM ? ' + mezcla y master' : '') + (st.pack < 3 && plan.months > 1 ? ' (plan de ' + plan.months + ' meses)' : '') : '';
+    var packEs = ['Zeche Lab', 'Zeche Release', 'Full Gruv', 'Todavía no sé', 'Pack a medida'];
+    var packValue = st.pack === 4 ? 'Pack a medida (' + CX_MODES[st.cxMode][0].toLowerCase() + '): ' + cxSel.map(function (i) { return CX_SERVICES[i][0]; }).join(', ') : st.pack >= 0 ? packEs[st.pack] + (st.pack === 0 && st.labMM ? ' + mezcla y master' : '') + (st.pack < 3 && plan.months > 1 ? ' (plan de ' + plan.months + ' meses)' : '') : '';
     var originValue = st.origin >= 0 ? originsList[st.origin][1] : '';
     // Bandeja de discos
     // Todo el catálogo, del más nuevo al más viejo (el mismo que la web trae de Spotify).
@@ -608,11 +647,31 @@ class Component extends DCLogic {
       tableCells: tableCells,
       toggleTable: function () { self.setState({ table: !st.table }); },
       tableExpanded: st.table ? 'true' : 'false',
+      toggleCustom: function () { self.setState({ custom: !st.custom }); },
+      customExpanded: st.custom ? 'true' : 'false',
+      customAcc: st.custom ? 'zg-acc zg-open' : 'zg-acc',
+      customIcon: 'font-size: 20px; color: #F5A623; transition: transform 350ms cubic-bezier(.23,1,.32,1); transform: rotate(' + (st.custom ? '45deg' : '0deg') + ')',
+      cxModes: cxModes, cxKnob: cxKnob, cxServices: cxServices, cxTrigger: cxTrigger,
+      cxToggleMenu: function () { self.setState({ cxMenu: !st.cxMenu }); },
+      cxMenuExpanded: st.cxMenu ? 'true' : 'false',
+      cxMenuAcc: st.cxMenu ? 'zg-acc zg-open' : 'zg-acc',
+      cxChevron: 'display: inline-flex; color: #F5A623; transition: transform 350ms cubic-bezier(.23,1,.32,1); transform: rotate(' + (st.cxMenu ? '180deg' : '0deg') + ')',
+      cxDisabled: cxOk ? 'false' : 'true',
+      cxSendStyle: 'border: 0; font: inherit; font-weight: 600; font-size: 15px; padding: 12px 20px; border-radius: 999px; white-space: nowrap; background: #F07800; color: #241105; transition: opacity 250ms ease, transform 250ms ease; ' + (cxOk ? 'opacity: 1; cursor: pointer' : 'opacity: 0.38; cursor: default; pointer-events: none'),
+      cxSend: function () {
+        if (!cxOk) return;
+        self.setState({ cxReady: true, pack: 4, cxMenu: false, from: 'pack a medida' });
+        if (window.zgTrack) window.zgTrack('elegir_pack', { pack: 'Pack a medida', servicios: cxSel.length, modalidad: CX_MODES[st.cxMode][0] });
+        var el = document.getElementById('visita');
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        setTimeout(function () { var f = document.getElementById('zg-nombre'); if (f) f.focus({ preventScroll: true }); }, 700);
+      },
+      cxValue: cxValue, cxModeValue: cxModeValue,
       tableLabel: st.table ? T('Ocultar la comparación') : T('Ver todo, pack por pack'),
       tableAcc: st.table ? 'zg-acc zg-open' : 'zg-acc',
       tableIcon: 'font-size: 20px; color: #F5A623; transition: transform 350ms cubic-bezier(.23,1,.32,1); transform: rotate(' + (st.table ? '45deg' : '0deg') + ')',
       packChips: packChips,
-      sentText: st.pack >= 0 && st.pack < 3 ? T('Te escribimos por WhatsApp para elegir el día de tu visita y charlar del {pack}.').replace('{pack}', packNames[st.pack]) : T('Te escribimos por WhatsApp para elegir el día de tu visita.'),
+      sentText: st.pack === 4 ? T('Te escribimos por WhatsApp con el presupuesto de tu pack y para elegir el día de tu visita.') : st.pack >= 0 && st.pack < 3 ? T('Te escribimos por WhatsApp para elegir el día de tu visita y charlar del {pack}.').replace('{pack}', packNames[st.pack]) : T('Te escribimos por WhatsApp para elegir el día de tu visita.'),
       origins: origins,
       notSent: !st.sent, sent: st.sent,
       packValue: packValue, originValue: originValue, fromValue: st.from || 'web', langValue: LANG,

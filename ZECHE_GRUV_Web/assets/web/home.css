@@ -423,3 +423,11 @@ header nav .zg-btn{padding:10px 15px !important;font-size:14px !important}
 }
 @media (max-width:360px){header nav .zg-ghost{display:none}}
 .pd-side,.pd-stage{min-width:0}
+/* Armá tu pack */
+.cx-menu{flex:1 1 100%;order:4}
+.cx-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;padding-top:6px}
+.cx-item{display:flex;align-items:center;gap:10px;width:100%;background:transparent;border:0;border-radius:12px;font:inherit;font-size:14.5px;text-align:left;padding:9px 10px;cursor:pointer;transition:background-color 200ms ease,color 200ms ease}
+.cx-item:hover{background:rgba(240,224,192,.06)}
+.cx-item:focus-visible,.cx-trigger:focus-visible{outline:2px solid #F07800;outline-offset:2px}
+@media (max-width:560px){.cx-list{grid-template-columns:1fr}.cx-row > *{flex:1 1 100%}.cx-row [role=radiogroup]{flex:0 0 auto}.cx-send{order:5}}
+@media (prefers-reduced-motion:reduce){.cx *{transition:none !important}}
