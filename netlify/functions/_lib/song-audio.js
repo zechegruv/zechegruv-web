@@ -212,6 +212,12 @@ function matchAudio(songs, audios) {
     if (slot.versions[a.kind]) slot.versions[a.kind].push(a);
     if ((a.kind === "mezcla" || a.kind === "master") && !a.fresh) return;
     const prev = slot[a.kind];
+    // En vivo: la de Masters (la pista final) manda sobre las anteriores que
+    // pasaron a Exports, aunque estas tengan fecha más nueva.
+    if (a.kind === "vivo" && prev && (prev.section === "masters") !== (a.section === "masters")) {
+      if (a.section === "masters") slot.vivo = a;
+      return;
+    }
     if (!prev || (a.modified || "") > (prev.modified || "")) slot[a.kind] = a;
   };
   const loose = [];

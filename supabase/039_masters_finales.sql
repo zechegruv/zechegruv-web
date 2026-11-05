@@ -5,6 +5,8 @@
 -- servidor (clave secreta): nadie la lee desde el navegador.
 create table if not exists public.masters_finales (
   song_id        text primary key,          -- id de Notion, sin guiones
+  client_id      text,                      -- ficha del artista en Notion, sin guiones
+  song_title     text,
   status         text not null default 'procesando' check (status in ('procesando', 'lista', 'error')),
   attempts       int  not null default 1,
   source_version text,                      -- nombre del master que aprobó el artista
@@ -22,3 +24,5 @@ alter table public.masters_finales enable row level security;
 
 -- Si ya habías corrido una versión anterior de este archivo:
 alter table public.masters_finales add column if not exists moved jsonb;
+alter table public.masters_finales add column if not exists client_id text;
+alter table public.masters_finales add column if not exists song_title text;

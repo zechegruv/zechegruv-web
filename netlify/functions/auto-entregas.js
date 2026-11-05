@@ -32,11 +32,14 @@ exports.handler = async () => {
   // 6. Versiones finales de masters aprobados que fallaron o quedaron
   //    cortadas: se vuelven a pedir (hasta 3 veces, _lib/masters-finales.js).
   const finales = await require("./_lib/masters-finales").retryPending().catch((e) => ({ error: e.message }));
+  // 7. Versión en vivo nueva de una canción ya terminada: queda la nueva en
+  //    Masters/<canción> y la anterior pasa a Exports/<canción>.
+  const vivo = await require("./_lib/masters-finales").tidyLiveAll().catch((e) => ({ error: e.message }));
   // 5. Notificaciones: lo que quedó esperando por el horario de silencio
   //    (00 a 9 h) y los avisos de eventos (_lib/push-eventos.js).
   const cola = await require("./_lib/push").flush().catch((e) => ({ error: e.message }));
   const eventos = await require("./_lib/push-eventos").runEvents().catch((e) => ({ error: e.message }));
-  const log = { entregas: entregas.delivered, recordatorios: entregas.reminders, etapas: etapas.done, regla, finales };
+  const log = { entregas: entregas.delivered, recordatorios: entregas.reminders, etapas: etapas.done, regla, finales, vivo };
   console.log("automatizaciones:", JSON.stringify(log));
   if (!entregas.ok || (entregas.errors && entregas.errors.length)) console.error("auto-entregas:", entregas.error || JSON.stringify(entregas.errors));
   if (!etapas.ok) console.error("auto-etapas:", etapas.error);

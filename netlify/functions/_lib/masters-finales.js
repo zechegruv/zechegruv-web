@@ -26,7 +26,9 @@
 // en su carpeta) se mueven a Exports / <Canción> (se crea si no está): en
 // Masters queda solo la carpeta de la canción con lo final. Las versiones en
 // vivo de esa canción (sueltas o en "Pistas Show en vivo") también se juntan
-// en Masters / <Canción>, con "Vivo" en el nombre si no lo tenía.
+// en Masters / <Canción>: solo la más nueva, con "Vivo" en el nombre si no lo
+// tenía; las anteriores van a Exports. Si después subís una versión en vivo
+// nueva, la revisión de cada 15 minutos deja la nueva y pasa la anterior.
 // Si la carpeta de la canción ya existe en Masters, se usa esa. La detección
 // de entregas (song-audio.js) reconoce estos archivos por el nombre ("(Master
 // aprobado)", "(WAV 24bit 48kHz)", ...) y no los toma como master nuevo.
@@ -267,10 +269,96 @@ async function upload(target, name, file) {
 const mb = (n) => `${(n / 1048576).toFixed(n < 10 * 1048576 ? 1 : 0)} MB`;
 const fmtNum = (v, unit) => (v == null ? "—" : `${v.toFixed(1)} ${unit}`);
 
-function mailBox(title, body) {
+function mailBox(title, body, label = "Master aprobado") {
   return `<div style="font-family:Helvetica,Arial,sans-serif;background:#241105;color:#FFF4DC;padding:28px;border-radius:18px;max-width:560px">
-<p style="margin:0 0 6px;font-family:'Courier New',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#F5A623">Portal · Master aprobado</p>
+<p style="margin:0 0 6px;font-family:'Courier New',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#F5A623">Portal · ${label}</p>
 <p style="margin:0 0 14px;font-size:22px;font-weight:700">${title}</p>${body}</div>`;
+}
+
+// ---------- Versión en vivo ----------
+// De las versiones en vivo de una canción que hay en Masters (en su carpeta,
+// sueltas o en "Pistas Show en vivo"), la más nueva queda en Masters /
+// <Canción> como la pista final; las demás pasan a Exports / <Canción>.
+// Primero salen las viejas y después entra la nueva (así no chocan nombres).
+// toExports(): la carpeta Exports / <Canción> (se crea al necesitarla).
+// Devuelve { kept, toExports: [nombres], failed: [nombres] }.
+const newestFirst = (a, b) => (b.modified || "").localeCompare(a.modified || "");
+async function arrangeLive({ root, masters, title, lives, toExports }) {
+  const out = { kept: null, toExports: [], failed: [] };
+  const list = (lives || []).filter((a) => a.id).sort(newestFirst);
+  if (!list.length) return out;
+  const folderName = drive.cleanName(title) || "Sin título";
+  const inDest = (a) => norm(a.folder || "") === norm(folderName);
+  const [newest, ...older] = list;
+  out.kept = newest.name;
+  if (!older.length && inDest(newest)) return out; // ya está como tiene que estar
+  for (const a of older) {
+    const ok = await drive.move(root, a.id, await toExports(), null, "rename").catch(() => null);
+    (ok ? out.toExports : out.failed).push(a.name);
+  }
+  if (!inDest(newest)) {
+    const dest = await drive.subfolder(masters, folderName);
+    const name = liveName(newest.name, title);
+    const ok = dest && await drive.move(root, newest.id, dest, name, "rename").catch(() => null);
+    if (ok) out.kept = typeof ok === "string" ? ok : name || newest.name;
+    else out.failed.push(newest.name);
+  }
+  return out;
+}
+
+// Para la pasada de cada 15 minutos: en las canciones que ya tienen su
+// carpeta final, si apareció una versión en vivo nueva, queda esa en Masters
+// / <Canción> y la anterior pasa a Exports / <Canción>. Un mail por artista
+// con lo que se movió.
+async function tidyLiveAll() {
+  const r = await db("masters_finales?status=eq.lista&client_id=not.is.null&select=song_id,client_id,song_title");
+  if (!r.ok) return { checked: 0 };
+  const byClient = new Map();
+  (r.data || []).forEach((x) => byClient.set(x.client_id, [...(byClient.get(x.client_id) || []), x]));
+  const changes = [];
+  for (const [clientKey, rows] of byClient) {
+    try {
+      const clientId = ps()._parsePageId(clientKey);
+      const owner = await artistFolder(clientId);
+      if (!owner || !owner.edit) continue;
+      const [audios, pages] = await Promise.all([
+        listAudio(owner.edit),
+        ps()._notionQuery(ps().SONGS_DS, { property: "Artista", relation: { contains: clientId } }),
+      ]);
+      const songs = pages.map(ps()._toSong);
+      for (const row of rows) {
+        const mine = songs.find((s) => sameId(s.id, row.song_id));
+        if (!mine) continue;
+        const lives = audios.filter((a) => a.section === "masters" && a.id && !FINAL_NAME.test(a.name) && (matchAudio(songs, [a])[mine.id] || {}).vivo);
+        const folderName = drive.cleanName(mine.title) || "Sin título";
+        if (!lives.length || (lives.length === 1 && norm(lives[0].folder || "") === norm(folderName))) continue;
+        const root = await drive.folder(owner.edit);
+        if (root.error) continue;
+        const masters = await drive.subfolder(root, FOLDER_MASTERS);
+        let ex = null;
+        const toExports = async () => {
+          if (ex) return ex;
+          const e = await drive.subfolder(root, FOLDER_EXPORTS);
+          ex = e && await drive.subfolder(e, folderName);
+          if (!ex) throw new Error("Exports");
+          return ex;
+        };
+        const done = await arrangeLive({ root, masters, title: mine.title, lives, toExports });
+        if (done.toExports.length || done.failed.length) changes.push({ title: mine.title, ...done });
+      }
+    } catch (e) {
+      console.error("versión en vivo:", String(e && e.message).slice(0, 120));
+    }
+  }
+  if (changes.length) {
+    await sendMail({
+      to: notifyEmail(),
+      from: "ZG Portal <portal@zechegruv.com>",
+      subject: changes.length === 1 ? `Nueva versión en vivo de «${changes[0].title}»` : `Nuevas versiones en vivo (${changes.length} canciones)`,
+      html: mailBox("Versión en vivo actualizada", changes.map((c) => `<p style="margin:0 0 12px;font-size:14px;line-height:1.5"><b>${esc(c.title)}</b>: en Masters → ${esc(c.title)} quedó <b>${esc(c.kept || "")}</b>.${c.toExports.length ? ` Pasé a Exports → ${esc(c.title)}: ${c.toExports.map(esc).join(", ")}.` : ""}${c.failed.length ? ` <span style="color:#FF9C7A">No pude mover: ${c.failed.map(esc).join(", ")}.</span>` : ""}</p>`).join(""), "Versión en vivo"),
+    }).catch(() => false);
+  }
+  return { checked: byClient.size, changed: changes.length };
 }
 
 // ---------- La corrida ----------
@@ -349,15 +437,12 @@ async function build(songId, { version = null, force = false } = {}) {
     const others = ((found && found.all) || []).filter((a) => a.id && a.id !== audio.id && a.section === "masters" && !FINAL_NAME.test(a.name));
     for (const a of others) await sendToExports(a, exportName(a.name));
 
-    // Las versiones en vivo de la canción se juntan en Masters / <Canción>.
-    const liveMoved = [], liveFailed = [];
-    const destKey = norm(folderName);
-    for (const a of (found && found.live) || []) {
-      if (norm(a.folder || "") === destKey) continue; // ya está ahí
-      const name = liveName(a.name, song.title);
-      const ok = await drive.move(root, a.id, dest, name, "rename").catch(() => null);
-      (ok ? liveMoved : liveFailed).push(name || a.name);
-    }
+    // Versión en vivo: la más nueva queda en Masters / <Canción>; las
+    // anteriores, a Exports / <Canción>.
+    const live = await arrangeLive({ root, masters, title: song.title, lives: (found && found.live) || [], toExports });
+    moved.push(...live.toExports);
+    notMoved.push(...live.failed);
+    const liveMoved = live.kept ? [live.kept] : [], liveFailed = [];
 
     // Cada versión apenas está hecha: se sube y se borra del disco temporal.
     const meta = { title: song.title, artist: song.artist, publisher: "ZECHE GRUV" };
@@ -369,7 +454,7 @@ async function build(songId, { version = null, force = false } = {}) {
     const folderUrl = (folderInfo && folderInfo.webUrl) || null;
 
     const summary = files.map((f) => ({ key: f.key, label: f.label, name: f.name, size: f.size }));
-    await finish(id, { status: "lista", error: null, source_version: audio.name, folder_url: folderUrl, files: summary, moved: { toExports: moved, failed: notMoved, approvedMoved, live: liveMoved, liveFailed }, loudness: { ...made.loudness, mp3Peak: made.mp3Peak, source: made.source } });
+    await finish(id, { status: "lista", error: null, source_version: audio.name, folder_url: folderUrl, files: summary, client_id: songKey(song.clientId), song_title: song.title, moved: { toExports: moved, failed: notMoved, approvedMoved, live: liveMoved }, loudness: { ...made.loudness, mp3Peak: made.mp3Peak, source: made.source } });
 
     const src16 = made.source;
     await sendMail({
@@ -382,8 +467,7 @@ async function build(songId, { version = null, force = false } = {}) {
 <p style="margin:0 0 6px;font-size:13px;color:#C9A980">Master aprobado: ${esc(audio.name)} · ${src16.bits ? `${src16.bits} bit` : esc(String(src16.codec || "").toUpperCase())}${src16.rate ? ` · ${src16.rate / 1000} kHz` : ""}</p>
 <p style="margin:0 0 14px;font-size:13px;color:#C9A980">Loudness: ${fmtNum(made.loudness.lufs, "LUFS")} integrado · true peak ${fmtNum(made.loudness.truePeak, "dBTP")} · rango ${fmtNum(made.loudness.lra, "LU")}</p>
 ${moved.length ? `<p style="margin:0 0 14px;font-size:13px;line-height:1.5;color:#C9A980">Pasé a <b>Exports → ${esc(song.title)}</b> las versiones anteriores: ${moved.map(esc).join(", ")}.</p>` : ""}
-${liveMoved.length ? `<p style="margin:0 0 14px;font-size:13px;line-height:1.5;color:#C9A980">Junté en la carpeta las versiones en vivo: ${liveMoved.map(esc).join(", ")}.</p>` : ""}
-${liveFailed.length ? `<p style="margin:0 0 14px;font-size:13px;line-height:1.5;color:#FF9C7A">No pude mover las versiones en vivo: ${liveFailed.map(esc).join(", ")}.</p>` : ""}
+${liveMoved.length ? `<p style="margin:0 0 14px;font-size:13px;line-height:1.5;color:#C9A980">Versión en vivo final (en la carpeta): ${liveMoved.map(esc).join(", ")}.</p>` : ""}
 ${notMoved.length ? `<p style="margin:0 0 14px;font-size:13px;line-height:1.5;color:#FF9C7A">No pude mover a Exports: ${notMoved.map(esc).join(", ")}. Quedaron en Masters.</p>` : ""}
 ${approvedMoved ? "" : `<p style="margin:0 0 14px;font-size:13px;line-height:1.5;color:#FF9C7A">No pude mover el master aprobado (${esc(audio.name)}): subí una copia a la carpeta y el original quedó donde estaba.</p>`}
 ${made.notes.length ? `<div style="margin:0 0 14px;padding:12px 14px;background:#2E1607;border-radius:12px;font-size:13px;line-height:1.5;color:#FFD9A0">${made.notes.map(esc).join("<br>")}</div>` : ""}
@@ -420,4 +504,4 @@ async function retryPending() {
   return { retried: due.length };
 }
 
-module.exports = { build, trigger, retryPending, validKey, _namesFor: namesFor, _claim: claim, _exportName: exportName, _liveName: liveName, FINAL_NAME };
+module.exports = { build, trigger, retryPending, tidyLiveAll, validKey, _namesFor: namesFor, _claim: claim, _exportName: exportName, _liveName: liveName, FINAL_NAME };
