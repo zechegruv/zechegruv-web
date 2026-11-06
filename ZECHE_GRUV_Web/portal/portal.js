@@ -956,7 +956,11 @@
       name.className = "ag-name";
       name.dataset.name = p.display_name || nameOf(p);
       name.textContent = name.dataset.name;
-      li.append(ring, name);
+      const go = document.createElement("span");
+      go.className = "ag-go";
+      go.setAttribute("aria-hidden", "true");
+      go.textContent = "Abrir →";
+      li.append(ring, name, go);
       return li;
     });
     $("artistGrid").replaceChildren(...AG.items);
@@ -965,17 +969,25 @@
     agPaint();
     $("artistWheel").classList.remove("is-in"); void $("artistWheel").offsetWidth; $("artistWheel").classList.add("is-in");
     AG.ready = true;
+    // Una sola vez: el rollo amaga girar para mostrar que se mueve.
+    if (!AG.peeked && list.length > 1 && !(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches)) {
+      AG.peeked = true;
+      setTimeout(() => { if (AG.drag || AG.target != null || AG.pos !== 0) return; AG.target = 0.42; agKick(); setTimeout(() => { if (!AG.drag && Math.abs(AG.pos - 0.42) < 0.08) { AG.target = 0; agKick(); } }, 420); }, 950);
+    }
   }
 
   // ---------- Rollo de artistas (acceso rápido del panel) ----------
   // Como el selector de fecha del iPhone: se ven tres nombres, el del medio
-  // queda marcado. Se gira con el dedo (con inercia), la ruedita del mouse o
-  // las flechas, sin mover la página. Tocar el del medio abre su perfil;
-  // tocar otro lo trae al medio. Con 6 o más, el rollo da la vuelta.
+  // queda marcado. Se gira con el dedo (con inercia), la ruedita del mouse
+  // (un nombre por clic), el trackpad o las flechas, sin mover la página.
+  // Tocar el del medio abre su perfil; tocar otro lo trae al medio. Con 6 o
+  // más, el rollo da la vuelta. El movimiento es un resorte que se calcula
+  // por tiempo (igual de suave en pantallas de 60 o 120 Hz).
   const agNorm = (v) => String(v || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-  const AG = { items: [], pos: 0, vel: 0, target: null, raf: 0, drag: null, last: -1, ready: false };
+  const AG = { items: [], pos: 0, vel: 0, target: null, raf: 0, paintRaf: 0, drag: null, last: -1, ready: false, peeked: false, t: 0 };
   const AG_STEP = 24;   // grados entre un nombre y el siguiente
-  const AG_PX = 62;     // píxeles de arrastre por nombre
+  const AG_PX = 64;     // píxeles de arrastre por nombre
+  const AG_K = 170, AG_C = 24; // resorte: rigidez y freno (casi sin rebote)
   const agVis = () => AG.items.filter((li) => !li.hidden);
   const agLoop = (n) => n >= 6;
   function agWrap(d, n) {
@@ -983,6 +995,7 @@
     d = ((d % n) + n) % n;
     return d > n / 2 ? d - n : d;
   }
+  const agClamp = (x, n) => (agLoop(n) ? x : Math.max(0, Math.min(n - 1, x)));
   const agCenter = () => { const v = agVis(), n = v.length; return n ? v[((Math.round(AG.pos) % n) + n) % n] : null; };
   function agPaint() {
     const vis = agVis(), n = vis.length;
@@ -990,60 +1003,59 @@
     vis.forEach((li, i) => {
       const d = agWrap(i - AG.pos, n), far = Math.abs(d);
       li.style.transform = `rotateX(${(-d * AG_STEP).toFixed(2)}deg) translateZ(var(--ag-r))`;
-      li.style.opacity = far > 2.7 ? "0" : String(Math.max(0, 1 - far * 0.3).toFixed(3));
+      li.style.opacity = far > 2.7 ? "0" : Math.max(0, 1 - far * 0.3).toFixed(3);
       li.style.visibility = far > 2.9 ? "hidden" : "";
       li.style.setProperty("--ag-near", Math.max(0, 1 - far).toFixed(3));
-      li.classList.toggle("is-center", far < 0.5);
-      li.setAttribute("aria-selected", far < 0.5 ? "true" : "false");
+      const on = far < 0.5;
+      if (li.classList.contains("is-center") !== on) { li.classList.toggle("is-center", on); li.setAttribute("aria-selected", on ? "true" : "false"); }
     });
     const c = agCenter();
     const wheel = $("artistWheel");
     if (c) wheel.setAttribute("aria-activedescendant", c.id); else wheel.removeAttribute("aria-activedescendant");
     const idx = c ? vis.indexOf(c) : -1;
     if (idx !== AG.last) {
-      if (AG.ready && AG.last !== -1 && navigator.vibrate) { try { navigator.vibrate(4); } catch (e) { /* nada */ } }
+      if (AG.ready && AG.last !== -1 && navigator.vibrate) { try { navigator.vibrate(3); } catch (e) { /* nada */ } }
       AG.last = idx;
     }
   }
-  function agTick() {
+  // Pinta en el próximo cuadro (el dedo puede mandar más eventos que cuadros).
+  const agPaintSoon = () => { if (!AG.paintRaf) AG.paintRaf = requestAnimationFrame(() => { AG.paintRaf = 0; agPaint(); }); };
+  function agTick(now) {
     AG.raf = 0;
     const n = agVis().length;
-    if (!n || AG.drag) return;
-    if (!agLoop(n)) {
-      // Sin vuelta: rebota suave en las puntas.
-      if (AG.pos < 0 || AG.pos > n - 1) AG.vel *= 0.6;
-    }
-    if (Math.abs(AG.vel) > 0.004) {
-      AG.pos += AG.vel;
-      AG.vel *= 0.93;
-      agPaint();
-      AG.raf = requestAnimationFrame(agTick);
-      return;
-    }
-    AG.vel = 0;
-    let goal = AG.target != null ? AG.target : Math.round(AG.pos);
-    if (!agLoop(n)) goal = Math.max(0, Math.min(n - 1, goal));
-    const diff = goal - AG.pos;
-    if (Math.abs(diff) < 0.002) {
+    if (!n || AG.drag) { AG.t = 0; return; }
+    const dt = AG.t ? Math.min(0.034, (now - AG.t) / 1000) : 1 / 60;
+    AG.t = now;
+    const goal = agClamp(AG.target != null ? AG.target : Math.round(AG.pos), n);
+    const x = AG.pos - goal;
+    AG.vel += (-AG_K * x - AG_C * AG.vel) * dt;
+    AG.pos += AG.vel * dt;
+    if (Math.abs(x) < 0.0015 && Math.abs(AG.vel) < 0.01) {
       AG.pos = agLoop(n) ? ((goal % n) + n) % n : goal;
+      AG.vel = 0; AG.t = 0;
       AG.target = null;
       agPaint();
       return;
     }
-    AG.pos += diff * 0.2;
     agPaint();
     AG.raf = requestAnimationFrame(agTick);
   }
   const agKick = () => { if (!AG.raf) AG.raf = requestAnimationFrame(agTick); };
+  const agStop = () => { cancelAnimationFrame(AG.raf); AG.raf = 0; AG.t = 0; };
+  // Ir a un nombre por el camino más corto (sin cortar el movimiento que ya hay).
   function agGo(i) {
     const n = agVis().length;
     if (!n) return;
-    AG.vel = 0;
-    AG.target = AG.pos + agWrap(i - AG.pos, n);
-    if (!agLoop(n)) AG.target = Math.max(0, Math.min(n - 1, i));
+    AG.target = agLoop(n) ? AG.pos + agWrap(i - AG.pos, n) : agClamp(i, n);
     agKick();
   }
-  const agStep = (k) => agGo(Math.round(AG.target != null ? AG.target : AG.pos) + k);
+  const agStep = (k) => {
+    const n = agVis().length;
+    if (!n) return;
+    const base = AG.target != null ? Math.round(AG.target) : Math.round(AG.pos);
+    AG.target = agClamp(base + k, n);
+    agKick();
+  };
   const agOpen = () => { const c = agCenter(); if (c && c._open) c._open(); };
 
   function agFilter() {
@@ -1063,6 +1075,7 @@
       if (on) shown++;
     });
     $("artistNone").hidden = shown > 0;
+    agStop();
     AG.pos = 0; AG.vel = 0; AG.target = null;
     agPaint();
     const w = $("artistWheel");
@@ -1072,53 +1085,78 @@
   (() => {
     const wheel = $("artistWheel");
     if (!wheel) return;
-    // Ruedita / trackpad: gira el rollo, la página no se mueve.
-    let wheelT = 0;
+    // Ruedita: un nombre por clic. Trackpad: gira continuo y encaja al soltar.
+    let wheelT = 0, wheelAcc = 0, wheelLock = 0;
     wheel.addEventListener("wheel", (e) => {
       e.preventDefault();
-      cancelAnimationFrame(AG.raf); AG.raf = 0;
-      AG.vel = 0; AG.target = null;
+      const dy = e.deltaMode === 1 ? e.deltaY * 33 : e.deltaMode === 2 ? e.deltaY * 400 : e.deltaY;
+      // Rueda con clics: saltos grandes y enteros (o en líneas). Trackpad: pasos chicos.
+      const notched = e.deltaMode !== 0 || (Math.abs(dy) >= 50 && Number.isInteger(dy) && e.deltaX === 0 && (!e.wheelDeltaY || Math.abs(e.wheelDeltaY) % 120 === 0));
+      if (notched) {
+        const now = performance.now();
+        if (now - wheelLock < 70) return; // un clic de rueda = un nombre
+        wheelLock = now;
+        agStep(Math.sign(dy));
+        return;
+      }
+      agStop();
+      AG.target = null; AG.vel = 0;
+      wheelAcc = dy / (AG_PX * 1.6);
       const n = agVis().length;
-      AG.pos += (e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY) / (AG_PX * 1.4);
-      if (!agLoop(n)) AG.pos = Math.max(-0.4, Math.min(n - 0.6, AG.pos));
-      agPaint();
+      AG.pos += wheelAcc;
+      if (!agLoop(n)) AG.pos = Math.max(-0.35, Math.min(n - 0.65, AG.pos));
+      agPaintSoon();
       clearTimeout(wheelT);
-      wheelT = setTimeout(agKick, 110);
+      wheelT = setTimeout(() => { AG.target = agClamp(Math.round(AG.pos + wheelAcc * 2), n); agKick(); }, 70);
     }, { passive: false });
-    // Dedo o mouse: arrastrar con inercia; un toque sin arrastre abre o trae al medio.
+    // Dedo o mouse: arrastre 1 a 1; al soltar, calcula dónde frena y llega
+    // con el resorte. Un toque sin arrastre abre el del medio o trae otro.
     wheel.addEventListener("pointerdown", (e) => {
       if (e.button !== 0) return;
-      cancelAnimationFrame(AG.raf); AG.raf = 0;
-      AG.vel = 0; AG.target = null;
-      AG.drag = { y: e.clientY, pos: AG.pos, lastY: e.clientY, lastT: performance.now(), v: 0, moved: false };
-      wheel.setPointerCapture(e.pointerId);
+      agStop();
+      AG.target = null;
+      AG.drag = { y: e.clientY, pos: AG.pos, samples: [{ y: e.clientY, t: performance.now() }], moved: false, id: e.pointerId };
+      AG.vel = 0;
     });
     wheel.addEventListener("pointermove", (e) => {
       const d = AG.drag;
-      if (!d) return;
+      if (!d || e.pointerId !== d.id) return;
       const dy = e.clientY - d.y;
-      if (Math.abs(dy) > 6) d.moved = true;
-      const now = performance.now(), dt = Math.max(1, now - d.lastT);
-      d.v = d.v * 0.4 + ((e.clientY - d.lastY) / dt) * 0.6;
-      d.lastY = e.clientY; d.lastT = now;
+      if (!d.moved && Math.abs(dy) > 5) { d.moved = true; try { wheel.setPointerCapture(e.pointerId); } catch (err) { /* nada */ } wheel.classList.add("is-drag"); }
+      if (!d.moved) return;
+      const now = performance.now();
+      d.samples.push({ y: e.clientY, t: now });
+      while (d.samples.length > 2 && now - d.samples[0].t > 90) d.samples.shift();
       const n = agVis().length;
-      AG.pos = d.pos - dy / AG_PX;
-      if (!agLoop(n)) { if (AG.pos < 0) AG.pos *= 0.35; if (AG.pos > n - 1) AG.pos = n - 1 + (AG.pos - (n - 1)) * 0.35; }
-      agPaint();
+      let p = d.pos - dy / AG_PX;
+      if (!agLoop(n)) { if (p < 0) p *= 0.35; if (p > n - 1) p = n - 1 + (p - (n - 1)) * 0.35; }
+      AG.pos = p;
+      agPaintSoon();
     });
     const end = (e) => {
       const d = AG.drag;
-      if (!d) return;
+      if (!d || e.pointerId !== d.id) return;
       AG.drag = null;
+      wheel.classList.remove("is-drag");
+      const n = agVis().length;
       if (!d.moved) {
         const el = document.elementFromPoint(e.clientX, e.clientY);
         const li = el && el.closest && el.closest(".ag-item");
         if (li && !li.hidden) {
-          if (li.classList.contains("is-center")) li._open();
-          else agGo(agVis().indexOf(li));
+          if (li.classList.contains("is-center")) { li._open(); return; }
+          agGo(agVis().indexOf(li));
           return;
         }
-      } else AG.vel = Math.max(-0.9, Math.min(0.9, (-d.v * 16) / AG_PX));
+        AG.target = agClamp(Math.round(AG.pos), n);
+        agKick();
+        return;
+      }
+      // Velocidad del dedo (nombres por segundo) y adónde llegaría frenando.
+      const a = d.samples[0], b = d.samples[d.samples.length - 1];
+      const v = b.t > a.t ? -((b.y - a.y) / AG_PX) / ((b.t - a.t) / 1000) : 0;
+      const reach = Math.max(-n / 2, Math.min(n / 2, v * 0.22));
+      AG.vel = Math.max(-40, Math.min(40, v));
+      AG.target = agClamp(Math.round(AG.pos + reach), n);
       agKick();
     };
     wheel.addEventListener("pointerup", end);

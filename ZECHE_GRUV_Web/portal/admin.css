@@ -444,3 +444,17 @@ body.is-admin .chip-btn.is-active, body.is-admin .chip-btn[aria-pressed="true"] 
   .ag-item.is-center .ag-ring::before { animation: none; }
   .ag-wheel.is-in .ag-reel, .ag-wheel.is-swap .ag-reel { animation: none; }
 }
+
+/* Rollo: pistas para que se entienda solo */
+.ag-go { position: absolute; right: 22px; top: 50%; transform: translate(6px, -50%); font-family: "DM Mono", monospace; font-size: 12px; letter-spacing: .04em; color: var(--orange-soft); opacity: 0; pointer-events: none; transition: opacity .3s ease, transform .3s cubic-bezier(.2, .8, .2, 1); }
+.ag-item.is-center .ag-go { opacity: .9; transform: translate(0, -50%); }
+.ag-wheel:hover .ag-item.is-center .ag-go { animation: agNudge 1.4s ease-in-out infinite; }
+@keyframes agNudge { 50% { transform: translate(4px, -50%); } }
+.ag-wheel.is-drag .ag-go { opacity: 0; }
+.ag-wheel:not(.is-drag) .ag-item:not(.is-center) { cursor: pointer; }
+.ag-wheel:not(.is-drag) .ag-item:not(.is-center):hover .ag-name { color: var(--beige); }
+.ag-wheel:not(.is-drag) .ag-item.is-center { cursor: pointer; }
+.ag-wheel.is-drag, .ag-wheel.is-drag .ag-item { cursor: grabbing; }
+.ag-ring, .ag-name { transition: color .25s ease; }
+@media (max-width: 600px) { .ag-go { right: 16px; font-size: 11px; } .ag-name { max-width: 56%; } }
+@media (prefers-reduced-motion: reduce) { .ag-wheel:hover .ag-item.is-center .ag-go { animation: none; } }
