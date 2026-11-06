@@ -1,7 +1,7 @@
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    this.state = { intro: 'on', introSun: '', heroSel: 4, heroPicked: false, here: '', floatOff: false, errName: false, errWa: false, crFrom: null, heroQ: '', heroOn: false, heroFocus: false, crQ: '', crSel: 0, crTag: 'todos', crPlay: false, crOut: null, snd: null, tt: null, ttWait: false, sndPlaying: false, sndLoad: false, sndErr: false, sndPos: 0, demo: 'off', demoCh: 0, demoPlay: true, demoN: 0, mode: 'demo', pos: 0, playing: false, q: 0, qTick: 0, step: 0, plan: 'mes', labMM: false, custom: false, cxMode: 0, cxMenu: false, cxSel: [], cxReady: false, cxHours: 2, cxDetail: {}, ev: null, cat: null, sending: false, from: 'web', pack: -1, faq: -1, table: false, pTick: 0, sent: false, origin: -1, vDays: null, vDate: null, vHour: null, vErr: '', vBooked: null, now: Date.now() };
+    this.state = { intro: 'on', introSun: '', heroSel: 4, heroPicked: false, here: '', floatOff: false, errName: false, errWa: false, crFrom: null, heroQ: '', heroOn: false, heroFocus: false, crQ: '', crSel: 0, crTag: 'todos', crPlay: false, crOut: null, snd: null, tt: null, ttWait: false, sndPlaying: false, sndLoad: false, sndErr: false, sndPos: 0, demo: 'off', demoCh: 0, demoPlay: true, demoN: 0, mode: 'demo', pos: 0, playing: false, q: 0, qTick: 0, step: 0, plan: 'mes', labMM: false, custom: false, cxMode: 0, cxMenu: false, cxSel: [], cxReady: false, cxHours: 2, cxDetail: {}, ev: null, cat: null, sending: false, from: 'web', pack: -1, faq: -1, table: false, pTick: 0, sent: false, origin: -1, vDays: null, vDate: null, vHour: null, vErr: '', vBooked: null, aq: 'off', aqStep: 0, aqA: [null, [], null, null, null], aqOther: '', now: Date.now() };
     this.hero = null;
     this.stack = null;
   }
@@ -351,6 +351,19 @@ class Component extends DCLogic {
       self.setState({ demoCh: (self.state.demoCh + 1) % 4, demoN: self.state.demoN + 1 });
     }, 6200);
   }
+  openAdn() {
+    var self = this;
+    this.adnBack = document.activeElement;
+    this.setState({ aq: 'on', aqStep: 0 });
+    if (window.zgTrack) window.zgTrack('adn_abrir', {});
+    setTimeout(function () { var b = document.querySelector('.aq-opt, .aq-chip'); if (b) b.focus({ preventScroll: true }); }, 80);
+  }
+  closeAdn() {
+    var self = this;
+    if (this.state.aq !== 'on') return;
+    this.setState({ aq: 'out' });
+    setTimeout(function () { self.setState({ aq: 'off' }); if (self.adnBack && self.adnBack.focus) self.adnBack.focus({ preventScroll: true }); }, 260);
+  }
   closeDemo() {
     var self = this;
     if (this.state.demo !== 'on') return;
@@ -647,6 +660,44 @@ class Component extends DCLogic {
       return { label: h + ':00', pressed: sel ? 'true' : 'false', style: chip(sel), pick: function () { self.setState({ vHour: sel ? null : h, vErr: '' }); } };
     }) : [];
     var vText = st.vDate && st.vHour != null ? dayLbl(st.vDate, true) + ' ' + T('a las') + ' ' + st.vHour + ' h' : '';
+    // Test "Encontrá tu ADN sonoro": 5 preguntas, sugiere un pack y lleva a reservar.
+    var AQ = [
+      { q: '¿En qué etapa está tu proyecto?', o: ['Recién arranco: no saqué música ni hice shows en vivo', 'Tengo letras, referencias o maquetas', 'Hago música y quiero explorar aún más mi potencial artístico'], w: [0, 1, 2] },
+      { q: '¿Qué géneros te mueven?', o: ['Trap', 'Reggaetón', 'R&B', 'Hip hop', 'Pop', 'Rock', 'Indie', 'Folclore', 'Electrónica', 'Otros'], multi: true },
+      { q: '¿Qué te frena hoy?', o: ['No sé por dónde arrancar', 'Tengo temas, pero no suenan como me los imagino', 'Los saco y no llegan a nadie'], w: [0, 1, 2] },
+      { q: '¿Qué te gustaría hacer?', o: ['Quiero hacer una sola canción', 'Quiero hacer un lanzamiento con estrategia y acompañamiento profesional', 'Quiero hacer un EP o un disco completo'], w: [0, 2, 3] },
+      { q: '¿Te gustaría meterte en la producción?', o: ['Sí, quiero estar en cada decisión del sonido', 'Quiero aprender a producir mientras armamos mi proyecto', 'Prefiero dar ideas y que la lleven ustedes', 'Prefiero traer el tema y enfocarme en cantar'] }
+    ];
+    var aqA = st.aqA, aqStep = st.aqStep, aqDone = aqStep >= AQ.length;
+    var aqGo = function (n) { self.setState({ aqStep: n }); setTimeout(function () { var b = document.querySelector('.aq-opt, .aq-chip, .aq-res .aq-cta'); if (b) b.focus({ preventScroll: true }); }, 60); };
+    var aqSet = function (k, v, adv) {
+      var a = aqA.slice(); a[k] = v;
+      self.setState({ aqA: a });
+      if (adv) setTimeout(function () { aqGo(k + 1); }, 240);
+    };
+    var aqCur = AQ[Math.min(aqStep, AQ.length - 1)];
+    var aqOpts = aqDone ? [] : aqCur.o.map(function (o, i) {
+      var sel = aqCur.multi ? aqA[aqStep].indexOf(i) >= 0 : aqA[aqStep] === i;
+      return { label: T(o), pressed: sel ? 'true' : 'false', cls: (aqCur.multi ? 'aq-chip' : 'aq-opt') + (sel ? ' is-sel' : ''),
+        pick: function () {
+          if (aqCur.multi) { var m = aqA[aqStep].slice(), j = m.indexOf(i); if (j >= 0) m.splice(j, 1); else m.push(i); aqSet(aqStep, m, false); }
+          else aqSet(aqStep, i, true);
+        } };
+    });
+    // Pack sugerido: etapa (1), lo que frena (3) y lo que quiere hacer (4, pesa doble). 0 Lab · 1 Release · 2 Full Gruv
+    var sc = [0, 0.1, 0];
+    if (aqA[0] != null) sc[AQ[0].w[aqA[0]]] += 1;
+    if (aqA[2] != null) sc[AQ[2].w[aqA[2]]] += 1;
+    if (aqA[3] === 0) sc[0] += 2; else if (aqA[3] === 1) sc[2] += 2; else if (aqA[3] === 2) { sc[1] += 1; sc[2] += 1.2; }
+    var aqPack = sc.indexOf(Math.max.apply(null, sc));
+    var aqPackName = ['Zeche Lab', 'Zeche Release', 'Full Gruv'][aqPack];
+    var aqWhy = [T('Creamos, producimos y grabamos tu canción con un productor al lado.'), T('Una canción terminada por mes, lista para salir a todas las plataformas.'), T('Todo lo del Release, más rápido y más lejos.')][aqPack];
+    var gen = (aqA[1] || []).filter(function (i) { return i !== 9; }).map(function (i) { return AQ[1].o[i]; });
+    if ((aqA[1] || []).indexOf(9) >= 0 && st.aqOther.trim()) gen.push(st.aqOther.trim());
+    var genTxt = gen.length > 1 ? gen.slice(0, -1).join(', ') + ' ' + T('y') + ' ' + gen[gen.length - 1] : gen[0] || '';
+    var pick = function (k) { return aqA[k] != null ? AQ[k].o[aqA[k]] : ''; };
+    var adnValue = aqDone ? ['Etapa: ' + pick(0), 'Géneros: ' + (genTxt || '-'), 'Le frena: ' + pick(2), 'Quiere: ' + pick(3), 'Producción: ' + pick(4), 'Pack sugerido: ' + aqPackName].join(' · ') : '';
+    var aqLine = [T('Recién arrancás'), T('Ya tenés letras, referencias o maquetas'), T('Ya hacés música')][aqA[0] == null ? 0 : aqA[0]] + ' ' + [T('y querés hacer una canción.'), T('y querés un lanzamiento con estrategia y acompañamiento.'), T('y querés armar un EP o un disco.')][aqA[3] == null ? 0 : aqA[3]] + (genTxt ? ' ' + T('Lo tuyo: {g}.').replace('{g}', genTxt) : '');
     var originsList = [['Instagram', 'Instagram'], [T('Me recomendaron'), 'Me recomendaron'], ['Open mic', 'Open mic'], ['Google', 'Google'], [T('Otro'), 'Otro']];
     var origins = originsList.map(function (o, i) {
       var sel = st.origin === i;
@@ -1014,6 +1065,30 @@ class Component extends DCLogic {
       packChips: packChips,
       sentText: st.vBooked ? (st.pack === 4 ? T('Te escribimos por WhatsApp con el presupuesto de tu pack.') : st.pack >= 0 && st.pack < 3 ? T('Te escribimos por WhatsApp para confirmarla y charlar del {pack}.').replace('{pack}', packNames[st.pack]) : T('Te escribimos por WhatsApp para confirmarla.')) : st.pack === 4 ? T('Te escribimos por WhatsApp con el presupuesto de tu pack y para elegir el día de tu visita.') : st.pack >= 0 && st.pack < 3 ? T('Te escribimos por WhatsApp para elegir el día de tu visita y charlar del {pack}.').replace('{pack}', packNames[st.pack]) : T('Te escribimos por WhatsApp para elegir el día de tu visita.'),
       origins: origins,
+      aqOn: st.aq !== 'off', aqCls: 'aq' + (st.aq === 'out' ? ' is-out' : ''),
+      aqOpen: function () { self.openAdn(); }, aqClose: function () { self.closeAdn(); },
+      aqKey: function (e) { if (e.key === 'Escape') { e.stopPropagation(); self.closeAdn(); } },
+      aqAsk: !aqDone, aqDone: aqDone, aqQ: aqDone ? '' : T(aqCur.q), aqStepKey: 'aq' + aqStep, aqOpts: aqOpts,
+      aqNum: T('Pregunta {n} de {t}').replace('{n}', Math.min(aqStep + 1, AQ.length)).replace('{t}', AQ.length),
+      aqBar: 'width: ' + Math.round(Math.min(aqStep, AQ.length) / AQ.length * 100) + '%',
+      aqMulti: !aqDone && !!aqCur.multi, aqHasPrev: aqStep > 0,
+      aqPrev: function () { aqGo(Math.max(0, aqStep - 1)); },
+      aqOtherOn: !aqDone && !!aqCur.multi && aqA[1].indexOf(9) >= 0, aqOther: st.aqOther,
+      aqOnOther: function (e) { self.setState({ aqOther: e.target.value }); },
+      aqNextOff: !aqDone && !!aqCur.multi && !aqA[1].length,
+      aqNext: function () { aqGo(aqStep + 1); },
+      aqPack: aqPackName, aqWhy: aqWhy, aqLine: aqLine,
+      aqCta: T('Reservá tu visita con el {pack}').replace('{pack}', aqPackName),
+      aqGoVisit: function () {
+        if (window.zgTrack) window.zgTrack('adn_resultado', { pack: aqPackName });
+        self.setState({ pack: aqPack, from: 'adn' });
+        self.closeAdn();
+        setTimeout(function () { var el = document.getElementById('visita'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 280);
+        setTimeout(function () { var f = document.getElementById('zg-nombre'); if (f) f.focus({ preventScroll: true }); }, 980);
+      },
+      aqSeePacks: function () { self.closeAdn(); setTimeout(function () { var el = document.getElementById('packs'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 280); },
+      aqRestart: function () { self.setState({ aqA: [null, [], null, null, null], aqOther: '' }); aqGo(0); },
+      adnValue: adnValue,
       vOn: vDays.length > 0, vDayChips: vDayChips, vHourChips: vHourChips, vHasDay: !!vDay, vErr: st.vErr, vHasErr: !!st.vErr,
       vValue: vText, vBookedOn: !!st.vBooked,
       vBookedText: st.vBooked ? T('Te esperamos el {d}.').replace('{d}', st.vBooked.text) : '',
