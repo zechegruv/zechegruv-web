@@ -529,9 +529,9 @@ div:has(> .zg-stack.is-veiled) > .zg-par{filter:blur(18px);opacity:.55}
 .cr-sec{padding-top:88px !important;padding-bottom:88px !important;gap:20px !important}
 .cr-sec .zg-big{font-size:clamp(44px,6.2vh,56px) !important}
 .cr-sec .zg-rv>p{font-size:17px !important;max-width:56ch}
-.tt{top:88px;width:clamp(220px,30vh,270px)}
+.tt{top:88px;width:clamp(176px,23vh,200px)}
 .cr-wrap{margin-top:clamp(36px,6vh,52px);gap:40px}
-.cr-stage{--w:clamp(220px,min(26vw,40vh),330px)}
+.cr-stage{--w:clamp(200px,min(20vw,32vh),270px)}
 .cr-info{gap:14px}
 .cr-title{font-size:clamp(40px,6.6vh,60px)}
 .cr-artist{font-size:17px}
