@@ -470,7 +470,7 @@ class Component extends DCLogic {
     var PRICE = {
       lab: [260000, 230000, 200000],
       labMM: [350000, 325000, 300000], // Lab con mezcla y master
-      release: [400000, 350000, 300000],
+      release: [400000, 370000, 350000],
       full: [500000, 450000, 400000]
     };
     var pIdx = Math.max(0, PLANS.findIndex(function (x) { return x.id === st.plan; }));
