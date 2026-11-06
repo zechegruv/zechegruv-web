@@ -201,7 +201,10 @@ exports.handler = async (event) => {
         : "No encontré un hueco libre para la sesión de corrección: agendala desde el Inicio. ";
 
   const who = me.display_name || me.full_name || me.email;
-  const verb = action === "aprobada" ? `aprobó ${LABEL[kind]}` : `pidió cambios en ${LABEL[kind]}`;
+  // extra: ya había mandado modificaciones y suma las que le faltaron (la
+  // lista que llega es la completa, con las anteriores incluidas).
+  const extra = action === "cambios" && body.extra === true;
+  const verb = action === "aprobada" ? `aprobó ${LABEL[kind]}` : extra ? `sumó modificaciones en ${LABEL[kind]}` : `pidió cambios en ${LABEL[kind]}`;
   // Aviso a Zeche (mail) y comentario en la ficha de Notion. Si alguno
   // falla, la aprobación ya quedó guardada igual.
   const [mailed, commented] = await Promise.all([

@@ -36,6 +36,7 @@
     close: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>',
     pin: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
     check: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+    edit: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 19.5l1-4.2L15.8 5a1.8 1.8 0 012.6 0l.6.6a1.8 1.8 0 010 2.6L8.7 18.5z"/><path d="M13.6 7.2l3.2 3.2"/></svg>',
     trash: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12"/></svg>',
     mic: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3.5" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0013 0M12 18v2.5"/></svg>',
     stop: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6.5" y="6.5" width="11" height="11" rx="2.5"/></svg>',
@@ -82,7 +83,7 @@
 
         <button class="rv-mark" type="button" id="rvMark" hidden>
           <span class="rv-mark-ico">${ICON.pin}</span>
-          <span>Dejar una nota en <b id="rvMarkAt">0:00</b></span>
+          <span>Marcar una modificación en <b id="rvMarkAt">0:00</b></span>
         </button>
 
         <form class="rv-compose" id="rvCompose" hidden>
@@ -90,7 +91,7 @@
             <span class="rv-chip-time"><button type="button" data-rv="nudge" data-d="-2" aria-label="2 segundos antes">‹</button><b id="rvComposeAt">0:00</b><button type="button" data-rv="nudge" data-d="2" aria-label="2 segundos después">›</button></span>
             <span class="rv-compose-hint">¿Qué pasa en este momento?</span>
           </div>
-          <label class="sr-only" for="rvComposeText">Tu nota</label>
+          <label class="sr-only" for="rvComposeText">Tu modificación</label>
           <textarea id="rvComposeText" rows="2" maxlength="500" placeholder="Ej.: acá la voz queda tapada por la guitarra"></textarea>
           <div class="rv-voice" id="rvVoice" hidden>
             <button class="rv-rec" type="button" data-rv="rec" id="rvRec">${ICON.mic}<span>O grabala con tu voz</span></button>
@@ -100,12 +101,12 @@
           <div class="rv-quick" id="rvQuick">${QUICK.map((q) => `<button type="button" data-quick="${esc(q)}">${esc(q)}</button>`).join("")}</div>
           <div class="rv-compose-actions">
             <button class="btn" type="button" data-rv="cancel">Cancelar</button>
-            <button class="btn btn-primary" type="submit">Guardar nota</button>
+            <button class="btn btn-primary" type="submit" id="rvSave">Guardar</button>
           </div>
         </form>
 
         <div class="rv-notes-wrap">
-          <div class="rv-notes-head"><h3 id="rvNotesTitle">Tus notas</h3><span id="rvNotesCount"></span></div>
+          <div class="rv-notes-head"><h3 id="rvNotesTitle">Tus modificaciones</h3><span id="rvNotesCount"></span><span class="rv-draft" id="rvDraft" hidden>Guardadas · sin enviar</span></div>
           <ol class="rv-notes" id="rvNotes"></ol>
           <p class="rv-empty" id="rvEmpty"></p>
           <p class="rv-general" id="rvGeneral" hidden></p>
@@ -125,6 +126,7 @@
   let pendingSeek = null;     // al cambiar de versión: seguir en el mismo segundo
   let lastFocus = null;
   let composeAt = 0;
+  let editIdx = -1; // -1: modificación nueva; si no, la que se está editando
   let activeNote = -1;
   const peakCache = new Map();
 
@@ -473,19 +475,20 @@
   function paintNotes() {
     const own = cur.own;
     const list = cur.notes;
-    $("rvNotesTitle").textContent = cur.mode === "review" ? "Tus notas" : own ? "Las notas que mandaste" : "Notas del artista";
+    $("rvNotesTitle").textContent = cur.mode === "review" ? "Tus modificaciones" : own ? "Las modificaciones que mandaste" : "Notas del artista";
     $("rvNotesCount").textContent = list.length ? String(list.length) : "";
+    $("rvDraft").hidden = !(cur.mode === "review" && list.length);
     $("rvNotes").innerHTML = list.map((n, i) => `
       <li class="rv-note${i === activeNote ? " is-on" : ""}" data-i="${i}">
         <button class="rv-note-time" type="button" data-jump="${i}" aria-label="Escuchar desde ${clock(n.t)}"><span class="rv-note-n">${i + 1}</span>${clock(n.t)}</button>
         <p class="rv-note-text">${n.voice ? `<button class="rv-note-voice" type="button" data-voice="${i}">${ICON.play}<span>Nota de voz</span></button>` : ""}${n.voice && n.text === "Nota de voz" ? "" : esc(n.text)}</p>
-        ${cur.mode === "review" ? `<button class="rv-icon rv-note-del" type="button" data-del="${i}" aria-label="Borrar nota de ${clock(n.t)}">${ICON.trash}</button>` : ""}
+        ${cur.mode === "review" ? `<span class="rv-note-tools"><button class="rv-icon rv-note-edit" type="button" data-edit="${i}" aria-label="Editar la modificación de ${clock(n.t)}">${ICON.edit}</button><button class="rv-icon rv-note-del" type="button" data-del="${i}" aria-label="Borrar la modificación de ${clock(n.t)}">${ICON.trash}</button></span>` : ""}
       </li>`).join("");
     let empty = "";
     if (!list.length) {
-      if (cur.mode === "review") empty = "Escuchá tranquilo. Si algo no te cierra, frená en ese momento y tocá «Dejar una nota»: a Zeche le llega en el segundo exacto.";
+      if (cur.mode === "review") empty = "Escuchá tranquilo. Si algo no te cierra, frená en ese momento y tocá «Marcar una modificación». Se van guardando y, cuando hayas marcado todo, las enviás juntas.";
       else if (!own) empty = cur.state === "aprobar" ? "Todavía no dejó notas." : "Sin notas en el tiempo.";
-      else empty = "No dejaste notas en el tiempo.";
+      else empty = "No marcaste modificaciones en el tiempo.";
     }
     $("rvEmpty").textContent = empty;
     $("rvEmpty").hidden = !empty;
@@ -515,12 +518,17 @@
     if (li) li.scrollIntoView({ block: "nearest", behavior: "smooth" });
   }
 
-  function openCompose() {
+  function openCompose(i) {
     audio.pause();
-    composeAt = Math.max(0, audio.currentTime - 0.5);
+    const n = Number.isInteger(i) ? cur.notes[i] : null;
+    editIdx = n ? i : -1;
+    composeAt = n ? n.t : Math.max(0, audio.currentTime - 0.5);
+    if (n) seek(composeAt);
     $("rvComposeAt").textContent = clock(composeAt);
-    $("rvComposeText").value = "";
+    $("rvComposeText").value = n && !(n.voice && n.text === "Nota de voz") ? n.text : "";
     resetRec();
+    if (n && n.voice) $("rvRecTime").textContent = "Tiene una nota de voz guardada. Si grabás otra, reemplaza a esa.";
+    $("rvSave").textContent = n ? "Guardar cambios" : "Guardar";
     $("rvVoice").hidden = !canRecord();
     $("rvCompose").hidden = false;
     $("rvMark").hidden = true;
@@ -530,6 +538,7 @@
   function closeCompose() {
     stopRec(true);
     resetRec();
+    editIdx = -1;
     $("rvCompose").hidden = true;
     $("rvMark").hidden = !cur || cur.mode !== "review";
   }
@@ -538,8 +547,10 @@
     e.preventDefault();
     const text = $("rvComposeText").value.trim();
     if (rec && rec.state === "recording") { stopRec(); return; }
-    if (!text && !recBlob) { $("rvComposeText").focus(); return; }
+    const editing = editIdx >= 0 ? cur.notes[editIdx] : null;
+    if (!text && !recBlob && !(editing && editing.voice)) { $("rvComposeText").focus(); return; }
     const note = { t: Math.round(composeAt * 10) / 10, text: (text || "Nota de voz").slice(0, 500) };
+    if (editing && editing.voice && !recBlob) note.voice = editing.voice;
     if (recBlob) {
       const btn = $("rvCompose").querySelector('[type="submit"]');
       btn.disabled = true;
@@ -549,16 +560,23 @@
       const path = `${P.me.id}/${String(cur.song.id).replace(/-/g, "").slice(0, 12)}-${Date.now()}.${ext}`;
       const { error } = await db.storage.from("notas-voz").upload(path, recBlob, { contentType: type });
       btn.disabled = false;
-      btn.textContent = "Guardar nota";
+      btn.textContent = editing ? "Guardar cambios" : "Guardar";
       if (error) { $("rvRecTime").textContent = "No pudimos subir la nota de voz. Probá de nuevo o escribila."; return; }
       note.voice = path;
     }
-    cur.notes.push(note);
+    if (editing) {
+      // Si grabó una voz nueva, la anterior se borra (era suya y sin mandar).
+      if (editing.voice && note.voice !== editing.voice && P.me && editing.voice.startsWith(`${P.me.id}/`) && !cur.sentVoices?.has(editing.voice)) {
+        db.storage.from("notas-voz").remove([editing.voice]).catch(() => {});
+      }
+      cur.notes[editIdx] = note;
+    } else cur.notes.push(note);
     sortNotes();
     saveDraft();
     closeCompose();
     paintNotes();
     paintFoot();
+    flashSaved();
     if (window.zgTrack) window.zgTrack("portal_nota_audio", { etapa: cur.kind });
   });
   $("rvQuick").addEventListener("click", (e) => {
@@ -568,6 +586,15 @@
     box.value = box.value.trim() ? `${box.value.trim()}. ${b.dataset.quick.toLowerCase()}` : b.dataset.quick;
     box.focus();
   });
+
+  // Al guardar: queda claro que se guardó y que todavía no se mandó.
+  function flashSaved() {
+    const d = $("rvDraft");
+    d.textContent = "Guardada · sin enviar";
+    d.classList.remove("is-flash"); void d.offsetWidth; d.classList.add("is-flash");
+    clearTimeout(d._t);
+    d._t = setTimeout(() => { d.textContent = "Guardadas · sin enviar"; }, 2200);
+  }
 
   // ---------- Notas de voz ----------
   // El artista graba lo que quiere (tararear, explicar un sonido) en vez de
@@ -656,7 +683,7 @@
     } else if (cur.state === "cambios") {
       tone = "wait";
       html = cur.own
-        ? `<b>Zeche está trabajando tus cambios.</b> Le mandaste ${cur.notes.length ? `${cur.notes.length} ${cur.notes.length === 1 ? "nota" : "notas"}` : "tu pedido"} el ${esc(fmtDay(r.at))}. Cuando suba la versión nueva, te aparece acá para escucharla.`
+        ? `<b>Zeche está trabajando tus cambios.</b> Le mandaste ${cur.notes.length ? `${cur.notes.length} ${cur.notes.length === 1 ? "modificación" : "modificaciones"}` : "tu pedido"} el ${esc(fmtDay(r.at))}. Cuando suba la versión nueva, te aparece acá para escucharla.`
         : `<b>Pidió cambios el ${esc(fmtDay(r.at))}.</b> Tocá cada nota y el audio salta a ese momento.`;
     } else if (cur.state === "aprobada") {
       tone = "ok";
@@ -679,7 +706,13 @@
   function paintFoot() {
     const f = $("rvFoot");
     if (cur.mode !== "review") {
-      f.innerHTML = `<button class="btn rv-wide" type="button" data-rv="close">Cerrar</button>`;
+      // Ya mandó modificaciones y Zeche todavía no subió la versión nueva:
+      // si se olvidó de algo, lo suma a la misma lista.
+      const canAdd = cur.own && cur.state === "cambios" && cur.review && cur.review.action === "cambios";
+      f.innerHTML = canAdd
+        ? `<div class="rv-foot-row"><button class="btn" type="button" data-rv="close">Cerrar</button><button class="btn btn-primary" type="button" data-rv="more">Sumar modificaciones</button></div>
+           <p class="rv-foot-hint">¿Te olvidaste de algo? Sumalo a lo que ya mandaste: a Zeche le llega la lista completa.</p>`
+        : `<button class="btn rv-wide" type="button" data-rv="close">Cerrar</button>`;
       return;
     }
     const n = cur.notes.length;
@@ -690,17 +723,29 @@
           <label class="sr-only" for="rvGenText">Comentario general</label>
           <textarea id="rvGenText" rows="2" maxlength="1000" placeholder="Algo que valga para toda la canción">${esc(cur.general)}</textarea>
         </details>
-        <button class="btn btn-primary rv-wide" type="button" data-rv="send">Mandar ${n === 1 ? "la nota" : `las ${n} notas`} a Zeche</button>
-        <p class="rv-foot-hint">Zeche las recibe con el minuto exacto y te avisa cuando esté la versión nueva.</p>
+        <div class="rv-foot-row">
+          <button class="btn" type="button" data-rv="later">Guardar y salir</button>
+          <button class="btn btn-primary" type="button" data-rv="send"><span>Enviar ${n === 1 ? "la modificación" : `las ${n} modificaciones`}</span></button>
+        </div>
+        <p class="rv-foot-hint">${cur.extra ? "Se suman a las que ya mandaste. " : ""}Se guardan solas en este dispositivo. Cuando hayas marcado todo, enviá: a Zeche le llegan juntas, cada una en su segundo exacto.</p>
         <p class="msg rv-msg" id="rvMsg" role="status"></p>`;
     } else {
       f.innerHTML = `
         <button class="btn btn-primary rv-wide" type="button" data-rv="approve">${ICON.check}<span>Aprobar ${WHAT[cur.kind]}</span></button>
-        <p class="rv-foot-hint">¿Algo para cambiar? Frená en el momento justo y dejá una nota.</p>
+        <p class="rv-foot-hint">¿Algo para cambiar? Frená en el momento justo y marcá una modificación.</p>
         <p class="msg rv-msg" id="rvMsg" role="status"></p>`;
     }
   }
 
+  function armSend(btn) {
+    if (btn.classList.contains("is-armed")) return true;
+    const n = cur.notes.length;
+    btn.classList.add("is-armed");
+    btn.querySelector("span").textContent = "¿Ya marcaste todo? Tocá para enviar";
+    clearTimeout(btn._t);
+    btn._t = setTimeout(() => { if (btn.isConnected) { btn.classList.remove("is-armed"); btn.querySelector("span").textContent = `Enviar ${n === 1 ? "la modificación" : `las ${n} modificaciones`}`; } }, 4000);
+    return false;
+  }
   function armApprove(btn) {
     if (btn.classList.contains("is-armed")) return true;
     btn.classList.add("is-armed");
@@ -733,6 +778,7 @@
           song: c.song.id, kind: c.kind, action, version: c.file.name,
           note: action === "cambios" ? (c.general || null) : null,
           marks: action === "cambios" ? c.notes : [],
+          extra: action === "cambios" && !!c.extra,
         }),
       });
       const data = await res.json().catch(() => ({}));
@@ -747,7 +793,7 @@
       audio.pause();
       $("rvDone").innerHTML = action === "aprobada"
         ? `<img class="rv-done-sun" src="../assets/zeche-gruv-sol.webp" alt="" aria-hidden="true"><span class="rv-done-ico">${ICON.check}</span><h3>¡${NOUN[c.kind]} aprobad${c.kind === "mezcla" ? "a" : "o"}!</h3><p>${c.kind === "mezcla" ? "Seguimos con el master. Te avisamos apenas esté para escucharlo." : "Tu canción está terminada. Ahora, a prepararla para que salga."}</p><button class="btn btn-primary" type="button" data-rv="close">Listo</button>`
-        : `<img class="rv-done-sun" src="../assets/zeche-gruv-sol.webp" alt="" aria-hidden="true"><span class="rv-done-ico">${ICON.check}</span><h3>Zeche ya tiene tus notas</h3><p>${n ? `${n === 1 ? "Le llegó tu nota" : `Le llegaron tus ${n} notas`}, cada una en su momento exacto.` : "Le llegó tu pedido."} Cuando suba la versión nueva, te aparece acá para escuchar${c.kind === "mezcla" ? "la" : "lo"}.</p><button class="btn btn-primary" type="button" data-rv="close">Listo</button>`;
+        : `<img class="rv-done-sun" src="../assets/zeche-gruv-sol.webp" alt="" aria-hidden="true"><span class="rv-done-ico">${ICON.check}</span><h3>Zeche ya tiene tus modificaciones</h3><p>${n ? `${n === 1 ? "Le llegó tu modificación" : `Le llegaron tus ${n} modificaciones`}, cada una en su momento exacto.` : "Le llegó tu pedido."} Cuando suba la versión nueva, te aparece acá para escuchar${c.kind === "mezcla" ? "la" : "lo"}.</p><button class="btn btn-primary" type="button" data-rv="close">Listo</button>`;
       $("rvDone").hidden = false;
     } catch (err) {
       c.sending = false;
@@ -755,6 +801,30 @@
       buttons.forEach((b) => { b.disabled = false; });
       P.setMsg(msg, err.message, true);
     }
+  }
+
+  // Sumar modificaciones a las que ya mandó (Zeche todavía no subió la
+  // versión nueva): vuelve a modo revisión con la lista enviada + lo que
+  // haya guardado sin mandar. Al enviar va la lista completa.
+  function addMore() {
+    const sent = (cur.review && cur.review.marks) || [];
+    const saved = store.get(cur.key) || [];
+    const seen = new Set();
+    cur.notes = sent.concat(saved).map((m) => ({ ...m })).filter((m) => { const k = `${m.t}|${m.text}|${m.voice || ""}`; if (seen.has(k)) return false; seen.add(k); return true; });
+    cur.sentVoices = new Set(sent.map((m) => m.voice).filter(Boolean));
+    cur.general = store.get(cur.key + ":g") || (cur.review && cur.review.note) || "";
+    cur.mode = "review";
+    cur.extra = true;
+    sortNotes();
+    saveDraft();
+    root.classList.remove("is-view");
+    $("rvMark").hidden = false;
+    paintNotes();
+    paintFoot();
+    const b = $("rvBanner");
+    b.className = "rv-banner";
+    b.innerHTML = "<b>Sumá lo que te faltó.</b> Ahí están las modificaciones que ya mandaste: podés agregar, editar o borrar y después enviás la lista completa.";
+    b.hidden = false;
   }
 
   // Borrar una nota sin mandar. Si era de voz, también se borra su audio del
@@ -765,7 +835,7 @@
     saveDraft();
     paintNotes();
     paintFoot();
-    if (gone && gone.voice && cur.mode === "review" && P.me && gone.voice.startsWith(`${P.me.id}/`)) {
+    if (gone && gone.voice && cur.mode === "review" && P.me && gone.voice.startsWith(`${P.me.id}/`) && !cur.sentVoices?.has(gone.voice)) {
       db.storage.from("notas-voz").remove([gone.voice]).catch(() => {});
     }
   }
@@ -782,6 +852,8 @@
     if (vo) { playVoice(+vo.dataset.voice, vo); return; }
     const del = e.target.closest("[data-del]");
     if (del) { dropNote(+del.dataset.del); return; }
+    const ed = e.target.closest("[data-edit]");
+    if (ed) { openCompose(+ed.dataset.edit); return; }
     const b = e.target.closest("[data-rv]");
     if (!b) return;
     const act = b.dataset.rv;
@@ -791,12 +863,14 @@
     else if (act === "cancel") closeCompose();
     else if (act === "rec") { if (rec) stopRec(); else startRec(); }
     else if (act === "nudge") { composeAt = Math.min(Math.max(0, composeAt + +b.dataset.d), duration() || composeAt + 2); $("rvComposeAt").textContent = clock(composeAt); seek(composeAt); }
-    else if (act === "send") send("cambios");
+    else if (act === "send") { if (armSend(b)) send("cambios"); }
+    else if (act === "later") close();
+    else if (act === "more") addMore();
     else if (act === "approve") { if (armApprove(b)) send("aprobada"); }
   });
   root.addEventListener("input", (e) => { if (e.target.id === "rvGenText" && cur) { cur.general = e.target.value; saveDraft(); } });
   $("rvPlay").addEventListener("click", toggle);
-  $("rvMark").addEventListener("click", openCompose);
+  $("rvMark").addEventListener("click", () => openCompose());
   document.addEventListener("keydown", (e) => {
     if (root.hidden) return;
     if (e.key === "Escape") { if (!$("rvCompose").hidden) closeCompose(); else close(); return; }
