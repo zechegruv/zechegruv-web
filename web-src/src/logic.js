@@ -503,7 +503,7 @@ class Component extends DCLogic {
     var FAQ = [
       [T('¿Puedo cambiar de pack?'), T('Sí, cualquier mes. Subís cuando tenés más para hacer y bajás cuando necesitás un respiro.')],
       [T('¿Cuándo se paga?'), T('Entre el 1 y el 10 de cada mes. Con el plan de 3 o 6 meses pagás cada mes el precio con descuento.')],
-      [T('¿Y si necesito grabar más?'), T('Sumás horas extra a $40.000 la hora, en cualquier pack.')],
+      [T('¿Y si necesito grabar más?'), T('Sumás horas extra a $35.000 la hora, en cualquier pack.')],
       [T('¿Los precios cambian?'), T('Se actualizan cada 3 meses, siempre con 30 días de aviso.')]
     ];
     var faqs = FAQ.map(function (f, i) {
