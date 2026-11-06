@@ -352,6 +352,51 @@ a{color:#F5A623}a:hover{color:#FFF4DC}
 @media (max-width:900px){.tt{position:relative;top:auto;right:auto;width:min(280px,76vw);align-self:center;margin:-8px 0 -12px;order:1}.cr-sec>.cr-wrap{order:2}}
 @media (hover:none),(pointer:coarse){.cr-hint-d{display:none}.cr-hint-m{display:inline}}
 @media (prefers-reduced-motion:reduce){.tt{animation:none}.tt-arm,.tt-rec{transition:none}}
+/* Mini celular con el portal (packs): abre la demo */
+.pk-phone{min-width:0;background:#241105;border:1px solid rgba(240,224,192,.14);border-radius:24px;padding:28px 24px 24px;display:flex;flex-direction:column;align-items:center;gap:18px}
+.pk-dev{all:unset;cursor:pointer;display:block;perspective:900px;-webkit-tap-highlight-color:transparent}
+.pk-dev-frame{position:relative;display:block;width:196px;aspect-ratio:9/18.5;border-radius:34px;background:#0d0603;padding:7px;box-sizing:border-box;box-shadow:0 0 0 1px rgba(240,224,192,.16),0 30px 60px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,244,220,.06);transform:rotateY(-10deg) rotateX(4deg);transition:transform 600ms cubic-bezier(.16,1,.3,1),box-shadow 600ms ease}
+.pk-phone:hover .pk-dev-frame,.pk-dev:focus-visible .pk-dev-frame{transform:rotateY(0) rotateX(0) translateY(-4px);box-shadow:0 0 0 1px rgba(245,166,35,.4),0 36px 70px rgba(0,0,0,.55),inset 0 0 0 1px rgba(255,244,220,.06)}
+.pk-dev:active .pk-dev-frame{transform:scale(.98)}
+.pk-island{position:absolute;left:50%;top:13px;width:56px;height:16px;margin-left:-28px;border-radius:999px;background:#0d0603;z-index:3}
+.pk-scr{position:relative;display:flex;flex-direction:column;gap:9px;height:100%;border-radius:27px;background:#2E1607;overflow:hidden;padding:34px 12px 12px;box-sizing:border-box;text-align:left}
+.pk-bar{display:flex;align-items:center;gap:6px}
+.pk-bar img{width:16px;height:16px}
+.pk-bar b{font:600 8px/1 'Geist Mono',monospace;letter-spacing:.18em;color:#F5A623}
+.pk-av{margin-left:auto;width:18px;height:18px;border-radius:50%;background:linear-gradient(135deg,#F07800,#F5A623)}
+.pk-h{font:800 17px/1.05 'Bricolage Grotesque',sans-serif;letter-spacing:-.02em;color:#FFF4DC;margin-top:2px}
+.pk-song{display:flex;flex-direction:column;gap:8px;background:#241105;border:1px solid rgba(240,224,192,.08);border-radius:14px;padding:10px}
+.pk-song-top{display:flex;align-items:baseline;justify-content:space-between;gap:6px}
+.pk-song-top b{font:700 11px/1.1 'Geist',sans-serif;color:#FFF4DC}
+.pk-song-top em{font:500 8px/1 'Geist Mono',monospace;font-style:normal;letter-spacing:.12em;text-transform:uppercase;color:#F5A623}
+.pk-stg{display:grid;grid-template-columns:repeat(5,1fr);gap:3px}
+.pk-stg i{height:4px;border-radius:9px;background:rgba(240,224,192,.14)}
+.pk-stg i.d{background:#F07800}
+.pk-stg i.c{background:linear-gradient(90deg,#F07800,#F5A623);animation:pkPulse 1.6s ease-in-out infinite}
+@keyframes pkPulse{50%{opacity:.45}}
+.pk-pl{background:#241105;border-radius:14px;padding:10px 9px 7px;display:flex;flex-direction:column;gap:5px}
+.pk-wv{position:relative;height:34px;display:flex;align-items:center;gap:2px}
+.pk-wv i{flex:1;border-radius:2px;background:#F07800;opacity:.9}
+.pk-ph{position:absolute;top:-3px;bottom:-3px;left:0;width:2px;border-radius:2px;background:#FFF4DC;box-shadow:0 0 8px rgba(255,244,220,.6);animation:pkHead 6s linear infinite}
+@keyframes pkHead{from{left:4%}to{left:96%}}
+.pk-pin{position:absolute;top:-13px;left:22%;transform:translateX(-50%);min-width:12px;height:12px;border-radius:999px;background:#F5A623;color:#241105;font:700 8px/12px 'Geist',sans-serif;text-align:center}
+.pk-tm{display:flex;justify-content:space-between;font:500 8px/1 'Geist Mono',monospace;color:#C9A980}
+.pk-note{display:flex;align-items:center;gap:6px;padding:7px 8px;border-radius:10px;background:rgba(240,120,0,.13);font:500 9px/1.25 'Geist',sans-serif;color:#F0E0C0}
+.pk-note b{flex:none;font:600 8px/1 'Geist Mono',monospace;color:#F5A623}
+.pk-song2{opacity:.8}
+.pk-ok{margin-top:auto;display:block;text-align:center;padding:9px;border-radius:999px;background:#F07800;color:#241105;font:700 10px/1 'Geist',sans-serif;animation:pkOk 7s ease-in-out 1.2s infinite}
+@keyframes pkOk{0%,70%,100%{transform:none}76%{transform:scale(.94)}82%{transform:none;background:#9FD49A}94%{background:#9FD49A}}
+.pk-toast{position:absolute;left:8px;right:8px;top:8px;z-index:4;display:flex;align-items:center;gap:7px;padding:9px 10px;border-radius:14px;background:rgba(36,17,5,.92);border:1px solid rgba(245,166,35,.35);box-shadow:0 12px 24px rgba(0,0,0,.45);font:600 9px/1.2 'Geist',sans-serif;color:#FFF4DC;transform:translateY(-140%);animation:pkToast 7s cubic-bezier(.16,1,.3,1) 1.2s infinite}
+.pk-toast img{width:16px;height:16px;flex:none}
+@keyframes pkToast{0%{transform:translateY(-140%)}8%,62%{transform:translateY(0)}72%,100%{transform:translateY(-140%)}}
+.pk-go{display:inline-flex;align-items:center;gap:10px;border:0;background:#F07800;color:#241105;font:600 15px/1 'Geist',sans-serif;padding:8px 20px 8px 8px;border-radius:999px;cursor:pointer;transition:background-color 200ms ease,transform 200ms cubic-bezier(.23,1,.32,1)}
+.pk-go:hover{background:#FF8A1F}.pk-go:active{transform:scale(.97)}
+.pk-go:focus-visible{outline:3px solid #FFF4DC;outline-offset:3px}
+.pk-go-ico{width:30px;height:30px;border-radius:50%;background:#241105;color:#F07800;display:flex;align-items:center;justify-content:center}
+.pk-safe{display:flex;gap:8px;align-items:flex-start;margin:0;max-width:34ch;font-size:13px;line-height:1.45;color:#C9A980}
+.pk-safe svg{flex:none;margin-top:2px;color:#F5A623}
+.pk-safe b{color:#F0E0C0;font-weight:600}
+@media (prefers-reduced-motion:reduce){.pk-dev-frame{transform:none;transition:none}.pk-ph,.pk-stg i.c{animation:none}.pk-ph{left:22%}.pk-toast{animation:none;transform:none}}
 .zg-hs{position:absolute;left:50%;top:calc(100% + 18px);width:min(340px,86%);transform:translate(-50%,14px) scale(.96);opacity:0;filter:blur(10px);pointer-events:none;z-index:6;transition:opacity 700ms ease,transform 800ms cubic-bezier(.16,1,.3,1),filter 750ms ease}
 .zg-hs.is-on{transition:opacity 380ms ease,transform 500ms cubic-bezier(.16,1,.3,1),filter 450ms ease}
 .zg-hs::before{content:"";position:absolute;left:-10%;right:-10%;top:-30px;height:30px}
@@ -855,11 +900,25 @@ header nav .zg-btn{padding:10px 15px !important;font-size:14px !important}
 <li><span class="pp-n">2</span><span class="pp-t">1:58</span><span>Que el bajo entre más fuerte acá</span></li>
 </ol>
 </div>
-<button type="button" class="zg-press pd-open" onClick="{{ demoOpen }}" aria-haspopup="dialog"><span class="pd-open-ico" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 18 18"><path d="M5 3v12l10-6z" fill="currentColor"></path></svg></span>Mirá cómo es el portal</button>
 </div>
-<div style="border: 1.5px solid #F5A623; border-radius: 24px; padding: 32px; display: flex; flex-direction: column; justify-content: center; gap: 12px">
-<span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 32px; line-height: 1.05; letter-spacing: -0.02em; color: #F5A623">Probalo sin riesgo.</span>
-<p style="margin: 0; font-size: 16px; line-height: 1.5; color: #F0E0C0">Si después de la primera sesión sentís que no es tu lugar, te devolvemos lo que pagaste por las sesiones que quedan del mes.</p>
+<div class="pk-phone">
+<button type="button" class="pk-dev" onClick="{{ demoOpen }}" aria-label="Ver el portal" tabindex="-1">
+<span class="pk-dev-frame" aria-hidden="true">
+<span class="pk-island"></span>
+<span class="pk-scr">
+<span class="pk-bar"><img src="/assets/web/sol-160.webp" alt=""><b>ZECHE GRUV</b><i class="pk-av"></i></span>
+<span class="pk-h">Tus canciones</span>
+<span class="pk-song"><span class="pk-song-top"><b>Tu próximo single</b><em>Mezcla</em></span><span class="pk-stg"><i class="d"></i><i class="d"></i><i class="d"></i><i class="c"></i><i></i></span></span>
+<span class="pk-pl"><span class="pk-wv"><i style="height: 30%"></i><i style="height: 48%"></i><i style="height: 42%"></i><i style="height: 64%"></i><i style="height: 72%"></i><i style="height: 58%"></i><i style="height: 80%"></i><i style="height: 70%"></i><i style="height: 46%"></i><i style="height: 54%"></i><i style="height: 78%"></i><i style="height: 84%"></i><i style="height: 62%"></i><i style="height: 50%"></i><i style="height: 68%"></i><i style="height: 88%"></i><i style="height: 74%"></i><i style="height: 52%"></i><i style="height: 40%"></i><i style="height: 60%"></i><i style="height: 76%"></i><i style="height: 56%"></i><i style="height: 38%"></i><i style="height: 30%"></i><span class="pk-ph"></span><span class="pk-pin">1</span></span><span class="pk-tm"><span>0:41</span><span>2:58</span></span></span>
+<span class="pk-note"><b>0:41</b>Subir un poco la voz en el estribillo</span>
+<span class="pk-song pk-song2"><span class="pk-song-top"><b>Tu segundo tema</b><em>Grabación</em></span><span class="pk-stg"><i class="d"></i><i class="d"></i><i class="c"></i><i></i><i></i></span></span>
+<span class="pk-ok">Aprobar la mezcla</span>
+<span class="pk-toast"><img src="/assets/web/sol-160.webp" alt="">Tu mezcla está lista para escuchar</span>
+</span>
+</span>
+</button>
+<button type="button" class="zg-press pk-go" onClick="{{ demoOpen }}" aria-haspopup="dialog"><span class="pk-go-ico" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 18 18"><path d="M5 3v12l10-6z" fill="currentColor"></path></svg></span>Ver el portal</button>
+<p class="pk-safe"><svg width="14" height="14" viewBox="0 0 18 18" aria-hidden="true"><path d="M4 9.5l3.2 3.2L14 5.8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg><span><b>Probalo sin riesgo.</b> Si después de la primera sesión sentís que no es tu lugar, te devolvemos lo que pagaste por las sesiones que quedan del mes.</span></p>
 </div>
 </div>
 <div class="zg-rv" style="display: flex; flex-direction: column; gap: 6px">
