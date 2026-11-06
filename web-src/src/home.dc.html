@@ -567,9 +567,9 @@ header nav .zg-btn{padding:10px 15px !important;font-size:14px !important}
 <nav aria-label="Principal" style="max-width: 1320px; margin: 0 auto; height: 72px; box-sizing: border-box; padding: 0 40px; display: flex; align-items: center; justify-content: space-between; gap: 24px">
 <a href="#inicio" style="display: flex; align-items: center"><img src="/assets/web/logo-zeche-gruv-160.webp" alt="ZECHE GRUV" style="height: 38px; width: auto"></a>
 <div class="zg-navlinks" style="gap: 32px; align-items: center; font-size: 15px; font-weight: 500">
-<a class="zg-link {{ here_estudio }}" href="#estudio" aria-current="{{ cur_estudio }}" style="color: #C9A980; text-decoration: none; padding-bottom: 4px">El estudio</a>
 <a class="zg-link {{ here_proceso }}" href="#proceso" aria-current="{{ cur_proceso }}" style="color: #C9A980; text-decoration: none; padding-bottom: 4px">Cómo trabajamos</a>
 <a class="zg-link {{ here_lanzamientos }}" href="#lanzamientos" aria-current="{{ cur_lanzamientos }}" style="color: #C9A980; text-decoration: none; padding-bottom: 4px">Lanzamientos</a>
+<a class="zg-link {{ here_estudio }}" href="#estudio" aria-current="{{ cur_estudio }}" style="color: #C9A980; text-decoration: none; padding-bottom: 4px">El estudio</a>
 <a class="zg-link {{ here_comunidad }}" href="#comunidad" aria-current="{{ cur_comunidad }}" style="color: #C9A980; text-decoration: none; padding-bottom: 4px">Shows y camps</a>
 <a class="zg-link {{ here_planes }}" href="#planes" aria-current="{{ cur_planes }}" style="color: #C9A980; text-decoration: none; padding-bottom: 4px">Packs</a>
 </div>
@@ -635,26 +635,6 @@ header nav .zg-btn{padding:10px 15px !important;font-size:14px !important}
 </div>
 </section>
 
-
-<section id="estudio" class="zg-sec" style="max-width: 1320px; margin: 0 auto; box-sizing: border-box; padding: 128px 40px 64px; display: flex; flex-direction: column; gap: 48px">
-<h2 class="zg-big zg-rv" style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 76px; line-height: 0.98; letter-spacing: -0.03em; max-width: 14ch">Un estudio que se siente casa.</h2>
-<div onPointerMove="{{ spot }}" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); grid-auto-rows: 260px; gap: 16px">
-<div class="zg-rv" style="grid-column: span 2; grid-row: span 2; overflow: hidden; border-radius: 20px"><img loading="lazy" decoding="async" class="zg-zoom" src="/assets/web/estudio-sala.webp" alt="La sala de ZECHE GRUV con guitarras, monitores y la silla naranja" style="width: 100%; height: 100%; object-fit: cover; display: block"></div>
-<div class="zg-rv zg-bento" style="background: #4B2509; border-radius: 20px; padding: 32px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between">
-<p style="margin: 0; font-size: 18px; line-height: 1.5; color: #F0E0C0">Arranqué con pocos recursos y un sueño gigante. La energía para hacerlo realidad nunca frenó, y hoy sigue intacta.</p>
-<span style="display: flex; align-items: center; gap: 12px; font-family: 'Geist Mono', monospace; font-size: 13px; color: #C9A980"><img src="/assets/web/yaco-santana-120.webp" alt="Yaco Santana" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover; object-position: 50% 25%; border: 2px solid #F07800">Yaco Santana, fundador</span>
-</div>
-<div class="zg-rv zg-bento" style="background: #F5A623; color: #241105; border-radius: 20px; padding: 32px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-end; gap: 4px">
-<span class="zg-count" style="--to: 200; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 76px; line-height: 0.9; letter-spacing: -0.03em"><span class="zg-static">+200</span></span>
-<span style="font-size: 17px; font-weight: 500">artistas colaboraron con el sello</span>
-</div>
-<div class="zg-rv" style="overflow: hidden; border-radius: 20px"><img loading="lazy" decoding="async" class="zg-zoom" src="/assets/web/estudio-teclado.webp" alt="Teclado y escritorio de producción con luz de ventana" style="width: 100%; height: 100%; object-fit: cover; display: block"></div>
-<div class="zg-rv zg-bento" style="background: #4B2509; border-radius: 20px; padding: 32px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-end; gap: 4px">
-<span class="zg-count" style="--to: 60; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 76px; line-height: 0.9; letter-spacing: -0.03em; color: #F5A623"><span class="zg-static">+60</span></span>
-<span style="font-size: 17px; font-weight: 500; color: #F0E0C0">canciones publicadas con créditos del sello</span>
-</div>
-</div>
-</section>
 
 <section id="proceso" style="background: #2E1607; margin-top: 64px">
 <div class="zg-sec" style="max-width: 1320px; margin: 0 auto; box-sizing: border-box; padding: 112px 40px; display: flex; flex-wrap: wrap; gap: 64px; align-items: flex-start">
@@ -791,6 +771,26 @@ header nav .zg-btn{padding:10px 15px !important;font-size:14px !important}
 <span class="cr-hint cr-hint-d" style="font-size: 14px; color: #C9A980">Con el mouse arriba de la caja, girá la ruedita para pasar los discos. También podés tocar un sobre o usar las flechas.</span><span class="cr-hint cr-hint-m" style="font-size: 14px; color: #C9A980">Deslizá la caja de costado para pasar los discos.</span>
 </sc-if>
 </div>
+</div>
+</div>
+</section>
+
+<section id="estudio" class="zg-sec" style="max-width: 1320px; margin: 0 auto; box-sizing: border-box; padding: 128px 40px 0; display: flex; flex-direction: column; gap: 48px">
+<h2 class="zg-big zg-rv" style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 76px; line-height: 0.98; letter-spacing: -0.03em; max-width: 14ch">Un estudio que se siente casa.</h2>
+<div onPointerMove="{{ spot }}" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); grid-auto-rows: 260px; gap: 16px">
+<div class="zg-rv" style="grid-column: span 2; grid-row: span 2; overflow: hidden; border-radius: 20px"><img loading="lazy" decoding="async" class="zg-zoom" src="/assets/web/estudio-sala.webp" alt="La sala de ZECHE GRUV con guitarras, monitores y la silla naranja" style="width: 100%; height: 100%; object-fit: cover; display: block"></div>
+<div class="zg-rv zg-bento" style="background: #4B2509; border-radius: 20px; padding: 32px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between">
+<p style="margin: 0; font-size: 18px; line-height: 1.5; color: #F0E0C0">Arranqué con pocos recursos y un sueño gigante. La energía para hacerlo realidad nunca frenó, y hoy sigue intacta.</p>
+<span style="display: flex; align-items: center; gap: 12px; font-family: 'Geist Mono', monospace; font-size: 13px; color: #C9A980"><img src="/assets/web/yaco-santana-120.webp" alt="Yaco Santana" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover; object-position: 50% 25%; border: 2px solid #F07800">Yaco Santana, fundador</span>
+</div>
+<div class="zg-rv zg-bento" style="background: #F5A623; color: #241105; border-radius: 20px; padding: 32px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-end; gap: 4px">
+<span class="zg-count" style="--to: 200; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 76px; line-height: 0.9; letter-spacing: -0.03em"><span class="zg-static">+200</span></span>
+<span style="font-size: 17px; font-weight: 500">artistas colaboraron con el sello</span>
+</div>
+<div class="zg-rv" style="overflow: hidden; border-radius: 20px"><img loading="lazy" decoding="async" class="zg-zoom" src="/assets/web/estudio-teclado.webp" alt="Teclado y escritorio de producción con luz de ventana" style="width: 100%; height: 100%; object-fit: cover; display: block"></div>
+<div class="zg-rv zg-bento" style="background: #4B2509; border-radius: 20px; padding: 32px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-end; gap: 4px">
+<span class="zg-count" style="--to: 60; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 76px; line-height: 0.9; letter-spacing: -0.03em; color: #F5A623"><span class="zg-static">+60</span></span>
+<span style="font-size: 17px; font-weight: 500; color: #F0E0C0">canciones publicadas con créditos del sello</span>
 </div>
 </div>
 </section>
