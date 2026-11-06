@@ -1,3 +1,25 @@
+// Lo último que se vio de cada pantalla (canciones, tareas, avisos), guardado
+// en el dispositivo y separado por cuenta: el portal lo muestra al instante y
+// lo actualiza por detrás. Se borra al cerrar sesión.
+window.ZGStore = {
+  user: null,
+  key(k) { return this.user ? `zg-cache:${this.user}:${k}` : null; },
+  get(k, maxAgeMs) {
+    try {
+      const key = this.key(k); if (!key) return null;
+      const hit = JSON.parse(localStorage.getItem(key) || "null");
+      if (!hit || (maxAgeMs && Date.now() - hit.at > maxAgeMs)) return null;
+      return hit;
+    } catch (e) { return null; }
+  },
+  set(k, data) {
+    try { const key = this.key(k); if (key) localStorage.setItem(key, JSON.stringify({ at: Date.now(), data })); } catch (e) { /* sin lugar: no pasa nada */ }
+  },
+  clear() {
+    try { Object.keys(localStorage).filter((k) => k.startsWith("zg-cache:")).forEach((k) => localStorage.removeItem(k)); } catch (e) { /* nada */ }
+    this.user = null;
+  },
+};
 // ZECHE GRUV — Portal de artistas (etapa 1: login, perfil y panel de
 // administrador). Cuentas y datos viven en Supabase; quién puede ver o
 // editar qué lo decide la base (ver supabase/001_perfiles.sql), no este
@@ -197,6 +219,7 @@
     if (expiring) return;
     expiring = true;
     me = viewing = null;
+    window.ZGStore.clear();
     try { await db.auth.signOut({ scope: "local" }); } catch (e) { /* ya no había sesión */ }
     showView("login");
     setMsg($("loginMsg"), EXPIRED_MSG, true);
@@ -275,6 +298,7 @@
       return;
     }
     me = data;
+    window.ZGStore.user = me.id;
     const admin = me.role === "admin";
     // Medición: tu dispositivo queda excluido; para los artistas se cuenta
     // el ingreso con su id interno (un código, nunca nombre ni mail).
@@ -389,6 +413,8 @@
   });
 
   $("logoutBtn").addEventListener("click", async () => {
+    // Lo último que se vio (canciones, tareas) es de esta cuenta: se borra al salir.
+    window.ZGStore.clear();
     // Lo guardado para escuchar sin señal es de esta cuenta: al salir se borra del celu.
     if (window.ZGOffline) window.ZGOffline.clear();
     // Y este dispositivo deja de recibir sus notificaciones.

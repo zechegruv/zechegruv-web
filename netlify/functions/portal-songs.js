@@ -345,6 +345,11 @@ exports.handler = async (event) => {
   ]);
   if (!profile || !profile[0]) return json(500, { error: BAD_KEY });
 
+  // Las aprobaciones y los audios de la carpeta no dependen de Notion: se
+  // piden ya, en paralelo con Notion (antes esperaban a que Notion terminara).
+  const folder = rows && rows[0] && (rows[0].onedrive_edit_link || rows[0].onedrive_link);
+  const reviewsP = supabase(`/rest/v1/song_approvals?profile_id=eq.${artistId}&select=*&order=created_at.desc&limit=300`, serviceKey).catch(() => null);
+  const audiosP = folder ? listAudio(folder).catch(() => []) : Promise.resolve([]);
   try {
     // La ficha elegida a mano manda; si no hay, se busca sola.
     const pageId = parsePageId(rows && rows[0] && rows[0].notion_page_id) || parsePageId(await findClient(profile[0]));
@@ -363,11 +368,7 @@ exports.handler = async (event) => {
     // Aprobaciones (020 y 021_notas_en_el_tiempo.sql) y los audios de mezcla
     // y master de su carpeta de OneDrive. Si falta alguno (la tabla todavía
     // no existe, OneDrive no responde), las canciones se muestran igual.
-    const folder = rows && rows[0] && (rows[0].onedrive_edit_link || rows[0].onedrive_link);
-    const [reviews, audios] = await Promise.all([
-      supabase(`/rest/v1/song_approvals?profile_id=eq.${artistId}&select=*&order=created_at.desc&limit=300`, serviceKey),
-      folder ? listAudio(folder).catch(() => []) : Promise.resolve([]),
-    ]);
+    const [reviews, audios] = await Promise.all([reviewsP, audiosP]);
     // Las entregas automáticas (marcar entregado en Notion, cerrar la sesión,
     // tildar el calendario y avisarle por mail: _lib/auto-entregas.js) ya no
     // se hacen acá: el artista esperaba todo eso cada vez que abría sus

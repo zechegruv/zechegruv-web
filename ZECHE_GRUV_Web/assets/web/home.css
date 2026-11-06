@@ -241,12 +241,81 @@ a{color:#F5A623}a:hover{color:#FFF4DC}
 /* Celu: los packs se deslizan de costado (arranca en el más elegido) */
 .pk-dots{display:none}
 .zg-visit-h{animation:zgfade 380ms cubic-bezier(.16,1,.3,1) both}
+@media (min-width:761px) and (max-width:1100px){.cg-grid{grid-template-columns:repeat(3,minmax(0,1fr)) !important}.cg-grid>:last-child{grid-column:1 / -1}.cg-grid img{height:200px !important}}
+@media (max-width:760px){.cp-card{grid-template-columns:1fr !important}.cp-shot{margin:0 16px !important}}
+@media (min-width:761px) and (max-width:1100px){.cp-txt{padding:32px 28px !important;gap:14px !important}.cp-h{font-size:36px !important}.cp-txt>p{font-size:16px !important}
+.st-grid{grid-template-columns:repeat(3,minmax(0,1fr)) !important;grid-auto-rows:200px !important;gap:12px !important}.st-grid>*{grid-column:auto !important;grid-row:auto !important}.st-grid>.st-sala{grid-column:1 / 3 !important;grid-row:1 / 3 !important}.st-grid>.st-num:last-child{grid-column:2 / 4 !important}.st-grid>.st-quote{padding:22px !important}.st-grid>.st-quote p{font-size:15.5px !important}.st-grid>.st-num{padding:22px !important}.st-grid .zg-count{font-size:56px !important}}
+/* Etapas del proceso: el indicador se desliza (transform) y el texto cruza sin mover la página */
+.zg-stp{position:relative;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;margin-top:8px;padding:4px;background:#241105;border:1px solid rgba(240,224,192,.14);border-radius:20px}
+.zg-stp-k{position:absolute;top:4px;bottom:4px;left:4px;width:calc((100% - 20px) / 4);border-radius:16px;background:#4B2509;box-shadow:inset 0 1px 0 rgba(255,244,220,.07);transition:transform 560ms cubic-bezier(.23,1,.32,1);will-change:transform}
+.zg-stp-b{position:relative;z-index:1;display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-height:76px;padding:14px;border:0;border-radius:16px;background:transparent;font:inherit;font-weight:600;font-size:15.5px;line-height:1.2;text-align:left;cursor:pointer;transition:color 300ms cubic-bezier(.23,1,.32,1),transform 160ms cubic-bezier(.23,1,.32,1)}
+.zg-stp-b:active{transform:scale(.97)}
+.zg-stp-n{font-family:'Geist Mono',monospace;font-size:12px;font-weight:500;color:#F5A623}
+.zg-stp-p{display:grid;padding:18px 4px 0}
+.zg-stp-p>p{grid-area:1/1;margin:0;font-size:17px;line-height:1.55;color:#C9A980;max-width:46ch;opacity:0;transform:translateY(10px);visibility:hidden;transition:opacity 260ms cubic-bezier(.23,1,.32,1),transform 420ms cubic-bezier(.23,1,.32,1),visibility 0s linear 260ms}
+.zg-stp-p>p.on{opacity:1;transform:none;visibility:visible;transition:opacity 380ms cubic-bezier(.23,1,.32,1) 90ms,transform 520ms cubic-bezier(.23,1,.32,1) 90ms,visibility 0s}
+@media (prefers-reduced-motion:reduce){.zg-stp-k,.zg-stp-p>p{transition:none !important}}
+/* Ritmo vertical: menos aire entre secciones en tablet y celu */
+@media (max-width:1100px){:root{--py:96px;--py2:88px}}
+@media (max-width:760px){
+:root{--py:64px;--py2:56px}
+.zg-stp-b{min-height:64px;padding:10px 8px;font-size:13px;gap:4px}
+.zg-stp-n{font-size:11px}
+.zg-stp-p>p{font-size:15.5px}
+/* Estudio: foto + frase a lo ancho, +200 y +60 lado a lado */
+.st-grid{grid-template-columns:1fr 1fr !important;grid-auto-rows:auto !important;gap:10px !important}
+.st-grid>*{grid-column:auto !important;grid-row:auto !important}
+.st-grid>.st-sala{grid-column:1 / -1 !important;height:230px}
+.st-grid>.st-quote{grid-column:1 / -1 !important;padding:22px !important;gap:16px}
+.st-grid>.st-quote p{font-size:16px !important}
+.st-grid>.st-num{padding:18px !important;min-height:132px}
+.st-grid .zg-count{font-size:48px !important}
+.st-grid>.st-num>span:last-child{font-size:14px !important;line-height:1.3}
+.st-grid>.st-tec{display:none}
+/* Reseñas: una frase y los nombres en una fila que se desliza */
+.zg-rev{gap:18px !important}
+.zg-rev .zg-sun{width:40px !important;height:40px !important}
+.zg-quote{font-size:27px !important;min-height:3.4em !important}
+.zg-revnames{flex-wrap:nowrap !important;justify-content:flex-start !important;overflow-x:auto;max-width:calc(100% + 40px);margin:0 -20px;padding:0 20px 4px;scrollbar-width:none}
+.zg-revnames::-webkit-scrollbar{display:none}
+.zg-revnames>*{flex-shrink:0}
+/* ZG Camp compacto */
+.cp-txt{padding:26px 22px 8px !important;gap:12px !important}
+.cp-h{font-size:32px !important}
+.cp-txt>p{font-size:15.5px !important}
+.cp-chips{flex-wrap:nowrap !important;overflow-x:auto;margin:0 -22px;padding:0 22px;scrollbar-width:none}
+.cp-chips::-webkit-scrollbar{display:none}
+.cp-chips>span{flex-shrink:0;font-size:13px !important}
+.cp-ctas{flex-wrap:nowrap !important;gap:8px !important}
+.cp-ctas>a{font-size:14.5px !important;padding:12px 16px !important;white-space:nowrap}
+.cp-shot{display:none}
+.zg-wf{gap:2px !important;height:120px !important;overflow:hidden}
+.zg-wf>span{max-height:120px}
+.pk-portal .pp-song{display:none}
+.cg-grid img{height:190px !important}
+.cg-grid>*{flex-basis:70% !important}
+}
+/* Packs en celu: nombre, info y botón entran juntos en pantalla */
+@media (max-width:900px){
+.pk-card{padding:22px 20px !important;gap:10px !important}
+.pk-card h3{font-size:30px !important}
+.pk-card [style*="font-size: 54px"]{font-size:40px !important}
+.pk-card>p{font-size:15px !important}
+.pk-card ul{gap:5px !important}
+.pk-li{font-size:14px;line-height:1.35}
+.pk-li svg{margin-top:2px}
+.pk-card button[style*="padding: 15px"]{padding:13px 20px !important;margin-top:8px !important}
+}
+@media (min-width:761px) and (max-width:1100px){.zg-quote{font-size:38px !important}}
+.zg-quote{font-size:40px !important}
+.zg-rev{padding-top:calc(var(--py, 128px) * .7) !important;padding-bottom:calc(var(--py, 128px) * .7) !important;gap:28px !important}
+@media (max-width:760px){.zg-quote{font-size:27px !important}}
 /* Celu: la galería de los camps se desliza de costado en vez de apilarse */
 @media (max-width:760px){
-.cg-grid{display:flex !important;gap:10px !important;overflow-x:auto;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;scrollbar-width:none;padding:0 20px 4px !important;scroll-padding:0 20px}
+.cg-grid{display:flex !important;gap:10px !important;overflow-x:auto;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;scrollbar-width:none;margin:0 !important;padding:16px !important;scroll-padding:0 16px}
 .cg-grid::-webkit-scrollbar{display:none}
 .cg-grid>*{flex:0 0 78%;scroll-snap-align:start;grid-row:auto !important;grid-column:auto !important}
-.cg-grid img{height:300px !important;min-height:0 !important}
+.cg-grid img{height:240px !important;min-height:0 !important}
 .cg-grid figure>span{flex:none !important}
 }
 @media (max-width:900px){

@@ -154,13 +154,14 @@
     if (window.ZGAvisos) window.ZGAvisos.mount(work); else work.remove();
     if (window.ZGEstado) window.ZGEstado.mountCard(status); else status.remove();
 
-    const [incRes, evRes, artRes, relRes] = await Promise.allSettled([
-      ingresos(),
-      window.ZGPassAdmin.call({ action: "events" }),
-      db.from("profiles").select("id, role, active"),
-      db.from("releases").select("id, title, status, release_date, profiles (display_name, full_name)")
-        .gte("release_date", new Intl.DateTimeFormat("en-CA", { timeZone: TZ }).format(new Date())).order("release_date", { ascending: true }).limit(5),
-    ]);
+    // Cada tarjeta se pinta apenas llega lo suyo (antes esperaban todas a la
+    // más lenta, que suele ser Notion).
+    const settle = (p) => Promise.resolve(p).then((value) => ({ status: "fulfilled", value }), (reason) => ({ status: "rejected", reason }));
+    const pInc = settle(ingresos());
+    const pEv = settle(window.ZGPassAdmin.call({ action: "events" }));
+    const pArt = settle(db.from("profiles").select("id, role, active"));
+    const pRel = settle(db.from("releases").select("id, title, status, release_date, profiles (display_name, full_name)")
+        .gte("release_date", new Intl.DateTimeFormat("en-CA", { timeZone: TZ }).format(new Date())).order("release_date", { ascending: true }).limit(5));
 
     // Ingresos
     // "Conectá Notion" solo si de verdad falta la conexión (admin-ingresos.js
@@ -199,9 +200,10 @@
       incRow.replaceChildren(again);
       inc.append(incRow);
     };
-    paintIngresos(incRes);
+    pInc.then(paintIngresos);
 
     // Artistas
+    pArt.then((artRes) => {
     const arts = artRes.status === "fulfilled" && !artRes.value.error ? artRes.value.data.filter((p) => p.role === "artist") : null;
     if (arts) {
       countUp(artNum, arts.filter((p) => p.active !== false).length);
@@ -209,8 +211,10 @@
       artSub.textContent = paused ? `${paused} con el acceso pausado` : "Todos con acceso activo";
       art.append(el("div", "zh-row")); art.lastChild.append(btn("zh-btn is-ghost", "Ver artistas", () => P.openTab("artists")));
     } else artSub.textContent = "No pudimos cargarlos";
+    });
 
     // Próximo evento + embudo
+    pEv.then(async (evRes) => {
     const ev = evRes.status === "fulfilled" ? nextEvent(evRes.value.events) : null;
     if (ev) {
       const s = ev.stats || {};
@@ -243,8 +247,10 @@
       lead.textContent = "Todo tranquilo por ahora.";
       funBody.append(el("p", "zh-sub", "Aparece cuando haya un open mic a la venta."));
     }
+    });
 
     // Lo que viene: lanzamientos con fecha
+    pRel.then((relRes) => {
     const rels = relRes.status === "fulfilled" && !relRes.value.error ? relRes.value.data : null;
     if (rels && rels.length) {
       const ul = el("ul", "zh-list");
@@ -256,6 +262,7 @@
       });
       relBody.replaceWith(ul);
     } else relBody.replaceWith(el("p", "zh-sub", rels ? "No hay lanzamientos con fecha por delante." : "No pudimos cargar los lanzamientos."));
+    });
   }
 
   // ---------- Gruvi flotante ----------

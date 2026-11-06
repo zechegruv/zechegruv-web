@@ -1,0 +1,1273 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>ZECHE GRUV · Home</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@font-face{font-family:'TAN Nimbus';src:url('/assets/fonts/TANNIMBUS-latin-v1.woff') format('woff');font-display:swap}
+/* Tipografías servidas desde zechegruv.com (antes Google Fonts): variables, solo latín */
+@font-face{font-family:'Bricolage Grotesque';src:url('/assets/fonts/bricolage-latin-v1.woff2') format('woff2');font-weight:200 800;font-style:normal;font-display:swap}
+@font-face{font-family:'Geist';src:url('/assets/fonts/geist-latin-v1.woff2') format('woff2');font-weight:100 900;font-style:normal;font-display:swap}
+@font-face{font-family:'Geist Mono';src:url('/assets/fonts/geist-mono-latin-v1.woff2') format('woff2');font-weight:100 900;font-style:normal;font-display:swap}
+@property --n{syntax:'<integer>';inherits:false;initial-value:0}
+body{margin:0;background:#241105}
+a{color:#F5A623}a:hover{color:#FFF4DC}
+:focus-visible{outline:2px solid #F5A623;outline-offset:3px}
+.zg-press{transition:transform 160ms cubic-bezier(.23,1,.32,1),background-color 200ms ease,color 200ms ease,border-color 200ms ease,box-shadow 300ms ease}
+.zg-press:active{transform:scale(.96)}
+@media (hover:hover) and (pointer:fine){
+.zg-btn:hover{background-color:#FF8A1F;box-shadow:0 10px 30px rgba(240,120,0,.35)}
+.zg-ghost:hover{border-color:#FFF4DC;color:#FFF4DC}
+.zg-link{background-image:linear-gradient(#F07800,#F07800);background-size:0% 2px;background-repeat:no-repeat;background-position:0 100%;transition:background-size 300ms cubic-bezier(.23,1,.32,1),color 200ms ease}
+.zg-link:hover{color:#FFF4DC;background-size:100% 2px}
+.zg-tilt:hover .zg-tilt-in{transform:perspective(900px) rotateX(5deg) rotateY(-7deg) translateY(-8px);box-shadow:0 30px 60px rgba(12,5,1,.6)}
+.zg-tilt:hover .zg-play{opacity:1;transform:scale(1)}
+.zg-mq:hover .zg-marquee{animation-play-state:paused}
+.zg-bento:hover{transform:translateY(-4px)}
+.zg-step:hover{color:#FFF4DC}
+}
+.zg-tilt-in{transition:transform 500ms cubic-bezier(.23,1,.32,1),box-shadow 500ms ease}
+.zg-play{opacity:0;transform:scale(.8);transition:opacity 250ms ease,transform 300ms cubic-bezier(.23,1,.32,1)}
+.zg-bento{transition:transform 400ms cubic-bezier(.23,1,.32,1)}
+.zg-w{display:inline-block;animation:zgword 1000ms cubic-bezier(.16,1,.3,1) both}
+@keyframes zgword{from{opacity:0;transform:translateY(45%) rotate(5deg);filter:blur(10px)}}
+.zg-fade{animation:zgfade 900ms cubic-bezier(.16,1,.3,1) both}
+@keyframes zgfade{from{opacity:0;transform:translateY(16px)}}
+.zg-photo{animation:zgclip 1300ms cubic-bezier(.77,0,.175,1) 250ms both}
+@keyframes zgclip{from{clip-path:inset(100% 0 0 0 round 20px);transform:scale(1.08)}to{clip-path:inset(0 0 0 0 round 20px);transform:scale(1)}}
+.zg-sun{animation:zgspin 60s linear infinite}
+@keyframes zgspin{to{transform:rotate(360deg)}}
+.zg-marquee{animation:zgmarq 40s linear infinite}
+.zg-marquee-r{animation-direction:reverse;animation-duration:52s}
+@keyframes zgmarq{to{transform:translateX(-50%)}}
+.zg-dot{animation:zgpulse 1.6s ease-out infinite}
+@keyframes zgpulse{0%{box-shadow:0 0 0 0 rgba(36,17,5,.6)}100%{box-shadow:0 0 0 12px rgba(36,17,5,0)}}
+@keyframes zgeq{0%{transform:scaleY(.3)}100%{transform:scaleY(1)}}
+@keyframes zgprog{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes zgq0{from{opacity:0;transform:translateY(18px);filter:blur(6px)}}
+@keyframes zgq1{from{opacity:0;transform:translateY(18px);filter:blur(6px)}}
+@keyframes zgflip0{from{opacity:0;transform:translateY(-30%)}}
+@keyframes zgflip1{from{opacity:0;transform:translateY(-30%)}}
+@keyframes zgfill{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes zgcheck{from{stroke-dashoffset:48}to{stroke-dashoffset:0}}
+@keyframes zgpop{0%{opacity:0;transform:scale(.6)}60%{transform:scale(1.06)}100%{opacity:1;transform:scale(1)}}
+.zg-acc{display:grid;grid-template-rows:0fr;transition:grid-template-rows 420ms cubic-bezier(.23,1,.32,1),opacity 300ms ease;opacity:0}
+.zg-acc.zg-open{grid-template-rows:1fr;opacity:1}
+.zg-acc > div{overflow:hidden}
+.zg-ava img{transition:transform 300ms cubic-bezier(.23,1,.32,1)}
+@media (hover:hover) and (pointer:fine){.zg-ava:hover img{transform:scale(1.06)}}
+.zg-ava:focus-visible{outline:2px solid #F5A623;outline-offset:3px}
+.rs-wall{margin:0;padding:0;list-style:none;display:flex;flex-wrap:wrap;align-items:baseline;column-gap:0;row-gap:4px}
+.rs-wall li{display:inline-flex;align-items:baseline}
+.rs-name{display:inline-flex;align-items:flex-start;gap:4px;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:clamp(28px,3.6vw,52px);line-height:1.08;letter-spacing:-.025em;color:#F0E0C0;text-decoration:none;padding:2px 0;border-radius:6px;transition:color 220ms ease,opacity 260ms ease;animation:rsin both cubic-bezier(.16,1,.3,1);animation-timeline:view();animation-range:entry 0% cover 16%}
+@keyframes rsin{from{opacity:0;transform:translateY(18px)}}
+.rs-name svg{width:.42em;height:.42em;margin-top:.12em;opacity:0;transform:translate(-4px,4px);transition:opacity 220ms ease,transform 260ms cubic-bezier(.23,1,.32,1)}
+.rs-sep{font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:clamp(22px,2.6vw,38px);color:#7E6247;padding:0 .45em}
+.rs-name:focus-visible{outline:2px solid #F5A623;outline-offset:4px}
+.rs-name:focus-visible svg{opacity:1;transform:none}
+@media (hover:hover) and (pointer:fine){.rs-wall:hover .rs-name{opacity:.38}.rs-wall .rs-name:hover{opacity:1;color:#F07800}.rs-name:hover svg{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.rs-name{animation:none}}
+@media (max-width:900px){.pk-portal{grid-column:auto !important}}
+.pp-song{display:flex;flex-direction:column;gap:14px;padding-top:4px}
+.pp-top{display:flex;align-items:baseline;justify-content:space-between;gap:14px}
+.pp-top b{font-weight:700;font-size:16px;letter-spacing:-.01em}
+.pp-stage{font-family:'Geist Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#F5A623}
+.pp-stages{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.pp-stages li{font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:rgba(240,224,192,.38);min-width:0}
+.pp-stages li::before{content:"";display:block;height:5px;border-radius:999px;margin-bottom:9px;background:rgba(240,224,192,.12)}
+.pp-stages li span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pp-stages li.is-done{color:#F0E0C0}.pp-stages li.is-done::before{background:#F07800}
+.pp-stages li.is-current{color:#F5A623}.pp-stages li.is-current::before{background:linear-gradient(90deg,#F07800 0%,#F5A623 100%);box-shadow:0 0 10px rgba(245,166,35,.45);animation:ppPulse 2.4s ease-in-out infinite}
+@keyframes ppPulse{50%{opacity:.6}}
+.pp-player{background:#2E1607;border:1px solid rgba(240,224,192,.1);border-radius:22px;padding:18px 18px 14px;display:flex;flex-direction:column;gap:10px}
+.pp-wave{position:relative;height:72px;margin-top:22px;display:flex;align-items:center;gap:3px}
+.pp-wave i{flex:1;background:#F07800;border-radius:3px}
+.pp-head{position:absolute;top:-4px;bottom:-4px;width:2px;margin-left:-1px;background:#FFF4DC;border-radius:2px;box-shadow:0 0 0 3px rgba(36,17,5,.5)}
+.pp-pin{position:absolute;top:-22px;bottom:0;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center}
+.pp-pin b{min-width:20px;height:20px;border-radius:999px;display:flex;align-items:center;justify-content:center;background:#F5A623;color:#241105;font:700 11px/1 'Geist',sans-serif;box-shadow:0 2px 8px rgba(0,0,0,.35)}
+.pp-pin::after{content:"";width:2px;flex:1;background:rgba(245,166,35,.55);border-radius:2px}
+.pp-time{display:flex;justify-content:space-between;font-family:'Geist Mono',monospace;font-size:13px;color:#C9A980;font-variant-numeric:tabular-nums}
+.pp-notes{list-style:none;margin:4px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
+.pp-notes li{display:flex;align-items:center;gap:12px;padding:10px;border-radius:16px;background:rgba(240,224,192,.035);font-size:15px;color:#F0E0C0}
+.pp-notes li:first-child{background:rgba(240,120,0,.13)}
+.pp-n{width:24px;height:24px;flex-shrink:0;border-radius:50%;background:#F5A623;color:#241105;display:inline-flex;align-items:center;justify-content:center;font:700 11px/1 'Geist',sans-serif}
+.pp-t{font-family:'Geist Mono',monospace;font-size:13px;color:#F5A623;background:rgba(240,120,0,.12);padding:4px 8px;border-radius:999px;font-variant-numeric:tabular-nums}
+@media (max-width:640px){.pp-stages li span{display:none}.pp-stages li::before{margin-bottom:0}}
+@media (prefers-reduced-motion:reduce){.pp-stages li.is-current::before{animation:none}}
+
+/* ---- Demo del portal ---- */
+.pd-open{align-self:flex-start;display:inline-flex;align-items:center;gap:10px;border:1px solid rgba(245,166,35,.5);background:rgba(245,166,35,.08);color:#FFF4DC;font:600 15px/1 'Geist',sans-serif;padding:11px 18px 11px 11px;border-radius:999px;cursor:pointer}
+.pd-open-ico{width:26px;height:26px;border-radius:50%;background:#F5A623;color:#241105;display:flex;align-items:center;justify-content:center;padding-left:2px;box-sizing:border-box}
+@media (hover:hover) and (pointer:fine){.pd-open:hover{background:rgba(245,166,35,.16);border-color:#F5A623}}
+.pd{position:fixed;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;padding:24px 16px}
+.pd-back{position:absolute;inset:0;background:rgba(12,5,1,.74);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);animation:pdFade 300ms ease both}
+.pd-sheet{position:relative;width:min(1080px,100%);max-height:calc(100dvh - 48px);overflow:auto;overscroll-behavior:contain;background:#241105;border:1px solid rgba(240,224,192,.12);border-radius:28px;box-shadow:0 40px 120px rgba(12,5,1,.6);display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);animation:pdIn 520ms cubic-bezier(.16,1,.3,1) both}
+.pd.is-out .pd-back{animation:pdFadeOut 260ms ease both}
+.pd.is-out .pd-sheet{animation:pdOut 260ms cubic-bezier(.4,0,1,1) both}
+@keyframes pdFade{from{opacity:0}}
+@keyframes pdFadeOut{to{opacity:0}}
+@keyframes pdIn{from{opacity:0;transform:translateY(28px) scale(.97)}}
+@keyframes pdOut{to{opacity:0;transform:translateY(16px) scale(.98)}}
+.pd-side{padding:36px 32px;display:flex;flex-direction:column;gap:22px;border-right:1px solid rgba(240,224,192,.1)}
+.pd-side h2{margin:0;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:36px;line-height:1;letter-spacing:-.03em}
+.pd-side>p{margin:0;font-size:15.5px;line-height:1.5;color:#C9A980}
+.pd-chs{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.pd-ch{width:100%;text-align:left;border:0;background:transparent;color:#C9A980;border-radius:16px;padding:14px 14px 12px;cursor:pointer;display:grid;grid-template-columns:28px 1fr;gap:4px 12px;transition:background-color 250ms ease,color 250ms ease;font:inherit}
+.pd-ch b{grid-column:2;font-family:'Bricolage Grotesque',sans-serif;font-size:18px;font-weight:700;letter-spacing:-.01em;color:inherit}
+.pd-ch small{grid-column:2;font-size:14px;line-height:1.4;display:grid;grid-template-rows:0fr;opacity:0;transition:grid-template-rows 400ms cubic-bezier(.23,1,.32,1),opacity 300ms ease}
+.pd-ch small>span{overflow:hidden}
+.pd-ch .pd-num{grid-row:1/span 3;width:28px;height:28px;border-radius:50%;border:1.5px solid rgba(240,224,192,.3);display:flex;align-items:center;justify-content:center;font:600 13px/1 'Geist Mono',monospace;transition:all 250ms ease}
+.pd-ch .pd-track{grid-column:2;height:2px;border-radius:2px;background:rgba(240,224,192,.12);overflow:hidden;margin-top:8px;opacity:0}
+.pd-ch .pd-track i{display:block;height:100%;background:#F07800;transform-origin:0 50%;transform:scaleX(0)}
+.pd-ch.is-on{background:#2E1607;color:#FFF4DC}
+.pd-ch.is-on small{grid-template-rows:1fr;opacity:1;color:#F0E0C0}
+.pd-ch.is-on .pd-num{background:#F07800;border-color:#F07800;color:#241105}
+.pd-ch.is-on .pd-track{opacity:1}
+.pd-ch.is-on.is-play .pd-track i{animation:pdBar 6200ms linear both}
+.pd-ch.is-on:not(.is-play) .pd-track i{transform:scaleX(1);opacity:.5}
+@keyframes pdBar{to{transform:scaleX(1)}}
+@media (hover:hover) and (pointer:fine){.pd-ch:not(.is-on):hover{color:#FFF4DC;background:rgba(240,224,192,.04)}}
+.pd-foot{margin-top:auto;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.pd-cta{border:0;background:#F07800;color:#241105;font:600 15px/1 'Geist',sans-serif;padding:14px 22px;border-radius:999px;cursor:pointer}
+.pd-pause{border:1px solid rgba(240,224,192,.3);background:transparent;color:#F0E0C0;font:500 14px/1 'Geist',sans-serif;padding:13px 18px;border-radius:999px;cursor:pointer}
+.pd-stage{position:relative;padding:36px;display:flex;align-items:center;justify-content:center;background:radial-gradient(520px circle at 70% 20%,rgba(240,120,0,.14),transparent 60%)}
+.pd-x{position:absolute;top:16px;right:16px;z-index:3;width:44px;height:44px;border-radius:50%;border:0;background:rgba(240,224,192,.08);color:#FFF4DC;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.pd-x:active{transform:scale(.92)}
+.pd-dev{width:min(400px,100%);background:#4B2509;border-radius:32px;box-shadow:0 0 0 8px #160A03,0 30px 80px rgba(12,5,1,.6);overflow:hidden;font-family:'Geist',sans-serif;color:#FFF4DC}
+.pd-bar{display:flex;align-items:center;gap:10px;padding:16px 18px 6px}
+.pd-bar img.sun{width:24px;height:24px}
+.pd-bar span{font-weight:700;font-size:14px;letter-spacing:-.01em;flex:1}
+.pd-bar img.ava{width:30px;height:30px;border-radius:50%;object-fit:cover}
+.pd-tabs{display:flex;gap:6px;padding:10px 14px;border-bottom:1px solid rgba(240,224,192,.12);font-size:13px;font-weight:600;color:#C9A980}
+.pd-tabs span{padding:8px 14px;border-radius:999px;transition:background-color 300ms ease,color 300ms ease}
+.pd-tabs span.on{color:#241105;background:#F07800}
+.pd-screen{height:420px;padding:16px;position:relative;overflow:hidden}
+.pd-card{background:#241105;border:1px solid rgba(240,224,192,.14);border-radius:22px;padding:20px;animation:pdUp 500ms cubic-bezier(.16,1,.3,1) both}
+@keyframes pdUp{from{opacity:0;transform:translateY(14px)}}
+.pd-ct{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-weight:700;font-size:17px;letter-spacing:-.02em;margin-bottom:6px}
+.pd-ct small{font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:#C9A980;font-weight:400}
+.pd-song{padding:14px;margin-top:10px;border-radius:16px;background:rgba(240,224,192,.04)}
+.pd-ct+.pd-song{margin-top:12px}
+.pd-song-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:12px}
+.pd-song-top b{font-size:15px;font-weight:700;letter-spacing:-.01em}
+.pd-song-top span{font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#F5A623}
+.pd-stg{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.pd-stg li{font-family:'Geist Mono',monospace;font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:rgba(240,224,192,.38);min-width:0}
+.pd-stg li span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pd-stg li::before{content:"";display:block;height:5px;border-radius:999px;margin-bottom:8px;background:rgba(240,224,192,.12);background-image:linear-gradient(#F07800,#F07800);background-repeat:no-repeat;background-size:0 100%}
+.pd-stg li.is-done{color:#F0E0C0}
+.pd-stg li.is-done::before{background-size:100% 100%;animation:pdFill 500ms cubic-bezier(.23,1,.32,1) both;animation-delay:var(--d)}
+.pd-stg li.is-cur{color:#F5A623}
+.pd-stg li.is-cur::before{background:linear-gradient(90deg,#F07800,#F5A623);box-shadow:0 0 10px rgba(245,166,35,.45);animation:pdFill 500ms cubic-bezier(.23,1,.32,1) var(--d) both,ppPulse 2.4s ease-in-out calc(var(--d) + 600ms) infinite}
+@keyframes pdFill{from{background-size:0 100%;opacity:.4}}
+.pd-when{margin-top:10px;font-size:12px;color:#C9A980}
+.pd-toast{position:absolute;left:16px;right:16px;bottom:16px;background:#F07800;color:#241105;border-radius:14px;padding:12px 14px;font-weight:700;font-size:13.5px;display:flex;gap:10px;align-items:center;box-shadow:0 14px 30px rgba(12,5,1,.4);animation:pdToast 600ms cubic-bezier(.16,1,.3,1) 2600ms both}
+@keyframes pdToast{from{opacity:0;transform:translateY(24px)}}
+.pd-sheet2{background:#241105;border-radius:22px 22px 0 0;position:absolute;left:0;right:0;bottom:0;top:28px;padding:18px 16px;display:flex;flex-direction:column;gap:12px;font-family:'Geist',sans-serif;animation:pdSheet 600ms cubic-bezier(.16,1,.3,1) both;box-shadow:0 -20px 40px rgba(12,5,1,.4)}
+@keyframes pdSheet{from{transform:translateY(100%)}}
+.pd-eyebrow{font-family:'Geist Mono',monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#F5A623}
+.pd-title{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:24px;line-height:1;letter-spacing:-.03em}
+.pd-file{font-size:12px;color:#C9A980}
+.pd-player{background:#2E1607;border:1px solid rgba(240,224,192,.1);border-radius:18px;padding:12px 12px 10px;display:flex;flex-direction:column;gap:8px}
+.pd-wave{position:relative;height:56px;margin-top:18px;display:flex;align-items:center;gap:2px}
+.pd-wave i{flex:1;border-radius:2px;background:rgba(240,120,0,.35)}
+.pd-wave .pd-played{position:absolute;inset:0;display:flex;align-items:center;gap:2px;clip-path:inset(0 63% 0 0);animation:pdPlay 2200ms linear 500ms both}
+.pd-wave .pd-played i{background:#F07800}
+@keyframes pdPlay{from{clip-path:inset(0 82% 0 0)}}
+.pd-head{position:absolute;top:-4px;bottom:-4px;width:2px;margin-left:-1px;left:37%;background:#FFF4DC;border-radius:2px;box-shadow:0 0 0 3px rgba(36,17,5,.5);animation:pdHead 2200ms linear 500ms both}
+@keyframes pdHead{from{left:18%}}
+.pd-pin{position:absolute;top:-20px;bottom:0;left:37%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;animation:pdPin 520ms cubic-bezier(.34,1.56,.64,1) 3300ms both}
+.pd-pin b{min-width:18px;height:18px;border-radius:999px;display:flex;align-items:center;justify-content:center;background:#F5A623;color:#241105;font:700 10px/1 'Geist',sans-serif}
+.pd-pin::after{content:"";width:2px;flex:1;background:rgba(245,166,35,.55)}
+@keyframes pdPin{from{opacity:0;transform:translate(-50%,-14px) scale(.6)}}
+.pd-times{display:flex;justify-content:space-between;font-family:'Geist Mono',monospace;font-size:11px;color:#C9A980;font-variant-numeric:tabular-nums}
+.pd-mark{display:flex;align-items:center;justify-content:center;gap:10px;min-height:46px;border:1.5px dashed rgba(245,166,35,.55);border-radius:14px;background:rgba(245,166,35,.06);font-weight:600;font-size:14px;animation:pdPress 500ms ease 2800ms both}
+.pd-mark b{font-family:'Geist Mono',monospace;font-weight:500;color:#F5A623}
+@keyframes pdPress{40%{transform:scale(.96);background:rgba(245,166,35,.2);border-color:#F5A623}}
+.pd-note{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:14px;background:rgba(240,120,0,.13);font-size:13.5px;color:#F0E0C0;animation:pdUp 450ms cubic-bezier(.16,1,.3,1) 3500ms both}
+.pd-note .n{width:22px;height:22px;flex-shrink:0;border-radius:50%;background:#F5A623;color:#241105;display:inline-flex;align-items:center;justify-content:center;font:700 10px/1 'Geist',sans-serif}
+.pd-note .t{font-family:'Geist Mono',monospace;font-size:12px;color:#F5A623}
+.pd-type{display:inline-block;overflow:hidden;white-space:nowrap;vertical-align:bottom;animation:pdType 1400ms steps(36,end) 3800ms both}
+@keyframes pdType{from{max-width:0}to{max-width:100%}}
+.pd-approve{position:relative;display:flex;flex-direction:column;gap:12px}
+.pd-ok{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;padding:22px 10px;border-radius:18px;background:rgba(159,212,154,.1);animation:pdUp 500ms cubic-bezier(.16,1,.3,1) 2300ms both}
+.pd-ok svg circle{fill:#9FD49A}
+.pd-ok svg path{stroke-dasharray:30;stroke-dashoffset:0;animation:pdCheck 500ms cubic-bezier(.65,0,.35,1) 2600ms both}
+@keyframes pdCheck{from{stroke-dashoffset:30}}
+.pd-ok b{font-family:'Bricolage Grotesque',sans-serif;font-size:22px;font-weight:800;letter-spacing:-.02em;color:#B9E4B4}
+.pd-ok span{font-size:13px;color:#F0E0C0}
+.pd-btn{display:flex;align-items:center;justify-content:center;min-height:50px;border-radius:999px;background:#F07800;color:#241105;font-weight:700;font-size:15px;animation:pdPress2 2300ms ease both}
+@keyframes pdPress2{0%,55%{transform:none}65%{transform:scale(.95)}80%{transform:none;opacity:1}100%{opacity:.35}}
+.pd-mini{display:flex;flex-direction:column;gap:6px}
+.pd-mini div{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:12px;background:rgba(240,224,192,.035);font-size:13px;color:#F0E0C0}
+.pd-lt-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.pd-lt-tag{font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#F5A623}
+.pd-tp{display:flex;align-items:center;gap:6px;font-family:'Geist Mono',monospace;font-size:11px;color:#F0E0C0}
+.pd-tp span{width:26px;height:26px;border-radius:50%;border:1px solid rgba(240,224,192,.25);display:flex;align-items:center;justify-content:center}
+.pd-tp b{font-weight:500;color:#F5A623;animation:pdBlink 400ms ease 3600ms both}
+@keyframes pdBlink{from{opacity:0}}
+.pd-lc{font:500 14px/1.35 'Geist Mono',monospace;display:flex;flex-direction:column;margin-top:8px}
+.pd-lc .c{color:#F5A623;white-space:pre;min-height:1.35em;position:relative}
+.pd-lc .c span{display:inline-block;animation:pdChord 360ms cubic-bezier(.34,1.56,.64,1) both}
+.pd-lc .l{white-space:pre;color:#FFF4DC;padding-bottom:10px}
+@keyframes pdChord{from{opacity:0;transform:translateY(6px)}}
+.pd-lc .c2{position:absolute;inset:0;color:#F5A623;animation:pdSwap 300ms ease 3600ms both}
+.pd-lc .c1{animation:pdHide 300ms ease 3600ms both}
+@keyframes pdSwap{from{opacity:0}}
+@keyframes pdHide{to{opacity:0}}
+@media (max-width:860px){
+  .pd{padding:0;align-items:flex-end}
+  .pd-sheet{grid-template-columns:1fr;border-radius:24px 24px 0 0;max-height:100dvh}
+  .pd-side{border-right:0;padding:24px 20px 8px;gap:14px;order:2}
+  .pd-side h2{font-size:28px}
+  .pd-side>p{display:none}
+  .pd-chs{flex-direction:row;overflow-x:auto;gap:6px;scrollbar-width:none}
+  .pd-ch{grid-template-columns:24px auto;padding:10px 12px;flex-shrink:0;width:auto}
+  .pd-ch small,.pd-ch .pd-track{display:none}
+  .pd-ch b{font-size:15px;white-space:nowrap}
+  .pd-ch .pd-num{width:24px;height:24px;grid-row:auto}
+  .pd-stage{padding:56px 16px 8px;order:1}
+  .pd-screen{height:380px}
+  .pd-foot{padding-bottom:max(16px,env(safe-area-inset-bottom,0px))}
+}
+@media (prefers-reduced-motion:reduce){.pd-back,.pd-sheet,.pd-card,.pd-sheet2,.pd-note,.pd-pin,.pd-ok,.pd-toast{animation:none !important}}
+.pk-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;align-items:end}
+.pk-card{position:relative;overflow:hidden;box-sizing:border-box;border-radius:28px 28px 12px 12px;padding:32px 28px;display:flex;flex-direction:column;gap:14px;transition:transform 450ms cubic-bezier(.23,1,.32,1),box-shadow 450ms ease}
+.pk-1{min-height:560px}.pk-2{min-height:640px}.pk-3{min-height:720px}
+.pk-card.is-pick{box-shadow:0 0 0 3px #FFF4DC,0 30px 80px rgba(12,5,1,.45)}
+@media (hover:hover) and (pointer:fine){.pk-card:hover{transform:translateY(-6px)}}
+.pk-li{display:flex;gap:10px;align-items:flex-start;font-size:15.5px;line-height:1.4}
+.pk-li svg{flex-shrink:0;margin-top:3px}
+.pk-step{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:22px;letter-spacing:-.01em;padding:0 6px 10px}
+.pk-tbl{display:grid;grid-template-columns:1.6fr repeat(3,minmax(0,1fr));font-size:15px}
+.pk-tbl > span{padding:13px 12px;border-top:1px solid rgba(240,224,192,.12);display:flex;align-items:center}
+.pk-tbl > span.pk-f{background:rgba(240,120,0,.12)}
+.pk-tbl > span.pk-h{border-top:0;padding-top:26px;font-family:'Geist Mono',monospace;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:#F5A623}
+@media (max-width:900px){.pk-grid{grid-template-columns:1fr}.pk-1,.pk-2,.pk-3{min-height:0}.pk-step{display:none}.pk-tblwrap{overflow-x:auto}.pk-tbl{min-width:640px}}
+/* Celu: los packs se deslizan de costado (arranca en el más elegido) */
+.pk-dots{display:none}
+.zg-visit-h{animation:zgfade 380ms cubic-bezier(.16,1,.3,1) both}
+@media (min-width:761px) and (max-width:1100px){.cg-grid{grid-template-columns:1fr 1fr !important}.cg-grid>:last-child{grid-column:span 2}}
+@media (max-width:860px){.cp-card{grid-template-columns:1fr !important}.cp-shot{margin:0 16px !important}}
+/* Celu: la galería de los camps se desliza de costado en vez de apilarse */
+@media (max-width:760px){
+.cg-grid{display:flex !important;gap:10px !important;overflow-x:auto;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;scrollbar-width:none;margin:0 !important;padding:16px !important;scroll-padding:0 16px}
+.cg-grid::-webkit-scrollbar{display:none}
+.cg-grid>*{flex:0 0 78%;scroll-snap-align:start;grid-row:auto !important;grid-column:auto !important}
+.cg-grid img{height:240px !important;min-height:0 !important}
+.cg-grid figure>span{flex:none !important}
+}
+@media (max-width:900px){
+.pk-grid{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;scrollbar-width:none;margin:0 -20px;padding:4px 20px 8px;scroll-padding:0 20px;align-items:stretch}
+.pk-grid::-webkit-scrollbar{display:none}
+.pk-grid>div{flex:0 0 86%;scroll-snap-align:center;scroll-snap-stop:always}
+.pk-grid>div>article{flex:1}
+.pk-dots{display:flex;justify-content:center;gap:8px;margin-top:2px}
+.pk-dots button{width:8px;height:8px;padding:0;border:0;border-radius:999px;background:rgba(240,224,192,.25);cursor:pointer;transition:width 350ms cubic-bezier(.23,1,.32,1),background-color 250ms ease}
+.pk-dots button[aria-current="true"]{width:26px;background:#F07800}
+}
+.zg-static{display:inline}
+.zg-progress{position:fixed;top:0;left:0;right:0;height:3px;background:#F07800;transform-origin:0 50%;transform:scaleX(0);z-index:9}
+.zg-float{position:fixed;right:24px;bottom:24px;z-index:8}
+@supports (animation-timeline: view()){
+.zg-rv{animation:zgrise both cubic-bezier(.16,1,.3,1);animation-timeline:view();animation-range:entry 0% entry 75%}
+@keyframes zgrise{from{opacity:.4;transform:translateY(28px)}}
+.zg-zoom{animation:zgzoom both linear;animation-timeline:view();animation-range:entry 0% cover 50%}
+@keyframes zgzoom{from{transform:scale(1.15)}to{transform:scale(1)}}
+.zg-par{animation:zgpar linear both;animation-timeline:scroll();animation-range:0 900px}
+@keyframes zgpar{to{transform:translateY(160px) rotate(40deg);opacity:.06}}
+.zg-progress{animation:zgprogress linear both;animation-timeline:scroll()}
+@keyframes zgprogress{to{transform:scaleX(1)}}
+.zg-float{animation:zgfloat linear both;animation-timeline:scroll();animation-range:700px 900px}
+@keyframes zgfloat{from{opacity:0;transform:translateY(40px) scale(.9);pointer-events:none}to{opacity:1;transform:none}}
+.zg-static{display:none}
+.zg-count{animation:zgcount both cubic-bezier(.16,1,.3,1);animation-timeline:view();animation-range:entry 20% cover 45%;counter-reset:n var(--n)}
+.zg-count::after{content:'+' counter(n)}
+@keyframes zgcount{from{--n:0}to{--n:var(--to)}}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none !important;transition:none !important}.zg-static{display:inline !important}.zg-count::after{content:none !important}.zg-progress,.zg-float{transform:none;opacity:1}}
+.zg-grain{background-image:url('/assets/grain-v1.webp');background-size:220px;opacity:.12;mix-blend-mode:overlay;pointer-events:none}
+.zg-navlinks{display:flex}
+.zg-stack{position:relative;width:100%;max-width:480px;aspect-ratio:1/1}
+.zg-cv{position:absolute;width:52%;aspect-ratio:1/1;border-radius:18px;overflow:hidden;box-shadow:0 30px 60px rgba(12,5,1,.55);animation:zgcv 900ms cubic-bezier(.16,1,.3,1) both;transition:transform 450ms cubic-bezier(.23,1,.32,1)}
+.zg-cv img{display:block;width:100%;height:100%;object-fit:cover}
+.zg-cv-in{animation:zgbob 6s ease-in-out infinite;width:100%;height:100%}
+@keyframes zgcv{from{opacity:0;transform:translateY(40px) rotate(0deg) scale(.9)}}
+@keyframes zgbob{50%{transform:translateY(-8px)}}
+.zg-cv-tag{position:absolute;left:12px;bottom:12px;right:12px;display:flex;align-items:center;gap:8px;background:rgba(36,17,5,.86);color:#FFF4DC;border-radius:999px;padding:6px 12px 6px 6px;font-size:13px;font-weight:600;backdrop-filter:blur(8px)}
+.zg-cv-tag i{width:26px;height:26px;border-radius:50%;background:#F07800;color:#241105;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+@media (max-width:900px){.zg-navlinks{display:none}}
+@media (max-width:760px){.zg-hero-h{font-size:56px !important}.zg-big{font-size:42px !important}.zg-noise{font-size:64px !important}.zg-sec{padding-left:20px !important;padding-right:20px !important}.zg-price{font-size:52px !important}}
+/* Bandeja de discos: sobres de vinilo cerrados que se hojean */
+.zg-cv::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(118deg,rgba(255,255,255,.22) 0%,rgba(255,255,255,.04) 26%,rgba(255,255,255,0) 40%,rgba(255,255,255,0) 70%,rgba(255,255,255,.08) 100%),radial-gradient(circle at 50% 50%,transparent 37%,rgba(255,244,220,.07) 38%,transparent 40.5%);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08),inset 0 -14px 24px rgba(0,0,0,.18)}
+.zg-hv{position:absolute;left:30%;top:16%;width:54%;aspect-ratio:1/1;border-radius:50%;z-index:1;animation:zghv 1400ms cubic-bezier(.16,1,.3,1) 900ms both;transition:transform 700ms cubic-bezier(.23,1,.32,1)}
+.zg-hv-in{width:100%;height:100%;border-radius:50%;animation:zgspin 4.5s linear infinite}
+@keyframes zghv{from{transform:translate(0,0) scale(.96)}to{transform:translate(22%,-14%)}}
+.zg-vinyl{position:relative;width:100%;height:100%;border-radius:50%;background:radial-gradient(circle at 50% 50%,#0d0703 0 15.5%,transparent 15.6%),repeating-radial-gradient(circle at 50% 50%,#17100b 0 1.1px,#0b0603 1.2px 2.4px);box-shadow:0 24px 50px rgba(0,0,0,.55),inset 0 0 0 2px #050200}
+.zg-vinyl::before{content:"";position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 25deg,rgba(255,255,255,0) 0deg,rgba(255,255,255,.13) 18deg,rgba(255,255,255,0) 50deg,rgba(255,255,255,0) 180deg,rgba(255,255,255,.1) 200deg,rgba(255,255,255,0) 232deg)}
+.zg-vlabel{position:absolute;left:34%;top:34%;width:32%;height:32%;border-radius:50%;background-size:cover;background-position:center;box-shadow:0 0 0 3px rgba(0,0,0,.45)}
+.zg-vlabel::after{content:"";position:absolute;left:50%;top:50%;width:9%;height:9%;margin:-4.5% 0 0 -4.5%;border-radius:50%;background:#1B0D04}
+.zg-cv{translate:calc(var(--dx,0) * var(--near,0) * 1px + var(--px,0) * var(--dep,10) * 1px) calc(var(--dy,0) * var(--near,0) * 1px + var(--py,0) * var(--dep,10) * 1px);rotate:calc(var(--dr,0) * var(--near,0) * 1deg);transition:translate 700ms cubic-bezier(.23,1,.32,1),rotate 700ms cubic-bezier(.23,1,.32,1),scale 450ms cubic-bezier(.23,1,.32,1),filter 400ms ease,opacity 400ms ease}
+.zg-hv{translate:calc(var(--near,0) * 46px + var(--px,0) * 14px) calc(var(--near,0) * -30px + var(--py,0) * 14px);rotate:calc(var(--near,0) * 40deg)}
+.zg-hv{transition:translate 800ms cubic-bezier(.23,1,.32,1),rotate 800ms cubic-bezier(.23,1,.32,1)}
+.zg-stack.is-q .zg-cv{filter:brightness(.4) saturate(.6);scale:.94}
+.zg-stack.is-q .zg-cv.is-hit{filter:none;scale:1.06;z-index:3 !important}
+/* Reproductor de los discos del inicio (aparece al entrar) */
+.zg-np{position:absolute;left:50%;bottom:-30px;z-index:7;display:flex;align-items:center;gap:10px;width:min(360px,94%);box-sizing:border-box;padding:7px 8px 7px 7px;border-radius:999px;background:rgba(36,17,5,.66);backdrop-filter:blur(18px) saturate(150%);-webkit-backdrop-filter:blur(18px) saturate(150%);border:1px solid rgba(255,244,220,.18);box-shadow:0 20px 50px rgba(12,5,1,.55);transform:translateX(-50%);animation:zgNpIn 800ms cubic-bezier(.16,1,.3,1) 700ms both}
+@keyframes zgNpIn{from{opacity:0;transform:translate(-50%,14px) scale(.96);filter:blur(8px)}to{opacity:1;transform:translateX(-50%);filter:blur(0)}}
+.zg-np-play{flex:none;width:44px;height:44px;border-radius:50%;border:0;background:#F07800;color:#241105;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform 200ms cubic-bezier(.23,1,.32,1),background-color 200ms ease}
+.zg-np-play:hover{background:#FF8A1F}.zg-np-play:active{transform:scale(.92)}
+.zg-np.is-load .zg-np-play{animation:zgNpPulse 1s ease-in-out infinite}
+@keyframes zgNpPulse{50%{transform:scale(.9);opacity:.75}}
+.zg-np-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.zg-np-txt b{font:600 14px/1.2 'Geist',sans-serif;color:#FFF4DC;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.zg-np-txt small{font:500 11px/1.25 'Geist Mono',monospace;letter-spacing:.04em;color:#C9A980;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.zg-np-bar,.cr-bar{display:block;height:3px;border-radius:3px;background:rgba(240,224,192,.16);overflow:hidden}
+.zg-np-bar{margin-top:3px}
+.zg-np-bar i,.cr-bar i{display:block;height:100%;background:#F5A623;transform-origin:0 50%;transform:scaleX(0);transition:transform 260ms linear}
+.zg-np-btn{flex:none;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#F0E0C0;background:transparent;border:1px solid rgba(240,224,192,.22);cursor:pointer;text-decoration:none;transition:color 200ms ease,border-color 200ms ease,transform 200ms cubic-bezier(.23,1,.32,1)}
+.zg-np-btn:hover{color:#F5A623;border-color:rgba(245,166,35,.6)}.zg-np-btn:active{transform:scale(.92)}
+.zg-np button:focus-visible,.zg-np a:focus-visible{outline:2px solid #FFF4DC;outline-offset:3px}
+.zg-stack.has-np .zg-hs{top:calc(100% + 56px)}
+.zg-stack.is-sound .zg-hv-in{animation-duration:1.8s}
+.cr-bar{width:min(320px,100%);margin-top:2px}
+@media (prefers-reduced-motion:reduce){.zg-np{animation:none}.zg-np.is-load .zg-np-play{animation:none}}
+/* Tocadiscos de la bandeja: el vinilo vuela, se apoya, baja la aguja y suena */
+.cr-sec{position:relative}
+.cr-stage{z-index:2}
+.cr-info{position:relative;z-index:3}
+.cr-fly{position:absolute;z-index:1;pointer-events:none;border-radius:50%;filter:drop-shadow(0 26px 36px rgba(0,0,0,.55));will-change:transform}
+.cr-item.is-out .cr-vin{opacity:0;transition:opacity 120ms ease}
+.tt{position:absolute;top:84px;right:40px;width:330px;z-index:0;animation:ttIn 1s cubic-bezier(.16,1,.3,1) both}
+@keyframes ttIn{from{opacity:0;transform:translateY(18px) rotate(-2deg)}to{opacity:1;transform:none}}
+.tt-deck{position:relative;aspect-ratio:1.32/1;border-radius:22px;background:linear-gradient(155deg,#6B3812 0%,#4B2509 42%,#2E1607 100%);box-shadow:0 44px 80px rgba(0,0,0,.5),0 2px 0 rgba(255,244,220,.14) inset,0 -2px 0 rgba(0,0,0,.35) inset;border:1px solid rgba(240,224,192,.12);overflow:hidden}
+.tt-grain{position:absolute;inset:0;background:repeating-linear-gradient(97deg,rgba(255,244,220,.035) 0 2px,transparent 2px 7px);mix-blend-mode:overlay;pointer-events:none}
+.tt-platter{position:absolute;left:6%;top:9%;height:82%;aspect-ratio:1/1;border-radius:50%;background:radial-gradient(circle,#2b2520 0 62%,#3a332c 63% 70%,#1b1612 71%);box-shadow:0 0 0 3px #8C7A62,0 0 0 5px #3a2a1a,0 10px 24px rgba(0,0,0,.55)}
+.tt-mat{position:absolute;inset:5%;border-radius:50%;background:repeating-radial-gradient(circle,#1d1814 0 3px,#231d18 3px 6px)}
+.tt-rec{position:absolute;inset:3%;opacity:0;transform:scale(.86);transition:opacity 260ms ease,transform 380ms cubic-bezier(.34,1.4,.64,1)}
+.tt.is-loaded .tt-rec{opacity:1;transform:none}
+.tt.is-out .tt-rec{opacity:0;transform:translate(-30%,40%) scale(.8) rotate(-40deg);transition:opacity 420ms ease,transform 520ms cubic-bezier(.5,0,.75,0)}
+.tt-rec .zg-vinyl{animation:zgspin 1.8s linear infinite;animation-play-state:paused}
+.tt.is-spin .tt-rec .zg-vinyl{animation-play-state:running}
+.tt-spindle{position:absolute;left:50%;top:50%;width:5%;height:5%;margin:-2.5% 0 0 -2.5%;border-radius:50%;background:radial-gradient(circle at 35% 35%,#FFF4DC,#8C7A62 60%,#3a2a1a);z-index:2}
+.tt-arm{position:absolute;right:8%;top:9%;width:15%;height:80%;transform-origin:50% 11%;transform:rotate(-4deg);transition:transform 720ms cubic-bezier(.55,0,.25,1)}
+.tt.is-down .tt-arm{transform:rotate(23deg)}
+.tt-pivot{position:absolute;left:50%;top:11%;width:84%;aspect-ratio:1/1;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle at 38% 34%,#F0E0C0,#9C8A70 48%,#4a3a28 100%);box-shadow:0 6px 14px rgba(0,0,0,.5)}
+.tt-pivot::after{content:"";position:absolute;inset:28%;border-radius:50%;background:radial-gradient(circle at 40% 35%,#FFF4DC,#C9A980 60%,#6b563c)}
+.tt-rod{position:absolute;left:50%;top:10%;width:6%;min-width:4px;height:76%;transform:translateX(-50%);border-radius:4px;background:linear-gradient(90deg,#8C7A62,#FFF4DC 45%,#9C8A70);box-shadow:0 4px 10px rgba(0,0,0,.45)}
+.tt-head{position:absolute;left:50%;bottom:6%;width:44%;height:12%;transform:translateX(-82%) rotate(28deg);transform-origin:80% 20%;border-radius:4px 4px 6px 6px;background:linear-gradient(180deg,#F5A623,#F07800);box-shadow:0 6px 12px rgba(0,0,0,.45)}
+.tt-led{position:absolute;left:6%;bottom:6%;width:9px;height:9px;border-radius:50%;background:#5a3a1a;transition:background-color 300ms ease,box-shadow 300ms ease}
+.tt.is-live .tt-led{background:#F5A623;box-shadow:0 0 12px 3px rgba(245,166,35,.7)}
+.tt-speed{position:absolute;left:calc(6% + 18px);bottom:calc(6% - 3px);font:500 10px/1 'Geist Mono',monospace;letter-spacing:.1em;color:#C9A980}
+.tt-name{position:absolute;right:7%;bottom:6%;font:600 9px/1 'Geist Mono',monospace;letter-spacing:.22em;color:rgba(245,166,35,.8)}
+.tt-knob{position:absolute;right:9%;bottom:18%;width:9%;aspect-ratio:1/1;border-radius:50%;background:radial-gradient(circle at 38% 34%,#F0E0C0,#8C7A62 60%,#3a2a1a);box-shadow:0 4px 8px rgba(0,0,0,.45)}
+.cr-hint-m{display:none}
+/* Pasando discos con la ruedita: la caja manda (brillo) y el movimiento es más ágil */
+.cr-stage{transition:box-shadow 240ms ease}
+.cr-stage.is-browsing{box-shadow:0 0 0 1px rgba(245,166,35,.45),0 0 60px rgba(240,120,0,.14)}
+.cr-stage.is-browsing .cr-item{transition-duration:340ms,240ms,240ms}
+.cr-stage.is-browsing .cr-vin{transition-duration:420ms;transition-delay:0ms}
+.cr-stage.is-browsing .cr-item.is-sel .cr-lift{animation-duration:320ms}
+@media (max-width:1100px){.tt{width:270px;top:96px}}
+@media (max-width:900px){.tt{position:relative;top:auto;right:auto;width:min(280px,76vw);align-self:center;margin:-8px 0 -12px;order:1}.cr-sec>.cr-wrap{order:2}}
+@media (hover:none),(pointer:coarse){.cr-hint-d{display:none}.cr-hint-m{display:inline}}
+@media (prefers-reduced-motion:reduce){.tt{animation:none}.tt-arm,.tt-rec{transition:none}}
+/* Mini celular con el portal (packs): abre la demo */
+.pk-phone{min-width:0;background:#241105;border:1px solid rgba(240,224,192,.14);border-radius:24px;padding:28px 24px 24px;display:flex;flex-direction:column;align-items:center;gap:18px}
+.pk-dev{all:unset;cursor:pointer;display:block;perspective:900px;-webkit-tap-highlight-color:transparent}
+.pk-dev-frame{position:relative;display:block;width:196px;aspect-ratio:9/18.5;border-radius:34px;background:#0d0603;padding:7px;box-sizing:border-box;box-shadow:0 0 0 1px rgba(240,224,192,.16),0 30px 60px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,244,220,.06);transform:rotateY(-10deg) rotateX(4deg);transition:transform 600ms cubic-bezier(.16,1,.3,1),box-shadow 600ms ease}
+.pk-phone:hover .pk-dev-frame,.pk-dev:focus-visible .pk-dev-frame{transform:rotateY(0) rotateX(0) translateY(-4px);box-shadow:0 0 0 1px rgba(245,166,35,.4),0 36px 70px rgba(0,0,0,.55),inset 0 0 0 1px rgba(255,244,220,.06)}
+.pk-dev:active .pk-dev-frame{transform:scale(.98)}
+.pk-island{position:absolute;left:50%;top:13px;width:56px;height:16px;margin-left:-28px;border-radius:999px;background:#0d0603;z-index:3}
+.pk-scr{position:relative;display:flex;flex-direction:column;gap:9px;height:100%;border-radius:27px;background:#2E1607;overflow:hidden;padding:34px 12px 12px;box-sizing:border-box;text-align:left}
+.pk-bar{display:flex;align-items:center;gap:6px}
+.pk-bar img{width:16px;height:16px}
+.pk-bar b{font:600 8px/1 'Geist Mono',monospace;letter-spacing:.18em;color:#F5A623}
+.pk-av{margin-left:auto;width:18px;height:18px;border-radius:50%;background:linear-gradient(135deg,#F07800,#F5A623)}
+.pk-h{font:800 17px/1.05 'Bricolage Grotesque',sans-serif;letter-spacing:-.02em;color:#FFF4DC;margin-top:2px}
+.pk-song{display:flex;flex-direction:column;gap:8px;background:#241105;border:1px solid rgba(240,224,192,.08);border-radius:14px;padding:10px}
+.pk-song-top{display:flex;align-items:baseline;justify-content:space-between;gap:6px}
+.pk-song-top b{font:700 11px/1.1 'Geist',sans-serif;color:#FFF4DC}
+.pk-song-top em{font:500 8px/1 'Geist Mono',monospace;font-style:normal;letter-spacing:.12em;text-transform:uppercase;color:#F5A623}
+.pk-stg{display:grid;grid-template-columns:repeat(5,1fr);gap:3px}
+.pk-stg i{height:4px;border-radius:9px;background:rgba(240,224,192,.14)}
+.pk-stg i.d{background:#F07800}
+.pk-stg i.c{background:linear-gradient(90deg,#F07800,#F5A623);animation:pkPulse 1.6s ease-in-out infinite}
+@keyframes pkPulse{50%{opacity:.45}}
+.pk-pl{background:#241105;border-radius:14px;padding:10px 9px 7px;display:flex;flex-direction:column;gap:5px}
+.pk-wv{position:relative;height:34px;display:flex;align-items:center;gap:2px}
+.pk-wv i{flex:1;border-radius:2px;background:#F07800;opacity:.9}
+.pk-ph{position:absolute;top:-3px;bottom:-3px;left:0;width:2px;border-radius:2px;background:#FFF4DC;box-shadow:0 0 8px rgba(255,244,220,.6);animation:pkHead 6s linear infinite}
+@keyframes pkHead{from{left:4%}to{left:96%}}
+.pk-pin{position:absolute;top:-13px;left:22%;transform:translateX(-50%);min-width:12px;height:12px;border-radius:999px;background:#F5A623;color:#241105;font:700 8px/12px 'Geist',sans-serif;text-align:center}
+.pk-tm{display:flex;justify-content:space-between;font:500 8px/1 'Geist Mono',monospace;color:#C9A980}
+.pk-note{display:flex;align-items:center;gap:6px;padding:7px 8px;border-radius:10px;background:rgba(240,120,0,.13);font:500 9px/1.25 'Geist',sans-serif;color:#F0E0C0}
+.pk-note b{flex:none;font:600 8px/1 'Geist Mono',monospace;color:#F5A623}
+.pk-song2{opacity:.8}
+.pk-ok{margin-top:auto;display:block;text-align:center;padding:9px;border-radius:999px;background:#F07800;color:#241105;font:700 10px/1 'Geist',sans-serif;animation:pkOk 7s ease-in-out 1.2s infinite}
+@keyframes pkOk{0%,70%,100%{transform:none}76%{transform:scale(.94)}82%{transform:none;background:#9FD49A}94%{background:#9FD49A}}
+.pk-toast{position:absolute;left:8px;right:8px;top:8px;z-index:4;display:flex;align-items:center;gap:7px;padding:9px 10px;border-radius:14px;background:rgba(36,17,5,.92);border:1px solid rgba(245,166,35,.35);box-shadow:0 12px 24px rgba(0,0,0,.45);font:600 9px/1.2 'Geist',sans-serif;color:#FFF4DC;transform:translateY(-140%);animation:pkToast 7s cubic-bezier(.16,1,.3,1) 1.2s infinite}
+.pk-toast img{width:16px;height:16px;flex:none}
+@keyframes pkToast{0%{transform:translateY(-140%)}8%,62%{transform:translateY(0)}72%,100%{transform:translateY(-140%)}}
+.pk-go{display:inline-flex;align-items:center;gap:10px;border:0;background:#F07800;color:#241105;font:600 15px/1 'Geist',sans-serif;padding:8px 20px 8px 8px;border-radius:999px;cursor:pointer;transition:background-color 200ms ease,transform 200ms cubic-bezier(.23,1,.32,1)}
+.pk-go:hover{background:#FF8A1F}.pk-go:active{transform:scale(.97)}
+.pk-go:focus-visible{outline:3px solid #FFF4DC;outline-offset:3px}
+.pk-go-ico{width:30px;height:30px;border-radius:50%;background:#241105;color:#F07800;display:flex;align-items:center;justify-content:center}
+.pk-safe{display:flex;gap:8px;align-items:flex-start;margin:0;max-width:34ch;font-size:13px;line-height:1.45;color:#C9A980}
+.pk-safe svg{flex:none;margin-top:2px;color:#F5A623}
+.pk-safe b{color:#F0E0C0;font-weight:600}
+@media (prefers-reduced-motion:reduce){.pk-dev-frame{transform:none;transition:none}.pk-ph,.pk-stg i.c{animation:none}.pk-ph{left:22%}.pk-toast{animation:none;transform:none}}
+.zg-hs{position:absolute;left:50%;top:calc(100% + 18px);width:min(340px,86%);transform:translate(-50%,14px) scale(.96);opacity:0;filter:blur(10px);pointer-events:none;z-index:6;transition:opacity 700ms ease,transform 800ms cubic-bezier(.16,1,.3,1),filter 750ms ease}
+.zg-hs.is-on{transition:opacity 380ms ease,transform 500ms cubic-bezier(.16,1,.3,1),filter 450ms ease}
+.zg-hs::before{content:"";position:absolute;left:-10%;right:-10%;top:-30px;height:30px}
+.zg-hs.is-on{opacity:1;transform:translate(-50%,0) scale(1);filter:blur(0);pointer-events:auto}
+.zg-hs-box{position:relative;display:block;border-radius:22px;background:rgba(36,17,5,.55);backdrop-filter:blur(18px) saturate(150%);-webkit-backdrop-filter:blur(18px) saturate(150%);border:1px solid rgba(255,244,220,.18);box-shadow:0 20px 50px rgba(12,5,1,.55);overflow:hidden}
+.zg-hs-box svg{position:absolute;left:16px;top:16px;color:#F5A623}
+.zg-hs input{width:100%;box-sizing:border-box;border:0 !important;box-shadow:none !important;background:transparent;color:#FFF4DC;padding:14px 16px 14px 44px;font:500 15px/1.2 'Geist',sans-serif}
+.zg-hs input::placeholder{color:rgba(240,224,192,.65)}
+.zg-hs ul{list-style:none;margin:0;padding:4px;border-top:1px solid rgba(255,244,220,.12)}
+.zg-hs-r{width:100%;display:flex;align-items:center;gap:12px;padding:8px;border:0;border-radius:14px;background:transparent;color:#FFF4DC;text-align:left;cursor:pointer;font:inherit}
+.zg-hs-r img{width:38px;height:38px;border-radius:6px;object-fit:cover;flex-shrink:0}
+.zg-hs-r b{display:block;font-size:14px;font-weight:600}
+.zg-hs-r small{display:block;font-size:12px;color:#C9A980}
+.zg-hs-r:hover,.zg-hs-r:focus-visible{background:rgba(240,120,0,.18)}
+.zg-hs-none{padding:10px 14px 12px;font-size:13px;color:#C9A980}
+
+/* Franja de entradas: fina, arriba de todo */
+.zg-tk{display:block;height:38px;overflow:hidden;background:#F07800;color:#241105;text-decoration:none}
+.zg-tk:hover{color:#241105}
+.zg-tk-row{display:flex;width:max-content;height:38px;align-items:center;animation:zgmarq 34s linear infinite}
+.zg-tk:hover .zg-tk-row{animation-play-state:paused}
+.zg-tk-item{display:inline-flex;align-items:center;gap:14px;padding-right:44px;white-space:nowrap;font:600 14px/1 'Geist',sans-serif}
+.zg-tk-item b{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:15px;letter-spacing:-.01em}
+.zg-tk-item i{font-style:normal;font-family:'Geist Mono',monospace;font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+.zg-tk-cta{background:#241105;color:#FFF4DC;border-radius:999px;padding:5px 12px;font-size:13px}
+.zg-tk-dot{width:8px;height:8px;border-radius:50%;background:#241105;animation:zgpulse 1.6s ease-out infinite}
+.zg-cv-pick{position:absolute;inset:0;width:100%;height:100%;border:0;padding:0;background:transparent;cursor:pointer;border-radius:inherit;z-index:1}
+.zg-cv-pick:focus-visible{outline:3px solid #F5A623;outline-offset:-3px}
+.zg-cv-tag{z-index:2;pointer-events:none;opacity:0;transform:translateY(8px);transition:opacity 300ms ease,transform 450ms cubic-bezier(.23,1,.32,1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.zg-cv.is-sel .zg-cv-tag{opacity:1;transform:none}
+.zg-cv.is-sel{z-index:4 !important;scale:1.07;box-shadow:0 0 0 3px #F5A623,0 40px 80px rgba(12,5,1,.6)}
+.zg-stack.has-pick .zg-cv:not(.is-sel){filter:brightness(.62) saturate(.8)}
+.zg-stack.has-pick .zg-cv.is-sel .zg-cv-in{animation:zgPicked 650ms cubic-bezier(.34,1.5,.64,1) both}
+@keyframes zgPicked{0%{transform:translateY(-14px) scale(.96)}100%{transform:none}}
+.zg-vlabel{transition:background-image 300ms ease}
+/* Entrada: el logo grande sobre los discos difuminados */
+.zg-intro{position:absolute;inset:0;z-index:6;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;box-sizing:border-box;text-align:center;cursor:pointer;transition:opacity 600ms ease 600ms}
+.zg-intro-mark{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px}
+.zg-intro-sun{width:min(170px,32%);transform-origin:50% 50%;filter:drop-shadow(0 0 60px rgba(245,166,35,.55));animation:zgIntroSun 900ms cubic-bezier(.16,1,.3,1) both,zgspin 40s linear 900ms infinite;transition:transform 1000ms cubic-bezier(.65,0,.35,1),opacity 500ms ease 700ms}
+.zg-intro-word{width:min(400px,78%);filter:drop-shadow(0 6px 30px rgba(36,17,5,.7));animation:zgIntroWord 900ms cubic-bezier(.16,1,.3,1) 80ms both;transition:transform 650ms cubic-bezier(.65,0,.35,1),opacity 500ms ease,filter 600ms ease}
+.zg-intro-tag{font-family:'Geist Mono',monospace;font-size:13px;letter-spacing:.24em;text-transform:uppercase;color:#F5A623;animation:zgfade 900ms cubic-bezier(.16,1,.3,1) 900ms both;transition:opacity 300ms ease}
+.zg-intro-go{margin-top:10px;position:relative;display:inline-flex;align-items:center;gap:12px;border:0;border-radius:999px;background:#F07800;color:#241105;font:600 16px/1 'Geist',sans-serif;padding:8px 22px 8px 8px;cursor:pointer;box-shadow:0 18px 50px rgba(240,120,0,.35);animation:zgfade 700ms cubic-bezier(.16,1,.3,1) 350ms both;transition:transform 200ms cubic-bezier(.23,1,.32,1),opacity 300ms ease,background-color 200ms ease}
+.zg-intro-go i{width:40px;height:40px;border-radius:50%;background:#241105;color:#F07800;display:flex;align-items:center;justify-content:center}
+.zg-intro-go::after{content:"";position:absolute;inset:-6px;border-radius:999px;border:2px solid rgba(240,120,0,.55);animation:zgIntroRing 2.2s ease-out 2s infinite;pointer-events:none}
+.zg-intro-go:hover{background:#FF8A1F;transform:translateY(-2px)}
+.zg-intro-go:active{transform:scale(.97)}
+.zg-intro-go:focus-visible{outline:3px solid #FFF4DC;outline-offset:4px}
+.zg-intro-hint{font-size:14px;color:#FFF4DC;text-shadow:0 1px 10px rgba(0,0,0,.6);animation:zgfade 700ms ease 600ms both;transition:opacity 300ms ease}
+@keyframes zgIntroSun{from{opacity:0;transform:scale(.6) rotate(-60deg)}}
+@keyframes zgIntroWord{from{opacity:0;transform:translateY(16px) scale(.97)}}
+@keyframes zgIntroRing{0%{opacity:.9;transform:scale(1)}100%{opacity:0;transform:scale(1.35)}}
+/* Saliendo: la letra se difumina, el sol cae en el vinilo y los discos se aclaran */
+.zg-intro.is-leaving{opacity:0;pointer-events:none}
+/* Con el logo arriba, los discos mismos van difuminados: sin óvalo ni bordes nítidos */
+.zg-stack.is-veiled{filter:blur(22px) brightness(.55) saturate(.9);pointer-events:none}
+.zg-stack.is-veiled .zg-cv{transition:none}
+.zg-par{transition:filter 1000ms cubic-bezier(.65,0,.35,1),opacity 1000ms ease}
+div:has(> .zg-stack.is-veiled) > .zg-par{filter:blur(18px);opacity:.55}
+.zg-intro.is-leaving .zg-intro-word{transform:translateY(-34px) scale(1.04);opacity:0;filter:blur(16px)}
+.zg-intro.is-leaving .zg-intro-tag,.zg-intro.is-leaving .zg-intro-go,.zg-intro.is-leaving .zg-intro-hint{opacity:0;animation:none}
+.zg-intro.is-leaving .zg-intro-sun{animation:none;transform:translate(var(--tx,0px),var(--ty,0px)) scale(var(--ts,.2)) rotate(540deg);opacity:0}
+.zg-stack.is-revealed{animation:zgReveal 1100ms cubic-bezier(.34,1.4,.64,1) both}
+@keyframes zgReveal{0%{transform:scale(.94) rotate(-2deg);filter:blur(22px) brightness(.55) saturate(.9)}65%{filter:blur(0) brightness(1) saturate(1)}100%{transform:none;filter:none}}
+@media (prefers-reduced-motion:reduce){.zg-intro.is-leaving .zg-intro-sun{transform:none}.zg-stack.is-revealed{animation:none}}
+.zg-dig{position:absolute;left:50%;bottom:-10px;transform:translateX(-50%);z-index:4;display:inline-flex;align-items:center;gap:8px;white-space:nowrap;background:#FFF4DC;color:#241105 !important;text-decoration:none;font-weight:600;font-size:14px;padding:10px 16px;border-radius:999px;box-shadow:0 14px 30px rgba(12,5,1,.5);animation:zgfade 900ms cubic-bezier(.16,1,.3,1) 1400ms both}
+.zg-dig svg{animation:zgnudge 1.6s ease-in-out infinite}
+@keyframes zgnudge{50%{transform:translateY(3px)}}
+
+.cr-wrap{display:flex;flex-wrap:wrap;gap:48px;align-items:center;margin-top:56px}
+.cr-stage{--w:clamp(220px,30vw,360px);position:relative;flex:1 1 520px;min-width:0;height:calc(var(--w) * 1.42);perspective:1500px;perspective-origin:50% 0%;touch-action:pan-y;outline:none;border-radius:28px}
+.cr-stage:focus-visible{box-shadow:0 0 0 2px #F5A623}
+.cr-floor{position:absolute;left:4%;right:4%;bottom:0;height:46%;border-radius:28px;background:linear-gradient(180deg,rgba(36,17,5,0) 0%,#241105 70%);pointer-events:none;z-index:150}
+.cr-box{position:absolute;left:50%;bottom:6%;width:calc(var(--w) * 1.25);height:28%;margin-left:calc(var(--w) * -0.625);border-radius:0 0 22px 22px;background:linear-gradient(180deg,#5a2d0f,#3a1c08);box-shadow:0 30px 60px rgba(0,0,0,.45),inset 0 2px 0 rgba(255,244,220,.12);z-index:160;display:flex;align-items:flex-end;justify-content:center;padding-bottom:14px;box-sizing:border-box}
+.cr-box span{font-family:'Geist Mono',monospace;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#F5A623}
+.cr-item{position:absolute;left:50%;bottom:16%;width:var(--w);margin-left:calc(var(--w) * -0.5);aspect-ratio:1/1;transform-origin:50% 100%;transform-style:preserve-3d;transition:transform 720ms cubic-bezier(.22,1.15,.36,1),opacity 420ms ease,filter 420ms ease;cursor:pointer}
+.cr-lift{position:relative;width:100%;height:100%;transition:transform 420ms cubic-bezier(.34,1.4,.64,1)}
+.cr-sleeve{position:absolute;inset:0;border-radius:6px;overflow:hidden;box-shadow:0 26px 50px rgba(0,0,0,.5),0 2px 0 rgba(255,255,255,.06) inset;z-index:2;background:#1B0D04}
+.cr-sleeve img{display:block;width:100%;height:100%;object-fit:cover}
+.cr-sleeve::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(118deg,rgba(255,255,255,.26) 0%,rgba(255,255,255,.05) 24%,rgba(255,255,255,0) 38%,rgba(255,255,255,0) 72%,rgba(255,255,255,.1) 100%),radial-gradient(circle at 50% 50%,transparent 38%,rgba(255,244,220,.08) 39%,transparent 41.5%),linear-gradient(90deg,rgba(0,0,0,.28),transparent 4%,transparent 96%,rgba(0,0,0,.22));box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}
+.cr-vin{position:absolute;top:3%;left:3%;width:94%;height:94%;z-index:1;transition:transform 900ms cubic-bezier(.23,1,.32,1) 120ms}
+.cr-vin .zg-vinyl{animation:zgspin 3.2s linear infinite;animation-play-state:paused}
+.cr-item.is-sel .cr-vin{transform:translateX(52%)}
+.cr-item.is-sel .cr-vin .zg-vinyl{animation-play-state:running}
+.cr-item.is-sel.is-play .cr-vin .zg-vinyl{animation-duration:1.8s}
+@media (hover:hover) and (pointer:fine){.cr-item.is-back:hover .cr-lift{transform:translateY(-15%)}.cr-item.is-back:hover{filter:brightness(1.05) !important}.cr-item.is-back:hover .cr-tab{opacity:1;transform:translate(-50%,0)}.cr-item.is-back:hover .cr-sleeve{box-shadow:0 0 0 3px #F5A623,0 26px 50px rgba(0,0,0,.5)}}
+.cr-tab{position:absolute;left:50%;top:-40px;transform:translate(-50%,8px);opacity:0;z-index:3;white-space:nowrap;background:#F5A623;color:#241105;font:700 13px/1 'Geist',sans-serif;padding:8px 12px;border-radius:999px;box-shadow:0 10px 24px rgba(0,0,0,.4);transition:opacity 220ms ease,transform 320ms cubic-bezier(.34,1.4,.64,1);pointer-events:none}
+.cr-item.is-sel .cr-sleeve{box-shadow:0 0 0 2px rgba(245,166,35,.9),0 34px 70px rgba(0,0,0,.6)}
+.cr-item.is-sel .cr-lift{animation:crLand 700ms cubic-bezier(.34,1.5,.64,1) both}
+@keyframes crLand{0%{transform:translateY(-10%) rotate(-1.5deg)}100%{transform:none}}
+.cr-item.is-front{pointer-events:none}
+.cr-plain{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;gap:8px;padding:20% 9% 9%;box-sizing:border-box;overflow:hidden}
+.cr-plain b{position:relative;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:calc(var(--w) * .13);line-height:.95;letter-spacing:-.03em;text-wrap:balance}
+.cr-plain span{position:relative;font-size:calc(var(--w) * .045);opacity:.85}
+.cr-plain .cr-plain-lbl{position:absolute;top:8%;left:9%;font-family:'Geist Mono',monospace;font-size:calc(var(--w) * .034);letter-spacing:.2em;opacity:.7}
+.cr-plain-sun{position:absolute;right:-22%;top:-22%;width:78%;opacity:.22;animation:zgspin 60s linear infinite}
+.cr-count-all{font-size:14px;color:#C9A980}
+.cr-info{flex:1 1 340px;min-width:0;display:flex;flex-direction:column;gap:18px;align-items:flex-start}
+.cr-search{position:relative;width:100%;max-width:420px}
+.cr-search input{width:100%;box-sizing:border-box;background:#241105;color:#FFF4DC;border:1px solid rgba(240,224,192,.22);border-radius:999px;padding:15px 18px 15px 48px;font:500 16px/1.2 'Geist',sans-serif}
+.cr-search svg{position:absolute;left:18px;top:50%;margin-top:-9px;color:#C9A980}
+.cr-title{margin:0;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:72px;line-height:.92;letter-spacing:-.035em;animation:zgcr 520ms cubic-bezier(.16,1,.3,1) both}
+.cr-artist{margin:0;font-size:19px;color:#F0E0C0;animation:zgcr 520ms cubic-bezier(.16,1,.3,1) 60ms both}
+@keyframes zgcr{from{opacity:0;transform:translateY(14px);filter:blur(6px)}}
+.cr-nav{display:flex;align-items:center;gap:10px}
+.cr-arrow{width:52px;height:52px;border-radius:50%;border:1px solid rgba(240,224,192,.3);background:transparent;color:#FFF4DC;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.cr-arrow:disabled{opacity:.3;cursor:default}
+.cr-count{font-family:'Geist Mono',monospace;font-size:14px;color:#C9A980;min-width:64px;text-align:center}
+.cr-chips{display:flex;flex-wrap:wrap;gap:8px}
+.cr-chip{border:1px solid rgba(240,224,192,.2);background:transparent;color:#F0E0C0;border-radius:999px;padding:8px 14px;font:500 14px/1 'Geist',sans-serif;cursor:pointer;transition:border-color 200ms ease,color 200ms ease,background-color 200ms ease}
+.cr-chip[aria-pressed="true"]{background:#F07800;border-color:#F07800;color:#241105}
+@media (hover:hover) and (pointer:fine){.cr-arrow:not(:disabled):hover{border-color:#FFF4DC;background:rgba(240,224,192,.06)}.cr-chip[aria-pressed="false"]:hover{border-color:#FFF4DC;color:#FFF4DC}}
+.cr-empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;color:#C9A980;z-index:170;padding:0 24px}
+.cr-empty b{font-family:'Bricolage Grotesque',sans-serif;font-size:28px;color:#FFF4DC}
+@media (max-width:760px){.cr-item.is-sel .cr-vin{transform:translateX(30%)}.cr-title{font-size:48px}.cr-stage{--w:min(62vw,300px);flex-basis:100%}.cr-wrap{gap:28px}}
+@media (prefers-reduced-motion:reduce){.cr-item,.cr-vin,.cr-lift{transition:none}}
+/* Test ADN sonoro */
+.aq-entry{align-self:flex-start;display:block;background:none;border:0;padding:4px 0;font:400 15px/1.35 'Geist',sans-serif;color:#C9A980;cursor:pointer;text-align:left}
+.aq-entry b{font-weight:600;color:#F5A623;text-decoration:underline;text-decoration-color:rgba(245,166,35,.4);text-underline-offset:4px;transition:text-decoration-color 200ms ease}
+.aq-entry span:last-child{color:#F5A623;transition:transform 260ms cubic-bezier(.23,1,.32,1)}
+.aq-entry b,.aq-entry span:last-child{display:inline-block;margin-left:6px}.aq-entry b{margin-left:4px;display:inline}
+.aq-entry-dot{display:inline-block;vertical-align:1px;margin-right:10px;width:8px;height:8px;border-radius:50%;background:#F07800;box-shadow:0 0 0 0 rgba(240,120,0,.6);animation:aqPulse 2.4s ease-out infinite}
+@keyframes aqPulse{0%{box-shadow:0 0 0 0 rgba(240,120,0,.55)}70%,100%{box-shadow:0 0 0 10px rgba(240,120,0,0)}}
+@media (hover:hover) and (pointer:fine){.aq-entry:hover b{text-decoration-color:#F5A623}.aq-entry:hover span:last-child{transform:translateX(4px)}}
+.aq{position:fixed;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;padding:24px 16px}
+.aq-back{position:absolute;inset:0;background:rgba(12,5,1,.74);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);animation:pdFade 300ms ease both}
+.aq-card{position:relative;overflow:hidden;width:min(600px,100%);max-height:calc(100dvh - 48px);overflow-y:auto;overscroll-behavior:contain;box-sizing:border-box;padding:28px 32px 32px;background:#2E1607;border:1px solid rgba(240,224,192,.12);border-radius:28px;box-shadow:0 40px 120px rgba(12,5,1,.6);animation:pdIn 520ms cubic-bezier(.16,1,.3,1) both}
+.aq.is-out .aq-back{animation:pdFadeOut 260ms ease both}
+.aq.is-out .aq-card{animation:pdOut 260ms cubic-bezier(.4,0,1,1) both}
+.aq-sun{position:absolute;right:-70px;top:-70px;width:220px;opacity:.08;pointer-events:none;animation:zgspin 60s linear infinite}
+.aq-top{position:relative;display:flex;align-items:center;justify-content:space-between}
+.aq-eb,.aq-num{font:500 12px/1 'Geist Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:#F5A623}
+.aq-num{color:#C9A980}
+.aq-x{width:36px;height:36px;border-radius:50%;border:1px solid rgba(240,224,192,.25);background:transparent;color:#F0E0C0;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.aq-bar{position:relative;height:3px;border-radius:3px;background:rgba(240,224,192,.12);margin:18px 0 26px;overflow:hidden}
+.aq-bar i{position:absolute;left:0;top:0;bottom:0;border-radius:3px;background:#F07800;transition:width 520ms cubic-bezier(.23,1,.32,1)}
+.aq-q,.aq-res{position:relative;display:flex;flex-direction:column;gap:14px;animation:zgcr 520ms cubic-bezier(.16,1,.3,1) both}
+.aq h2{margin:0 0 6px;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:34px;line-height:1.02;letter-spacing:-.03em;color:#FFF4DC}
+.aq-res h2{font-size:52px;color:#F07800;margin:0}
+.aq-opts{display:flex;flex-direction:column;gap:10px}
+.aq-opt{text-align:left;font:500 16px/1.35 'Geist',sans-serif;color:#F0E0C0;background:rgba(36,17,5,.6);border:1px solid rgba(240,224,192,.18);border-radius:16px;padding:15px 18px;cursor:pointer;transition:background-color 200ms ease,border-color 200ms ease,color 200ms ease,transform 160ms ease}
+.aq-opt:active,.aq-chip:active{transform:scale(.98)}
+.aq-opt.is-sel{background:#F07800;border-color:#F07800;color:#241105}
+.aq-q .aq-opts:has(.aq-chip){flex-direction:row;flex-wrap:wrap;gap:8px}
+.aq-chip{font:500 15px/1 'Geist',sans-serif;color:#F0E0C0;background:transparent;border:1px solid rgba(240,224,192,.25);border-radius:999px;padding:11px 16px;cursor:pointer;transition:background-color 200ms ease,border-color 200ms ease,color 200ms ease,transform 160ms ease}
+.aq-chip.is-sel{background:#F07800;border-color:#F07800;color:#241105}
+@media (hover:hover) and (pointer:fine){.aq-opt:not(.is-sel):hover,.aq-chip:not(.is-sel):hover{border-color:#FFF4DC;color:#FFF4DC}.aq-x:hover{border-color:#FFF4DC}}
+.aq-other{background:#241105;color:#FFF4DC;border:1px solid rgba(240,224,192,.3);border-radius:14px;padding:13px 16px;font:500 16px/1.2 'Geist',sans-serif;animation:zgcr 400ms cubic-bezier(.16,1,.3,1) both}
+.aq-nav{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:6px;min-height:20px}
+.aq-prev{background:none;border:0;padding:6px 0;font:500 14px/1 'Geist',sans-serif;color:#C9A980;cursor:pointer}
+.aq-prev:hover{color:#FFF4DC}
+.aq-next{margin-left:auto;background:#F07800;color:#241105;border:0;border-radius:999px;padding:13px 26px;font:600 15px/1 'Geist',sans-serif;cursor:pointer}
+.aq-next:disabled{opacity:.35;cursor:default}
+.aq-line{margin:0;font-size:16px;line-height:1.45;color:#F0E0C0}
+.aq-why{margin:0;font-size:18px;line-height:1.4;color:#FFF4DC}
+.aq-res .aq-num{margin-top:8px}
+.aq-note{margin:0;font-size:14px;line-height:1.5;color:#C9A980}
+.aq-cta{margin-top:8px;background:#F07800;color:#241105;border:0;border-radius:999px;padding:16px 26px;font:600 16px/1.2 'Geist',sans-serif;cursor:pointer}
+@media (max-width:760px){.aq{padding:0;align-items:flex-end}.aq-card{border-radius:24px 24px 0 0;max-height:94dvh;padding:22px 20px 28px}.aq h2{font-size:28px}.aq-res h2{font-size:42px}.aq-entry{font-size:14px}}
+@media (prefers-reduced-motion:reduce){.aq-back,.aq-card,.aq-q,.aq-res,.aq-entry-dot,.aq-sun{animation:none !important}}
+/* Bandeja compacta en compu: entra entera en una pantalla de notebook */
+@media (min-width:901px){
+.cr-sec{padding-top:88px !important;padding-bottom:88px !important;gap:20px !important}
+.cr-sec .zg-big{font-size:clamp(44px,6.2vh,56px) !important}
+.cr-sec .zg-rv>p{font-size:17px !important;max-width:56ch}
+.tt{top:88px;width:clamp(176px,23vh,200px)}
+.cr-wrap{margin-top:clamp(36px,6vh,52px);gap:40px}
+.cr-stage{--w:clamp(200px,min(20vw,32vh),270px)}
+.cr-info{gap:14px}
+.cr-title{font-size:clamp(40px,6.6vh,60px)}
+.cr-artist{font-size:17px}
+.cr-search input{padding-top:12px;padding-bottom:12px;font-size:15px}
+.cr-chip{padding:7px 12px;font-size:13px}
+.cr-arrow{width:44px;height:44px}
+.cr-info .zg-btn{padding:13px 22px !important;font-size:15px !important}
+.cr-info .zg-ghost{padding:12px 20px !important;font-size:15px !important}
+}
+/* Rediseño: tipografía, navegación y estados */
+html{scroll-behavior:smooth;scroll-padding-top:84px}
+h1,h2,h3{text-wrap:balance}
+p{text-wrap:pretty}
+.zg-skip{position:absolute;left:16px;top:-64px;z-index:20;background:#FFF4DC;color:#241105 !important;padding:12px 18px;border-radius:999px;font-weight:600;text-decoration:none;transition:top 200ms ease}
+.zg-skip:focus{top:52px}
+.zg-link.is-here{color:#FFF4DC !important;background-image:linear-gradient(#F07800,#F07800);background-size:100% 2px;background-repeat:no-repeat;background-position:0 100%}
+.zg-bento{position:relative;overflow:hidden;isolation:isolate}
+.zg-bento::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:-1;background:radial-gradient(280px circle at var(--sx,50%) var(--sy,50%),rgba(255,244,220,.16),transparent 62%);opacity:0;transition:opacity 350ms ease}
+.zg-bento:hover::before{opacity:1}
+.zg-float{transition:opacity 350ms ease,transform 450ms cubic-bezier(.23,1,.32,1)}
+.zg-float.is-off{opacity:0 !important;transform:translateY(24px) scale(.92) !important;pointer-events:none}
+/* Botón flotante: un círculo con el sol que no tapa nada; al pasar el mouse
+   se abre y dice "Reservá tu visita". En el celu no va: el menú ya lo tiene. */
+.zg-float{display:inline-flex;align-items:center;height:56px;padding:0 17px;border-radius:999px;background:#F07800;color:#241105;text-decoration:none;font-weight:600;font-size:15px;box-shadow:0 16px 40px rgba(12,5,1,.5),0 0 0 6px rgba(240,120,0,.12)}
+.zg-float .zg-sun{width:22px;height:22px;flex:none}
+.zg-float-lbl{display:inline-block;max-width:0;overflow:hidden;white-space:nowrap;opacity:0;transition:max-width 450ms cubic-bezier(.23,1,.32,1),opacity 250ms ease,margin 450ms cubic-bezier(.23,1,.32,1)}
+.zg-float:hover .zg-float-lbl,.zg-float:focus-visible .zg-float-lbl{max-width:180px;opacity:1;margin-left:10px}
+.zg-float:focus-visible{outline:3px solid #FFF4DC;outline-offset:3px}
+@media (max-width:760px),(hover:none){.zg-float{display:none !important}}
+.zg-field input[aria-invalid="true"]{border-color:#FF9A8A !important;box-shadow:0 0 0 4px rgba(255,154,138,.14)}
+.zg-err{margin:0;font-size:14px;color:#FFB4A2;animation:zgfade 300ms ease both}
+footer{padding-bottom:12px}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+input{transition:border-color 200ms ease,box-shadow 200ms ease}
+input:focus{outline:none;border-color:#F07800 !important;box-shadow:0 0 0 4px rgba(240,120,0,.2)}
+/* Celular: el menú entra entero y la demo del portal no se corre de lugar */
+.zg-langs{display:inline-flex;gap:2px}
+@media (max-width:560px){
+header nav{padding:0 16px !important;gap:10px !important;height:64px !important}
+header nav > a:first-child img{height:32px !important}
+header nav .zg-ghost{padding:9px 13px !important;font-size:13px !important}
+header nav .zg-btn{padding:10px 15px !important;font-size:14px !important}
+}
+@media (max-width:360px){header nav .zg-ghost{display:none}}
+.pd-side,.pd-stage{min-width:0}
+/* Armá tu pack */
+.cx-menu{flex:1 1 100%;order:4}
+.cx-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;padding-top:6px}
+.cx-item{display:flex;align-items:center;gap:10px;width:100%;background:transparent;border:0;border-radius:12px;font:inherit;font-size:14.5px;text-align:left;padding:9px 10px;cursor:pointer;transition:background-color 200ms ease,color 200ms ease}
+.cx-item:hover{background:rgba(240,224,192,.06)}
+.cx-cell{display:flex;flex-direction:column;min-width:0}
+.cx-cell.cx-wide{grid-column:1/-1}
+.cx-sub{padding:0 10px 8px 38px}
+.cx-detail{width:100%;box-sizing:border-box;background:#241105;border:1px solid rgba(240,224,192,.22);border-radius:12px;color:#FFF4DC;font:inherit;font-size:14px;padding:10px 12px;transition:border-color 200ms ease,box-shadow 200ms ease}
+.cx-detail::placeholder{color:#B39272}
+.cx-detail:focus{outline:none;border-color:#F07800;box-shadow:0 0 0 3px rgba(240,120,0,.2)}
+.cx-item:focus-visible,.cx-trigger:focus-visible{outline:2px solid #F07800;outline-offset:2px}
+@media (max-width:560px){.cx-list{grid-template-columns:1fr}.cx-row > *{flex:1 1 100%}.cx-row [role=radiogroup]{flex:0 0 auto}.cx-send{order:5}}
+@media (prefers-reduced-motion:reduce){.cx *{transition:none !important}}
+
+
+</style>
+</helmet>
+<div style="position: relative; background: #241105; color: #FFF4DC; font-family: 'Geist', system-ui, sans-serif; font-size: 17px; line-height: 1.55; overflow: clip">
+<a class="zg-skip" href="#inicio">Saltar al contenido</a>
+<div class="zg-progress" aria-hidden="true"></div>
+
+<sc-if value="{{ tkOn }}" hint-placeholder-val="{{ false }}"><a class="zg-tk" href="{{ tkUrl }}" aria-label="{{ tkLabel }}"><span class="zg-tk-row" aria-hidden="true"><sc-for list="{{ tkItems }}" as="k" hint-placeholder-count="4"><span class="zg-tk-item"><span class="zg-tk-dot"></span><i>Entradas a la venta</i><b>{{ k.date }}</b><span>{{ k.name }}</span><span>{{ k.left }}</span><span class="zg-tk-cta">Comprá tu entrada →</span></span></sc-for></span></a></sc-if>
+<header style="position: sticky; top: 0; z-index: 5; background: rgba(36, 17, 5, 0.82); backdrop-filter: blur(16px) saturate(140%); -webkit-backdrop-filter: blur(16px) saturate(140%); border-bottom: 1px solid rgba(240, 224, 192, 0.12)">
+<nav aria-label="Principal" style="max-width: 1320px; margin: 0 auto; height: 72px; box-sizing: border-box; padding: 0 40px; display: flex; align-items: center; justify-content: space-between; gap: 24px">
+<a href="#inicio" style="display: flex; align-items: center"><img src="/assets/web/logo-zeche-gruv-160.webp" alt="ZECHE GRUV" style="height: 38px; width: auto"></a>
+<div class="zg-navlinks" style="gap: 32px; align-items: center; font-size: 15px; font-weight: 500">
+<a class="zg-link {{ here_proceso }}" href="#proceso" aria-current="{{ cur_proceso }}" style="color: #C9A980; text-decoration: none; padding-bottom: 4px">Cómo trabajamos</a>
+<a class="zg-link {{ here_lanzamientos }}" href="#lanzamientos" aria-current="{{ cur_lanzamientos }}" style="color: #C9A980; text-decoration: none; padding-bottom: 4px">Lanzamientos</a>
+<a class="zg-link {{ here_estudio }}" href="#estudio" aria-current="{{ cur_estudio }}" style="color: #C9A980; text-decoration: none; padding-bottom: 4px">El estudio</a>
+<a class="zg-link {{ here_comunidad }}" href="#comunidad" aria-current="{{ cur_comunidad }}" style="color: #C9A980; text-decoration: none; padding-bottom: 4px">Shows y camps</a>
+<a class="zg-link {{ here_planes }}" href="#planes" aria-current="{{ cur_planes }}" style="color: #C9A980; text-decoration: none; padding-bottom: 4px">Packs</a>
+</div>
+<div style="display: flex; align-items: center; gap: 12px">
+<a class="zg-press zg-ghost" href="/portal/" style="border: 1px solid rgba(240, 224, 192, 0.3); color: #F0E0C0; text-decoration: none; font-weight: 500; font-size: 14px; padding: 11px 18px; border-radius: 999px; white-space: nowrap">Soy artista</a>
+<a class="zg-press zg-btn" href="#visita" style="background: #F07800; color: #241105; text-decoration: none; font-weight: 600; font-size: 15px; padding: 12px 22px; border-radius: 999px; white-space: nowrap">Reservá tu visita</a>
+</div>
+</nav>
+</header>
+
+<section id="inicio" ref="{{ heroRef }}" onPointerMove="{{ glow }}" onPointerLeave="{{ unglow }}" style="position: relative; background: radial-gradient(640px circle at var(--mx, 72%) var(--my, 38%), rgba(240, 120, 0, 0.16), transparent 62%)">
+<div class="zg-sec" style="max-width: 1320px; margin: 0 auto; box-sizing: border-box; padding: 80px 40px 104px; display: flex; flex-wrap: wrap; align-items: center; gap: 56px">
+<div style="flex: 1 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 28px">
+<span class="zg-fade" style="font-family: 'Geist Mono', monospace; font-size: 13px; letter-spacing: 0.16em; text-transform: uppercase; color: #F5A623">Sello y estudio en Buenos Aires</span>
+<h1 class="zg-hero-h" style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 104px; line-height: 0.95; letter-spacing: -0.035em; padding-bottom: 6px"><span class="zg-w" style="animation-delay: 60ms">Encontrá</span> <span class="zg-w" style="animation-delay: 160ms">tu</span> <span class="zg-w" style="animation-delay: 260ms; color: #F07800">ADN</span> <span class="zg-w" style="animation-delay: 360ms">sonoro.</span></h1>
+<p class="zg-fade" style="margin: 0; font-size: 21px; line-height: 1.5; color: #F0E0C0; max-width: 34ch; animation-delay: 520ms">Tu canción nace acá: la armamos desde cero, la grabamos y la lanzamos, sesión a sesión, con Yaco Santana.</p>
+<div class="zg-fade" style="display: flex; flex-wrap: wrap; gap: 14px; padding-top: 8px; animation-delay: 640ms">
+<a class="zg-press zg-btn" href="#visita" style="background: #F07800; color: #241105; text-decoration: none; font-weight: 600; font-size: 17px; padding: 16px 28px; border-radius: 999px">Reservá tu visita</a>
+<a class="zg-press zg-ghost" href="#proceso" style="border: 1px solid rgba(240, 224, 192, 0.4); color: #F0E0C0; text-decoration: none; font-weight: 500; font-size: 17px; padding: 15px 26px; border-radius: 999px; display: inline-flex; align-items: center; gap: 10px"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 14 14"><path d="M3 1.5v11l9-5.5z" fill="currentColor"></path></svg>Escuchá el antes y después</a>
+</div>
+<button type="button" class="zg-fade aq-entry" onClick="{{ aqOpen }}" style="animation-delay: 760ms"><span class="aq-entry-dot" aria-hidden="true"></span>¿No sabés por dónde empezar? <b>Descubrí tu ADN sonoro en un minuto</b><span aria-hidden="true">→</span></button>
+</div>
+<div style="flex: 1 1 420px; min-width: 0; position: relative; display: flex; justify-content: center; padding: 24px 0">
+<div class="zg-par" aria-hidden="true" style="position: absolute; width: 112%; max-width: 640px; top: -6%; left: 50%; margin-left: -56%"><img class="zg-sun" src="/assets/web/sol-160.webp" alt="" style="width: 100%; opacity: 0.22"></div>
+<div class="{{ stackCls }}" ref="{{ stackRef }}" onPointerEnter="{{ hsEnter }}" onPointerLeave="{{ hsLeave }}" onClick="{{ hsTap }}" aria-label="Portadas de canciones hechas en ZECHE GRUV: Bajo Cero, Adicción, TODO TERRENO, TACÚ y YANINA">
+<div class="zg-cv {{ hc0 }} {{ hsel0 }}" style="--dx: -70; --dy: -40; --dep: 22; --dr: -10; left: 2%; top: 6%; transform: rotate(-12deg); animation-delay: 200ms"><div class="zg-cv-in" style="animation-delay: -1s"><img src="/assets/web/portada-adiccion.webp" alt="Portada de Adicción, de Kires"><button class="zg-cv-pick" type="button" onClick="{{ pick0 }}" aria-pressed="{{ pp0 }}" aria-label="Elegir Adicción"></button><span class="zg-cv-tag"><i aria-hidden="true"><svg width="10" height="10" viewBox="0 0 18 18"><path d="M4 2v14l12-7z" fill="currentColor"></path></svg></i>Adicción · Kires</span></div></div>
+<div class="zg-cv {{ hc1 }} {{ hsel1 }}" style="--dx: 70; --dy: -46; --dep: 18; --dr: 10; right: 2%; top: 2%; transform: rotate(10deg); animation-delay: 300ms"><div class="zg-cv-in" style="animation-delay: -3s"><img src="/assets/web/portada-todo-terreno.webp" alt="Portada de TODO TERRENO, de Rouse bby, YEIKO y Maida"><button class="zg-cv-pick" type="button" onClick="{{ pick1 }}" aria-pressed="{{ pp1 }}" aria-label="Elegir TODO TERRENO"></button><span class="zg-cv-tag"><i aria-hidden="true"><svg width="10" height="10" viewBox="0 0 18 18"><path d="M4 2v14l12-7z" fill="currentColor"></path></svg></i>TODO TERRENO · Rouse bby, Maida, YEIKO</span></div></div>
+<div class="zg-cv {{ hc2 }} {{ hsel2 }}" style="--dx: -74; --dy: 40; --dep: 26; --dr: 8; left: 0%; bottom: 4%; transform: rotate(7deg); animation-delay: 400ms"><div class="zg-cv-in" style="animation-delay: -2s"><img src="/assets/web/portada-tacu.webp" alt="Portada de TACÚ, del ZG Camp"><button class="zg-cv-pick" type="button" onClick="{{ pick2 }}" aria-pressed="{{ pp2 }}" aria-label="Elegir TACÚ"></button><span class="zg-cv-tag"><i aria-hidden="true"><svg width="10" height="10" viewBox="0 0 18 18"><path d="M4 2v14l12-7z" fill="currentColor"></path></svg></i>TACÚ · ZG Camp</span></div></div>
+<div class="zg-cv {{ hc3 }} {{ hsel3 }}" style="--dx: 72; --dy: 46; --dep: 20; --dr: -10; right: 0%; bottom: 2%; transform: rotate(-8deg); animation-delay: 500ms"><div class="zg-cv-in" style="animation-delay: -4s"><img src="/assets/web/portada-yanina.webp" alt="Portada de YANINA, de Axia Bebe"><button class="zg-cv-pick" type="button" onClick="{{ pick3 }}" aria-pressed="{{ pp3 }}" aria-label="Elegir YANINA"></button><span class="zg-cv-tag"><i aria-hidden="true"><svg width="10" height="10" viewBox="0 0 18 18"><path d="M4 2v14l12-7z" fill="currentColor"></path></svg></i>YANINA · Axia Bebe</span></div></div>
+<div class="zg-hv" aria-hidden="true"><div class="zg-hv-in"><div class="zg-vinyl"><span class="zg-vlabel" style="{{ hvLabel }}"></span></div></div></div>
+<div class="zg-cv {{ hc4 }} {{ hsel4 }}" style="--dx: 0; --dy: -6; --dep: 34; --dr: 0; left: 22%; top: 22%; width: 58%; transform: rotate(-2deg); animation-delay: 650ms; z-index: 2"><div class="zg-cv-in"><img src="/assets/web/portada-bajo-cero.webp" alt="Portada de Bajo Cero, de ENY B"><button class="zg-cv-pick" type="button" onClick="{{ pick4 }}" aria-pressed="{{ pp4 }}" aria-label="Elegir Bajo Cero"></button><span class="zg-cv-tag"><i aria-hidden="true"><svg width="10" height="10" viewBox="0 0 18 18"><path d="M4 2v14l12-7z" fill="currentColor"></path></svg></i>Bajo Cero · ENY B</span></div></div>
+<sc-if value="{{ npShow }}" hint-placeholder-val="{{ true }}">
+<div class="{{ npCls }}" role="group" aria-label="Reproductor de discos">
+<button class="zg-np-play" type="button" onClick="{{ npToggle }}" aria-label="{{ npPlayLabel }}"><sc-if value="{{ npPlaying }}" hint-placeholder-val="{{ false }}"><svg width="16" height="16" viewBox="0 0 18 18" aria-hidden="true"><path d="M4 3h3.5v12H4zM10.5 3H14v12h-3.5z" fill="currentColor"></path></svg></sc-if><sc-if value="{{ npPaused }}" hint-placeholder-val="{{ true }}"><svg width="16" height="16" viewBox="0 0 18 18" aria-hidden="true"><path d="M5 3v12l10-6z" fill="currentColor"></path></svg></sc-if></button>
+<span class="zg-np-txt"><b>{{ npTitle }}</b><small>{{ npSub }}</small><span class="zg-np-bar" aria-hidden="true"><i style="{{ npBarStyle }}"></i></span></span>
+<button class="zg-np-btn" type="button" onClick="{{ npNext }}" aria-label="Disco siguiente"><svg width="16" height="16" viewBox="0 0 18 18" aria-hidden="true"><path d="M3 3.5v11l8-5.5zM12.5 3.5H15v11h-2.5z" fill="currentColor"></path></svg></button>
+<a class="zg-np-btn" href="{{ npUrl }}" target="_blank" rel="noopener" aria-label="Escuchala completa en Spotify"><svg width="16" height="16" viewBox="0 0 18 18" aria-hidden="true"><path d="M7 4H4.5A1.5 1.5 0 003 5.5v8A1.5 1.5 0 004.5 15h8a1.5 1.5 0 001.5-1.5V11M10 3h5v5M15 3L8 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg></a>
+</div>
+</sc-if>
+<div class="{{ hsCls }}">
+<label class="zg-hs-box"><span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Buscar un disco</span><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><circle cx="8" cy="8" r="5.5" fill="none" stroke="currentColor" stroke-width="1.8"></circle><path d="M12.2 12.2L16 16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path></svg><input type="search" placeholder="Buscá un disco o artista" value="{{ heroQ }}" onChange="{{ hsType }}" onFocus="{{ hsFocus }}" onBlur="{{ hsBlur }}" onKeyDown="{{ hsKey }}" autocomplete="off"></label>
+<sc-if value="{{ hsShowList }}" hint-placeholder-val="{{ false }}">
+<div class="zg-hs-box" style="margin-top: 8px">
+<sc-if value="{{ hsHasHits }}" hint-placeholder-val="{{ true }}">
+<ul><sc-for list="{{ hsHits }}" as="h" hint-placeholder-count="2"><li><button class="zg-hs-r" type="button" onMouseDown="{{ h.go }}"><img src="{{ h.img }}" alt=""><span><b>{{ h.title }}</b><small>{{ h.artist }}</small></span></button></li></sc-for></ul>
+</sc-if>
+<sc-if value="{{ hsNoHits }}" hint-placeholder-val="{{ false }}"><div class="zg-hs-none">No está en la bandeja. Probá con el nombre del artista.</div></sc-if>
+</div>
+</sc-if>
+</div>
+</div>
+<sc-if value="{{ introOn }}" hint-placeholder-val="{{ true }}">
+<div class="{{ introCls }}" onClick="{{ introGo }}" aria-label="ZECHE GRUV: entrá a escuchar">
+<div class="zg-intro-mark">
+<img class="zg-intro-sun" ref="{{ introSunRef }}" src="/assets/web/sol-intro.webp" alt="" style="{{ introSunStyle }}">
+<img class="zg-intro-word" src="/assets/web/logo-texto.webp" srcset="/assets/web/logo-texto-700.webp 700w, /assets/web/logo-texto.webp 1400w" sizes="(max-width: 760px) 78vw, 400px" alt="ZECHE GRUV Record Label">
+</div>
+<button class="zg-intro-go" type="button" onClick="{{ introGo }}" ref="{{ introBtnRef }}"><i aria-hidden="true"><svg width="16" height="16" viewBox="0 0 18 18"><path d="M5 3v12l10-6z" fill="currentColor"></path></svg></i>Entrá a escuchar</button>
+<span class="zg-intro-hint">o tocá los discos</span>
+</div>
+</sc-if>
+
+</div>
+</div>
+</section>
+
+
+<section id="proceso" style="background: #2E1607; margin-top: 64px">
+<div class="zg-sec" style="max-width: 1320px; margin: 0 auto; box-sizing: border-box; padding: 112px 40px; display: flex; flex-wrap: wrap; gap: 64px; align-items: flex-start">
+<div class="zg-rv" style="flex: 1 1 420px; min-width: 0; display: flex; flex-direction: column; gap: 24px">
+<h2 class="zg-big" style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 64px; line-height: 0.98; letter-spacing: -0.03em">La canción nace en el estudio.</h2>
+<p style="margin: 0; font-size: 19px; color: #F0E0C0; max-width: 40ch">Cuatro sesiones al mes, una por semana. Venís con una idea, una frase o solo con ganas: la armamos juntos, desde cero.</p>
+<ol style="margin: 8px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column">
+<sc-for list="{{ steps }}" as="s" hint-placeholder-count="4">
+<li style="border-top: 1px solid rgba(240, 224, 192, 0.14)">
+<button type="button" class="zg-step" onClick="{{ s.pick }}" aria-expanded="{{ s.expanded }}" style="{{ s.btnStyle }}"><span style="font-family: 'Geist Mono', monospace; color: #F5A623; width: 28px; flex-shrink: 0">{{ s.num }}</span><span style="flex: 1; font-weight: 600">{{ s.title }}</span><span aria-hidden="true" style="{{ s.iconStyle }}">+</span></button>
+<div class="{{ s.accClass }}"><div><p style="margin: 0; padding: 0 0 20px 48px; color: #C9A980; font-size: 16px; max-width: 46ch">{{ s.text }}</p></div></div>
+</li>
+</sc-for>
+</ol>
+</div>
+<div class="zg-rv" style="position: relative; flex: 1 1 460px; min-width: 0; background: #241105; border: 1px solid rgba(240, 224, 192, 0.14); border-radius: 24px; padding: 32px; box-sizing: border-box; display: flex; flex-direction: column; gap: 24px; box-shadow: 0 30px 80px rgba(12, 5, 1, 0.4)">
+<div style="display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap">
+<div style="display: flex; align-items: center; gap: 16px">
+<button type="button" class="zg-press zg-btn" onClick="{{ togglePlay }}" aria-label="{{ playLabel }}" style="width: 56px; height: 56px; border-radius: 50%; border: 0; background: #F07800; color: #241105; cursor: pointer; display: flex; align-items: center; justify-content: center">
+<sc-if value="{{ playing }}" hint-placeholder-val="{{ false }}"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 18 18"><rect x="3" y="2" width="4" height="14" rx="1.5" fill="currentColor"></rect><rect x="11" y="2" width="4" height="14" rx="1.5" fill="currentColor"></rect></svg></sc-if>
+<sc-if value="{{ notPlaying }}" hint-placeholder-val="{{ true }}"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 18 18"><path d="M4 2v14l12-7z" fill="currentColor"></path></svg></sc-if>
+</button>
+<div style="display: flex; flex-direction: column">
+<span style="font-weight: 600; font-size: 19px">OKEY</span>
+<span style="color: #C9A980; font-size: 15px"><a class="zg-link" href="/artistas/rouse-bby.html" target="_blank" rel="noopener" style="color: #F0E0C0; text-decoration: none; padding-bottom: 2px">Rouse bby</a> · prod. YEIKO</span>
+<audio ref="{{ aDemoRef }}" src="/assets/web/okey-antes.mp4" preload="auto" loop></audio>
+<audio ref="{{ aMasterRef }}" src="/assets/web/okey-despues.mp4" preload="auto" loop></audio>
+</div>
+</div>
+<div style="display: flex; align-items: center; gap: 16px">
+<div role="group" aria-label="Elegí qué versión escuchar" style="position: relative; display: flex; background: #4B2509; border-radius: 999px; padding: 4px">
+<span aria-hidden="true" style="{{ switchKnob }}"></span>
+<button type="button" class="zg-press" onClick="{{ pickDemo }}" aria-pressed="{{ demoPressed }}" style="{{ demoBtnStyle }}">Antes</button>
+<button type="button" class="zg-press" onClick="{{ pickMaster }}" aria-pressed="{{ masterPressed }}" style="{{ masterBtnStyle }}">Después</button>
+</div>
+<a class="zg-press zg-ava" href="/artistas/rouse-bby.html" target="_blank" rel="noopener" aria-label="Conocé a Rouse bby" style="position: relative; flex-shrink: 0; width: 56px; height: 56px; display: block; border-radius: 50%"><img src="/assets/web/rouse-bby.webp" alt="Rouse bby" style="width: 56px; height: 56px; border-radius: 50%; object-fit: cover; display: block"><svg role="img" aria-label="Artista verificada de ZECHE GRUV" width="20" height="20" viewBox="0 0 20 20" style="position: absolute; right: -2px; bottom: -2px"><circle cx="10" cy="10" r="9" fill="#F07800" stroke="#241105" stroke-width="2.5"></circle><path d="M6.2 10.3l2.5 2.5 5-5.2" fill="none" stroke="#241105" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg></a>
+</div>
+</div>
+<div aria-hidden="true" style="height: 150px; display: flex; align-items: center; gap: 4px">
+<sc-for list="{{ bars }}" as="b" hint-placeholder-count="56">
+<span style="{{ b.style }}"></span>
+</sc-for>
+</div>
+<div aria-hidden="true" style="height: 3px; background: rgba(240, 224, 192, 0.12); border-radius: 999px; overflow: hidden"><div style="{{ progressStyle }}"></div></div>
+<div style="display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap">
+<p style="margin: 0; font-size: 15px; color: #C9A980; flex: 1 1 260px">{{ caption }}</p>
+<a class="zg-link" href="https://open.spotify.com/track/3UAMJM86gPISBGGhRWqg9z" target="_blank" rel="noopener" style="color: #F5A623; text-decoration: none; font-size: 15px; font-weight: 600; padding-bottom: 3px">Escuchala entera en Spotify</a>
+</div>
+</div>
+</div>
+</section>
+
+<section aria-label="Lo que dicen los artistas" class="zg-sec" style="max-width: 1100px; margin: 0 auto; box-sizing: border-box; padding: 128px 40px; display: flex; flex-direction: column; align-items: center; gap: 40px; text-align: center">
+<img class="zg-sun" src="/assets/web/sol-160.webp" alt="" aria-hidden="true" style="width: 64px; height: 64px">
+<blockquote aria-live="polite" style="{{ quoteStyle }}">“{{ quote.text }}”</blockquote>
+<div style="display: flex; flex-direction: column; gap: 2px">
+<span style="font-weight: 600; font-size: 18px">{{ quote.name }}</span>
+<span style="color: #C9A980; font-size: 15px">Artista, reseña de 5 estrellas en Google</span>
+</div>
+<div role="group" aria-label="Elegí una reseña" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 8px">
+<sc-for list="{{ quotes }}" as="q" hint-placeholder-count="6">
+<button type="button" class="zg-press" onClick="{{ q.pick }}" aria-pressed="{{ q.pressed }}" style="{{ q.style }}"><span aria-hidden="true" style="{{ q.fill }}"></span><span style="position: relative">{{ q.name }}</span></button>
+</sc-for>
+</div>
+</section>
+
+<!-- Roster oculto hasta tener la lista completa de artistas (showRoster en el script). -->
+<sc-if value="{{ showRoster }}" hint-placeholder-val="{{ false }}">
+<section id="artistas" aria-label="Artistas con los que colaboramos" class="zg-sec" style="max-width: 1320px; margin: 0 auto; box-sizing: border-box; padding: 0 40px 128px; display: flex; flex-direction: column; gap: 32px">
+<div class="zg-rv" style="display: flex; flex-direction: column; gap: 10px; max-width: 640px">
+<h2 class="zg-big" style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 64px; line-height: 0.98; letter-spacing: -0.03em">Artistas con los que colaboramos.</h2>
+<p style="margin: 0; font-size: 17px; color: #C9A980">{{ rosterCount }}. Tocá un nombre y escuchalo en Spotify.</p>
+</div>
+<ul class="rs-wall" aria-label="Artistas con los que colaboramos">
+<sc-for list="{{ roster }}" as="a" hint-placeholder-count="12"><li><a class="rs-name" href="{{ a.url }}" target="_blank" rel="noopener" aria-label="{{ a.label }}">{{ a.name }}<svg aria-hidden="true" viewBox="0 0 12 12"><path d="M3.5 8.5l5-5M4.5 3.5h4v4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></a><sc-if value="{{ a.notLast }}" hint-placeholder-val="{{ true }}"><span class="rs-sep" aria-hidden="true">/</span></sc-if></li></sc-for>
+</ul>
+</section>
+</sc-if>
+
+<span id="artists" aria-hidden="true" style="display: block; position: relative; top: -84px"></span>
+<section id="lanzamientos" style="background: #2E1607">
+<div class="zg-sec cr-sec" ref="{{ crSecRef }}" style="max-width: 1320px; margin: 0 auto; box-sizing: border-box; padding: 112px 40px; display: flex; flex-direction: column; gap: 40px">
+<div class="{{ ttCls }}" ref="{{ ttRef }}" aria-hidden="true">
+<div class="tt-deck">
+<span class="tt-grain"></span>
+<div class="tt-platter"><span class="tt-mat"></span><div class="tt-rec"><div class="zg-vinyl"><span class="zg-vlabel" style="{{ ttLabel }}"></span></div></div><span class="tt-spindle"></span></div>
+<div class="tt-arm"><span class="tt-rod"></span><span class="tt-head"></span><span class="tt-pivot"></span></div>
+<span class="tt-led"></span><span class="tt-speed">33 ⅓</span><span class="tt-name">ZECHE GRUV</span>
+<span class="tt-knob"></span>
+</div>
+</div>
+<div class="zg-rv" style="display: flex; flex-direction: column; gap: 14px; max-width: 720px">
+<span style="font-family: 'Geist Mono', monospace; font-size: 13px; letter-spacing: 0.16em; text-transform: uppercase; color: #F5A623">Hecho en ZECHE GRUV</span>
+<h2 class="zg-big" style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 64px; line-height: 0.95; letter-spacing: -0.035em">Hojeá la bandeja.</h2>
+<p style="margin: 0; font-size: 19px; color: #F0E0C0">Todo el catálogo, sobre por sobre. Cada disco nació en una sesión: buscalo, sacá el vinilo y escuchá cómo terminó.</p>
+</div>
+<div class="cr-wrap">
+<div class="cr-stage" tabindex="0" role="listbox" aria-label="Discos hechos en ZECHE GRUV. Usá las flechas para pasar." onKeyDown="{{ crKey }}" onPointerDown="{{ crDown }}" onPointerUp="{{ crUp }}">
+<sc-for list="{{ crate }}" as="r" hint-placeholder-count="5">
+<div class="{{ r.cls }}" style="{{ r.style }}" onClick="{{ r.pick }}" role="option" aria-selected="{{ r.selected }}" aria-label="{{ r.label }}">
+<div class="cr-lift">
+<span class="cr-tab" aria-hidden="true">{{ r.title }}</span>
+<div class="cr-vin" aria-hidden="true"><div class="zg-vinyl"><span class="zg-vlabel" style="{{ r.labelStyle }}"></span></div></div>
+<div class="cr-sleeve"><sc-if value="{{ r.hasImg }}" hint-placeholder-val="{{ true }}"><img src="{{ r.img }}" alt="{{ r.alt }}"></sc-if><sc-if value="{{ r.noImg }}" hint-placeholder-val="{{ false }}"><div class="cr-plain" style="{{ r.plainStyle }}"><img class="cr-plain-sun" src="/assets/web/sol-160.webp" alt=""><span class="cr-plain-lbl">ZECHE GRUV</span><b>{{ r.title }}</b><span>{{ r.artist }}</span></div></sc-if></div>
+</div>
+</div>
+</sc-for>
+<sc-if value="{{ crNone }}" hint-placeholder-val="{{ false }}">
+<div class="cr-empty"><b>No está en la bandeja</b><span>Probá con el nombre del artista o de la canción.</span></div>
+</sc-if>
+<div class="cr-floor" aria-hidden="true"></div>
+<div class="cr-box" aria-hidden="true"><span>ZECHE GRUV · Bandeja</span></div>
+</div>
+<div class="cr-info">
+<label class="cr-search"><span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Buscar un disco</span><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><circle cx="8" cy="8" r="5.5" fill="none" stroke="currentColor" stroke-width="1.8"></circle><path d="M12.2 12.2L16 16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path></svg><input type="search" placeholder="Buscá por canción o artista" value="{{ crQ }}" onChange="{{ crSearch }}" autocomplete="off"></label>
+<span class="cr-count-all">{{ crTotal }}</span>
+<div class="cr-chips" role="group" aria-label="Filtrar">
+<sc-for list="{{ crChips }}" as="c" hint-placeholder-count="3"><button class="cr-chip" type="button" aria-pressed="{{ c.pressed }}" onClick="{{ c.pick }}">{{ c.label }}</button></sc-for>
+</div>
+<sc-if value="{{ crHas }}" hint-placeholder-val="{{ true }}">
+<span style="font-family: 'Geist Mono', monospace; font-size: 13px; letter-spacing: 0.16em; text-transform: uppercase; color: #F5A623">{{ crKind }}</span>
+<h3 class="cr-title" key="{{ crKey2 }}">{{ crTitle }}</h3>
+<p class="cr-artist" key="{{ crKey3 }}">{{ crArtist }}</p>
+<div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center">
+<button class="zg-press zg-btn" type="button" onClick="{{ crToggle }}" style="background: #F07800; color: #241105; border: 0; font: 600 16px/1 'Geist', sans-serif; padding: 15px 24px; border-radius: 999px; cursor: pointer; display: inline-flex; align-items: center; gap: 10px">{{ crPlayLabel }}</button>
+<a class="zg-press zg-ghost" href="{{ crUrl }}" target="_blank" rel="noopener" style="border: 1px solid rgba(240, 224, 192, 0.4); color: #F0E0C0; text-decoration: none; font-weight: 500; font-size: 16px; padding: 14px 22px; border-radius: 999px">Abrir en Spotify</a>
+</div>
+<sc-if value="{{ crBarOn }}" hint-placeholder-val="{{ false }}"><span class="cr-bar" aria-hidden="true"><i style="{{ crBarStyle }}"></i></span></sc-if>
+<div class="cr-nav">
+<button class="cr-arrow" type="button" onClick="{{ crPrev }}" disabled="{{ crAtStart }}" aria-label="Disco anterior"><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M11 4L6 9l5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>
+<span class="cr-count">{{ crCount }}</span>
+<button class="cr-arrow" type="button" onClick="{{ crNext }}" disabled="{{ crAtEnd }}" aria-label="Disco siguiente"><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M7 4l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>
+</div>
+<span class="cr-hint cr-hint-d" style="font-size: 14px; color: #C9A980">Con el mouse arriba de la caja, girá la ruedita para pasar los discos. También podés tocar un sobre o usar las flechas.</span><span class="cr-hint cr-hint-m" style="font-size: 14px; color: #C9A980">Deslizá la caja de costado para pasar los discos.</span>
+</sc-if>
+</div>
+</div>
+</div>
+</section>
+
+<section id="estudio" class="zg-sec" style="max-width: 1320px; margin: 0 auto; box-sizing: border-box; padding: 128px 40px 0; display: flex; flex-direction: column; gap: 48px">
+<h2 class="zg-big zg-rv" style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 76px; line-height: 0.98; letter-spacing: -0.03em; max-width: 14ch">Un estudio que se siente casa.</h2>
+<div onPointerMove="{{ spot }}" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); grid-auto-rows: 260px; gap: 16px">
+<div class="zg-rv" style="grid-column: span 2; grid-row: span 2; overflow: hidden; border-radius: 20px"><img loading="lazy" decoding="async" class="zg-zoom" src="/assets/web/estudio-sala.webp" srcset="/assets/web/estudio-sala-700.webp 700w, /assets/web/estudio-sala.webp 1400w" sizes="(max-width: 760px) 92vw, 600px" alt="La sala de ZECHE GRUV con guitarras, monitores y la silla naranja" style="width: 100%; height: 100%; object-fit: cover; display: block"></div>
+<div class="zg-rv zg-bento" style="background: #4B2509; border-radius: 20px; padding: 32px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between">
+<p style="margin: 0; font-size: 18px; line-height: 1.5; color: #F0E0C0">Arranqué con pocos recursos y un sueño gigante. La energía para hacerlo realidad nunca frenó, y hoy sigue intacta.</p>
+<span style="display: flex; align-items: center; gap: 12px; font-family: 'Geist Mono', monospace; font-size: 13px; color: #C9A980"><img src="/assets/web/yaco-santana-120.webp" alt="Yaco Santana" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover; object-position: 50% 25%; border: 2px solid #F07800">Yaco Santana, fundador</span>
+</div>
+<div class="zg-rv zg-bento" style="background: #F5A623; color: #241105; border-radius: 20px; padding: 32px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-end; gap: 4px">
+<span class="zg-count" style="--to: 200; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 76px; line-height: 0.9; letter-spacing: -0.03em"><span class="zg-static">+200</span></span>
+<span style="font-size: 17px; font-weight: 500">artistas colaboraron con el sello</span>
+</div>
+<div class="zg-rv" style="overflow: hidden; border-radius: 20px"><img loading="lazy" decoding="async" class="zg-zoom" src="/assets/web/estudio-teclado.webp" srcset="/assets/web/estudio-teclado-700.webp 700w, /assets/web/estudio-teclado.webp 1200w" sizes="(max-width: 760px) 92vw, 320px" alt="Teclado y escritorio de producción con luz de ventana" style="width: 100%; height: 100%; object-fit: cover; display: block"></div>
+<div class="zg-rv zg-bento" style="background: #4B2509; border-radius: 20px; padding: 32px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-end; gap: 4px">
+<span class="zg-count" style="--to: 60; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 76px; line-height: 0.9; letter-spacing: -0.03em; color: #F5A623"><span class="zg-static">+60</span></span>
+<span style="font-size: 17px; font-weight: 500; color: #F0E0C0">canciones publicadas con créditos del sello</span>
+</div>
+</div>
+</section>
+
+<section id="comunidad" style="padding: 128px 0 112px; display: flex; flex-direction: column; gap: 48px">
+<div class="zg-sec zg-rv" style="max-width: 1320px; width: 100%; margin: 0 auto; box-sizing: border-box; padding: 0 40px; display: flex; flex-direction: column; gap: 20px">
+<h2 class="zg-big" style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 76px; line-height: 0.98; letter-spacing: -0.03em">Nos juntamos a crear.</h2>
+<p style="margin: 0; font-size: 19px; color: #F0E0C0; max-width: 52ch">Campamentos de varios días con artistas de todos lados, y un escenario por mes para que te escuchen.</p>
+</div>
+<div class="zg-sec zg-rv" style="max-width: 1320px; width: 100%; margin: 0 auto; box-sizing: border-box; padding: 0 40px">
+<div class="cp-card" style="display: grid; grid-template-columns: 1fr 1fr; background: #F07800; color: #241105; border-radius: 28px; overflow: hidden">
+<div style="padding: 44px 40px; display: flex; flex-direction: column; justify-content: center; gap: 18px">
+<span style="align-self: flex-start; background: #241105; color: #F5A623; font-weight: 600; font-size: 14px; padding: 8px 14px; border-radius: 999px">El próximo, muy pronto</span>
+<h3 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 48px; line-height: 0.98; letter-spacing: -0.03em">ZG Camp: días enteros creando juntos.</h3>
+<p style="margin: 0; font-size: 18px; font-weight: 500; max-width: 42ch">En el primer camp nos juntamos artistas y productores de todos lados a hacer música a toda hora. De ahí salió TACÚ, una canción con 15 artistas.</p>
+<div style="display: flex; flex-wrap: wrap; gap: 8px"><span style="font-size: 14px; font-weight: 600; background: rgba(36, 17, 5, 0.14); padding: 7px 12px; border-radius: 999px">15 artistas en una canción</span><span style="font-size: 14px; font-weight: 600; background: rgba(36, 17, 5, 0.14); padding: 7px 12px; border-radius: 999px">Productores del sello</span><span style="font-size: 14px; font-weight: 600; background: rgba(36, 17, 5, 0.14); padding: 7px 12px; border-radius: 999px">Solo por invitación</span></div>
+<div style="margin-top: 6px; display: flex; flex-wrap: wrap; gap: 10px">
+<a class="zg-press" href="https://open.spotify.com/album/6YmySpzsNXMuxekqcmdlGJ" target="_blank" rel="noopener" style="background: #241105; color: #FFF4DC; text-decoration: none; font-weight: 600; font-size: 16px; padding: 15px 26px; border-radius: 999px">Escuchá TACÚ</a>
+<a class="zg-press" href="{{ campWa }}" target="_blank" rel="noopener" style="border: 1.5px solid #241105; color: #241105; text-decoration: none; font-weight: 600; font-size: 16px; padding: 14px 24px; border-radius: 999px">Avisame del próximo</a>
+</div>
+</div>
+<div class="cp-shot" style="position: relative; min-height: 320px; margin: 16px 16px 0 0; border-radius: 20px; overflow: hidden"><img src="/assets/web/camp-pantalla.webp" alt="Artistas armando un tema frente a la pantalla del estudio en el primer ZG Camp" loading="lazy" decoding="async" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 60%; display: block"></div>
+<div class="cg-grid" style="grid-column: 1 / -1; padding: 16px; display: grid; grid-template-columns: 1fr 1fr 1fr 2fr; gap: 16px">
+<figure class="zg-rv" style="margin: 0; position: relative; overflow: hidden; border-radius: 20px"><img loading="lazy" decoding="async" class="zg-zoom" src="/assets/web/camp-mesa.webp" alt="Artistas compartiendo una mesa en el primer camp" style="width: 100%; height: 230px; object-fit: cover; display: block; object-position: 50% 70%"><figcaption style="position: absolute; left: 12px; bottom: 12px; font-size: 13px; font-weight: 600; color: #FFF4DC; background: rgba(36, 17, 5, 0.72); padding: 6px 11px; border-radius: 999px; backdrop-filter: blur(6px)">El primer ZG Camp</figcaption></figure>
+<figure class="zg-rv" style="margin: 0; position: relative; overflow: hidden; border-radius: 20px"><img loading="lazy" decoding="async" class="zg-zoom" src="/assets/web/camp-sesion-1.webp" alt="Sesión de producción durante el camp" style="width: 100%; height: 230px; object-fit: cover; display: block"></figure>
+<figure class="zg-rv" style="margin: 0; position: relative; overflow: hidden; border-radius: 20px"><img loading="lazy" decoding="async" class="zg-zoom" src="/assets/web/camp-sesion-2.webp" alt="Artistas descansando entre sesiones del camp" style="width: 100%; height: 230px; object-fit: cover; display: block"></figure>
+<figure class="zg-rv" style="margin: 0; position: relative; overflow: hidden; border-radius: 20px"><img loading="lazy" decoding="async" class="zg-zoom" src="/assets/web/evento-2-grupal.webp" srcset="/assets/web/evento-2-grupal-700.webp 700w, /assets/web/evento-2-grupal.webp 1400w" sizes="(max-width: 760px) 78vw, 640px" alt="Foto grupal de los artistas en el segundo evento de ZECHE GRUV" style="width: 100%; height: 230px; object-fit: cover; display: block; object-position: 50% 45%"><figcaption style="position: absolute; left: 12px; bottom: 12px; font-size: 13px; font-weight: 600; color: #FFF4DC; background: rgba(36, 17, 5, 0.72); padding: 6px 11px; border-radius: 999px; backdrop-filter: blur(6px)">Segundo evento</figcaption></figure>
+</div>
+</div>
+</div>
+<div class="zg-mq" style="overflow: hidden; border-top: 1px solid rgba(240, 224, 192, 0.14); border-bottom: 1px solid rgba(240, 224, 192, 0.14); padding: 18px 0; display: flex; flex-direction: column; gap: 14px">
+<div class="zg-marquee" aria-hidden="true" style="display: flex; width: max-content; gap: 36px; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 34px; letter-spacing: -0.02em; color: #F0E0C0; white-space: nowrap"><span>Open mic mensual</span><span style="color: #F07800">/</span><span>ZG Camp</span><span style="color: #F07800">/</span><span>4 shows en vivo</span><span style="color: #F07800">/</span><span>Open mic mensual</span><span style="color: #F07800">/</span><span>ZG Camp</span><span style="color: #F07800">/</span><span>4 shows en vivo</span><span style="color: #F07800">/</span><span>Open mic mensual</span><span style="color: #F07800">/</span><span>ZG Camp</span><span style="color: #F07800">/</span><span>4 shows en vivo</span><span style="color: #F07800">/</span><span>Open mic mensual</span><span style="color: #F07800">/</span><span>ZG Camp</span><span style="color: #F07800">/</span><span>4 shows en vivo</span><span style="color: #F07800">/</span><span>Open mic mensual</span><span style="color: #F07800">/</span><span>ZG Camp</span><span style="color: #F07800">/</span><span>4 shows en vivo</span><span style="color: #F07800">/</span><span>Open mic mensual</span><span style="color: #F07800">/</span><span>ZG Camp</span><span style="color: #F07800">/</span><span>4 shows en vivo</span><span style="color: #F07800">/</span></div>
+</div>
+</section>
+
+<section id="planes" style="background: #2E1607">
+<div class="zg-sec" style="max-width: 1320px; margin: 0 auto; box-sizing: border-box; padding: 112px 40px; display: flex; flex-direction: column; gap: 44px">
+<div class="zg-rv" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 28px">
+<div style="display: flex; flex-direction: column; gap: 16px; max-width: 640px">
+<span style="font-family: 'Geist Mono', monospace; font-size: 13px; letter-spacing: 0.16em; text-transform: uppercase; color: #F5A623">Packs mensuales</span>
+<h2 class="zg-big" style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 76px; line-height: 0.98; letter-spacing: -0.03em">Elegí hasta dónde llega tu canción.</h2>
+<p style="margin: 0; font-size: 19px; color: #F0E0C0">Los tres packs tienen 4 sesiones por mes, una por semana, y tu espacio en el portal de artistas. Cada escalón suma todo lo del anterior. Si te quedás 3 o 6 meses, pagás menos cada mes.</p>
+</div>
+<div style="display: flex; flex-direction: column; gap: 12px; align-items: flex-start">
+<span style="font-size: 15px; font-weight: 500; color: #C9A980">¿Por cuánto tiempo?</span>
+<div role="group" aria-label="Duración del plan" style="position: relative; display: flex; background: #241105; border-radius: 999px; padding: 5px">
+<span aria-hidden="true" style="{{ fmtKnob }}"></span>
+<sc-for list="{{ formats }}" as="f" hint-placeholder-count="3">
+<button type="button" class="zg-press" onClick="{{ f.pick }}" aria-pressed="{{ f.pressed }}" style="{{ f.style }}">{{ f.label }}</button>
+</sc-for>
+</div>
+</div>
+</div>
+
+<div class="zg-rv" style="display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; min-height: 40px">
+<span key="{{ dealKey }}" style="{{ dealStyle }}">{{ dealText }}</span>
+<span style="font-size: 14px; color: #C9A980">Precios en pesos, por mes. Pagás entre el 1 y el 10.</span>
+</div>
+<div class="pk-grid">
+<sc-for list="{{ packs }}" as="p" hint-placeholder-count="3">
+<div style="display: flex; flex-direction: column">
+<span class="pk-step" style="{{ p.stepStyle }}">{{ p.step }}</span>
+<article class="{{ p.cls }}" style="{{ p.box }}">
+<sc-if value="{{ p.sun }}" hint-placeholder-val="{{ false }}"><img src="/assets/web/sol-160.webp" alt="" aria-hidden="true" style="position: absolute; width: 240px; right: -70px; top: -70px; opacity: 0.3"></sc-if>
+<div style="position: relative; display: flex; justify-content: space-between; align-items: center; gap: 12px">
+<span style="{{ p.kickerStyle }}">{{ p.kicker }}</span>
+<sc-if value="{{ p.hasBadge }}" hint-placeholder-val="{{ false }}"><span style="{{ p.badgeStyle }}">{{ p.badge }}</span></sc-if>
+</div>
+<h3 style="position: relative; margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 40px; line-height: 1; letter-spacing: -0.02em">{{ p.name }}</h3>
+<div style="position: relative; display: flex; flex-direction: column; gap: 4px; overflow: hidden">
+<div style="display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap"><span style="{{ priceStyle }}">{{ p.price }}</span><span style="{{ p.unitStyle }}">por mes</span></div>
+<span style="{{ p.wasStyle }}">{{ p.was }}</span>
+</div>
+<p style="position: relative; margin: 0; font-size: 16.5px; line-height: 1.45">{{ p.text }}</p>
+<ul style="position: relative; margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 10px">
+<sc-for list="{{ p.items }}" as="it" hint-placeholder-count="4"><li class="pk-li"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 18 18"><path d="M3 9.5l4 4 8-9" fill="none" stroke="{{ it.tick }}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg><span>{{ it.t }}</span></li></sc-for>
+</ul>
+<sc-if value="{{ p.hasMM }}" hint-placeholder-val="{{ false }}"><button type="button" class="zg-press" onClick="{{ p.mmToggle }}" aria-pressed="{{ p.mmPressed }}" style="{{ p.mmStyle }}"><span aria-hidden="true" style="{{ p.mmDot }}"></span>{{ p.mmLabel }}</button></sc-if>
+<sc-if value="{{ p.hasNote }}" hint-placeholder-val="{{ false }}"><span style="position: relative; font-size: 13.5px; line-height: 1.4; font-weight: 600; background: #241105; color: #F5A623; border-radius: 14px; padding: 10px 12px">{{ p.note }}</span></sc-if>
+<div style="{{ p.footStyle }}">
+<span style="font-family: 'Geist Mono', monospace; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; opacity: 0.75">Te llevás</span>
+<span style="font-size: 17px; font-weight: 600">{{ p.takeaway }}</span>
+<span style="font-size: 14px; opacity: 0.8">{{ p.total }}</span>
+<button type="button" class="zg-press" onClick="{{ p.choose }}" style="{{ p.ctaStyle }}">{{ p.cta }}</button>
+</div>
+</article>
+</div>
+</sc-for>
+</div>
+<div class="pk-dots" role="group" aria-label="Packs"><button type="button" aria-label="Zeche Lab" data-pk="0"></button><button type="button" aria-label="Zeche Release" data-pk="1"></button><button type="button" aria-label="Full Gruv" data-pk="2"></button></div>
+<div aria-hidden="true" style="height: 8px; border-radius: 8px; background: #4B2509"></div>
+</div>
+
+<div class="zg-rv" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr)); gap: 16px">
+<div class="pk-portal" style="grid-column: span 2; min-width: 0; background: #241105; border: 1px solid rgba(240, 224, 192, 0.14); border-radius: 24px; padding: 32px; display: flex; flex-direction: column; gap: 18px">
+<h3 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 32px; line-height: 1.05; letter-spacing: -0.02em">Seguís tu canción y aprobás la mezcla desde el celular.</h3>
+<p style="margin: 0; font-size: 16px; line-height: 1.5; color: #F0E0C0; max-width: 56ch">En los tres packs tenés tu portal: ves en qué etapa está cada canción y, cuando llega la mezcla, la frenás donde querés un cambio y lo dejás marcado en ese segundo. Ahí también están tus letras con acordes y tus archivos.</p>
+<div class="pp-song">
+<div class="pp-top"><b>Tu próxima canción</b><span class="pp-stage">Mezcla</span></div>
+<ol class="pp-stages" aria-label="Etapa 4 de 5: Mezcla"><li class="is-done"><span>Estructura</span></li><li class="is-done"><span>Producción</span></li><li class="is-done"><span>Grabación</span></li><li class="is-current"><span>Mezcla</span></li><li><span>Master</span></li></ol>
+</div>
+<div class="pp-player" aria-label="Así marcás una modificación en la mezcla">
+<div class="pp-wave" aria-hidden="true"><i style="height: 22px; opacity: 1"></i><i style="height: 34px; opacity: 1"></i><i style="height: 30px; opacity: 1"></i><i style="height: 46px; opacity: 1"></i><i style="height: 52px; opacity: 1"></i><i style="height: 42px; opacity: 1"></i><i style="height: 58px; opacity: 1"></i><i style="height: 50px; opacity: 1"></i><i style="height: 34px; opacity: 1"></i><i style="height: 40px; opacity: 1"></i><i style="height: 56px; opacity: 1"></i><i style="height: 60px; opacity: 1"></i><i style="height: 48px; opacity: 1"></i><i style="height: 38px; opacity: 1"></i><i style="height: 46px; opacity: 1"></i><i style="height: 58px; opacity: 0.38"></i><i style="height: 52px; opacity: 0.38"></i><i style="height: 44px; opacity: 0.38"></i><i style="height: 30px; opacity: 0.38"></i><i style="height: 38px; opacity: 0.38"></i><i style="height: 50px; opacity: 0.38"></i><i style="height: 58px; opacity: 0.38"></i><i style="height: 46px; opacity: 0.38"></i><i style="height: 34px; opacity: 0.38"></i><i style="height: 26px; opacity: 0.38"></i><i style="height: 40px; opacity: 0.38"></i><i style="height: 48px; opacity: 0.38"></i><i style="height: 32px; opacity: 0.38"></i><i style="height: 22px; opacity: 0.38"></i><i style="height: 16px; opacity: 0.38"></i><i style="height: 28px; opacity: 0.38"></i><i style="height: 42px; opacity: 0.38"></i><i style="height: 36px; opacity: 0.38"></i><i style="height: 24px; opacity: 0.38"></i><i style="height: 30px; opacity: 0.38"></i><i style="height: 44px; opacity: 0.38"></i><i style="height: 52px; opacity: 0.38"></i><i style="height: 40px; opacity: 0.38"></i><i style="height: 28px; opacity: 0.38"></i><i style="height: 20px; opacity: 0.38"></i><span class="pp-pin" style="left: 23%"><b>1</b></span><span class="pp-pin" style="left: 66%"><b>2</b></span><span class="pp-head" style="left: 37%"></span></div>
+<div class="pp-time"><span>0:41</span><span>2:58</span></div>
+<ol class="pp-notes">
+<li><span class="pp-n">1</span><span class="pp-t">0:41</span><span>Subir un poco la voz en el estribillo</span></li>
+<li><span class="pp-n">2</span><span class="pp-t">1:58</span><span>Que el bajo entre más fuerte acá</span></li>
+</ol>
+</div>
+</div>
+<div class="pk-phone">
+<button type="button" class="pk-dev" onClick="{{ demoOpen }}" aria-label="Ver el portal" tabindex="-1">
+<span class="pk-dev-frame" aria-hidden="true">
+<span class="pk-island"></span>
+<span class="pk-scr">
+<span class="pk-bar"><img src="/assets/web/sol-160.webp" alt=""><b>ZECHE GRUV</b><i class="pk-av"></i></span>
+<span class="pk-h">Tus canciones</span>
+<span class="pk-song"><span class="pk-song-top"><b>Tu próximo single</b><em>Mezcla</em></span><span class="pk-stg"><i class="d"></i><i class="d"></i><i class="d"></i><i class="c"></i><i></i></span></span>
+<span class="pk-pl"><span class="pk-wv"><i style="height: 30%"></i><i style="height: 48%"></i><i style="height: 42%"></i><i style="height: 64%"></i><i style="height: 72%"></i><i style="height: 58%"></i><i style="height: 80%"></i><i style="height: 70%"></i><i style="height: 46%"></i><i style="height: 54%"></i><i style="height: 78%"></i><i style="height: 84%"></i><i style="height: 62%"></i><i style="height: 50%"></i><i style="height: 68%"></i><i style="height: 88%"></i><i style="height: 74%"></i><i style="height: 52%"></i><i style="height: 40%"></i><i style="height: 60%"></i><i style="height: 76%"></i><i style="height: 56%"></i><i style="height: 38%"></i><i style="height: 30%"></i><span class="pk-ph"></span><span class="pk-pin">1</span></span><span class="pk-tm"><span>0:41</span><span>2:58</span></span></span>
+<span class="pk-note"><b>0:41</b>Subir un poco la voz en el estribillo</span>
+<span class="pk-song pk-song2"><span class="pk-song-top"><b>Tu segundo tema</b><em>Grabación</em></span><span class="pk-stg"><i class="d"></i><i class="d"></i><i class="c"></i><i></i><i></i></span></span>
+<span class="pk-ok">Aprobar la mezcla</span>
+<span class="pk-toast"><img src="/assets/web/sol-160.webp" alt="">Tu mezcla está lista para escuchar</span>
+</span>
+</span>
+</button>
+<button type="button" class="zg-press pk-go" onClick="{{ demoOpen }}" aria-haspopup="dialog"><span class="pk-go-ico" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 18 18"><path d="M5 3v12l10-6z" fill="currentColor"></path></svg></span>Ver el portal</button>
+<p class="pk-safe"><svg width="14" height="14" viewBox="0 0 18 18" aria-hidden="true"><path d="M4 9.5l3.2 3.2L14 5.8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg><span><b>Probalo sin riesgo.</b> Si después de la primera sesión sentís que no es tu lugar, te devolvemos lo que pagaste por las sesiones que quedan del mes.</span></p>
+</div>
+</div>
+<div class="zg-rv" style="display: flex; flex-direction: column; gap: 6px">
+<h3 style="margin: 0 0 8px; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 32px; letter-spacing: -0.02em">Preguntas que nos hacen siempre.</h3>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr)); column-gap: 48px">
+<sc-for list="{{ faqs }}" as="q" hint-placeholder-count="5">
+<div style="border-top: 1px solid rgba(240, 224, 192, 0.12)">
+<button type="button" onClick="{{ q.pick }}" aria-expanded="{{ q.expanded }}" style="{{ q.btnStyle }}"><span style="flex: 1">{{ q.q }}</span><span aria-hidden="true" style="{{ q.iconStyle }}">+</span></button>
+<div class="{{ q.accClass }}"><div><p style="margin: 0; padding: 0 0 16px; font-size: 15px; line-height: 1.5; color: #C9A980">{{ q.a }}</p></div></div>
+</div>
+</sc-for>
+</div>
+</div>
+
+<div class="zg-rv" style="display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px">
+<button type="button" class="zg-press zg-ghost" onClick="{{ toggleTable }}" aria-expanded="{{ tableExpanded }}" style="background: transparent; border: 1px solid rgba(240, 224, 192, 0.4); color: #F0E0C0; font: inherit; font-weight: 500; font-size: 16px; padding: 14px 24px; border-radius: 999px; cursor: pointer; display: inline-flex; align-items: center; gap: 10px">{{ tableLabel }}<span aria-hidden="true" style="{{ tableIcon }}">+</span></button>
+<button type="button" class="zg-press zg-ghost" onClick="{{ toggleCustom }}" aria-expanded="{{ customExpanded }}" aria-controls="zg-custom" style="background: transparent; border: 1px solid rgba(240, 224, 192, 0.4); color: #F0E0C0; font: inherit; font-weight: 500; font-size: 16px; padding: 14px 24px; border-radius: 999px; cursor: pointer; display: inline-flex; align-items: center; gap: 10px">Armá tu pack<span aria-hidden="true" style="{{ customIcon }}">+</span></button>
+</div>
+<div id="zg-custom" class="{{ customAcc }}"><div><div style="padding-top: 16px; display: flex; justify-content: center">
+<div class="cx" style="width: 100%; max-width: 680px; box-sizing: border-box; background: #2E1607; border: 1px solid rgba(240, 224, 192, 0.14); border-radius: 22px; padding: 18px">
+<div class="cx-row" style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center">
+<div role="radiogroup" aria-label="Modalidad" style="position: relative; display: flex; background: #241105; border-radius: 999px; padding: 4px">
+<span aria-hidden="true" style="{{ cxKnob }}"></span>
+<sc-for list="{{ cxModes }}" as="m" hint-placeholder-count="2"><button type="button" role="radio" class="zg-press" onClick="{{ m.pick }}" aria-checked="{{ m.checked }}" style="{{ m.style }}">{{ m.label }}</button></sc-for>
+</div>
+<button type="button" class="zg-press cx-trigger" onClick="{{ cxToggleMenu }}" aria-expanded="{{ cxMenuExpanded }}" aria-controls="zg-cx-menu" style="flex: 1 1 200px; display: inline-flex; align-items: center; justify-content: space-between; gap: 10px; background: #241105; border: 1px solid rgba(240, 224, 192, 0.22); color: #FFF4DC; font: inherit; font-weight: 500; font-size: 15px; padding: 11px 16px; border-radius: 999px; cursor: pointer; text-align: left; min-width: 0"><span style="min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ cxTrigger }}</span><span aria-hidden="true" style="{{ cxChevron }}"><svg width="12" height="12" viewBox="0 0 12 12"><path d="M2 4l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></span></button>
+<button type="button" class="zg-press cx-send" onClick="{{ cxSend }}" aria-disabled="{{ cxDisabled }}" style="{{ cxSendStyle }}">Consultar presupuesto</button>
+<div id="zg-cx-menu" class="{{ cxMenuAcc }} cx-menu"><div><div class="cx-list" role="group" aria-label="Servicios">
+<sc-for list="{{ cxServices }}" as="sv" hint-placeholder-count="9"><div class="{{ sv.cell }}"><button type="button" role="checkbox" class="cx-item" onClick="{{ sv.pick }}" aria-checked="{{ sv.checked }}" style="{{ sv.style }}"><span aria-hidden="true" style="{{ sv.box }}"><svg width="11" height="11" viewBox="0 0 12 12" style="{{ sv.tick }}"><path d="M2.5 6.3l2.3 2.3L9.5 3.8" fill="none" stroke="#241105" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>{{ sv.label }}</button><sc-if value="{{ sv.showHours }}" hint-placeholder-val="{{ false }}"><div role="radiogroup" aria-label="{{ sv.hoursLabel }}" class="cx-sub" style="display: flex; gap: 6px"><sc-for list="{{ sv.hours }}" as="hr" hint-placeholder-count="3"><button type="button" role="radio" class="zg-press" onClick="{{ hr.pick }}" aria-checked="{{ hr.checked }}" style="{{ hr.style }}">{{ hr.label }}</button></sc-for></div></sc-if><sc-if value="{{ sv.showDetail }}" hint-placeholder-val="{{ false }}"><div class="cx-sub"><input type="text" class="cx-detail" maxlength="160" aria-label="{{ sv.detailLabel }}" placeholder="{{ sv.detailHint }}" value="{{ sv.detail }}" onInput="{{ sv.onDetail }}"></div></sc-if></div></sc-for>
+</div></div></div>
+</div>
+</div>
+</div></div></div>
+<div class="{{ tableAcc }}"><div><div class="pk-tblwrap" style="padding-top: 16px">
+<div class="pk-tbl" role="table" aria-label="Qué incluye cada pack">
+<span role="columnheader"></span><span role="columnheader" style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 18px; border-top: 0">Zeche Lab</span><span role="columnheader" style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 18px; border-top: 0">Zeche Release</span><span role="columnheader" style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 18px; border-top: 0; background: #F07800; color: #241105; border-radius: 14px 14px 0 0">Full Gruv</span>
+<sc-for list="{{ tableCells }}" as="c" hint-placeholder-count="12"><span class="{{ c.cls }}" style="{{ c.style }}">{{ c.t }}</span></sc-for>
+</div>
+<p style="margin: 14px 0 0; font-size: 14px; color: #C9A980">Plazos de mezcla y master contados desde que grabamos las voces finales. Hora extra en cualquier pack: $35.000.</p>
+</div></div></div>
+</div>
+</div>
+</section>
+
+<section id="visita" class="zg-sec" style="max-width: 1320px; margin: 0 auto; box-sizing: border-box; padding: 128px 40px 112px; display: flex; flex-wrap: wrap; gap: 64px; align-items: flex-end">
+<div class="zg-rv" style="flex: 1 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 28px">
+<h2 class="zg-noise" style="margin: 0; font-family: 'TAN Nimbus', 'Bricolage Grotesque', sans-serif; font-weight: 400; font-size: 132px; line-height: 0.9; color: #F07800">Hacelo con Gruv.</h2>
+<p style="margin: 0; font-size: 21px; color: #F0E0C0; max-width: 36ch">La primera visita es para conocernos: escuchamos tu idea y te mostramos el estudio. No se cobra.</p>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 14px">
+<a class="zg-press zg-ghost" href="https://wa.me/5491133287422?text=Hola%21%20Quiero%20conocer%20el%20estudio" target="_blank" rel="noopener" style="border: 1px solid rgba(240, 224, 192, 0.4); color: #FFF4DC; text-decoration: none; font-weight: 600; font-size: 16px; padding: 14px 24px; border-radius: 999px">Escribinos por WhatsApp</a>
+<span style="font-size: 15px; color: #C9A980">¿Preferís mandar un audio? Dale.</span>
+</div>
+<div style="display: flex; gap: 24px; font-size: 16px; font-weight: 500">
+<a class="zg-link" href="https://www.instagram.com/zechegruv/" target="_blank" rel="noopener" style="color: #C9A980; text-decoration: none; padding-bottom: 3px">Instagram</a>
+<a class="zg-link" href="https://open.spotify.com/artist/0yIGrWjWqKnM7qJ0uyImij" target="_blank" rel="noopener" style="color: #C9A980; text-decoration: none; padding-bottom: 3px">Spotify</a>
+<a class="zg-link" href="mailto:zechegruv@gmail.com" style="color: #C9A980; text-decoration: none; padding-bottom: 3px">Escribinos por mail</a>
+</div>
+</div>
+<div class="zg-rv" style="flex: 1 1 420px; min-width: 0; background: #4B2509; border-radius: 24px; padding: 32px; box-sizing: border-box; min-height: 420px; display: flex; flex-direction: column; justify-content: center">
+<sc-if value="{{ notSent }}" hint-placeholder-val="{{ true }}">
+<form name="visita-estudio" method="POST" action="/" data-netlify="true" netlify-honeypot="bot-field" onSubmit="{{ send }}" novalidate style="display: flex; flex-direction: column; gap: 18px">
+<input type="hidden" name="form-name" value="visita-estudio">
+<input type="hidden" name="pack" value="{{ packValue }}">
+<input type="hidden" name="como_nos_conocio" value="{{ originValue }}">
+<input type="hidden" name="servicios" value="{{ cxValue }}">
+<input type="hidden" name="modalidad" value="{{ cxModeValue }}">
+<input type="hidden" name="origen_boton" value="{{ fromValue }}">
+<input type="hidden" name="idioma" value="{{ langValue }}">
+<input type="hidden" name="visita" value="{{ vValue }}">
+<input type="hidden" name="adn_sonoro" value="{{ adnValue }}">
+<p style="position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden" aria-hidden="true"><label>No completar: <input name="bot-field" tabindex="-1" autocomplete="off"></label></p>
+<div class="zg-field" style="display: flex; flex-direction: column; gap: 8px"><label for="zg-nombre" style="font-size: 15px; font-weight: 500">Nombre artístico</label><input id="zg-nombre" onInput="{{ okName }}" name="nombre_artistico" type="text" maxlength="80" required autocomplete="nickname" aria-invalid="{{ badName }}" aria-describedby="zg-nombre-err" placeholder="¿Cómo te conocen?" style="background: #241105; border: 1px solid rgba(240, 224, 192, 0.3); border-radius: 12px; padding: 14px 16px; color: #FFF4DC; font: inherit"><sc-if value="{{ errName }}" hint-placeholder-val="{{ false }}"><p class="zg-err" id="zg-nombre-err">Contanos cómo te conocen, aunque sea tu nombre.</p></sc-if></div>
+<div class="zg-field" style="display: flex; flex-direction: column; gap: 8px"><label for="zg-wa" style="font-size: 15px; font-weight: 500">WhatsApp</label><input id="zg-wa" onInput="{{ okWa }}" name="telefono" type="tel" maxlength="30" required inputmode="tel" autocomplete="tel" aria-invalid="{{ badWa }}" aria-describedby="zg-wa-err" placeholder="11 2345 6789" style="background: #241105; border: 1px solid rgba(240, 224, 192, 0.3); border-radius: 12px; padding: 14px 16px; color: #FFF4DC; font: inherit"><sc-if value="{{ errWa }}" hint-placeholder-val="{{ false }}"><p class="zg-err" id="zg-wa-err">Revisá el número: necesitamos al menos 8 dígitos para escribirte.</p></sc-if></div>
+<fieldset style="border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px">
+<legend style="font-size: 15px; font-weight: 500; padding: 0 0 8px">¿Qué pack te interesa?</legend>
+<div style="display: flex; flex-wrap: wrap; gap: 8px">
+<sc-for list="{{ packChips }}" as="o" hint-placeholder-count="4">
+<button type="button" class="zg-press" onClick="{{ o.pick }}" aria-pressed="{{ o.pressed }}" style="{{ o.style }}">{{ o.label }}</button>
+</sc-for>
+</div>
+</fieldset>
+<fieldset style="border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px">
+<legend style="font-size: 15px; font-weight: 500; padding: 0 0 8px">¿Cómo nos conociste?</legend>
+<div style="display: flex; flex-wrap: wrap; gap: 8px">
+<sc-for list="{{ origins }}" as="o" hint-placeholder-count="5">
+<button type="button" class="zg-press" onClick="{{ o.pick }}" aria-pressed="{{ o.pressed }}" style="{{ o.style }}">{{ o.label }}</button>
+</sc-for>
+</div>
+</fieldset>
+<sc-if value="{{ vOn }}" hint-placeholder-val="{{ false }}">
+<fieldset class="zg-visit" style="border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px">
+<legend style="font-size: 15px; font-weight: 500; padding: 0 0 8px">Elegí el día de tu visita</legend>
+<div style="display: flex; flex-wrap: wrap; gap: 8px">
+<sc-for list="{{ vDayChips }}" as="o" hint-placeholder-count="4">
+<button type="button" class="zg-press" onClick="{{ o.pick }}" aria-pressed="{{ o.pressed }}" style="{{ o.style }}">{{ o.label }}</button>
+</sc-for>
+</div>
+<sc-if value="{{ vHasDay }}" hint-placeholder-val="{{ false }}">
+<div class="zg-visit-h" style="display: flex; flex-wrap: wrap; gap: 8px">
+<sc-for list="{{ vHourChips }}" as="o" hint-placeholder-count="4">
+<button type="button" class="zg-press" onClick="{{ o.pick }}" aria-pressed="{{ o.pressed }}" style="{{ o.style }}">{{ o.label }}</button>
+</sc-for>
+</div>
+</sc-if>
+<sc-if value="{{ vHasErr }}" hint-placeholder-val="{{ false }}"><p role="alert" style="margin: 0; font-size: 14px; color: #FFB36B">{{ vErr }}</p></sc-if>
+<span style="font-size: 13px; color: #C9A980">Sábados y domingos de 15 a 19 h. Si ninguno te sirve, lo coordinamos por WhatsApp.</span>
+</fieldset>
+</sc-if>
+<button type="submit" class="zg-press zg-btn" disabled="{{ sending }}" style="margin-top: 6px; background: #F07800; color: #241105; border: 0; font: inherit; font-weight: 600; font-size: 17px; padding: 16px 28px; border-radius: 999px; cursor: pointer">{{ sendLabel }}</button>
+</form>
+</sc-if>
+<sc-if value="{{ sent }}" hint-placeholder-val="{{ false }}">
+<div role="status" style="display: flex; flex-direction: column; align-items: center; gap: 18px; text-align: center; animation: zgpop 600ms cubic-bezier(.16,1,.3,1) both">
+<svg aria-hidden="true" width="88" height="88" viewBox="0 0 88 88"><circle cx="44" cy="44" r="40" fill="#F07800"></circle><path d="M27 45l11 11 23-24" fill="none" stroke="#241105" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="48" style="animation: zgcheck 500ms 250ms cubic-bezier(.65,0,.35,1) both"></path></svg>
+<span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 34px; letter-spacing: -0.02em">Nos vemos en el estudio.</span>
+<sc-if value="{{ vBookedOn }}" hint-placeholder-val="{{ false }}"><p style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 20px; color: #F5A623">{{ vBookedText }}</p><a class="zg-press zg-ghost" href="{{ vCalUrl }}" target="_blank" rel="noopener" style="border: 1px solid rgba(240, 224, 192, 0.4); color: #F0E0C0; text-decoration: none; font-weight: 500; font-size: 15px; padding: 11px 20px; border-radius: 999px">Agregarla a mi calendario</a></sc-if>
+<p style="margin: 0; color: #F0E0C0; max-width: 32ch">{{ sentText }}</p>
+<a class="zg-press zg-btn" href="{{ waNow }}" target="_blank" rel="noopener" style="background: #F07800; color: #241105; text-decoration: none; font-weight: 600; font-size: 16px; padding: 14px 24px; border-radius: 999px">Escribinos ahora por WhatsApp</a>
+<button type="button" class="zg-press zg-ghost" onClick="{{ reset }}" style="background: transparent; border: 1px solid rgba(240, 224, 192, 0.4); color: #F0E0C0; font: inherit; font-weight: 500; padding: 12px 22px; border-radius: 999px; cursor: pointer">Volver al formulario</button>
+</div>
+</sc-if>
+</div>
+</section>
+
+<footer style="border-top: 1px solid rgba(240, 224, 192, 0.14)">
+<div class="zg-sec" style="max-width: 1320px; margin: 0 auto; box-sizing: border-box; padding: 36px 40px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 20px; font-size: 15px; color: #C9A980">
+<img src="/assets/web/logo-zeche-gruv-160.webp" alt="ZECHE GRUV" style="height: 32px; width: auto">
+<div style="display: flex; gap: 24px; flex-wrap: wrap">
+<a class="zg-link" href="https://www.instagram.com/zechegruv/" target="_blank" rel="noopener" style="color: #C9A980; text-decoration: none">Instagram</a>
+<a class="zg-link" href="https://open.spotify.com/artist/0yIGrWjWqKnM7qJ0uyImij" target="_blank" rel="noopener" style="color: #C9A980; text-decoration: none">Spotify</a>
+<a class="zg-link" href="/portal/" style="color: #C9A980; text-decoration: none">Acceso artistas</a>
+<span class="zg-langs" aria-label="Idioma"><a class="zg-link" href="/" hreflang="es" lang="es" aria-current="{{ langEs }}" style="{{ langEsStyle }}">ES</a><a class="zg-link" href="/en/" hreflang="en" lang="en" aria-current="{{ langEn }}" style="{{ langEnStyle }}">EN</a><a class="zg-link" href="/pt/" hreflang="pt" lang="pt" aria-current="{{ langPt }}" style="{{ langPtStyle }}">PT</a></span>
+<a class="zg-link" href="/privacidad/" style="color: #C9A980; text-decoration: none">Privacidad</a>
+<span>© 2026 ZECHE GRUV</span>
+</div>
+</div>
+</footer>
+
+<a class="{{ floatCls }}" href="#visita" aria-label="Reservá tu visita"><img src="/assets/web/sol-160.webp" alt="" aria-hidden="true" class="zg-sun"><span class="zg-float-lbl">Reservá tu visita</span></a>
+
+<sc-if value="{{ aqOn }}" hint-placeholder-val="{{ false }}">
+<div class="{{ aqCls }}" role="dialog" aria-modal="true" aria-labelledby="aq-title" onKeyDown="{{ aqKey }}">
+<div class="aq-back" onClick="{{ aqClose }}"></div>
+<div class="aq-card">
+<img class="aq-sun" src="/assets/web/sol-160.webp" alt="" aria-hidden="true">
+<div class="aq-top"><span class="aq-eb">Tu ADN sonoro</span><button type="button" class="aq-x" onClick="{{ aqClose }}" aria-label="Cerrar"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path></svg></button></div>
+<div class="aq-bar" aria-hidden="true"><i style="{{ aqBar }}"></i></div>
+<sc-if value="{{ aqAsk }}" hint-placeholder-val="{{ true }}">
+<div class="aq-q" key="{{ aqStepKey }}">
+<span class="aq-num">{{ aqNum }}</span>
+<h2 id="aq-title">{{ aqQ }}</h2>
+<div class="aq-opts" role="group" aria-labelledby="aq-title">
+<sc-for list="{{ aqOpts }}" as="o" hint-placeholder-count="3"><button type="button" class="{{ o.cls }}" aria-pressed="{{ o.pressed }}" onClick="{{ o.pick }}">{{ o.label }}</button></sc-for>
+</div>
+<sc-if value="{{ aqOtherOn }}" hint-placeholder-val="{{ false }}"><input class="aq-other" type="text" maxlength="80" placeholder="¿Cuál o cuáles?" aria-label="Otros géneros" value="{{ aqOther }}" onInput="{{ aqOnOther }}"></sc-if>
+<div class="aq-nav">
+<sc-if value="{{ aqHasPrev }}" hint-placeholder-val="{{ false }}"><button type="button" class="aq-prev" onClick="{{ aqPrev }}">← Anterior</button></sc-if>
+<sc-if value="{{ aqMulti }}" hint-placeholder-val="{{ false }}"><button type="button" class="zg-press aq-next" onClick="{{ aqNext }}" disabled="{{ aqNextOff }}">Seguir</button></sc-if>
+</div>
+</div>
+</sc-if>
+<sc-if value="{{ aqDone }}" hint-placeholder-val="{{ false }}">
+<div class="aq-res">
+<p class="aq-line">{{ aqLine }}</p>
+<span class="aq-num">Tu punto de partida</span>
+<h2 id="aq-title">{{ aqPack }}</h2>
+<p class="aq-why">{{ aqWhy }}</p>
+<p class="aq-note">En la primera visita lo charlamos con mate de por medio: escuchamos tu idea y vemos juntos qué te conviene.</p>
+<button type="button" class="zg-press aq-cta" onClick="{{ aqGoVisit }}">{{ aqCta }}</button>
+<div class="aq-nav"><button type="button" class="aq-prev" onClick="{{ aqSeePacks }}">Ver los tres packs</button><button type="button" class="aq-prev" onClick="{{ aqRestart }}">Hacerlo de nuevo</button></div>
+</div>
+</sc-if>
+</div>
+</div>
+</sc-if>
+<sc-if value="{{ demoOn }}" hint-placeholder-val="{{ false }}">
+<div class="{{ demoCls }}" role="dialog" aria-modal="true" aria-labelledby="pd-title" onKeyDown="{{ demoKey }}">
+<div class="pd-back" onClick="{{ demoClose }}"></div>
+<div class="pd-sheet">
+<div class="pd-side">
+<h2 id="pd-title">Así es tu portal.</h2>
+<p>Lo usás desde el celular o la compu, con cualquiera de los tres packs.</p>
+<ol class="pd-chs">
+<sc-for list="{{ demoChs }}" as="c" hint-placeholder-count="4"><li><button type="button" class="{{ c.cls }}" onClick="{{ c.pick }}" aria-current="{{ c.cur }}"><span class="pd-num">{{ c.n }}</span><b>{{ c.t }}</b><small><span>{{ c.d }}</span></small><span class="pd-track" aria-hidden="true"><i></i></span></button></li></sc-for>
+</ol>
+<div class="pd-foot">
+<button type="button" class="zg-press pd-cta" onClick="{{ demoGo }}">Reservá tu visita</button>
+<button type="button" class="zg-press pd-pause" onClick="{{ demoToggle }}">{{ demoPlayLabel }}</button>
+</div>
+</div>
+<div class="pd-stage">
+<button type="button" class="pd-x" ref="{{ demoXRef }}" onClick="{{ demoClose }}" aria-label="Cerrar la demostración"><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg></button>
+<div class="pd-dev" aria-hidden="true">
+<div class="pd-bar"><img class="sun" src="/assets/web/sol-160.webp" alt=""><span>Portal de artistas</span><img class="ava" src="/assets/web/rouse-bby.webp" alt="Rouse bby"></div>
+<div class="pd-tabs"><span class="{{ demoTab0 }}">Canciones</span><span class="{{ demoTab1 }}">Letras</span><span>Archivos</span></div>
+<div class="pd-screen" key="{{ demoK }}">
+<sc-if value="{{ demoC0 }}" hint-placeholder-val="{{ true }}">
+<div class="pd-card">
+<div class="pd-ct">Tus canciones<small>2 en proceso</small></div>
+<div class="pd-song"><div class="pd-song-top"><b>Tu próximo single</b><span>Mezcla</span></div>
+<ol class="pd-stg"><li class="is-done" style="--d: 300ms"><span>Estructura</span></li><li class="is-done" style="--d: 450ms"><span>Producción</span></li><li class="is-done" style="--d: 600ms"><span>Grabación</span></li><li class="is-cur" style="--d: 750ms"><span>Mezcla</span></li><li><span>Master</span></li></ol></div>
+<div class="pd-song"><div class="pd-song-top"><b>Tu segundo tema</b><span>Grabación</span></div>
+<ol class="pd-stg"><li class="is-done" style="--d: 1000ms"><span>Estructura</span></li><li class="is-done" style="--d: 1150ms"><span>Producción</span></li><li class="is-cur" style="--d: 1300ms"><span>Grabación</span></li><li><span>Mezcla</span></li><li><span>Master</span></li></ol>
+<p class="pd-when" style="margin-bottom: 0">Próxima sesión: el jueves</p></div>
+</div>
+<div class="pd-toast"><img src="/assets/web/sol-160.webp" alt="" style="width: 20px; height: 20px">Tu mezcla está lista para escuchar</div>
+</sc-if>
+<sc-if value="{{ demoC1 }}" hint-placeholder-val="{{ false }}">
+<div class="pd-sheet2">
+<div><div class="pd-eyebrow">Mezcla lista</div><div class="pd-title">Tu próximo single</div><div class="pd-file">mix v1 · 2:58</div></div>
+<div class="pd-player">
+<div class="pd-wave"><i style="height: 18px"></i><i style="height: 26px"></i><i style="height: 22px"></i><i style="height: 34px"></i><i style="height: 40px"></i><i style="height: 32px"></i><i style="height: 46px"></i><i style="height: 40px"></i><i style="height: 26px"></i><i style="height: 30px"></i><i style="height: 42px"></i><i style="height: 48px"></i><i style="height: 38px"></i><i style="height: 28px"></i><i style="height: 34px"></i><i style="height: 46px"></i><i style="height: 40px"></i><i style="height: 30px"></i><i style="height: 20px"></i><i style="height: 28px"></i><i style="height: 36px"></i><i style="height: 44px"></i><i style="height: 34px"></i><i style="height: 24px"></i><i style="height: 18px"></i><i style="height: 28px"></i><i style="height: 36px"></i><i style="height: 24px"></i><i style="height: 16px"></i><i style="height: 12px"></i><i style="height: 20px"></i><i style="height: 30px"></i><i style="height: 26px"></i><i style="height: 18px"></i><i style="height: 22px"></i><i style="height: 32px"></i><i style="height: 40px"></i><i style="height: 30px"></i><i style="height: 22px"></i><i style="height: 16px"></i><i style="height: 24px"></i><i style="height: 30px"></i><i style="height: 20px"></i><i style="height: 14px"></i><div class="pd-played"><i style="height: 18px"></i><i style="height: 26px"></i><i style="height: 22px"></i><i style="height: 34px"></i><i style="height: 40px"></i><i style="height: 32px"></i><i style="height: 46px"></i><i style="height: 40px"></i><i style="height: 26px"></i><i style="height: 30px"></i><i style="height: 42px"></i><i style="height: 48px"></i><i style="height: 38px"></i><i style="height: 28px"></i><i style="height: 34px"></i><i style="height: 46px"></i><i style="height: 40px"></i><i style="height: 30px"></i><i style="height: 20px"></i><i style="height: 28px"></i><i style="height: 36px"></i><i style="height: 44px"></i><i style="height: 34px"></i><i style="height: 24px"></i><i style="height: 18px"></i><i style="height: 28px"></i><i style="height: 36px"></i><i style="height: 24px"></i><i style="height: 16px"></i><i style="height: 12px"></i><i style="height: 20px"></i><i style="height: 30px"></i><i style="height: 26px"></i><i style="height: 18px"></i><i style="height: 22px"></i><i style="height: 32px"></i><i style="height: 40px"></i><i style="height: 30px"></i><i style="height: 22px"></i><i style="height: 16px"></i><i style="height: 24px"></i><i style="height: 30px"></i><i style="height: 20px"></i><i style="height: 14px"></i></div><span class="pd-pin"><b>1</b></span><span class="pd-head"></span></div>
+<div class="pd-times"><span>0:41</span><span>2:58</span></div>
+</div>
+<div class="pd-mark">Dejar una modificación en <b>0:41</b></div>
+<div class="pd-note"><span class="n">1</span><span class="t">0:41</span><span class="pd-type">Subir un poco la voz en el estribillo</span></div>
+</div>
+</sc-if>
+<sc-if value="{{ demoC2 }}" hint-placeholder-val="{{ false }}">
+<div class="pd-sheet2" style="animation: none">
+<div><div class="pd-eyebrow">Mezcla lista</div><div class="pd-title">Tu próximo single</div><div class="pd-file">2 modificaciones hechas · mix v2</div></div>
+<div class="pd-mini"><div><span style="font-family: 'Geist Mono', monospace; font-size: 12px; color: #F5A623">0:41</span>Subir un poco la voz en el estribillo</div><div><span style="font-family: 'Geist Mono', monospace; font-size: 12px; color: #F5A623">1:58</span>Que el bajo entre más fuerte acá</div></div>
+<div class="pd-approve">
+<div class="pd-btn">Aprobar la mezcla</div>
+<div class="pd-ok"><svg width="44" height="44" viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r="20"></circle><path d="M13 22.5l6 6 12-13" fill="none" stroke="#241105" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"></path></svg><b>Mezcla aprobada</b><span>Tu canción pasa al master. Te avisamos cuando esté.</span></div>
+</div>
+</div>
+</sc-if>
+<sc-if value="{{ demoC3 }}" hint-placeholder-val="{{ false }}">
+<div class="pd-card">
+<div class="pd-lt-head"><span class="pd-lt-tag">Estribillo</span><span class="pd-tp"><span>−</span><b>+1</b><span>+</span></span></div>
+<div class="pd-lc">
+<div class="c"><span class="c1"><span style="animation-delay: 400ms">Am</span>       <span style="animation-delay: 700ms">F</span>          <span style="animation-delay: 1000ms">C</span></span><span class="c2">A#m      F#         C#</span></div>
+<div class="l">Vuelvo a la esquina de siempre</div>
+<div class="c"><span class="c1"><span style="animation-delay: 1400ms">G</span>          <span style="animation-delay: 1700ms">Am</span></span><span class="c2">G#         A#m</span></div>
+<div class="l">con la canción en el bolsillo</div>
+</div>
+<p class="pd-when">Escribís arriba de cada verso y transponés de a medio tono.</p>
+</div>
+</sc-if>
+</div>
+</div>
+</div>
+</div>
+</div>
+</sc-if>
+
+<div class="zg-grain" aria-hidden="true" style="position: absolute; inset: 0"></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":8500}}'>
+/* La lógica está en src/logic.js */
+</script>
+</body>
+</html>

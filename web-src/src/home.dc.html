@@ -252,12 +252,81 @@ a{color:#F5A623}a:hover{color:#FFF4DC}
 /* Celu: los packs se deslizan de costado (arranca en el más elegido) */
 .pk-dots{display:none}
 .zg-visit-h{animation:zgfade 380ms cubic-bezier(.16,1,.3,1) both}
+@media (min-width:761px) and (max-width:1100px){.cg-grid{grid-template-columns:repeat(3,minmax(0,1fr)) !important}.cg-grid>:last-child{grid-column:1 / -1}.cg-grid img{height:200px !important}}
+@media (max-width:760px){.cp-card{grid-template-columns:1fr !important}.cp-shot{margin:0 16px !important}}
+@media (min-width:761px) and (max-width:1100px){.cp-txt{padding:32px 28px !important;gap:14px !important}.cp-h{font-size:36px !important}.cp-txt>p{font-size:16px !important}
+.st-grid{grid-template-columns:repeat(3,minmax(0,1fr)) !important;grid-auto-rows:200px !important;gap:12px !important}.st-grid>*{grid-column:auto !important;grid-row:auto !important}.st-grid>.st-sala{grid-column:1 / 3 !important;grid-row:1 / 3 !important}.st-grid>.st-num:last-child{grid-column:2 / 4 !important}.st-grid>.st-quote{padding:22px !important}.st-grid>.st-quote p{font-size:15.5px !important}.st-grid>.st-num{padding:22px !important}.st-grid .zg-count{font-size:56px !important}}
+/* Etapas del proceso: el indicador se desliza (transform) y el texto cruza sin mover la página */
+.zg-stp{position:relative;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;margin-top:8px;padding:4px;background:#241105;border:1px solid rgba(240,224,192,.14);border-radius:20px}
+.zg-stp-k{position:absolute;top:4px;bottom:4px;left:4px;width:calc((100% - 20px) / 4);border-radius:16px;background:#4B2509;box-shadow:inset 0 1px 0 rgba(255,244,220,.07);transition:transform 560ms cubic-bezier(.23,1,.32,1);will-change:transform}
+.zg-stp-b{position:relative;z-index:1;display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-height:76px;padding:14px;border:0;border-radius:16px;background:transparent;font:inherit;font-weight:600;font-size:15.5px;line-height:1.2;text-align:left;cursor:pointer;transition:color 300ms cubic-bezier(.23,1,.32,1),transform 160ms cubic-bezier(.23,1,.32,1)}
+.zg-stp-b:active{transform:scale(.97)}
+.zg-stp-n{font-family:'Geist Mono',monospace;font-size:12px;font-weight:500;color:#F5A623}
+.zg-stp-p{display:grid;padding:18px 4px 0}
+.zg-stp-p>p{grid-area:1/1;margin:0;font-size:17px;line-height:1.55;color:#C9A980;max-width:46ch;opacity:0;transform:translateY(10px);visibility:hidden;transition:opacity 260ms cubic-bezier(.23,1,.32,1),transform 420ms cubic-bezier(.23,1,.32,1),visibility 0s linear 260ms}
+.zg-stp-p>p.on{opacity:1;transform:none;visibility:visible;transition:opacity 380ms cubic-bezier(.23,1,.32,1) 90ms,transform 520ms cubic-bezier(.23,1,.32,1) 90ms,visibility 0s}
+@media (prefers-reduced-motion:reduce){.zg-stp-k,.zg-stp-p>p{transition:none !important}}
+/* Ritmo vertical: menos aire entre secciones en tablet y celu */
+@media (max-width:1100px){:root{--py:96px;--py2:88px}}
+@media (max-width:760px){
+:root{--py:64px;--py2:56px}
+.zg-stp-b{min-height:64px;padding:10px 8px;font-size:13px;gap:4px}
+.zg-stp-n{font-size:11px}
+.zg-stp-p>p{font-size:15.5px}
+/* Estudio: foto + frase a lo ancho, +200 y +60 lado a lado */
+.st-grid{grid-template-columns:1fr 1fr !important;grid-auto-rows:auto !important;gap:10px !important}
+.st-grid>*{grid-column:auto !important;grid-row:auto !important}
+.st-grid>.st-sala{grid-column:1 / -1 !important;height:230px}
+.st-grid>.st-quote{grid-column:1 / -1 !important;padding:22px !important;gap:16px}
+.st-grid>.st-quote p{font-size:16px !important}
+.st-grid>.st-num{padding:18px !important;min-height:132px}
+.st-grid .zg-count{font-size:48px !important}
+.st-grid>.st-num>span:last-child{font-size:14px !important;line-height:1.3}
+.st-grid>.st-tec{display:none}
+/* Reseñas: una frase y los nombres en una fila que se desliza */
+.zg-rev{gap:18px !important}
+.zg-rev .zg-sun{width:40px !important;height:40px !important}
+.zg-quote{font-size:27px !important;min-height:3.4em !important}
+.zg-revnames{flex-wrap:nowrap !important;justify-content:flex-start !important;overflow-x:auto;max-width:calc(100% + 40px);margin:0 -20px;padding:0 20px 4px;scrollbar-width:none}
+.zg-revnames::-webkit-scrollbar{display:none}
+.zg-revnames>*{flex-shrink:0}
+/* ZG Camp compacto */
+.cp-txt{padding:26px 22px 8px !important;gap:12px !important}
+.cp-h{font-size:32px !important}
+.cp-txt>p{font-size:15.5px !important}
+.cp-chips{flex-wrap:nowrap !important;overflow-x:auto;margin:0 -22px;padding:0 22px;scrollbar-width:none}
+.cp-chips::-webkit-scrollbar{display:none}
+.cp-chips>span{flex-shrink:0;font-size:13px !important}
+.cp-ctas{flex-wrap:nowrap !important;gap:8px !important}
+.cp-ctas>a{font-size:14.5px !important;padding:12px 16px !important;white-space:nowrap}
+.cp-shot{display:none}
+.zg-wf{gap:2px !important;height:120px !important;overflow:hidden}
+.zg-wf>span{max-height:120px}
+.pk-portal .pp-song{display:none}
+.cg-grid img{height:190px !important}
+.cg-grid>*{flex-basis:70% !important}
+}
+/* Packs en celu: nombre, info y botón entran juntos en pantalla */
+@media (max-width:900px){
+.pk-card{padding:22px 20px !important;gap:10px !important}
+.pk-card h3{font-size:30px !important}
+.pk-card [style*="font-size: 54px"]{font-size:40px !important}
+.pk-card>p{font-size:15px !important}
+.pk-card ul{gap:5px !important}
+.pk-li{font-size:14px;line-height:1.35}
+.pk-li svg{margin-top:2px}
+.pk-card button[style*="padding: 15px"]{padding:13px 20px !important;margin-top:8px !important}
+}
+@media (min-width:761px) and (max-width:1100px){.zg-quote{font-size:38px !important}}
+.zg-quote{font-size:40px !important}
+.zg-rev{padding-top:calc(var(--py, 128px) * .7) !important;padding-bottom:calc(var(--py, 128px) * .7) !important;gap:28px !important}
+@media (max-width:760px){.zg-quote{font-size:27px !important}}
 /* Celu: la galería de los camps se desliza de costado en vez de apilarse */
 @media (max-width:760px){
-.cg-grid{display:flex !important;gap:10px !important;overflow-x:auto;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;scrollbar-width:none;padding:0 20px 4px !important;scroll-padding:0 20px}
+.cg-grid{display:flex !important;gap:10px !important;overflow-x:auto;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;scrollbar-width:none;margin:0 !important;padding:16px !important;scroll-padding:0 16px}
 .cg-grid::-webkit-scrollbar{display:none}
 .cg-grid>*{flex:0 0 78%;scroll-snap-align:start;grid-row:auto !important;grid-column:auto !important}
-.cg-grid img{height:300px !important;min-height:0 !important}
+.cg-grid img{height:240px !important;min-height:0 !important}
 .cg-grid figure>span{flex:none !important}
 }
 @media (max-width:900px){
@@ -730,18 +799,21 @@ header nav .zg-btn{padding:10px 15px !important;font-size:14px !important}
 
 
 <section id="proceso" style="background: #2E1607; margin-top: 64px">
-<div class="zg-sec" style="max-width: 1320px; margin: 0 auto; box-sizing: border-box; padding: 112px 40px; display: flex; flex-wrap: wrap; gap: 64px; align-items: flex-start">
+<div class="zg-sec" style="max-width: 1320px; margin: 0 auto; box-sizing: border-box; padding: var(--py2, 112px) 40px; display: flex; flex-wrap: wrap; gap: 64px; align-items: flex-start">
 <div class="zg-rv" style="flex: 1 1 420px; min-width: 0; display: flex; flex-direction: column; gap: 24px">
 <h2 class="zg-big" style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 64px; line-height: 0.98; letter-spacing: -0.03em">La canción nace en el estudio.</h2>
 <p style="margin: 0; font-size: 19px; color: #F0E0C0; max-width: 40ch">Cuatro sesiones al mes, una por semana. Venís con una idea, una frase o solo con ganas: la armamos juntos, desde cero.</p>
-<ol style="margin: 8px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column">
+<div class="zg-stp" role="tablist" aria-label="Etapas de tu canción">
+<span aria-hidden="true" class="zg-stp-k" style="{{ stepKnob }}"></span>
 <sc-for list="{{ steps }}" as="s" hint-placeholder-count="4">
-<li style="border-top: 1px solid rgba(240, 224, 192, 0.14)">
-<button type="button" class="zg-step" onClick="{{ s.pick }}" aria-expanded="{{ s.expanded }}" style="{{ s.btnStyle }}"><span style="font-family: 'Geist Mono', monospace; color: #F5A623; width: 28px; flex-shrink: 0">{{ s.num }}</span><span style="flex: 1; font-weight: 600">{{ s.title }}</span><span aria-hidden="true" style="{{ s.iconStyle }}">+</span></button>
-<div class="{{ s.accClass }}"><div><p style="margin: 0; padding: 0 0 20px 48px; color: #C9A980; font-size: 16px; max-width: 46ch">{{ s.text }}</p></div></div>
-</li>
+<button type="button" role="tab" class="zg-stp-b" onClick="{{ s.pick }}" aria-selected="{{ s.expanded }}" style="{{ s.btnStyle }}"><span class="zg-stp-n">{{ s.num }}</span><span>{{ s.title }}</span></button>
 </sc-for>
-</ol>
+</div>
+<div class="zg-stp-p" role="tabpanel">
+<sc-for list="{{ steps }}" as="s" hint-placeholder-count="4">
+<p class="{{ s.accClass }}" aria-hidden="{{ s.hidden }}">{{ s.text }}</p>
+</sc-for>
+</div>
 </div>
 <div class="zg-rv" style="position: relative; flex: 1 1 460px; min-width: 0; background: #241105; border: 1px solid rgba(240, 224, 192, 0.14); border-radius: 24px; padding: 32px; box-sizing: border-box; display: flex; flex-direction: column; gap: 24px; box-shadow: 0 30px 80px rgba(12, 5, 1, 0.4)">
 <div style="display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap">
@@ -766,7 +838,7 @@ header nav .zg-btn{padding:10px 15px !important;font-size:14px !important}
 <a class="zg-press zg-ava" href="/artistas/rouse-bby.html" target="_blank" rel="noopener" aria-label="Conocé a Rouse bby" style="position: relative; flex-shrink: 0; width: 56px; height: 56px; display: block; border-radius: 50%"><img src="/assets/web/rouse-bby.webp" alt="Rouse bby" style="width: 56px; height: 56px; border-radius: 50%; object-fit: cover; display: block"><svg role="img" aria-label="Artista verificada de ZECHE GRUV" width="20" height="20" viewBox="0 0 20 20" style="position: absolute; right: -2px; bottom: -2px"><circle cx="10" cy="10" r="9" fill="#F07800" stroke="#241105" stroke-width="2.5"></circle><path d="M6.2 10.3l2.5 2.5 5-5.2" fill="none" stroke="#241105" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg></a>
 </div>
 </div>
-<div aria-hidden="true" style="height: 150px; display: flex; align-items: center; gap: 4px">
+<div class="zg-wf" aria-hidden="true" style="height: 150px; display: flex; align-items: center; gap: 4px">
 <sc-for list="{{ bars }}" as="b" hint-placeholder-count="56">
 <span style="{{ b.style }}"></span>
 </sc-for>
@@ -780,14 +852,14 @@ header nav .zg-btn{padding:10px 15px !important;font-size:14px !important}
 </div>
 </section>
 
-<section aria-label="Lo que dicen los artistas" class="zg-sec" style="max-width: 1100px; margin: 0 auto; box-sizing: border-box; padding: 128px 40px; display: flex; flex-direction: column; align-items: center; gap: 40px; text-align: center">
+<section aria-label="Lo que dicen los artistas" class="zg-sec zg-rev" style="max-width: 1100px; margin: 0 auto; box-sizing: border-box; padding: var(--py, 128px) 40px; display: flex; flex-direction: column; align-items: center; gap: 40px; text-align: center">
 <img class="zg-sun" src="/assets/web/sol-160.webp" alt="" aria-hidden="true" style="width: 64px; height: 64px">
-<blockquote aria-live="polite" style="{{ quoteStyle }}">“{{ quote.text }}”</blockquote>
+<blockquote class="zg-quote" aria-live="polite" style="{{ quoteStyle }}">“{{ quote.text }}”</blockquote>
 <div style="display: flex; flex-direction: column; gap: 2px">
 <span style="font-weight: 600; font-size: 18px">{{ quote.name }}</span>
 <span style="color: #C9A980; font-size: 15px">Artista, reseña de 5 estrellas en Google</span>
 </div>
-<div role="group" aria-label="Elegí una reseña" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 8px">
+<div class="zg-revnames" role="group" aria-label="Elegí una reseña" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 8px">
 <sc-for list="{{ quotes }}" as="q" hint-placeholder-count="6">
 <button type="button" class="zg-press" onClick="{{ q.pick }}" aria-pressed="{{ q.pressed }}" style="{{ q.style }}"><span aria-hidden="true" style="{{ q.fill }}"></span><span style="position: relative">{{ q.name }}</span></button>
 </sc-for>
@@ -796,7 +868,7 @@ header nav .zg-btn{padding:10px 15px !important;font-size:14px !important}
 
 <!-- Roster oculto hasta tener la lista completa de artistas (showRoster en el script). -->
 <sc-if value="{{ showRoster }}" hint-placeholder-val="{{ false }}">
-<section id="artistas" aria-label="Artistas con los que colaboramos" class="zg-sec" style="max-width: 1320px; margin: 0 auto; box-sizing: border-box; padding: 0 40px 128px; display: flex; flex-direction: column; gap: 32px">
+<section id="artistas" aria-label="Artistas con los que colaboramos" class="zg-sec" style="max-width: 1320px; margin: 0 auto; box-sizing: border-box; padding: 0 40px var(--py, 128px); display: flex; flex-direction: column; gap: 32px">
 <div class="zg-rv" style="display: flex; flex-direction: column; gap: 10px; max-width: 640px">
 <h2 class="zg-big" style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 64px; line-height: 0.98; letter-spacing: -0.03em">Artistas con los que colaboramos.</h2>
 <p style="margin: 0; font-size: 17px; color: #C9A980">{{ rosterCount }}. Tocá un nombre y escuchalo en Spotify.</p>
@@ -809,7 +881,7 @@ header nav .zg-btn{padding:10px 15px !important;font-size:14px !important}
 
 <span id="artists" aria-hidden="true" style="display: block; position: relative; top: -84px"></span>
 <section id="lanzamientos" style="background: #2E1607">
-<div class="zg-sec cr-sec" ref="{{ crSecRef }}" style="max-width: 1320px; margin: 0 auto; box-sizing: border-box; padding: 112px 40px; display: flex; flex-direction: column; gap: 40px">
+<div class="zg-sec cr-sec" ref="{{ crSecRef }}" style="max-width: 1320px; margin: 0 auto; box-sizing: border-box; padding: var(--py2, 112px) 40px; display: flex; flex-direction: column; gap: 40px">
 <div class="{{ ttCls }}" ref="{{ ttRef }}" aria-hidden="true">
 <div class="tt-deck">
 <span class="tt-grain"></span>
@@ -868,59 +940,59 @@ header nav .zg-btn{padding:10px 15px !important;font-size:14px !important}
 </div>
 </section>
 
-<section id="estudio" class="zg-sec" style="max-width: 1320px; margin: 0 auto; box-sizing: border-box; padding: 128px 40px 0; display: flex; flex-direction: column; gap: 48px">
+<section id="estudio" class="zg-sec" style="max-width: 1320px; margin: 0 auto; box-sizing: border-box; padding: var(--py, 128px) 40px 0; display: flex; flex-direction: column; gap: 48px">
 <h2 class="zg-big zg-rv" style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 76px; line-height: 0.98; letter-spacing: -0.03em; max-width: 14ch">Un estudio que se siente casa.</h2>
-<div onPointerMove="{{ spot }}" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); grid-auto-rows: 260px; gap: 16px">
-<div class="zg-rv" style="grid-column: span 2; grid-row: span 2; overflow: hidden; border-radius: 20px"><img loading="lazy" decoding="async" class="zg-zoom" src="/assets/web/estudio-sala.webp" srcset="/assets/web/estudio-sala-700.webp 700w, /assets/web/estudio-sala.webp 1400w" sizes="(max-width: 760px) 92vw, 600px" alt="La sala de ZECHE GRUV con guitarras, monitores y la silla naranja" style="width: 100%; height: 100%; object-fit: cover; display: block"></div>
-<div class="zg-rv zg-bento" style="background: #4B2509; border-radius: 20px; padding: 32px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between">
+<div class="st-grid" onPointerMove="{{ spot }}" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); grid-auto-rows: 260px; gap: 16px">
+<div class="zg-rv st-sala" style="grid-column: span 2; grid-row: span 2; overflow: hidden; border-radius: 20px"><img loading="lazy" decoding="async" class="zg-zoom" src="/assets/web/estudio-sala.webp" srcset="/assets/web/estudio-sala-700.webp 700w, /assets/web/estudio-sala.webp 1400w" sizes="(max-width: 760px) 92vw, 600px" alt="La sala de ZECHE GRUV con guitarras, monitores y la silla naranja" style="width: 100%; height: 100%; object-fit: cover; display: block"></div>
+<div class="zg-rv zg-bento st-quote" style="background: #4B2509; border-radius: 20px; padding: 32px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between">
 <p style="margin: 0; font-size: 18px; line-height: 1.5; color: #F0E0C0">Arranqué con pocos recursos y un sueño gigante. La energía para hacerlo realidad nunca frenó, y hoy sigue intacta.</p>
 <span style="display: flex; align-items: center; gap: 12px; font-family: 'Geist Mono', monospace; font-size: 13px; color: #C9A980"><img src="/assets/web/yaco-santana-120.webp" alt="Yaco Santana" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover; object-position: 50% 25%; border: 2px solid #F07800">Yaco Santana, fundador</span>
 </div>
-<div class="zg-rv zg-bento" style="background: #F5A623; color: #241105; border-radius: 20px; padding: 32px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-end; gap: 4px">
+<div class="zg-rv zg-bento st-num" style="background: #F5A623; color: #241105; border-radius: 20px; padding: 32px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-end; gap: 4px">
 <span class="zg-count" style="--to: 200; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 76px; line-height: 0.9; letter-spacing: -0.03em"><span class="zg-static">+200</span></span>
 <span style="font-size: 17px; font-weight: 500">artistas colaboraron con el sello</span>
 </div>
-<div class="zg-rv" style="overflow: hidden; border-radius: 20px"><img loading="lazy" decoding="async" class="zg-zoom" src="/assets/web/estudio-teclado.webp" srcset="/assets/web/estudio-teclado-700.webp 700w, /assets/web/estudio-teclado.webp 1200w" sizes="(max-width: 760px) 92vw, 320px" alt="Teclado y escritorio de producción con luz de ventana" style="width: 100%; height: 100%; object-fit: cover; display: block"></div>
-<div class="zg-rv zg-bento" style="background: #4B2509; border-radius: 20px; padding: 32px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-end; gap: 4px">
+<div class="zg-rv st-tec" style="overflow: hidden; border-radius: 20px"><img loading="lazy" decoding="async" class="zg-zoom" src="/assets/web/estudio-teclado.webp" srcset="/assets/web/estudio-teclado-700.webp 700w, /assets/web/estudio-teclado.webp 1200w" sizes="(max-width: 760px) 92vw, 320px" alt="Teclado y escritorio de producción con luz de ventana" style="width: 100%; height: 100%; object-fit: cover; display: block"></div>
+<div class="zg-rv zg-bento st-num" style="background: #4B2509; border-radius: 20px; padding: 32px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-end; gap: 4px">
 <span class="zg-count" style="--to: 60; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 76px; line-height: 0.9; letter-spacing: -0.03em; color: #F5A623"><span class="zg-static">+60</span></span>
 <span style="font-size: 17px; font-weight: 500; color: #F0E0C0">canciones publicadas con créditos del sello</span>
 </div>
 </div>
 </section>
 
-<section id="comunidad" style="padding: 128px 0 112px; display: flex; flex-direction: column; gap: 48px">
+<section id="comunidad" style="padding: var(--py, 128px) 0 var(--py2, 112px); display: flex; flex-direction: column; gap: 48px">
 <div class="zg-sec zg-rv" style="max-width: 1320px; width: 100%; margin: 0 auto; box-sizing: border-box; padding: 0 40px; display: flex; flex-direction: column; gap: 20px">
 <h2 class="zg-big" style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 76px; line-height: 0.98; letter-spacing: -0.03em">Nos juntamos a crear.</h2>
 <p style="margin: 0; font-size: 19px; color: #F0E0C0; max-width: 52ch">Campamentos de varios días con artistas de todos lados, y un escenario por mes para que te escuchen.</p>
 </div>
 <div class="zg-sec zg-rv" style="max-width: 1320px; width: 100%; margin: 0 auto; box-sizing: border-box; padding: 0 40px">
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr)); background: #F07800; color: #241105; border-radius: 28px; overflow: hidden">
-<div style="padding: 44px 40px; display: flex; flex-direction: column; justify-content: center; gap: 18px">
+<div class="cp-card" style="display: grid; grid-template-columns: 1fr 1fr; background: #F07800; color: #241105; border-radius: 28px; overflow: hidden">
+<div class="cp-txt" style="padding: 44px 40px; display: flex; flex-direction: column; justify-content: center; gap: 18px">
 <span style="align-self: flex-start; background: #241105; color: #F5A623; font-weight: 600; font-size: 14px; padding: 8px 14px; border-radius: 999px">El próximo, muy pronto</span>
-<h3 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 48px; line-height: 0.98; letter-spacing: -0.03em">ZG Camp: días enteros creando juntos.</h3>
+<h3 class="cp-h" style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 48px; line-height: 0.98; letter-spacing: -0.03em">ZG Camp: días enteros creando juntos.</h3>
 <p style="margin: 0; font-size: 18px; font-weight: 500; max-width: 42ch">En el primer camp nos juntamos artistas y productores de todos lados a hacer música a toda hora. De ahí salió TACÚ, una canción con 15 artistas.</p>
-<div style="display: flex; flex-wrap: wrap; gap: 8px"><span style="font-size: 14px; font-weight: 600; background: rgba(36, 17, 5, 0.14); padding: 7px 12px; border-radius: 999px">15 artistas en una canción</span><span style="font-size: 14px; font-weight: 600; background: rgba(36, 17, 5, 0.14); padding: 7px 12px; border-radius: 999px">Productores del sello</span><span style="font-size: 14px; font-weight: 600; background: rgba(36, 17, 5, 0.14); padding: 7px 12px; border-radius: 999px">Solo por invitación</span></div>
-<div style="margin-top: 6px; display: flex; flex-wrap: wrap; gap: 10px">
+<div class="cp-chips" style="display: flex; flex-wrap: wrap; gap: 8px"><span style="font-size: 14px; font-weight: 600; background: rgba(36, 17, 5, 0.14); padding: 7px 12px; border-radius: 999px">15 artistas en una canción</span><span style="font-size: 14px; font-weight: 600; background: rgba(36, 17, 5, 0.14); padding: 7px 12px; border-radius: 999px">Productores del sello</span><span style="font-size: 14px; font-weight: 600; background: rgba(36, 17, 5, 0.14); padding: 7px 12px; border-radius: 999px">Solo por invitación</span></div>
+<div class="cp-ctas" style="margin-top: 6px; display: flex; flex-wrap: wrap; gap: 10px">
 <a class="zg-press" href="https://open.spotify.com/album/6YmySpzsNXMuxekqcmdlGJ" target="_blank" rel="noopener" style="background: #241105; color: #FFF4DC; text-decoration: none; font-weight: 600; font-size: 16px; padding: 15px 26px; border-radius: 999px">Escuchá TACÚ</a>
 <a class="zg-press" href="{{ campWa }}" target="_blank" rel="noopener" style="border: 1.5px solid #241105; color: #241105; text-decoration: none; font-weight: 600; font-size: 16px; padding: 14px 24px; border-radius: 999px">Avisame del próximo</a>
 </div>
 </div>
-<div style="position: relative; min-height: 320px"><img src="/assets/web/camp-pantalla.webp" alt="Artistas armando un tema frente a la pantalla del estudio en el primer ZG Camp" loading="lazy" decoding="async" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 60%; display: block"></div>
+<div class="cp-shot" style="position: relative; min-height: 320px; margin: 16px 16px 0 0; border-radius: 20px; overflow: hidden"><img src="/assets/web/camp-pantalla.webp" alt="Artistas armando un tema frente a la pantalla del estudio en el primer ZG Camp" loading="lazy" decoding="async" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 60%; display: block"></div>
+<div class="cg-grid" style="grid-column: 1 / -1; padding: 16px; display: grid; grid-template-columns: 1fr 1fr 1fr 2fr; gap: 16px">
+<figure class="zg-rv" style="margin: 0; position: relative; overflow: hidden; border-radius: 20px"><img loading="lazy" decoding="async" class="zg-zoom" src="/assets/web/camp-mesa.webp" alt="Artistas compartiendo una mesa en el primer camp" style="width: 100%; height: 230px; object-fit: cover; display: block; object-position: 50% 70%"><figcaption style="position: absolute; left: 12px; bottom: 12px; font-size: 13px; font-weight: 600; color: #FFF4DC; background: rgba(36, 17, 5, 0.72); padding: 6px 11px; border-radius: 999px; backdrop-filter: blur(6px)">El primer ZG Camp</figcaption></figure>
+<figure class="zg-rv" style="margin: 0; position: relative; overflow: hidden; border-radius: 20px"><img loading="lazy" decoding="async" class="zg-zoom" src="/assets/web/camp-sesion-1.webp" alt="Sesión de producción durante el camp" style="width: 100%; height: 230px; object-fit: cover; display: block"></figure>
+<figure class="zg-rv" style="margin: 0; position: relative; overflow: hidden; border-radius: 20px"><img loading="lazy" decoding="async" class="zg-zoom" src="/assets/web/camp-sesion-2.webp" alt="Artistas descansando entre sesiones del camp" style="width: 100%; height: 230px; object-fit: cover; display: block"></figure>
+<figure class="zg-rv" style="margin: 0; position: relative; overflow: hidden; border-radius: 20px"><img loading="lazy" decoding="async" class="zg-zoom" src="/assets/web/evento-2-grupal.webp" srcset="/assets/web/evento-2-grupal-700.webp 700w, /assets/web/evento-2-grupal.webp 1400w" sizes="(max-width: 760px) 78vw, 640px" alt="Foto grupal de los artistas en el segundo evento de ZECHE GRUV" style="width: 100%; height: 230px; object-fit: cover; display: block; object-position: 50% 45%"><figcaption style="position: absolute; left: 12px; bottom: 12px; font-size: 13px; font-weight: 600; color: #FFF4DC; background: rgba(36, 17, 5, 0.72); padding: 6px 11px; border-radius: 999px; backdrop-filter: blur(6px)">Segundo evento</figcaption></figure>
+</div>
 </div>
 </div>
 <div class="zg-mq" style="overflow: hidden; border-top: 1px solid rgba(240, 224, 192, 0.14); border-bottom: 1px solid rgba(240, 224, 192, 0.14); padding: 18px 0; display: flex; flex-direction: column; gap: 14px">
 <div class="zg-marquee" aria-hidden="true" style="display: flex; width: max-content; gap: 36px; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 34px; letter-spacing: -0.02em; color: #F0E0C0; white-space: nowrap"><span>Open mic mensual</span><span style="color: #F07800">/</span><span>ZG Camp</span><span style="color: #F07800">/</span><span>4 shows en vivo</span><span style="color: #F07800">/</span><span>Open mic mensual</span><span style="color: #F07800">/</span><span>ZG Camp</span><span style="color: #F07800">/</span><span>4 shows en vivo</span><span style="color: #F07800">/</span><span>Open mic mensual</span><span style="color: #F07800">/</span><span>ZG Camp</span><span style="color: #F07800">/</span><span>4 shows en vivo</span><span style="color: #F07800">/</span><span>Open mic mensual</span><span style="color: #F07800">/</span><span>ZG Camp</span><span style="color: #F07800">/</span><span>4 shows en vivo</span><span style="color: #F07800">/</span><span>Open mic mensual</span><span style="color: #F07800">/</span><span>ZG Camp</span><span style="color: #F07800">/</span><span>4 shows en vivo</span><span style="color: #F07800">/</span><span>Open mic mensual</span><span style="color: #F07800">/</span><span>ZG Camp</span><span style="color: #F07800">/</span><span>4 shows en vivo</span><span style="color: #F07800">/</span></div>
 </div>
-<div class="zg-sec cg-grid" style="max-width: 1320px; width: 100%; margin: 0 auto; box-sizing: border-box; padding: 0 40px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 16px">
-<figure class="zg-rv" style="margin: 0; grid-row: span 2; display: flex; flex-direction: column; gap: 10px"><span style="display: block; overflow: hidden; border-radius: 20px; flex: 1"><img loading="lazy" decoding="async" class="zg-zoom" src="/assets/web/camp-mesa.webp" alt="Artistas compartiendo una mesa en el primer camp" style="width: 100%; height: 100%; min-height: 420px; object-fit: cover; display: block"></span><figcaption style="font-size: 15px; color: #C9A980">El primer ZECHE GRUV Camp</figcaption></figure>
-<span class="zg-rv" style="display: block; overflow: hidden; border-radius: 20px"><img loading="lazy" decoding="async" class="zg-zoom" src="/assets/web/camp-sesion-1.webp" alt="Sesión de producción durante el camp" style="width: 100%; height: 300px; object-fit: cover; display: block"></span>
-<span class="zg-rv" style="display: block; overflow: hidden; border-radius: 20px"><img loading="lazy" decoding="async" class="zg-zoom" src="/assets/web/camp-sesion-2.webp" alt="Artistas descansando entre sesiones del camp" style="width: 100%; height: 300px; object-fit: cover; display: block"></span>
-<figure class="zg-rv" style="margin: 0; grid-column: span 2; display: flex; flex-direction: column; gap: 10px"><span style="display: block; overflow: hidden; border-radius: 20px"><img loading="lazy" decoding="async" class="zg-zoom" src="/assets/web/evento-2-grupal.webp" srcset="/assets/web/evento-2-grupal-700.webp 700w, /assets/web/evento-2-grupal.webp 1400w" sizes="(max-width: 760px) 78vw, 640px" alt="Foto grupal de los artistas en el segundo evento de ZECHE GRUV" style="width: 100%; height: 420px; object-fit: cover; object-position: 50% 45%; display: block"></span><figcaption style="font-size: 15px; color: #C9A980">Segundo evento de ZECHE GRUV</figcaption></figure>
-</div>
 </section>
 
 <section id="planes" style="background: #2E1607">
-<div class="zg-sec" style="max-width: 1320px; margin: 0 auto; box-sizing: border-box; padding: 112px 40px; display: flex; flex-direction: column; gap: 44px">
+<div class="zg-sec" style="max-width: 1320px; margin: 0 auto; box-sizing: border-box; padding: var(--py2, 112px) 40px; display: flex; flex-direction: column; gap: 44px">
 <div class="zg-rv" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 28px">
 <div style="display: flex; flex-direction: column; gap: 16px; max-width: 640px">
 <span style="font-family: 'Geist Mono', monospace; font-size: 13px; letter-spacing: 0.16em; text-transform: uppercase; color: #F5A623">Packs mensuales</span>
@@ -1058,7 +1130,7 @@ header nav .zg-btn{padding:10px 15px !important;font-size:14px !important}
 </div>
 </section>
 
-<section id="visita" class="zg-sec" style="max-width: 1320px; margin: 0 auto; box-sizing: border-box; padding: 128px 40px 112px; display: flex; flex-wrap: wrap; gap: 64px; align-items: flex-end">
+<section id="visita" class="zg-sec" style="max-width: 1320px; margin: 0 auto; box-sizing: border-box; padding: var(--py, 128px) 40px var(--py2, 112px); display: flex; flex-wrap: wrap; gap: 64px; align-items: flex-end">
 <div class="zg-rv" style="flex: 1 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 28px">
 <h2 class="zg-noise" style="margin: 0; font-family: 'TAN Nimbus', 'Bricolage Grotesque', sans-serif; font-weight: 400; font-size: 132px; line-height: 0.9; color: #F07800">Hacelo con Gruv.</h2>
 <p style="margin: 0; font-size: 21px; color: #F0E0C0; max-width: 36ch">La primera visita es para conocernos: escuchamos tu idea y te mostramos el estudio. No se cobra.</p>

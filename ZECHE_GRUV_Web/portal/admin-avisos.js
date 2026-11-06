@@ -440,10 +440,16 @@
     nBox.append(nTop, nBody);
     wrap.append(tBox, nBox);
     slot.replaceWith(wrap);
+    // Lo de la última vez, al instante (se reemplaza apenas llega lo nuevo).
+    const keptT = window.ZGStore && window.ZGStore.get("admin-tasks", 3 * 24 * 60 * 60 * 1000);
+    try { if (keptT) paintTasks(keptT.data || [], tasksBox); } catch (e) { tasksBox.replaceChildren(skeleton(3)); }
+    const keptN = window.ZGStore && window.ZGStore.get("admin-notices", 3 * 24 * 60 * 60 * 1000);
+    try { if (keptN) paintNotices(keptN.data || [], nBody, nHead); } catch (e) { nBody.replaceChildren(skeleton(2)); }
 
     const load = (first) => {
       call("/.netlify/functions/admin-tasks").then((d) => {
         if (!d.connected) { tasksBox.replaceChildren(el("p", "zh-sub", "Conectá Notion para ver tus tareas.")); return; }
+        if (window.ZGStore) window.ZGStore.set("admin-tasks", d.tasks || []);
         if (first || JSON.stringify(d.tasks) !== JSON.stringify(tasksCache)) paintTasks(d.tasks || [], tasksBox);
       }).catch(() => { if (first) tasksBox.replaceChildren(el("p", "zh-sub", "No pudimos leer tus tareas de Notion.")); });
       call("/.netlify/functions/portal-reviews").then((d) => {
@@ -451,6 +457,7 @@
         // Notion no respondió del todo: se deja lo que ya se veía (si no,
         // podrían reaparecer avisos viejos) y se reintenta en 2 minutos.
         if (d.partial && !first) return;
+        if (!d.partial && window.ZGStore) window.ZGStore.set("admin-notices", list);
         if (first || JSON.stringify(list) !== JSON.stringify(noticesCache)) paintNotices(list, nBody, nHead);
       }).catch(() => { if (first) nBody.replaceChildren(el("p", "zh-sub", "No pudimos cargar los avisos.")); });
     };
@@ -458,12 +465,17 @@
     // Entregas automáticas: al abrir el Inicio se revisan ya las carpetas
     // (además de cada 15 minutos). Si subiste una mezcla o un master, se
     // marca entregado solo, su sesión se cierra y la lista se vuelve a leer.
-    call("/.netlify/functions/admin-tasks", { sync: true }).then((d) => {
-      const list = (d && d.delivered) || [];
-      if (!list.length || !wrap.isConnected) return;
-      load(false);
-      autoNote(list, tBox);
-    }).catch(() => {});
+    // Va unos segundos después: revisar las carpetas usa Notion y OneDrive, y
+    // si arranca junto con la carga del Inicio la hace esperar.
+    setTimeout(() => {
+      if (!wrap.isConnected) return;
+      call("/.netlify/functions/admin-tasks", { sync: true }).then((d) => {
+        const list = (d && d.delivered) || [];
+        if (!list.length || !wrap.isConnected) return;
+        load(false);
+        autoNote(list, tBox);
+      }).catch(() => {});
+    }, 6000);
     clearInterval(timer);
     timer = setInterval(() => { if (!document.hidden && wrap.isConnected && !document.getElementById("panel-home").hidden) load(false); }, REFRESH_MS);
   }

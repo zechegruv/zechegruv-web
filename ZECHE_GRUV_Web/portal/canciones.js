@@ -539,6 +539,7 @@
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "error");
       cache.set(profile.id, { data, at: Date.now(), promise: null });
+      window.ZGStore.set(`songs:${profile.id}`, data);
       return data;
     })();
     cache.set(profile.id, { ...(hit || {}), promise });
@@ -585,10 +586,16 @@
     $("songsCount").textContent = "";
     status.textContent = "Cargando…";
 
-    // Lo ya traído se muestra al instante y se actualiza por detrás.
+    // Lo ya traído se muestra al instante y se actualiza por detrás. Si es la
+    // primera vez en esta pestaña, sirve lo de la última visita (hasta 7 días).
+    if (!cache.get(profile.id)) {
+      const kept = window.ZGStore.get(`songs:${profile.id}`, 7 * 24 * 60 * 60 * 1000);
+      if (kept) cache.set(profile.id, { data: kept.data, at: 0, promise: null });
+    }
     const hit = cache.get(profile.id);
-    if (hit && hit.data) {
-      paint(profile, hit.data);
+    let painted = false;
+    if (hit && hit.data) { try { paint(profile, hit.data); painted = true; } catch (e) { cache.delete(profile.id); } }
+    if (painted) {
       if (Date.now() - hit.at > FRESH_FOR) {
         const shown = JSON.stringify(hit.data);
         fetchSongs(profile).then((newer) => {

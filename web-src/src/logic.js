@@ -430,13 +430,15 @@ class Component extends DCLogic {
       return {
         num: '0' + (i + 1), title: s.t, text: s.d,
         expanded: open ? 'true' : 'false',
-        accClass: open ? 'zg-acc zg-open' : 'zg-acc',
-        pick: function () { self.setState({ step: open ? -1 : i }); },
-        btnStyle: 'width: 100%; display: flex; align-items: center; gap: 20px; padding: 20px 0; background: transparent; border: 0; font: inherit; font-size: 18px; text-align: left; cursor: pointer; transition: color 200ms ease; color: ' + (open ? '#FFF4DC' : '#C9A980'),
+        accClass: open ? 'on' : '', hidden: open ? 'false' : 'true',
+        pick: function () { if (!open) self.setState({ step: i }); },
+        btnStyle: 'color: ' + (open ? '#FFF4DC' : '#C9A980'),
         iconStyle: 'font-size: 24px; color: #F5A623; transition: transform 350ms cubic-bezier(.23,1,.32,1); transform: rotate(' + (open ? '45deg' : '0deg') + ')'
       };
     });
 
+    var stepIdx = Math.max(0, st.step);
+    var stepKnob = 'transform: translateX(calc(' + stepIdx + ' * (100% + 4px)))';
     var data = [
       { name: 'Ailo Aicardi', text: 'Si querés encontrar tu sonido, es por acá.' },
       { name: 'Juan Gonzalez', text: 'Alto espacio, hermoso ambiente de laburo y laboratorio de arte.' },
@@ -1028,7 +1030,7 @@ class Component extends DCLogic {
       pickDemo: function () { self.swapTo('demo'); },
       pickMaster: function () { self.swapTo('master'); },
       caption: mode === 'demo' ? T('Antes: la canción grabada, sin mezcla ni master.') : T('Después: mezclada y masterizada en ZECHE GRUV.'),
-      steps: steps,
+      steps: steps, stepKnob: stepKnob,
       quote: data[qi], quotes: quotes, quoteStyle: quoteStyle,
       formats: formats, fmtKnob: fmtKnob,
       dealText: dealText, dealKey: 'd' + st.pTick,
