@@ -383,8 +383,12 @@
           <input type="search" id="artistQ" placeholder="Buscá un artista" autocomplete="off" spellcheck="false" aria-label="Buscar artista">
           <span class="ag-hint" aria-hidden="true">Enter para abrir</span>
         </div>
-        <ul class="ag-grid" id="artistGrid" aria-label="Artistas"></ul>
-        <p class="ag-none" id="artistNone" hidden>Ningún artista con ese nombre.</p>
+        <div class="ag-wheel" id="artistWheel" tabindex="0" role="listbox" aria-label="Artistas: girá el rollo y abrí el del medio">
+          <div class="ag-band" aria-hidden="true"></div>
+          <ul class="ag-reel" id="artistGrid"></ul>
+          <p class="ag-none" id="artistNone" hidden>Ningún artista con ese nombre.</p>
+        </div>
+        <p class="ag-tip">Girá el rollo o escribí un nombre · tocá el del medio para abrir su perfil</p>
         <div class="table-wrap" hidden>
           <table class="table" id="artistsTable">
             <thead>

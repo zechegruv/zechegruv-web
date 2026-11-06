@@ -929,27 +929,26 @@
     status.textContent = (artists.length === 1 ? "1 artista con cuenta" : `${artists.length} artistas con cuenta`)
       + (inactive ? ` (${inactive} ${inactive === 1 ? "inactivo" : "inactivos"}).` : ".");
 
-    // Acceso rápido: solo foto y AKA. Primero los activos, después los
-    // inactivos y al final el equipo (admin, distribución, productores).
+    // Acceso rápido: un rollo con foto y AKA. Primero los activos, después
+    // los inactivos y al final el equipo (admin, distribución, productores).
     const order = (p) => (p.role === "artist" ? (isActive(p) ? 0 : 1) : 2);
     const list = data.slice().sort((a, b) => order(a) - order(b) || nameOf(a).localeCompare(nameOf(b), "es", { sensitivity: "base" }));
     const ROLE = { admin: "Administrador", distribution: "Distribución", producer: "Productor" };
     $("artistQ").value = "";
-    $("artistGrid").replaceChildren(...list.map((p, i) => {
+    AG.items = list.map((p, i) => {
       const li = document.createElement("li");
       li.className = "ag-item" + (p.role !== "artist" ? " is-team" : "") + (p.role !== "admin" && !isActive(p) ? " is-off" : "");
-      li.style.setProperty("--i", Math.min(i, 30));
+      li.id = `ag-opt-${i}`;
+      li.setAttribute("role", "option");
+      li.setAttribute("aria-label", nameOf(p) + (ROLE[p.role] ? `, ${ROLE[p.role]}` : "") + (p.role !== "admin" && !isActive(p) ? ", inactivo" : ""));
       li.dataset.q = agNorm([p.display_name, p.full_name, p.email].filter(Boolean).join(" "));
-      const b = document.createElement("button");
-      b.type = "button";
-      b.className = "ag-btn";
-      b.setAttribute("aria-label", nameOf(p) + (ROLE[p.role] ? `, ${ROLE[p.role]}` : "") + (p.role !== "admin" && !isActive(p) ? ", inactivo" : ""));
+      li._open = () => { if (p.id === me.id) openTab("me"); else showProfile(p); };
       const ring = document.createElement("span");
       ring.className = "ag-ring";
       const img = document.createElement("img");
       const empty = document.createElement("div");
       img.className = "avatar";
-      img.loading = "lazy";
+      img.draggable = false;
       empty.className = "avatar avatar-empty";
       paintAvatar(img, empty, p);
       ring.append(img, empty);
@@ -957,64 +956,195 @@
       name.className = "ag-name";
       name.dataset.name = p.display_name || nameOf(p);
       name.textContent = name.dataset.name;
-      b.append(ring, name);
-      b.addEventListener("click", () => { if (p.id === me.id) openTab("me"); else showProfile(p); });
-      li.append(b);
+      li.append(ring, name);
       return li;
-    }));
+    });
+    $("artistGrid").replaceChildren(...AG.items);
     $("artistNone").hidden = true;
+    AG.pos = 0; AG.vel = 0; AG.target = null; AG.last = -1; AG.ready = false;
+    agPaint();
+    $("artistWheel").classList.remove("is-in"); void $("artistWheel").offsetWidth; $("artistWheel").classList.add("is-in");
+    AG.ready = true;
   }
 
-  // ---------- Buscador de artistas (acceso rápido del panel) ----------
+  // ---------- Rollo de artistas (acceso rápido del panel) ----------
+  // Como el selector de fecha del iPhone: se ven tres nombres, el del medio
+  // queda marcado. Se gira con el dedo (con inercia), la ruedita del mouse o
+  // las flechas, sin mover la página. Tocar el del medio abre su perfil;
+  // tocar otro lo trae al medio. Con 6 o más, el rollo da la vuelta.
   const agNorm = (v) => String(v || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-  const agReduced = () => window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const AG = { items: [], pos: 0, vel: 0, target: null, raf: 0, drag: null, last: -1, ready: false };
+  const AG_STEP = 24;   // grados entre un nombre y el siguiente
+  const AG_PX = 62;     // píxeles de arrastre por nombre
+  const agVis = () => AG.items.filter((li) => !li.hidden);
+  const agLoop = (n) => n >= 6;
+  function agWrap(d, n) {
+    if (!agLoop(n)) return d;
+    d = ((d % n) + n) % n;
+    return d > n / 2 ? d - n : d;
+  }
+  const agCenter = () => { const v = agVis(), n = v.length; return n ? v[((Math.round(AG.pos) % n) + n) % n] : null; };
+  function agPaint() {
+    const vis = agVis(), n = vis.length;
+    AG.items.forEach((li) => { if (li.hidden && li.classList.contains("is-center")) { li.classList.remove("is-center"); li.setAttribute("aria-selected", "false"); } });
+    vis.forEach((li, i) => {
+      const d = agWrap(i - AG.pos, n), far = Math.abs(d);
+      li.style.transform = `rotateX(${(-d * AG_STEP).toFixed(2)}deg) translateZ(var(--ag-r))`;
+      li.style.opacity = far > 2.7 ? "0" : String(Math.max(0, 1 - far * 0.3).toFixed(3));
+      li.style.visibility = far > 2.9 ? "hidden" : "";
+      li.style.setProperty("--ag-near", Math.max(0, 1 - far).toFixed(3));
+      li.classList.toggle("is-center", far < 0.5);
+      li.setAttribute("aria-selected", far < 0.5 ? "true" : "false");
+    });
+    const c = agCenter();
+    const wheel = $("artistWheel");
+    if (c) wheel.setAttribute("aria-activedescendant", c.id); else wheel.removeAttribute("aria-activedescendant");
+    const idx = c ? vis.indexOf(c) : -1;
+    if (idx !== AG.last) {
+      if (AG.ready && AG.last !== -1 && navigator.vibrate) { try { navigator.vibrate(4); } catch (e) { /* nada */ } }
+      AG.last = idx;
+    }
+  }
+  function agTick() {
+    AG.raf = 0;
+    const n = agVis().length;
+    if (!n || AG.drag) return;
+    if (!agLoop(n)) {
+      // Sin vuelta: rebota suave en las puntas.
+      if (AG.pos < 0 || AG.pos > n - 1) AG.vel *= 0.6;
+    }
+    if (Math.abs(AG.vel) > 0.004) {
+      AG.pos += AG.vel;
+      AG.vel *= 0.93;
+      agPaint();
+      AG.raf = requestAnimationFrame(agTick);
+      return;
+    }
+    AG.vel = 0;
+    let goal = AG.target != null ? AG.target : Math.round(AG.pos);
+    if (!agLoop(n)) goal = Math.max(0, Math.min(n - 1, goal));
+    const diff = goal - AG.pos;
+    if (Math.abs(diff) < 0.002) {
+      AG.pos = agLoop(n) ? ((goal % n) + n) % n : goal;
+      AG.target = null;
+      agPaint();
+      return;
+    }
+    AG.pos += diff * 0.2;
+    agPaint();
+    AG.raf = requestAnimationFrame(agTick);
+  }
+  const agKick = () => { if (!AG.raf) AG.raf = requestAnimationFrame(agTick); };
+  function agGo(i) {
+    const n = agVis().length;
+    if (!n) return;
+    AG.vel = 0;
+    AG.target = AG.pos + agWrap(i - AG.pos, n);
+    if (!agLoop(n)) AG.target = Math.max(0, Math.min(n - 1, i));
+    agKick();
+  }
+  const agStep = (k) => agGo(Math.round(AG.target != null ? AG.target : AG.pos) + k);
+  const agOpen = () => { const c = agCenter(); if (c && c._open) c._open(); };
+
   function agFilter() {
     const q = agNorm($("artistQ").value.trim());
-    const items = [...$("artistGrid").children];
-    const before = new Map(items.filter((li) => !li.hidden).map((li) => [li, li.getBoundingClientRect()]));
-    let first = null, shown = 0;
-    items.forEach((li) => {
+    let shown = 0;
+    AG.items.forEach((li) => {
       const on = !q || li.dataset.q.includes(q);
       li.hidden = !on;
-      li.classList.remove("is-first");
       const name = li.querySelector(".ag-name");
       const raw = name.dataset.name;
       // Resalta lo que coincide en el AKA (sin importar tildes ni mayúsculas).
       const chars = Array.from(raw);
-      const flat = chars.map((c) => agNorm(c)).join("");
-      const at = q ? flat.indexOf(q) : -1;
+      const at = q ? chars.map((c) => agNorm(c)).join("").indexOf(q) : -1;
       if (at >= 0 && chars.every((c) => agNorm(c).length === 1)) {
         name.replaceChildren(chars.slice(0, at).join(""), Object.assign(document.createElement("mark"), { textContent: chars.slice(at, at + q.length).join("") }), chars.slice(at + q.length).join(""));
       } else name.textContent = raw;
-      if (on) { shown++; if (!first) first = li; }
+      if (on) shown++;
     });
-    if (q && first) first.classList.add("is-first");
     $("artistNone").hidden = shown > 0;
-    if (agReduced()) return;
-    // Los que quedan se deslizan a su lugar nuevo; los que vuelven aparecen.
-    items.forEach((li) => {
-      if (li.hidden) return;
-      const a = before.get(li), b = li.getBoundingClientRect();
-      if (!a) { li.animate([{ opacity: 0, transform: "scale(.6)", filter: "blur(6px)" }, { opacity: 1, transform: "none", filter: "blur(0)" }], { duration: 380, easing: "cubic-bezier(.16,1,.3,1)" }); return; }
-      const dx = a.left - b.left, dy = a.top - b.top;
-      if (dx || dy) li.animate([{ transform: `translate(${dx}px, ${dy}px)` }, { transform: "none" }], { duration: 460, easing: "cubic-bezier(.2,.8,.2,1)" });
-    });
+    AG.pos = 0; AG.vel = 0; AG.target = null;
+    agPaint();
+    const w = $("artistWheel");
+    w.classList.remove("is-swap"); void w.offsetWidth; w.classList.add("is-swap");
   }
-  $("artistQ").addEventListener("input", agFilter);
-  $("artistQ").addEventListener("keydown", (e) => {
-    if (e.key === "Enter") { e.preventDefault(); const li = [...$("artistGrid").children].find((x) => !x.hidden); if (li) li.querySelector("button").click(); }
-    else if (e.key === "ArrowDown") { e.preventDefault(); const li = [...$("artistGrid").children].find((x) => !x.hidden); if (li) li.querySelector("button").focus(); }
-    else if (e.key === "Escape" && e.target.value) { e.preventDefault(); e.target.value = ""; agFilter(); }
-  });
-  // Con la lista abierta, tipear en cualquier lado escribe en el buscador.
-  document.addEventListener("keydown", (e) => {
-    const panel = $("panel-artists");
-    if (!panel || panel.hidden || e.metaKey || e.ctrlKey || e.altKey || e.key.length !== 1) return;
-    const t = document.activeElement;
-    if (t && (/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) || t.isContentEditable)) return;
-    if (document.querySelector("dialog[open]")) return;
-    $("artistQ").focus();
-  });
+
+  (() => {
+    const wheel = $("artistWheel");
+    if (!wheel) return;
+    // Ruedita / trackpad: gira el rollo, la página no se mueve.
+    let wheelT = 0;
+    wheel.addEventListener("wheel", (e) => {
+      e.preventDefault();
+      cancelAnimationFrame(AG.raf); AG.raf = 0;
+      AG.vel = 0; AG.target = null;
+      const n = agVis().length;
+      AG.pos += (e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY) / (AG_PX * 1.4);
+      if (!agLoop(n)) AG.pos = Math.max(-0.4, Math.min(n - 0.6, AG.pos));
+      agPaint();
+      clearTimeout(wheelT);
+      wheelT = setTimeout(agKick, 110);
+    }, { passive: false });
+    // Dedo o mouse: arrastrar con inercia; un toque sin arrastre abre o trae al medio.
+    wheel.addEventListener("pointerdown", (e) => {
+      if (e.button !== 0) return;
+      cancelAnimationFrame(AG.raf); AG.raf = 0;
+      AG.vel = 0; AG.target = null;
+      AG.drag = { y: e.clientY, pos: AG.pos, lastY: e.clientY, lastT: performance.now(), v: 0, moved: false };
+      wheel.setPointerCapture(e.pointerId);
+    });
+    wheel.addEventListener("pointermove", (e) => {
+      const d = AG.drag;
+      if (!d) return;
+      const dy = e.clientY - d.y;
+      if (Math.abs(dy) > 6) d.moved = true;
+      const now = performance.now(), dt = Math.max(1, now - d.lastT);
+      d.v = d.v * 0.4 + ((e.clientY - d.lastY) / dt) * 0.6;
+      d.lastY = e.clientY; d.lastT = now;
+      const n = agVis().length;
+      AG.pos = d.pos - dy / AG_PX;
+      if (!agLoop(n)) { if (AG.pos < 0) AG.pos *= 0.35; if (AG.pos > n - 1) AG.pos = n - 1 + (AG.pos - (n - 1)) * 0.35; }
+      agPaint();
+    });
+    const end = (e) => {
+      const d = AG.drag;
+      if (!d) return;
+      AG.drag = null;
+      if (!d.moved) {
+        const el = document.elementFromPoint(e.clientX, e.clientY);
+        const li = el && el.closest && el.closest(".ag-item");
+        if (li && !li.hidden) {
+          if (li.classList.contains("is-center")) li._open();
+          else agGo(agVis().indexOf(li));
+          return;
+        }
+      } else AG.vel = Math.max(-0.9, Math.min(0.9, (-d.v * 16) / AG_PX));
+      agKick();
+    };
+    wheel.addEventListener("pointerup", end);
+    wheel.addEventListener("pointercancel", end);
+    wheel.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowDown") { e.preventDefault(); agStep(1); }
+      else if (e.key === "ArrowUp") { e.preventDefault(); agStep(-1); }
+      else if (e.key === "Enter" || e.key === " ") { e.preventDefault(); agOpen(); }
+    });
+    $("artistQ").addEventListener("input", agFilter);
+    $("artistQ").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); agOpen(); }
+      else if (e.key === "ArrowDown") { e.preventDefault(); agStep(1); }
+      else if (e.key === "ArrowUp") { e.preventDefault(); agStep(-1); }
+      else if (e.key === "Escape" && e.target.value) { e.preventDefault(); e.target.value = ""; agFilter(); }
+    });
+    // Con la lista abierta, tipear en cualquier lado escribe en el buscador.
+    document.addEventListener("keydown", (e) => {
+      const panel = $("panel-artists");
+      if (!panel || panel.hidden || e.metaKey || e.ctrlKey || e.altKey || e.key.length !== 1 || e.key === " ") return;
+      const t = document.activeElement;
+      if (t && (/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) || t.isContentEditable)) return;
+      if (document.querySelector("dialog[open]")) return;
+      $("artistQ").focus();
+    });
+  })();
 
   // En celular las tablas se ven como tarjetas (portal.css): cada celda
   // lleva el título de su columna para poder mostrarlo al lado del dato.
