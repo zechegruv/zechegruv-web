@@ -113,6 +113,10 @@ class Component extends DCLogic {
         if (Math.abs(e.deltaX) > Math.abs(e.deltaY) * 1.2) return;
         var dy = e.deltaMode === 1 ? e.deltaY * 33 : e.deltaMode === 2 ? e.deltaY * 400 : e.deltaY;
         if (!dy) return;
+        // Invertido a propósito: dos dedos hacia abajo en el trackpad (scroll
+        // natural del Mac) muestra los discos de atrás, los que asoman arriba;
+        // hacia arriba vuelve a los de adelante. Como pasar vinilos con la mano.
+        dy = -dy;
         var over = stage.contains(e.target);
         var list = self.crList || [];
         var sel = Math.min(self.state.crSel, Math.max(0, list.length - 1));
