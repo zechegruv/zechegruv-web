@@ -1,7 +1,7 @@
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    this.state = { intro: 'on', introSun: '', heroSel: 4, heroPicked: false, here: '', floatOff: false, errName: false, errWa: false, crFrom: null, heroQ: '', heroOn: false, heroFocus: false, crQ: '', crSel: 0, crTag: 'todos', crPlay: false, snd: null, sndPlaying: false, sndLoad: false, sndErr: false, sndPos: 0, demo: 'off', demoCh: 0, demoPlay: true, demoN: 0, mode: 'demo', pos: 0, playing: false, q: 0, qTick: 0, step: 0, plan: 'mes', labMM: false, custom: false, cxMode: 0, cxMenu: false, cxSel: [], cxReady: false, cxHours: 2, cxDetail: {}, ev: null, cat: null, sending: false, from: 'web', pack: -1, faq: -1, table: false, pTick: 0, sent: false, origin: -1, now: Date.now() };
+    this.state = { intro: 'on', introSun: '', heroSel: 4, heroPicked: false, here: '', floatOff: false, errName: false, errWa: false, crFrom: null, heroQ: '', heroOn: false, heroFocus: false, crQ: '', crSel: 0, crTag: 'todos', crPlay: false, crOut: null, snd: null, tt: null, ttWait: false, sndPlaying: false, sndLoad: false, sndErr: false, sndPos: 0, demo: 'off', demoCh: 0, demoPlay: true, demoN: 0, mode: 'demo', pos: 0, playing: false, q: 0, qTick: 0, step: 0, plan: 'mes', labMM: false, custom: false, cxMode: 0, cxMenu: false, cxSel: [], cxReady: false, cxHours: 2, cxDetail: {}, ev: null, cat: null, sending: false, from: 'web', pack: -1, faq: -1, table: false, pTick: 0, sent: false, origin: -1, now: Date.now() };
     this.hero = null;
     this.stack = null;
   }
@@ -76,7 +76,10 @@ class Component extends DCLogic {
     var au = this.au = new Audio();
     au.preload = 'none';
     au.addEventListener('playing', function () { self.setState({ sndPlaying: true, sndLoad: false, sndErr: false, crPlay: !!(self.snd && self.snd.src === 'crate') }); });
-    au.addEventListener('pause', function () { self.setState({ sndPlaying: false, crPlay: false }); });
+    au.addEventListener('pause', function () {
+      var tt = self.state.tt;
+      self.setState({ sndPlaying: false, crPlay: false, tt: tt && (tt.phase === 'down' || tt.phase === 'land') && !self.state.ttWait ? Object.assign({}, tt, { phase: 'up' }) : tt });
+    });
     au.addEventListener('waiting', function () { self.setState({ sndLoad: true }); });
     au.addEventListener('timeupdate', function () {
       if (!au.duration) return;
@@ -84,7 +87,29 @@ class Component extends DCLogic {
       if (Math.abs(p - (self.state.sndPos || 0)) > 0.008) self.setState({ sndPos: p });
     });
     au.addEventListener('ended', function () { self.sndNext(true); });
-    au.addEventListener('error', function () { if (au.getAttribute('src')) self.setState({ sndErr: true, sndLoad: false, sndPlaying: false, crPlay: false }); });
+    au.addEventListener('error', function () {
+      if (!au.getAttribute('src')) return;
+      var tt = self.state.tt;
+      clearTimeout(self.ttT); clearTimeout(self.ttT2); au.muted = false;
+      self.setState({ sndErr: true, sndLoad: false, sndPlaying: false, crPlay: false, ttWait: false, tt: tt && tt.img ? Object.assign({}, tt, { phase: 'up' }) : tt });
+    });
+    // Caja de discos: con el mouse arriba, la ruedita pasa los discos (no la
+    // página). En el primero o el último, la ruedita vuelve a mover la página.
+    var stage = document.querySelector('.cr-stage');
+    if (stage) {
+      var wAcc = 0, wLock = 0;
+      stage.addEventListener('wheel', function (e) {
+        if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+        var list = self.crList || [];
+        var sel = Math.min(self.state.crSel, Math.max(0, list.length - 1));
+        var dir = e.deltaY > 0 ? 1 : -1;
+        if (!list.length || (dir > 0 && sel >= list.length - 1) || (dir < 0 && sel <= 0)) { wAcc = 0; return; }
+        e.preventDefault();
+        wAcc += e.deltaMode === 1 ? e.deltaY * 33 : e.deltaY;
+        var now = performance.now();
+        if (Math.abs(wAcc) >= 55 && now - wLock > 85) { wLock = now; wAcc = 0; if (self.crGo) self.crGo(sel + dir); }
+      }, { passive: false });
+    }
     if ('mediaSession' in navigator) {
       try {
         navigator.mediaSession.setActionHandler('play', function () { var p = au.play(); if (p && p.catch) p.catch(function () {}); });
@@ -111,14 +136,17 @@ class Component extends DCLogic {
     return PICK[m[1] + ':' + m[2]] || { t: m[1], id: m[2] };
   }
   // Toca (o pausa, si ya es ese) un disco. src: 'hero' o 'crate'.
-  sndPlay(src, idx, item) {
+  sndPlay(src, idx, item, hold) {
     var au = this.au;
     if (!au || !item) return;
+    au.muted = !!hold;
+    // Si suena otra cosa, el brazo del tocadiscos se levanta.
+    if (src !== 'crate' && this.state.tt && this.state.tt.phase !== 'up' && this.state.tt.phase !== 'idle') { clearTimeout(this.ttT); clearTimeout(this.ttT2); this.setState({ ttWait: false, tt: Object.assign({}, this.state.tt, { phase: 'up' }) }); }
     // Nunca dos cosas a la vez: frena el antes/después.
     if (this.state.playing) { if (this.aDemo) this.aDemo.pause(); if (this.aMaster) this.aMaster.pause(); clearInterval(this.posT); }
     var s = this.snd;
     if (s && s.src === src && s.idx === idx && s.title === item.title && !this.state.sndErr) {
-      if (au.paused) { var p0 = au.play(); if (p0 && p0.catch) p0.catch(function () {}); } else au.pause();
+      if (au.paused) { var p0 = au.play(); if (p0 && p0.catch) p0.catch(function () {}); } else if (!hold) au.pause();
       return;
     }
     var sp = this.spId(item.url);
@@ -148,9 +176,87 @@ class Component extends DCLogic {
       var list = this.crList || [];
       var n = s.idx + 1;
       if (n >= list.length) { if (auto) return; n = 0; }
+      var self = this;
       this.setState({ crSel: n, crFrom: s.idx });
-      this.sndPlay('crate', n, list[n]);
+      this.ttSwap();
+      clearTimeout(this.ttNext);
+      this.ttNext = setTimeout(function () { self.crListen(n, list[n]); }, 760);
     }
+  }
+  // ---- Tocadiscos de la bandeja ----
+  // "Sacar el vinilo y escuchar": el vinilo sale volando del sobre, pasa por
+  // detrás del texto, se apoya en el plato, baja la aguja y recién ahí suena.
+  // El audio arranca en silencio en el mismo toque (así el celular lo deja
+  // sonar) y se escucha desde el principio cuando la aguja toca el disco.
+  crListen(k, item) {
+    if (!item) return;
+    var st = this.state, au = this.au, tt = st.tt;
+    if (st.ttWait) return; // el disco ya está en camino
+    var same = this.snd && this.snd.src === 'crate' && this.snd.title === item.title && !st.sndErr;
+    if (same && au && !au.paused && !au.muted) { au.pause(); return; } // la aguja se levanta (evento pause)
+    var onDeck = tt && tt.img && tt.key === item.title && tt.phase !== 'out';
+    this.sndPlay('crate', k, item, true);
+    this.setState({ ttWait: true });
+    if (same && onDeck) { this.ttDrop(); return; }
+    this.ttFly(item);
+  }
+  ttSwap() {
+    // El disco que sonaba se calla en el momento en que sale del plato.
+    if (this.au && !this.au.paused && this.snd && this.snd.src === 'crate') this.au.pause();
+    var tt = this.state.tt;
+    if (tt && tt.img) this.setState({ tt: Object.assign({}, tt, { phase: 'out' }) });
+  }
+  ttFly(item) {
+    var self = this;
+    clearTimeout(this.ttT); clearTimeout(this.ttT2);
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var sec = this.crSec, deck = this.ttEl;
+    var from = document.querySelector('.cr-item.is-sel .cr-vin .zg-vinyl');
+    var rec = deck && deck.querySelector('.tt-rec');
+    var title = document.querySelector('.cr-title');
+    var prev = this.state.tt;
+    this.setState({ tt: { img: prev && prev.img, key: prev && prev.key, phase: prev && prev.img ? 'out' : 'idle' }, crOut: item.title });
+    function land() {
+      self.setState({ tt: { img: item.img, key: item.title, phase: 'land' } });
+      self.ttT = setTimeout(function () { self.ttDrop(); }, reduce ? 0 : 260);
+    }
+    if (reduce || !sec || !from || !rec || !from.getBoundingClientRect().width || !rec.getBoundingClientRect().width || !Element.prototype.animate) { land(); return; }
+    var a = from.getBoundingClientRect(), b = rec.getBoundingClientRect(), c = sec.getBoundingClientRect();
+    var fly = document.createElement('div');
+    fly.className = 'cr-fly';
+    fly.innerHTML = '<div class="zg-vinyl"><span class="zg-vlabel"></span></div>';
+    if (item.img) fly.querySelector('.zg-vlabel').style.backgroundImage = 'url(' + item.img + ')';
+    fly.style.cssText = 'left:' + (b.left - c.left) + 'px;top:' + (b.top - c.top) + 'px;width:' + b.width + 'px;height:' + b.height + 'px';
+    sec.appendChild(fly);
+    var bx = b.left + b.width / 2, by = b.top + b.height / 2;
+    var dx = a.left + a.width / 2 - bx, dy = a.top + a.height / 2 - by, s0 = a.width / b.width;
+    // Pasa por detrás del título del disco (o del medio del camino si no está).
+    var m = title ? title.getBoundingClientRect() : null;
+    var mx = m && m.width ? m.left + m.width * 0.45 - bx : dx * 0.45, my = m && m.width ? m.top + m.height * 0.5 - by : dy * 0.5 - 80;
+    var anim = fly.animate([
+      { transform: 'translate(' + dx + 'px,' + dy + 'px) scale(' + s0 + ') rotate(0deg)', offset: 0 },
+      { transform: 'translate(' + (dx + 40) + 'px,' + (dy - 50) + 'px) scale(' + (s0 * 1.02) + ') rotate(80deg)', offset: 0.14 },
+      { transform: 'translate(' + mx + 'px,' + my + 'px) scale(' + ((s0 + 1) / 2) + ') rotate(380deg)', offset: 0.55 },
+      { transform: 'translate(0px,-14px) scale(1.06) rotate(660deg)', offset: 0.88 },
+      { transform: 'translate(0px,0px) scale(1) rotate(720deg)', offset: 1 }
+    ], { duration: 1350, easing: 'cubic-bezier(.45,.05,.25,1)', fill: 'forwards' });
+    anim.onfinish = function () { land(); requestAnimationFrame(function () { fly.remove(); }); };
+  }
+  ttDrop() {
+    var self = this;
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var tt = this.state.tt;
+    if (!tt) return;
+    this.setState({ tt: Object.assign({}, tt, { phase: 'down' }) });
+    clearTimeout(this.ttT2);
+    this.ttT2 = setTimeout(function () {
+      var au = self.au;
+      self.setState({ ttWait: false, sndPos: 0 });
+      if (!au) return;
+      try { au.currentTime = 0; } catch (e) {}
+      au.muted = false;
+      if (au.paused) { var p = au.play(); if (p && p.catch) p.catch(function () {}); }
+    }, reduce ? 0 : 760);
   }
   leaveIntro() {
     var self = this;
@@ -200,7 +306,7 @@ class Component extends DCLogic {
     }
     this.setState({ mode: m });
   }
-  componentWillUnmount() { if (this.au) this.au.pause(); if (this.io3) this.io3.disconnect(); clearInterval(this.demoT); clearInterval(this.posT); if (this.aDemo) this.aDemo.pause(); if (this.aMaster) this.aMaster.pause(); clearTimeout(this.introT); clearInterval(this.timer); clearTimeout(this.hsTimer); if (this.io) this.io.disconnect(); if (this.io2) this.io2.disconnect(); document.removeEventListener('click', this.onAnyClick, true); }
+  componentWillUnmount() { clearTimeout(this.ttT); clearTimeout(this.ttT2); clearTimeout(this.ttNext); if (this.au) this.au.pause(); if (this.io3) this.io3.disconnect(); clearInterval(this.demoT); clearInterval(this.posT); if (this.aDemo) this.aDemo.pause(); if (this.aMaster) this.aMaster.pause(); clearTimeout(this.introT); clearInterval(this.timer); clearTimeout(this.hsTimer); if (this.io) this.io.disconnect(); if (this.io2) this.io2.disconnect(); document.removeEventListener('click', this.onAnyClick, true); }
   renderVals() {
     var self = this;
     var st = this.state;
@@ -526,11 +632,16 @@ class Component extends DCLogic {
     // Si estaba sonando, el disco nuevo sigue sonando.
     function go(k) {
       if (k < 0 || k >= list.length || k === sel) return;
-      var was = self.snd && self.snd.src === 'crate' && self.state.sndPlaying;
+      var was = self.snd && self.snd.src === 'crate' && self.state.sndPlaying && !self.au.muted;
       self.setState({ crSel: k, crFrom: sel, crPlay: false });
-      if (was) self.sndPlay('crate', k, list[k]);
+      if (was) {
+        self.ttSwap();
+        clearTimeout(self.ttNext);
+        self.ttNext = setTimeout(function () { self.crListen(k, list[k]); }, 760);
+      }
     }
     this.crList = list;
+    this.crGo = go;
     var from = Math.min(st.crFrom == null ? sel : st.crFrom, Math.max(0, list.length - 1));
     var crate = list.map(function (r, i) {
       var d = i - sel, tf, op = 1, z = 100 - Math.abs(d);
@@ -546,12 +657,12 @@ class Component extends DCLogic {
         img: r.img, hasImg: !!r.img, noImg: !r.img, artist: r.artist,
         plainStyle: 'background: ' + hue + '; color: ' + (hue === '#F07800' || hue === '#C98A2B' ? '#241105' : '#FFF4DC'),
         title: r.title,
-        cls: 'cr-item' + (d === 0 ? ' is-sel' + (st.crPlay ? ' is-play' : '') : d > 0 ? ' is-back' : ' is-front'),
+        cls: 'cr-item' + (d === 0 ? ' is-sel' + (st.crPlay ? ' is-play' : '') : d > 0 ? ' is-back' : ' is-front') + (st.crOut && st.crOut === r.title ? ' is-out' : ''),
         style: 'transform: ' + tf + '; opacity: ' + op + '; z-index: ' + z + '; transition-delay: ' + delay + 'ms' + (d > 0 ? '; filter: brightness(' + Math.max(.45, 1 - d * .12).toFixed(2) + ')' : ''),
         labelStyle: r.img ? 'background-image: url(' + r.img + ')' : 'background: ' + hue,
         selected: d === 0 ? 'true' : 'false',
         label: r.title + ', ' + r.artist,
-        pick: function (e) { if (self.crMoved) return; if (i === sel) self.sndPlay('crate', i, r); else go(i); }
+        pick: function (e) { if (self.crMoved) return; if (i === sel) self.crListen(i, r); else go(i); }
       };
     });
     var cur = list[sel];
@@ -685,13 +796,17 @@ class Component extends DCLogic {
       crAtStart: sel <= 0, crAtEnd: sel >= list.length - 1,
       crPrev: function () { go(sel - 1); },
       crNext: function () { go(sel + 1); },
-      crPlayLabel: crOn && st.sndPlaying ? T('Pausar el vinilo') : (crOn && st.sndErr ? T('Sin adelanto: abrilo en Spotify') : (crOn && st.sndLoad ? T('Cargando…') : T('Sacar el vinilo y escuchar'))),
-      crToggle: function () { if (cur) self.sndPlay('crate', sel, cur); },
-      crBarOn: crOn, crBarStyle: 'transform: scaleX(' + (crOn ? (st.sndPos || 0) : 0).toFixed(3) + ')',
+      crPlayLabel: crOn && st.ttWait ? T('Poniendo el disco…') : crOn && st.sndPlaying ? T('Pausar el vinilo') : (crOn && st.sndErr ? T('Sin adelanto: abrilo en Spotify') : (crOn && st.sndLoad ? T('Cargando…') : T('Sacar el vinilo y escuchar'))),
+      crToggle: function () { if (cur) self.crListen(sel, cur); },
+      crBarOn: crOn, crBarStyle: 'transform: scaleX(' + (crOn && !st.ttWait ? (st.sndPos || 0) : 0).toFixed(3) + ')',
+      crSecRef: function (el) { self.crSec = el; },
+      ttRef: function (el) { self.ttEl = el; },
+      ttCls: 'tt' + (st.tt && st.tt.img && st.tt.phase !== 'idle' ? ' is-loaded' : '') + (st.tt && (st.tt.phase === 'land' || st.tt.phase === 'down') ? ' is-spin' : '') + (st.tt && st.tt.phase === 'down' ? ' is-down' : '') + (st.tt && st.tt.phase === 'out' ? ' is-out' : '') + (st.tt && st.tt.phase === 'down' && !st.ttWait && st.sndPlaying ? ' is-live' : ''),
+      ttLabel: st.tt && st.tt.img ? 'background-image: url(' + st.tt.img + ')' : '',
       crKey: function (e) {
         if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); go(sel + 1); }
         if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); go(sel - 1); }
-        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (cur) self.sndPlay('crate', sel, cur); }
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (cur) self.crListen(sel, cur); }
       },
       crDown: function (e) { self.crStart = { x: e.clientX, y: e.clientY }; self.crMoved = false; },
       crUp: function (e) {
@@ -701,8 +816,8 @@ class Component extends DCLogic {
         self.crMoved = Math.abs(dx) > 12 || Math.abs(dy) > 12;
         setTimeout(function () { self.crMoved = false; }, 0);
         if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) go(dx < 0 ? sel + 1 : sel - 1);
-        else if (dy > 40) go(sel + 1);
-        else if (dy < -40) go(sel - 1);
+        else if (e.pointerType !== 'touch' && dy > 40) go(sel + 1);
+        else if (e.pointerType !== 'touch' && dy < -40) go(sel - 1);
       },
       heroRef: function (el) { self.hero = el; },
       glow: function (e) {
