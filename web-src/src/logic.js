@@ -1,12 +1,13 @@
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    this.state = { intro: 'on', introSun: '', heroSel: 4, heroPicked: false, here: '', floatOff: false, errName: false, errWa: false, crFrom: null, heroQ: '', heroOn: false, heroFocus: false, crQ: '', crSel: 0, crTag: 'todos', crPlay: false, demo: 'off', demoCh: 0, demoPlay: true, demoN: 0, mode: 'demo', pos: 0, playing: false, q: 0, qTick: 0, step: 0, plan: 'mes', labMM: false, custom: false, cxMode: 0, cxMenu: false, cxSel: [], cxReady: false, cxHours: 2, cxDetail: {}, ev: null, cat: null, sending: false, from: 'web', pack: -1, faq: -1, table: false, pTick: 0, sent: false, origin: -1, now: Date.now() };
+    this.state = { intro: 'on', introSun: '', heroSel: 4, heroPicked: false, here: '', floatOff: false, errName: false, errWa: false, crFrom: null, heroQ: '', heroOn: false, heroFocus: false, crQ: '', crSel: 0, crTag: 'todos', crPlay: false, snd: null, sndPlaying: false, sndLoad: false, sndErr: false, sndPos: 0, demo: 'off', demoCh: 0, demoPlay: true, demoN: 0, mode: 'demo', pos: 0, playing: false, q: 0, qTick: 0, step: 0, plan: 'mes', labMM: false, custom: false, cxMode: 0, cxMenu: false, cxSel: [], cxReady: false, cxHours: 2, cxDetail: {}, ev: null, cat: null, sending: false, from: 'web', pack: -1, faq: -1, table: false, pTick: 0, sent: false, origin: -1, now: Date.now() };
     this.hero = null;
     this.stack = null;
   }
   componentDidMount() {
     var self = this;
+    this.setupSound();
     // Próxima fecha a la venta (ZG PASS): la franja de arriba solo aparece si hay una.
     fetch('/.netlify/functions/pass-events')
       .then(function (r) { return r.ok ? r.json() : null; })
@@ -65,6 +66,88 @@ class Component extends DCLogic {
       var f = document.querySelector('footer'); if (f) this.io2.observe(f);
     }
   }
+  // ---- Reproductor de los discos (inicio y bandeja de lanzamientos) ----
+  // Un solo <audio> para toda la página: suena el adelanto de 30 s de Spotify
+  // (spotify-preview). Al terminar pasa solo al disco siguiente, y si la
+  // persona se va de la sección que está sonando, se pausa: nunca queda
+  // música sonando sin un botón a la vista para frenarla.
+  setupSound() {
+    var self = this;
+    var au = this.au = new Audio();
+    au.preload = 'none';
+    au.addEventListener('playing', function () { self.setState({ sndPlaying: true, sndLoad: false, sndErr: false, crPlay: !!(self.snd && self.snd.src === 'crate') }); });
+    au.addEventListener('pause', function () { self.setState({ sndPlaying: false, crPlay: false }); });
+    au.addEventListener('waiting', function () { self.setState({ sndLoad: true }); });
+    au.addEventListener('timeupdate', function () {
+      if (!au.duration) return;
+      var p = au.currentTime / au.duration;
+      if (Math.abs(p - (self.state.sndPos || 0)) > 0.008) self.setState({ sndPos: p });
+    });
+    au.addEventListener('ended', function () { self.sndNext(true); });
+    au.addEventListener('error', function () { if (au.getAttribute('src')) self.setState({ sndErr: true, sndLoad: false, sndPlaying: false, crPlay: false }); });
+    if ('mediaSession' in navigator) {
+      try {
+        navigator.mediaSession.setActionHandler('play', function () { var p = au.play(); if (p && p.catch) p.catch(function () {}); });
+        navigator.mediaSession.setActionHandler('pause', function () { au.pause(); });
+        navigator.mediaSession.setActionHandler('nexttrack', function () { self.sndNext(false); });
+      } catch (e) {}
+    }
+    if (window.IntersectionObserver) {
+      this.io3 = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          if (en.intersectionRatio < 0.2) self.sndStop(en.target.id === 'lanzamientos' ? 'crate' : 'hero');
+        });
+      }, { threshold: [0, 0.2] });
+      var lz = document.getElementById('lanzamientos'); if (lz) this.io3.observe(lz);
+      if (this.stack) this.io3.observe(this.stack);
+    }
+  }
+  spId(url) {
+    var m = /open\.spotify\.com\/(album|track)\/([A-Za-z0-9]{22})/.exec(url || '');
+    return m ? { t: m[1], id: m[2] } : null;
+  }
+  // Toca (o pausa, si ya es ese) un disco. src: 'hero' o 'crate'.
+  sndPlay(src, idx, item) {
+    var au = this.au;
+    if (!au || !item) return;
+    // Nunca dos cosas a la vez: frena el antes/después.
+    if (this.state.playing) { if (this.aDemo) this.aDemo.pause(); if (this.aMaster) this.aMaster.pause(); clearInterval(this.posT); }
+    var s = this.snd;
+    if (s && s.src === src && s.idx === idx && s.title === item.title && !this.state.sndErr) {
+      if (au.paused) { var p0 = au.play(); if (p0 && p0.catch) p0.catch(function () {}); } else au.pause();
+      return;
+    }
+    var sp = this.spId(item.url);
+    this.snd = { src: src, idx: idx, title: item.title, artist: item.artist, url: item.url, img: item.img };
+    this.setState({ snd: this.snd, sndLoad: !!sp, sndErr: !sp, sndPos: 0, playing: false });
+    if (!sp) { au.pause(); return; }
+    au.src = '/.netlify/functions/spotify-preview?t=' + sp.t + '&id=' + sp.id;
+    var p = au.play(); if (p && p.catch) p.catch(function () {});
+    if ('mediaSession' in navigator && window.MediaMetadata) {
+      try { navigator.mediaSession.metadata = new MediaMetadata({ title: item.title, artist: item.artist, album: 'ZECHE GRUV', artwork: item.img ? [{ src: new URL(item.img, location.href).href, sizes: '512x512' }] : [] }); } catch (e) {}
+    }
+    if (window.zgTrack) window.zgTrack('escuchar_disco', { lugar: src === 'hero' ? 'inicio' : 'bandeja', disco: item.title });
+  }
+  sndStop(src) {
+    if (this.au && !this.au.paused && this.snd && (!src || this.snd.src === src)) this.au.pause();
+  }
+  sndNext(auto) {
+    var s = this.snd;
+    if (!s) return;
+    if (s.src === 'hero') {
+      var items = this.heroItems || [];
+      if (!items.length) return;
+      var k = (s.idx + 1) % items.length;
+      this.setState({ heroSel: k, heroPicked: true });
+      this.sndPlay('hero', k, items[k]);
+    } else {
+      var list = this.crList || [];
+      var n = s.idx + 1;
+      if (n >= list.length) { if (auto) return; n = 0; }
+      this.setState({ crSel: n, crFrom: s.idx });
+      this.sndPlay('crate', n, list[n]);
+    }
+  }
   leaveIntro() {
     var self = this;
     if (this.state.intro !== 'on') return;
@@ -113,7 +196,7 @@ class Component extends DCLogic {
     }
     this.setState({ mode: m });
   }
-  componentWillUnmount() { clearInterval(this.demoT); clearInterval(this.posT); if (this.aDemo) this.aDemo.pause(); if (this.aMaster) this.aMaster.pause(); clearTimeout(this.introT); clearInterval(this.timer); clearTimeout(this.hsTimer); if (this.io) this.io.disconnect(); if (this.io2) this.io2.disconnect(); document.removeEventListener('click', this.onAnyClick, true); }
+  componentWillUnmount() { if (this.au) this.au.pause(); if (this.io3) this.io3.disconnect(); clearInterval(this.demoT); clearInterval(this.posT); if (this.aDemo) this.aDemo.pause(); if (this.aMaster) this.aMaster.pause(); clearTimeout(this.introT); clearInterval(this.timer); clearTimeout(this.hsTimer); if (this.io) this.io.disconnect(); if (this.io2) this.io2.disconnect(); document.removeEventListener('click', this.onAnyClick, true); }
   renderVals() {
     var self = this;
     var st = this.state;
@@ -436,7 +519,14 @@ class Component extends DCLogic {
       return !cq || crNorm(r.title + ' ' + r.artist).indexOf(cq) >= 0;
     });
     var sel = Math.min(st.crSel, Math.max(0, list.length - 1));
-    function go(k) { if (k >= 0 && k < list.length && k !== sel) self.setState({ crSel: k, crFrom: sel, crPlay: false }); }
+    // Si estaba sonando, el disco nuevo sigue sonando.
+    function go(k) {
+      if (k < 0 || k >= list.length || k === sel) return;
+      var was = self.snd && self.snd.src === 'crate' && self.state.sndPlaying;
+      self.setState({ crSel: k, crFrom: sel, crPlay: false });
+      if (was) self.sndPlay('crate', k, list[k]);
+    }
+    this.crList = list;
     var from = Math.min(st.crFrom == null ? sel : st.crFrom, Math.max(0, list.length - 1));
     var crate = list.map(function (r, i) {
       var d = i - sel, tf, op = 1, z = 100 - Math.abs(d);
@@ -457,10 +547,11 @@ class Component extends DCLogic {
         labelStyle: r.img ? 'background-image: url(' + r.img + ')' : 'background: ' + hue,
         selected: d === 0 ? 'true' : 'false',
         label: r.title + ', ' + r.artist,
-        pick: function (e) { if (self.crMoved) return; if (i === sel) self.setState({ crPlay: !st.crPlay }); else go(i); }
+        pick: function (e) { if (self.crMoved) return; if (i === sel) self.sndPlay('crate', i, r); else go(i); }
       };
     });
     var cur = list[sel];
+    var crOn = !!(st.snd && st.snd.src === 'crate' && st.snd.idx === sel && cur && st.snd.title === cur.title);
 
     // Roster: los artistas con los que colaboró ZECHE GRUV, cada uno a su Spotify.
     var RS = [['Kires', '1Cm1WPdQpZWR1FGoaCQ9Hu'], ['Rouse bby', '5CNzLOwiQx5VhTv44SuCm9'], ['Pazz', '38QjfFQ2Qj5pYKEfP1UZXz'], ['Midel', '4EcIU574ksr6mC1GMEOe0p'], ['Mc Nito', '0EOOwVUWdPElrXOJyKOiBw'], ['Kamacho', '4w0n2oYb0ZEuvlHa1Mnxci'], ['Kizuato', '1CDBZ6ZYceJMFEj5lMn1yi'], ['BR1', '3sqbHtwHxDZQfqFkr03zwX'], ['Casteyano', '2sAeYCtKB9km4OnxZ79F2W'], ['Majo Chicar', '2t1ZWcvmcsJnj9yCRuzvOG'], ['Pastelita', '5sSiBj6y3adorU3bNcO0qi'], ['Sorriso', '4EIzdaX8jUM4b2zKCYh1yj'], ['Tobi Matarasso', '758gJCoI4xZWRgjdlww3iM'], ['Mc Anrry', '4ExMusmx318A1cgA2L2UAP'], ['Axia Bebe', '0ku2WIox3Gy8ZeRTra7khQ'], ['Lusan', '6cdFVBWLuWaXod5b0IqQvx'], ['Borja Trece', '6IsD7NahqpNXMZokr2sScx'], ['Bhae', '3rpv3PztUChhUTcNhHHRku'], ['Anita Pau', '1KMisYLHu9wM1dsT4gTwZz'], ['Layla Mar', '0FFp6MN2W3zcJdWAkCxcg6'], ['Ailo', ''], ['Maki', '4q0qAJSJMhF3n8nq9n2gJX'], ['Bianca Biondi', '4AhBUp7hKgyNz915uFsmCc'], ['Jugo Solar', '5x69KadluL7PwtwALZrTgm'], ['BallerFk', '2kENb15y49pTplwxt9ivd5'], ['Ekiss', '20mwpOinpbsbDIgnqUpFBe'], ['Lowkey Santo', '31xbC0RlsTJT1NOLviy6lD'], ['ENY B', '2TY5OSmjJjYkctYzqxhZe1'], ['Dosis', '3PhscZFnz4MlgNsRPqcs87']];
@@ -474,6 +565,23 @@ class Component extends DCLogic {
 
     // Buscador de la pila del inicio
     var HERO = ['Adicción', 'TODO TERRENO', 'TACÚ', 'YANINA', 'Bajo Cero'];
+    // Los 5 discos del inicio con su link de Spotify (del catálogo; si todavía
+    // no cargó, los de acá).
+    var HERO_FB = [
+      { title: 'Adicción', artist: 'Kires', url: 'https://open.spotify.com/album/5WsjhEykJHop88lELb98xI', img: '/assets/web/portada-adiccion.webp' },
+      { title: 'TODO TERRENO', artist: 'Rouse bby, YEIKO, Maida', url: 'https://open.spotify.com/album/6eU3XioAFeGQsepCbhuDwN', img: '/assets/web/portada-todo-terreno.webp' },
+      { title: 'TACÚ', artist: 'ZG Camp · 15 artistas', url: 'https://open.spotify.com/album/6YmySpzsNXMuxekqcmdlGJ', img: '/assets/web/portada-tacu.webp' },
+      { title: 'YANINA', artist: 'Axia Bebe', url: 'https://open.spotify.com/album/5xOkbd52ga0j10hs4ZUdqk', img: '/assets/web/portada-yanina.webp' },
+      { title: 'Bajo Cero', artist: 'ENY B', url: 'https://open.spotify.com/album/4apeckesjlerL4LitVdh9Z', img: '/assets/web/portada-bajo-cero.webp' }
+    ];
+    var heroItems = HERO.map(function (t, k) {
+      var r = CAT.filter(function (c) { return crNorm(c.title) === crNorm(t); })[0];
+      return r ? { title: r.title, artist: r.artist, url: r.url, img: HERO_FB[k].img } : HERO_FB[k];
+    });
+    this.heroItems = heroItems;
+    function heroPick(k) { self.setState({ heroSel: k, heroPicked: true }); self.sndPlay('hero', k, heroItems[k]); }
+    var npOn = st.snd && st.snd.src === 'hero';
+    var npItem = npOn ? st.snd : heroItems[st.heroSel];
     var hq = crNorm(st.heroQ).trim();
     var hHits = hq ? CAT.filter(function (r) { return crNorm(r.title + ' ' + r.artist).indexOf(hq) >= 0; }) : [];
     var hc = {};
@@ -504,19 +612,36 @@ class Component extends DCLogic {
       okWa: function (e) { if (self.state.errWa && e.target.value.replace(/\D/g, '').length >= 8) self.setState({ errWa: false }); },
       badName: st.errName ? 'true' : 'false', badWa: st.errWa ? 'true' : 'false',
       hvLabel: 'background-image: url(' + ['/assets/web/portada-adiccion.webp', '/assets/web/portada-todo-terreno.webp', '/assets/web/portada-tacu.webp', '/assets/web/portada-yanina.webp', '/assets/web/portada-bajo-cero.webp'][st.heroSel] + ')',
-      hsel0: st.heroSel === 0 ? 'is-sel' : '', pp0: st.heroSel === 0 ? 'true' : 'false', pick0: function () { self.setState({ heroSel: 0, heroPicked: true }); },
-      hsel1: st.heroSel === 1 ? 'is-sel' : '', pp1: st.heroSel === 1 ? 'true' : 'false', pick1: function () { self.setState({ heroSel: 1, heroPicked: true }); },
-      hsel2: st.heroSel === 2 ? 'is-sel' : '', pp2: st.heroSel === 2 ? 'true' : 'false', pick2: function () { self.setState({ heroSel: 2, heroPicked: true }); },
-      hsel3: st.heroSel === 3 ? 'is-sel' : '', pp3: st.heroSel === 3 ? 'true' : 'false', pick3: function () { self.setState({ heroSel: 3, heroPicked: true }); },
-      hsel4: st.heroSel === 4 ? 'is-sel' : '', pp4: st.heroSel === 4 ? 'true' : 'false', pick4: function () { self.setState({ heroSel: 4, heroPicked: true }); },
+      hsel0: st.heroSel === 0 ? 'is-sel' : '', pp0: st.heroSel === 0 ? 'true' : 'false', pick0: function () { heroPick(0); },
+      hsel1: st.heroSel === 1 ? 'is-sel' : '', pp1: st.heroSel === 1 ? 'true' : 'false', pick1: function () { heroPick(1); },
+      hsel2: st.heroSel === 2 ? 'is-sel' : '', pp2: st.heroSel === 2 ? 'true' : 'false', pick2: function () { heroPick(2); },
+      hsel3: st.heroSel === 3 ? 'is-sel' : '', pp3: st.heroSel === 3 ? 'true' : 'false', pick3: function () { heroPick(3); },
+      hsel4: st.heroSel === 4 ? 'is-sel' : '', pp4: st.heroSel === 4 ? 'true' : 'false', pick4: function () { heroPick(4); },
       introOn: st.intro !== 'off',
       introCls: 'zg-intro' + (st.intro === 'leaving' ? ' is-leaving' : ''),
       introSunStyle: st.introSun,
       introSunRef: function (el) { self.introSunEl = el; },
       introBtnRef: function (el) { self.introBtn = el; },
-      introGo: function () { self.leaveIntro(); },
+      // "Entrá a escuchar" (o tocar el intro): arranca el disco de arriba.
+      // El botón está dentro del intro, así que el toque llega dos veces.
+      introGo: function () {
+        var first = !self.introPlayed;
+        self.introPlayed = true;
+        self.leaveIntro();
+        if (first) self.sndPlay('hero', self.state.heroSel, heroItems[self.state.heroSel]);
+      },
+      npShow: st.intro !== 'on',
+      npCls: 'zg-np' + (npOn && st.sndLoad ? ' is-load' : '') + (npOn && st.sndPlaying ? ' is-on' : ''),
+      npPlaying: !!(npOn && st.sndPlaying), npPaused: !(npOn && st.sndPlaying),
+      npPlayLabel: npOn && st.sndPlaying ? T('Pausar') : T('Reproducir'),
+      npTitle: npItem.title,
+      npSub: npOn && st.sndErr ? T('Sin adelanto en Spotify') : (npOn && st.sndLoad ? T('Cargando…') : npItem.artist),
+      npUrl: npItem.url,
+      npBarStyle: 'transform: scaleX(' + (npOn ? (st.sndPos || 0) : 0).toFixed(3) + ')',
+      npToggle: function () { self.sndPlay('hero', st.heroSel, heroItems[st.heroSel]); },
+      npNext: function () { heroPick((st.heroSel + 1) % heroItems.length); },
       stackRef: function (el) { self.stack = el; },
-      stackCls: 'zg-stack' + (st.intro === 'on' ? ' is-veiled' : st.intro === 'leaving' ? ' is-revealed' : '') + (hq ? ' is-q' : '') + (st.heroPicked ? ' has-pick' : ''),
+      stackCls: 'zg-stack' + (st.intro !== 'on' ? ' has-np' : '') + (st.snd && st.snd.src === 'hero' && st.sndPlaying ? ' is-sound' : '') + (st.intro === 'on' ? ' is-veiled' : st.intro === 'leaving' ? ' is-revealed' : '') + (hq ? ' is-q' : '') + (st.heroPicked ? ' has-pick' : ''),
       hsCls: 'zg-hs' + (hsVisible ? ' is-on' : ''),
       hc0: hc.hc0, hc1: hc.hc1, hc2: hc.hc2, hc3: hc.hc3, hc4: hc.hc4,
       heroQ: st.heroQ,
@@ -530,7 +655,7 @@ class Component extends DCLogic {
         clearTimeout(self.hsTimer);
         self.hsTimer = setTimeout(function () { self.setState({ heroOn: false }); }, 1800);
       },
-      hsTap: function (e) { if (e.target && e.target.closest && (e.target.closest('.zg-hs') || e.target.closest('.zg-cv-pick'))) return; self.setState({ heroOn: !st.heroOn }); },
+      hsTap: function (e) { if (e.target && e.target.closest && (e.target.closest('.zg-hs') || e.target.closest('.zg-cv-pick') || e.target.closest('.zg-np'))) return; self.setState({ heroOn: !st.heroOn }); },
       hsType: function (e) { self.setState({ heroQ: e.target.value }); },
       hsFocus: function () { self.setState({ heroFocus: true }); },
       hsBlur: function () { self.setState({ heroFocus: false }); },
@@ -544,8 +669,8 @@ class Component extends DCLogic {
       crNone: !list.length,
       crHas: !!cur,
       crQ: st.crQ,
-      crSearch: function (e) { self.setState({ crQ: e.target.value, crSel: 0, crPlay: false }); },
-      crChips: chipDefs.map(function (c) { return { label: c[1], pressed: st.crTag === c[0] ? 'true' : 'false', pick: function () { self.setState({ crTag: c[0], crSel: 0, crPlay: false }); } }; }),
+      crSearch: function (e) { self.sndStop('crate'); self.setState({ crQ: e.target.value, crSel: 0, crPlay: false }); },
+      crChips: chipDefs.map(function (c) { return { label: c[1], pressed: st.crTag === c[0] ? 'true' : 'false', pick: function () { self.sndStop('crate'); self.setState({ crTag: c[0], crSel: 0, crPlay: false }); } }; }),
       crKind: cur ? T(cur.kind) + (cur.year ? ' · ' + cur.year : '') : '',
       crUrl: cur ? cur.url : 'https://open.spotify.com',
       crTotal: list.length === CAT.length ? T('{n} lanzamientos').replace('{n}', CAT.length) : T('{a} de {n} lanzamientos').replace('{a}', list.length).replace('{n}', CAT.length),
@@ -556,12 +681,13 @@ class Component extends DCLogic {
       crAtStart: sel <= 0, crAtEnd: sel >= list.length - 1,
       crPrev: function () { go(sel - 1); },
       crNext: function () { go(sel + 1); },
-      crPlayLabel: st.crPlay ? T('Pausar el vinilo') : T('Sacar el vinilo y escuchar'),
-      crToggle: function () { self.setState({ crPlay: !st.crPlay }); },
+      crPlayLabel: crOn && st.sndPlaying ? T('Pausar el vinilo') : (crOn && st.sndErr ? T('Sin adelanto: abrilo en Spotify') : (crOn && st.sndLoad ? T('Cargando…') : T('Sacar el vinilo y escuchar'))),
+      crToggle: function () { if (cur) self.sndPlay('crate', sel, cur); },
+      crBarOn: crOn, crBarStyle: 'transform: scaleX(' + (crOn ? (st.sndPos || 0) : 0).toFixed(3) + ')',
       crKey: function (e) {
         if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); go(sel + 1); }
         if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); go(sel - 1); }
-        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); self.setState({ crPlay: !st.crPlay }); }
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (cur) self.sndPlay('crate', sel, cur); }
       },
       crDown: function (e) { self.crStart = { x: e.clientX, y: e.clientY }; self.crMoved = false; },
       crUp: function (e) {
@@ -637,6 +763,7 @@ class Component extends DCLogic {
         var cur = st.mode === 'demo' ? self.aDemo : self.aMaster;
         if (!cur) return;
         if (st.playing) { cur.pause(); clearInterval(self.posT); self.setState({ playing: false }); return; }
+        self.sndStop();
         var p = cur.play(); if (p && p.catch) p.catch(function () {});
         clearInterval(self.posT);
         self.posT = setInterval(function () {

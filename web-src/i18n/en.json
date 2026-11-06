@@ -278,5 +278,10 @@
  "Contanos el proyecto: cuántas canciones y cuántos stems": "Tell us about the project: how many songs and how many stems",
  "Pistas y Tune en tu show en vivo": "Backing tracks and live Tune at your show",
  "Contanos el show: fecha, lugar, duración y cuántos temas": "Tell us about the show: date, venue, length and how many songs",
- "Duración de la sesión": "Session length"
+ "Duración de la sesión": "Session length",
+ "Cargando…": "Loading…",
+ "Escuchala completa en Spotify": "Hear the full song on Spotify",
+ "Reproductor de discos": "Record player",
+ "Sin adelanto en Spotify": "No preview on Spotify",
+ "Sin adelanto: abrilo en Spotify": "No preview: open it on Spotify"
 }
