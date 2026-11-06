@@ -535,6 +535,23 @@ div:has(> .zg-stack.is-veiled) > .zg-par{filter:blur(18px);opacity:.55}
 .cr-empty b{font-family:'Bricolage Grotesque',sans-serif;font-size:28px;color:#FFF4DC}
 @media (max-width:760px){.cr-item.is-sel .cr-vin{transform:translateX(30%)}.cr-title{font-size:48px}.cr-stage{--w:min(62vw,300px);flex-basis:100%}.cr-wrap{gap:28px}}
 @media (prefers-reduced-motion:reduce){.cr-item,.cr-vin,.cr-lift{transition:none}}
+/* Bandeja compacta en compu: entra entera en una pantalla de notebook */
+@media (min-width:901px){
+.cr-sec{padding-top:88px !important;padding-bottom:88px !important;gap:20px !important}
+.cr-sec .zg-big{font-size:clamp(44px,6.2vh,56px) !important}
+.cr-sec .zg-rv>p{font-size:17px !important;max-width:56ch}
+.tt{top:88px;width:clamp(220px,30vh,270px)}
+.cr-wrap{margin-top:clamp(36px,6vh,52px);gap:40px}
+.cr-stage{--w:clamp(220px,min(26vw,40vh),330px)}
+.cr-info{gap:14px}
+.cr-title{font-size:clamp(40px,6.6vh,60px)}
+.cr-artist{font-size:17px}
+.cr-search input{padding-top:12px;padding-bottom:12px;font-size:15px}
+.cr-chip{padding:7px 12px;font-size:13px}
+.cr-arrow{width:44px;height:44px}
+.cr-info .zg-btn{padding:13px 22px !important;font-size:15px !important}
+.cr-info .zg-ghost{padding:12px 20px !important;font-size:15px !important}
+}
 /* Rediseño: tipografía, navegación y estados */
 html{scroll-behavior:smooth;scroll-padding-top:84px}
 h1,h2,h3{text-wrap:balance}
