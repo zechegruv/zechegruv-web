@@ -122,11 +122,15 @@ class Component extends DCLogic {
         var sel = Math.min(self.state.crSel, Math.max(0, list.length - 1));
         var dir = dy > 0 ? 1 : -1;
         if (fresh || !G.owner) {
-          var atEdge = !list.length || (dir > 0 && sel >= list.length - 1) || (dir < 0 && sel <= 0);
-          G.owner = over && !atEdge ? 'crate' : 'page';
+          var atEnd = list.length && dir > 0 && sel >= list.length - 1;
+          var atEdge = !list.length || atEnd || (dir < 0 && sel <= 0);
+          // En el último disco, seguir "para adelante" sigue de largo: la
+          // página baja (como si terminaras de pasar los vinilos y siguieras).
+          G.owner = over && atEnd ? 'onward' : over && !atEdge ? 'crate' : 'page';
           G.acc = 0;
           if (G.owner === 'crate') stage.classList.add('is-browsing');
         }
+        if (G.owner === 'onward') { e.preventDefault(); try { window.scrollBy({ top: Math.abs(dy), behavior: 'instant' }); } catch (err) { document.documentElement.scrollTop += Math.abs(dy); } return; }
         if (G.owner !== 'crate') return;
         e.preventDefault();
         self.crFast = true;
