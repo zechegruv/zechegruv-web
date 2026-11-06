@@ -93,21 +93,48 @@ class Component extends DCLogic {
       clearTimeout(self.ttT); clearTimeout(self.ttT2); au.muted = false;
       self.setState({ sndErr: true, sndLoad: false, sndPlaying: false, crPlay: false, ttWait: false, tt: tt && tt.img ? Object.assign({}, tt, { phase: 'up' }) : tt });
     });
-    // Caja de discos: con el mouse arriba, la ruedita pasa los discos (no la
-    // página). En el primero o el último, la ruedita vuelve a mover la página.
+    // Caja de discos: la ruedita pasa los discos solo si el gesto EMPIEZA con
+    // el mouse arriba de la caja. Si venías scrolleando la página y el cursor
+    // pasa por la caja, la página sigue de largo. Un gesto tiene un solo
+    // dueño: el que empezó en la caja no mueve la página hasta que se suelta.
+    // En el primer o el último disco, un gesto nuevo hacia afuera mueve la
+    // página. Mientras se pasan discos, la animación va más rápido.
     var stage = document.querySelector('.cr-stage');
     if (stage) {
-      var wAcc = 0, wLock = 0;
-      stage.addEventListener('wheel', function (e) {
-        if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+      var G = { owner: null, last: 0, acc: 0, stepAt: 0, endT: 0 };
+      var GAP = 180, STEP_PX = 70, MIN_MS = 95;
+      var finish = function () { G.owner = null; G.acc = 0; self.crFast = false; stage.classList.remove('is-browsing'); };
+      window.addEventListener('wheel', function (e) {
+        var now = performance.now();
+        var fresh = now - G.last > GAP;
+        G.last = now;
+        clearTimeout(G.endT);
+        G.endT = setTimeout(finish, GAP + 20);
+        if (Math.abs(e.deltaX) > Math.abs(e.deltaY) * 1.2) return;
+        var dy = e.deltaMode === 1 ? e.deltaY * 33 : e.deltaMode === 2 ? e.deltaY * 400 : e.deltaY;
+        if (!dy) return;
+        var over = stage.contains(e.target);
         var list = self.crList || [];
         var sel = Math.min(self.state.crSel, Math.max(0, list.length - 1));
-        var dir = e.deltaY > 0 ? 1 : -1;
-        if (!list.length || (dir > 0 && sel >= list.length - 1) || (dir < 0 && sel <= 0)) { wAcc = 0; return; }
+        var dir = dy > 0 ? 1 : -1;
+        if (fresh || !G.owner) {
+          var atEdge = !list.length || (dir > 0 && sel >= list.length - 1) || (dir < 0 && sel <= 0);
+          G.owner = over && !atEdge ? 'crate' : 'page';
+          G.acc = 0;
+          if (G.owner === 'crate') stage.classList.add('is-browsing');
+        }
+        if (G.owner !== 'crate') return;
         e.preventDefault();
-        wAcc += e.deltaMode === 1 ? e.deltaY * 33 : e.deltaY;
-        var now = performance.now();
-        if (Math.abs(wAcc) >= 55 && now - wLock > 85) { wLock = now; wAcc = 0; if (self.crGo) self.crGo(sel + dir); }
+        self.crFast = true;
+        G.acc += dy;
+        // Mouse con clics: un disco por clic, al instante. Trackpad: un disco cada ~70 px.
+        var notch = Math.abs(dy) >= 50 && Number.isInteger(dy);
+        if ((notch || Math.abs(G.acc) >= STEP_PX) && now - G.stepAt >= (notch ? 0 : MIN_MS)) {
+          var k = sel + (G.acc > 0 ? 1 : -1);
+          G.acc = notch ? 0 : G.acc - (G.acc > 0 ? STEP_PX : -STEP_PX);
+          if (Math.abs(G.acc) > STEP_PX) G.acc = (G.acc > 0 ? 1 : -1) * STEP_PX * 0.5;
+          if (k >= 0 && k < list.length && self.crGo) { G.stepAt = now; self.crGo(k); }
+        }
       }, { passive: false });
     }
     if ('mediaSession' in navigator) {
@@ -650,7 +677,7 @@ class Component extends DCLogic {
       else { tf = 'translate3d(0, ' + (-d * 10) + '%, ' + (-d * 64) + 'px) rotateX(5deg)'; op = d > 5 ? 0 : 1; }
       // Cascada: al pasar varios discos de golpe, caen uno detrás del otro.
       var lo = Math.min(from, sel), hi = Math.max(from, sel), delay = 0;
-      if (i >= lo && i <= hi) delay = (sel > from ? i - from : hi - i) * 70;
+      if (i >= lo && i <= hi) delay = (sel > from ? i - from : hi - i) * (self.crFast ? 18 : 70);
       var hues = ['#4B2509', '#F07800', '#2E1607', '#C98A2B', '#5E300F'];
       var hue = hues[(r.title.length + i) % hues.length];
       return {
