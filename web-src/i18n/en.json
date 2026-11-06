@@ -304,5 +304,7 @@
  "Agregarla a mi calendario": "Add it to my calendar",
  "Te escribimos por WhatsApp con el presupuesto de tu pack.": "We'll message you on WhatsApp with your pack's quote.",
  "Te escribimos por WhatsApp para confirmarla y charlar del {pack}.": "We'll message you on WhatsApp to confirm it and talk about {pack}.",
- "Te escribimos por WhatsApp para confirmarla.": "We'll message you on WhatsApp to confirm it."
+ "Te escribimos por WhatsApp para confirmarla.": "We'll message you on WhatsApp to confirm it.",
+ "Todo el Lab + {m}": "All of Lab + {m}",
+ "Todo el Release + {m}": "All of Release + {m}"
 }

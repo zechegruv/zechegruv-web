@@ -483,9 +483,9 @@ class Component extends DCLogic {
       { id: 'lab', step: '', kicker: T('01 · Nace'), name: 'Zeche Lab', base: 260000, text: T('Creamos, producimos y grabamos tu canción con un productor al lado.'),
         items: [T('4 sesiones de 2 h por mes'), T('Producción y grabación de tu canción'), st.labMM ? T('Mezcla y master de tu canción incluidos') : T('Mezcla y master aparte: +{price} por mes').replace('{price}', fmt(mmExtra)), T('Portal de artistas')],
         takeaway: st.labMM ? T('Tu canción grabada, mezclada y masterizada') : T('Tu canción grabada'), mm: true },
-      { id: 'release', step: '+' + fmt(PRICE.release[pIdx] - PRICE[labKey][pIdx]), kicker: T('02 · Sale'), name: 'Zeche Release', base: 420000, badge: T('El más elegido'), text: T('Una canción terminada por mes, lista para salir a todas las plataformas.'),
+      { id: 'release', step: T('Todo el Lab + {m}').replace('{m}', fmt(PRICE.release[pIdx] - PRICE[labKey][pIdx])), kicker: T('02 · Sale'), name: 'Zeche Release', base: 420000, badge: T('El más elegido'), text: T('Una canción terminada por mes, lista para salir a todas las plataformas.'),
         items: [T('Todo lo del Lab'), T('Mezcla y master en hasta 15 días'), T('Distribución a todas las plataformas'), T('Pitch a playlists editoriales'), T('Pistas para tus shows y kit de lanzamiento'), T('Tu canción en la playlist del sello')], takeaway: T('Tu canción terminada y en Spotify') },
-      { id: 'full', step: '+' + fmt(PRICE.full[pIdx] - PRICE.release[pIdx]), kicker: T('03 · Despega'), name: 'Full Gruv', base: 550000, text: T('Todo lo del Release, más rápido y más lejos.'),
+      { id: 'full', step: T('Todo el Release + {m}').replace('{m}', fmt(PRICE.full[pIdx] - PRICE.release[pIdx])), kicker: T('03 · Despega'), name: 'Full Gruv', base: 550000, text: T('Todo lo del Release, más rápido y más lejos.'),
         items: [T('Sesiones de 3 h: 12 h de estudio por mes'), T('Mezcla y master en 7 días'), T('Pitch a editoriales y curadores'), T('Una charla de estrategia por mes')], takeaway: T('Tu canción terminada en 7 días y el plan para lanzarla') }
     ];
     var packs = PK.map(function (p, i) {
