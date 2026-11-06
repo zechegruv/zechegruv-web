@@ -238,6 +238,25 @@ a{color:#F5A623}a:hover{color:#FFF4DC}
 .pk-tbl > span.pk-f{background:rgba(240,120,0,.12)}
 .pk-tbl > span.pk-h{border-top:0;padding-top:26px;font-family:'Geist Mono',monospace;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:#F5A623}
 @media (max-width:900px){.pk-grid{grid-template-columns:1fr}.pk-1,.pk-2,.pk-3{min-height:0}.pk-step{display:none}.pk-tblwrap{overflow-x:auto}.pk-tbl{min-width:640px}}
+/* Celu: los packs se deslizan de costado (arranca en el más elegido) */
+.pk-dots{display:none}
+/* Celu: la galería de los camps se desliza de costado en vez de apilarse */
+@media (max-width:760px){
+.cg-grid{display:flex !important;gap:10px !important;overflow-x:auto;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;scrollbar-width:none;padding:0 20px 4px !important;scroll-padding:0 20px}
+.cg-grid::-webkit-scrollbar{display:none}
+.cg-grid>*{flex:0 0 78%;scroll-snap-align:start;grid-row:auto !important;grid-column:auto !important}
+.cg-grid img{height:300px !important;min-height:0 !important}
+.cg-grid figure>span{flex:none !important}
+}
+@media (max-width:900px){
+.pk-grid{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;scrollbar-width:none;margin:0 -20px;padding:4px 20px 8px;scroll-padding:0 20px;align-items:stretch}
+.pk-grid::-webkit-scrollbar{display:none}
+.pk-grid>div{flex:0 0 86%;scroll-snap-align:center;scroll-snap-stop:always}
+.pk-grid>div>article{flex:1}
+.pk-dots{display:flex;justify-content:center;gap:8px;margin-top:2px}
+.pk-dots button{width:8px;height:8px;padding:0;border:0;border-radius:999px;background:rgba(240,224,192,.25);cursor:pointer;transition:width 350ms cubic-bezier(.23,1,.32,1),background-color 250ms ease}
+.pk-dots button[aria-current="true"]{width:26px;background:#F07800}
+}
 .zg-static{display:inline}
 .zg-progress{position:fixed;top:0;left:0;right:0;height:3px;background:#F07800;transform-origin:0 50%;transform:scaleX(0);z-index:9}
 .zg-float{position:fixed;right:24px;bottom:24px;z-index:8}

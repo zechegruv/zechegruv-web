@@ -8,6 +8,7 @@ class Component extends DCLogic {
   componentDidMount() {
     var self = this;
     this.setupSound();
+    this.setupPacks();
     // Próxima fecha a la venta (ZG PASS): la franja de arriba solo aparece si hay una.
     fetch('/.netlify/functions/pass-events')
       .then(function (r) { return r.ok ? r.json() : null; })
@@ -64,6 +65,27 @@ class Component extends DCLogic {
       }, { rootMargin: '0px 0px -20% 0px' });
       var v = document.getElementById('visita'); if (v) this.io2.observe(v);
       var f = document.querySelector('footer'); if (f) this.io2.observe(f);
+    }
+  }
+  // ---- Packs en el celu: carrusel que arranca en el más elegido ----
+  setupPacks() {
+    var grid = document.querySelector('.pk-grid'), dots = document.querySelector('.pk-dots');
+    if (!grid || !dots || !window.matchMedia) return;
+    var mq = window.matchMedia('(max-width: 900px)');
+    var cards = [].slice.call(grid.children);
+    var mark = function (i) { [].forEach.call(dots.children, function (d, k) { d.setAttribute('aria-current', k === i ? 'true' : 'false'); }); };
+    var goTo = function (i, smooth) {
+      var c = cards[i]; if (!c) return;
+      grid.scrollTo({ left: c.offsetLeft - (grid.clientWidth - c.offsetWidth) / 2, behavior: smooth ? 'smooth' : 'instant' });
+    };
+    if (mq.matches) { requestAnimationFrame(function () { goTo(1, false); mark(1); }); }
+    dots.addEventListener('click', function (e) { var b = e.target.closest('[data-pk]'); if (b) goTo(+b.dataset.pk, true); });
+    if (window.IntersectionObserver) {
+      var io = new IntersectionObserver(function (es) {
+        es.forEach(function (en) { if (en.isIntersecting && en.intersectionRatio > 0.6) mark(cards.indexOf(en.target)); });
+      }, { root: grid, threshold: [0.6] });
+      cards.forEach(function (c) { io.observe(c); });
+      this.ioPk = io;
     }
   }
   // ---- Reproductor de los discos (inicio y bandeja de lanzamientos) ----
@@ -341,7 +363,7 @@ class Component extends DCLogic {
     }
     this.setState({ mode: m });
   }
-  componentWillUnmount() { clearTimeout(this.ttT); clearTimeout(this.ttT2); clearTimeout(this.ttNext); if (this.au) this.au.pause(); if (this.io3) this.io3.disconnect(); clearInterval(this.demoT); clearInterval(this.posT); if (this.aDemo) this.aDemo.pause(); if (this.aMaster) this.aMaster.pause(); clearTimeout(this.introT); clearInterval(this.timer); clearTimeout(this.hsTimer); if (this.io) this.io.disconnect(); if (this.io2) this.io2.disconnect(); document.removeEventListener('click', this.onAnyClick, true); }
+  componentWillUnmount() { if (this.ioPk) this.ioPk.disconnect(); clearTimeout(this.ttT); clearTimeout(this.ttT2); clearTimeout(this.ttNext); if (this.au) this.au.pause(); if (this.io3) this.io3.disconnect(); clearInterval(this.demoT); clearInterval(this.posT); if (this.aDemo) this.aDemo.pause(); if (this.aMaster) this.aMaster.pause(); clearTimeout(this.introT); clearInterval(this.timer); clearTimeout(this.hsTimer); if (this.io) this.io.disconnect(); if (this.io2) this.io2.disconnect(); document.removeEventListener('click', this.onAnyClick, true); }
   renderVals() {
     var self = this;
     var st = this.state;
