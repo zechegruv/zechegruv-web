@@ -1,0 +1,42 @@
+/* Movimientos de los íconos de las secciones (iconos.js).
+   Quietos siempre; se mueven al pasar el mouse, al tocar o con el teclado,
+   y el del encabezado una vez cada vez que se abre una sección.
+   Referencias: el casete rebobina · Letras: se escriben los renglones ·
+   Exports: el parlante del monitor late · Masters: el vinilo gira ·
+   Membresía: la entrada se inclina · Distribución: el sol sale. */
+.ic-reel, .ic-spin, .ic-woof, .ic-ticket, .ic-sun {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform .5s cubic-bezier(.2, .8, .2, 1);
+}
+.ic-w { stroke-dasharray: 8; stroke-dashoffset: 0; }
+
+:is(.section-btn, .sub-nav button, .pr-sec):is(:hover, :focus-visible, :active) .ic-reel { animation: ic-turn 1.4s linear infinite; }
+:is(.section-btn, .sub-nav button, .pr-sec):is(:hover, :focus-visible, :active) .ic-spin { animation: ic-turn 2.4s linear infinite; }
+:is(.section-btn, .sub-nav button, .pr-sec):is(:hover, :focus-visible, :active) .ic-woof { animation: ic-beat .5s ease-in-out infinite alternate; }
+:is(.section-btn, .sub-nav button, .pr-sec):is(:hover, :focus-visible, :active) .ic-w { animation: ic-write 1.1s ease both; }
+:is(.section-btn, .sub-nav button, .pr-sec):is(:hover, :focus-visible, :active) .ic-ticket { transform: rotate(-8deg) translateY(-1px); }
+:is(.section-btn, .sub-nav button, .pr-sec):is(:hover, :focus-visible, :active) .ic-sun { transform: translateY(-2.5px); }
+
+/* Encabezado de la sección abierta: una sola vez */
+svg.ic-once .ic-reel { animation: ic-turn 1.4s cubic-bezier(.3, .6, .3, 1) 1; }
+svg.ic-once .ic-spin { animation: ic-turn 1.6s cubic-bezier(.3, .6, .3, 1) 1; }
+svg.ic-once .ic-woof { animation: ic-beat .35s ease-in-out 4 alternate; }
+svg.ic-once .ic-w { animation: ic-write 1.1s ease both; }
+svg.ic-once .ic-ticket { animation: ic-tilt 1s cubic-bezier(.2, .8, .2, 1) 1; }
+svg.ic-once .ic-sun { animation: ic-rise 1.2s cubic-bezier(.2, .8, .2, 1) 1 both; }
+
+/* Los renglones se escriben uno tras otro (va después y con más peso
+   que las reglas de arriba, que reinician el retraso). */
+:is(.section-btn, .sub-nav button, .pr-sec, svg.ic-once) .ic-w.ic-w2 { animation-delay: .15s; }
+:is(.section-btn, .sub-nav button, .pr-sec, svg.ic-once) .ic-w.ic-w3 { animation-delay: .3s; }
+
+@keyframes ic-turn { to { transform: rotate(360deg); } }
+@keyframes ic-beat { to { transform: scale(1.14); } }
+@keyframes ic-write { from { stroke-dashoffset: 8; } to { stroke-dashoffset: 0; } }
+@keyframes ic-tilt { 40% { transform: rotate(-8deg) translateY(-1px); } 100% { transform: none; } }
+@keyframes ic-rise { from { transform: translateY(4px); opacity: .3; } to { transform: none; opacity: 1; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .ic-reel, .ic-spin, .ic-woof, .ic-ticket, .ic-sun, .ic-w { animation: none !important; transition: none !important; transform: none !important; }
+}

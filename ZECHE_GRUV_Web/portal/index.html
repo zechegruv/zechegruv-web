@@ -35,19 +35,23 @@
   <link rel="stylesheet" href="notificaciones.css">
   <link rel="stylesheet" href="productor.css">
   <link rel="stylesheet" href="redondeado.css">
+  <link rel="stylesheet" href="iconos.css">
   <!-- Medición de visitas (Google Analytics 4) -->
   <script src="/assets/js/medicion.js?v=__BUILD__"></script>
 </head>
 
 <body>
-  <!-- Íconos de las secciones del espacio del artista (se usan con <use href="#ic-…">) -->
+  <!-- Íconos de las secciones del espacio del artista: objetos del estudio
+       (casete, cuaderno, monitor, vinilo, entrada, sol). Se usan con
+       <use href="#ic-…">; iconos.js los copia adentro del svg para que
+       puedan moverse (iconos.css). -->
   <svg width="0" height="0" style="position:absolute" aria-hidden="true">
-    <symbol id="ic-referencias" viewBox="0 0 24 24"><path d="M4.5 14.5V12a7.5 7.5 0 0115 0v2.5"/><rect x="3" y="14" width="4.5" height="6.5" rx="1.6"/><rect x="16.5" y="14" width="4.5" height="6.5" rx="1.6"/></symbol>
-    <symbol id="ic-letras" viewBox="0 0 24 24"><path d="M7 3h7l4 4v13a1 1 0 01-1 1H7a1 1 0 01-1-1V4a1 1 0 011-1z"/><path d="M14 3v4h4M9 11.5h6M9 14.5h6M9 17.5h3.5"/></symbol>
-    <symbol id="ic-exports" viewBox="0 0 24 24"><path d="M3.5 10.5v3M7.75 7.5v9M12 4v16M16.25 8v8M20.5 10.5v3"/></symbol>
-    <symbol id="ic-masters" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.6"/><path d="M12 6.2A5.8 5.8 0 0117.8 12M6.2 12A5.8 5.8 0 0012 17.8"/></symbol>
-    <symbol id="ic-membresia" viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2"/><circle cx="8.5" cy="12" r="2.4"/><path d="M14 10.5h4M14 13.5h2.5"/></symbol>
-    <symbol id="ic-distribucion" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18"/></symbol>
+    <symbol id="ic-referencias" viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2"/><path d="M6.5 19l1.4-3.2h8.2L17.5 19"/><g class="ic-reel"><circle cx="8.3" cy="10.6" r="2.1"/><path d="M8.3 9.3v2.6"/></g><g class="ic-reel"><circle cx="15.7" cy="10.6" r="2.1"/><path d="M15.7 9.3v2.6"/></g><path d="M10.4 10.6h3.2"/></symbol>
+    <symbol id="ic-letras" viewBox="0 0 24 24"><rect x="5.5" y="3" width="13.5" height="18" rx="1.6"/><path d="M3.5 7h3.6M3.5 11h3.6M3.5 15h3.6"/><path class="ic-w" d="M9.5 8h6"/><path class="ic-w ic-w2" d="M9.5 11.5h6"/><path class="ic-w ic-w3" d="M9.5 15h3.6"/></symbol>
+    <symbol id="ic-exports" viewBox="0 0 24 24"><rect x="5.5" y="2.5" width="13" height="19" rx="2.2"/><circle cx="12" cy="7.3" r="1.5"/><g class="ic-woof"><circle cx="12" cy="15" r="3.8"/><circle cx="12" cy="15" r="1.2"/></g></symbol>
+    <symbol id="ic-masters" viewBox="0 0 24 24"><g class="ic-spin"><circle cx="12" cy="12" r="9"/><path d="M12 5.6a6.4 6.4 0 016.4 6.4M5.6 12a6.4 6.4 0 006.4 6.4"/><circle cx="12" cy="12" r="3"/><path d="M12 8.2v.9M12 14.9v.9M8.2 12h.9M14.9 12h.9"/></g></symbol>
+    <symbol id="ic-membresia" viewBox="0 0 24 24"><g class="ic-ticket"><path d="M3 7.2a1 1 0 011-1h16a1 1 0 011 1v2.3a2.5 2.5 0 000 5v2.3a1 1 0 01-1 1H4a1 1 0 01-1-1v-2.3a2.5 2.5 0 000-5z"/><path d="M15.5 6.6v10.8" stroke-dasharray="1.4 2"/><path d="M7 10.5h5M7 13.5h3"/></g></symbol>
+    <symbol id="ic-distribucion" viewBox="0 0 24 24"><path d="M2.5 18.5h19"/><g class="ic-sun"><path d="M6.8 18.5a5.2 5.2 0 0110.4 0"/><path d="M12 9.6V7.4M7.4 11.4L5.9 9.9M16.6 11.4l1.5-1.5M4.8 15.2H2.9M21.1 15.2h-1.9"/></g><path d="M7.5 21.5h9" opacity=".55"/></symbol>
   </svg>
 
   <nav>
@@ -1338,5 +1342,6 @@
   <script src="shows.js"></script>
   <script src="escena.js"></script>
   <script src="productor.js"></script>
+  <script src="iconos.js"></script>
 </body>
 </html>
