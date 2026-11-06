@@ -440,7 +440,7 @@
     box.innerHTML = `
       <header class="ap-head">
         <div>
-          <span class="ap-eyebrow ap-date">${esc(today)}</span>
+          <span class="ap-eyebrow ap-date">${esc(today)}</span><span class="zg-sync ap-sync${syncOn ? " on" : ""}" id="apSync" role="status"><i aria-hidden="true"></i><span>Actualizando</span></span>
           <h1 class="ap-hello">Hola, ${esc(firstName(profile))}.</h1>
           <p class="ap-lead">${esc(lead)}</p>
         </div>
@@ -585,6 +585,7 @@
     $("songsDone").open = false; // "Terminadas" arranca siempre plegada
     $("songsCount").textContent = "";
     status.textContent = "Cargando…";
+    syncing(false);
 
     // Lo ya traído se muestra al instante y se actualiza por detrás. Si es la
     // primera vez en esta pestaña, sirve lo de la última visita (hasta 7 días).
@@ -598,19 +599,32 @@
     if (painted) {
       if (Date.now() - hit.at > FRESH_FOR) {
         const shown = JSON.stringify(hit.data);
+        syncing(true);
         fetchSongs(profile).then((newer) => {
           if (ticket === current && P.me && JSON.stringify(newer) !== shown) paint(profile, newer);
-        }).catch(() => {});
+        }).catch(() => {}).finally(() => { if (ticket === current) syncing(false); });
       }
       return;
     }
+
+    // Nada guardado en este dispositivo: la copia del servidor (sale al
+    // instante) mientras se arma lo nuevo.
+    let snapShown = false;
+    snapSongs(profile).then((d) => {
+      const h = cache.get(profile.id);
+      if (!d || ticket !== current || !P.me || (h && h.data)) return;
+      try { paint(profile, d); snapShown = true; syncing(true); } catch (e) { /* se espera a lo nuevo */ }
+    }).catch(() => {});
 
     let data;
     try {
       data = await fetchSongs(profile);
     } catch (err) {
+      if (ticket === current) syncing(false);
       // Si en el medio se cerró la sesión (venció), no hay nada que mostrar.
       if (ticket !== current || !P.me) return;
+      // Ya se ve lo último guardado: queda eso.
+      if (snapShown) return;
       renderWelcome(profile, null);
       renderProject(profile, null);
       // Al artista no se le muestra un error: la sección aparece cuando funciona.
@@ -619,7 +633,39 @@
       return;
     }
     if (ticket !== current || !P.me) return;
+    syncing(false);
     paint(profile, data);
+  }
+
+  // Copia del servidor de las canciones de este perfil (portal-songs ?snap=1).
+  async function snapSongs(profile) {
+    const own = profile.id === P.me.id;
+    const res = await P.authFetch(`/.netlify/functions/portal-songs?snap=1${own ? "" : `&artist=${encodeURIComponent(profile.id)}`}`);
+    if (!res.ok) return null;
+    const d = await res.json();
+    return d && d.snap ? d : null;
+  }
+
+  // "Actualizando": se ve mientras lo que está en pantalla es lo guardado y
+  // se trae lo nuevo por detrás.
+  let syncOn = false;
+  function syncing(on) {
+    syncOn = !!on;
+    const ap = document.getElementById("apSync");
+    if (ap) ap.classList.toggle("on", syncOn);
+    const title = $("songsTitle");
+    if (!title) return;
+    let tag = document.getElementById("songsSync");
+    if (!tag) {
+      tag = document.createElement("span");
+      tag.id = "songsSync";
+      tag.className = "zg-sync";
+      tag.setAttribute("role", "status");
+      tag.innerHTML = '<i aria-hidden="true"></i><span>Actualizando</span>';
+      title.after(tag);
+    }
+    tag.classList.toggle("on", !!on);
+    tag.setAttribute("aria-hidden", on ? "false" : "true");
   }
 
   let shownProfile = null; // perfil cuyas canciones están a la vista

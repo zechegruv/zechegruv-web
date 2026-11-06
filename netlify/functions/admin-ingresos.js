@@ -67,6 +67,15 @@ exports.handler = async (event) => {
   const range = monthRange();
   if (!token) return reply(200, { connected: false, missing: true, goal, month: range.name });
 
+  // Lo último que se leyó de este mes (copia en panel_cache), al instante.
+  let body = {};
+  try { body = JSON.parse(event.body || "{}"); } catch (e) { body = {}; }
+  if (body.snap) {
+    const hit = await require("./_lib/panel-cache").get("admin-ingresos");
+    const ok = hit && hit.data && hit.data.start === range.start;
+    return reply(200, ok ? { ...hit.data, snap: true, at: hit.at } : { snap: false });
+  }
+
   try {
     const rows = await queryMonth(token, range);
     let cobrado = 0, pendiente = 0, gastos = 0, pagos = 0;
@@ -81,7 +90,9 @@ exports.handler = async (event) => {
         else pendiente += valor;
       } else if (tipo === "Salida") gastos += valor;
     }
-    return reply(200, { connected: true, month: range.name, goal, cobrado, pendiente, gastos, neto: cobrado - gastos, pagos });
+    const out = { connected: true, month: range.name, goal, cobrado, pendiente, gastos, neto: cobrado - gastos, pagos };
+    await require("./_lib/panel-cache").set("admin-ingresos", { ...out, start: range.start });
+    return reply(200, out);
   } catch (err) {
     if (err.message === "not_shared") return reply(200, { connected: false, missing: true, goal, month: range.name, problem: "not_shared" });
     return reply(200, { connected: false, temporary: true, goal, month: range.name, problem: err.message });

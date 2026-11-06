@@ -338,6 +338,15 @@ exports.handler = async (event) => {
     return json(200, { configured: false, active: [], done: [], next: null });
   }
 
+  // Lo último que se armó para este artista (copia en panel_cache,
+  // 040_panel_cache.sql): sale al instante y el portal pide lo nuevo por
+  // detrás. El productor no usa la copia (ve otra versión).
+  const cache = require("./_lib/panel-cache");
+  if (q.snap) {
+    const hit = producer ? null : await cache.get(`songs:${artistId}`);
+    return json(200, hit && hit.data ? { ...hit.data, snap: true, at: hit.at } : { snap: false });
+  }
+
   if (!notionToken()) return json(500, { error: "Falta NOTION_TOKEN en las variables de entorno de Netlify." });
   const [rows, profile] = await Promise.all([
     supabase(`/rest/v1/artist_private?profile_id=eq.${artistId}&select=notion_page_id,onedrive_link,onedrive_edit_link`, serviceKey),
@@ -382,7 +391,9 @@ exports.handler = async (event) => {
       const view = split(songs);
       return json(200, { configured: true, active: view.active.map(forProducer), done: view.done.map(forProducer), next: null });
     }
-    return json(200, { configured: true, ...split(songs), next: nextSession(tasks, songs) });
+    const out = { configured: true, ...split(songs), next: nextSession(tasks, songs) };
+    await cache.set(`songs:${artistId}`, out);
+    return json(200, out);
   } catch (err) {
     // 404: la integración no tiene acceso a la base (hay que conectarla en Notion).
     const hint = admin && (err.status === 404 || err.status === 401)

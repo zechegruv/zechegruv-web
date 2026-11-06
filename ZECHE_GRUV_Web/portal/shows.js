@@ -27,6 +27,10 @@
     holder.replaceChildren();
     // El administrador en su propio perfil no toca en ningún show.
     if (P.me.role === "admin" && p.id === P.me.id) return;
+    // Lo último que se vio, al instante; se reemplaza solo si cambió.
+    const store = window.ZGStore;
+    const kept = store && store.get(`shows:${p.id}`, 7 * 24 * 60 * 60 * 1000);
+    if (kept && Array.isArray(kept.data)) paintShows(p, kept.data);
     let shows;
     try {
       shows = (await call({ action: "mine" })).shows;
@@ -34,6 +38,13 @@
       return; // si falla, el resto del perfil sigue igual
     }
     if (ticket !== current || !P.me) return; // p. ej. la sesión venció en el medio
+    if (store) store.set(`shows:${p.id}`, shows);
+    if (kept && JSON.stringify(kept.data) === JSON.stringify(shows)) return;
+    paintShows(p, shows);
+  }
+
+  function paintShows(p, shows) {
+    const holder = $("showCards");
     const own = p.id === P.me.id;
     holder.replaceChildren(...shows.map((show) => window.ZGPistas.card(show, {
       call,

@@ -73,6 +73,14 @@
     return res.json();
   }
 
+  async function snapIngresos() {
+    const { data: { session } } = await db.auth.getSession();
+    const res = await fetch("/.netlify/functions/admin-ingresos", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` }, body: JSON.stringify({ snap: true }) });
+    if (!res.ok) return null;
+    const d = await res.json();
+    return d && d.snap ? d : null;
+  }
+
   function quick(label, hint, fn) {
     const b = btn("zh-q", "", fn);
     b.append(el("b", "", label), el("span", "", hint));
@@ -200,7 +208,24 @@
       incRow.replaceChildren(again);
       inc.append(incRow);
     };
-    pInc.then(paintIngresos);
+    // Ingresos: primero lo último que se leyó (de este dispositivo o, si no
+    // hay, la copia del servidor) y cuando Notion responde, se actualiza.
+    const month = new Intl.DateTimeFormat("es-AR", { timeZone: TZ, month: "long" }).format(new Date());
+    const store = window.ZGStore;
+    const kept = store && store.get("ingresos", 45 * 24 * 60 * 60 * 1000);
+    let shownInc = null, incFresh = false;
+    const showKept = (v) => { if (incFresh || !v || !v.connected || v.month !== month) return; shownInc = JSON.stringify(v); paintIngresos({ status: "fulfilled", value: v }); };
+    if (kept) showKept(kept.data);
+    else snapIngresos().then(showKept).catch(() => {});
+    pInc.then((res) => {
+      incFresh = true;
+      const v = res.status === "fulfilled" ? res.value : null;
+      if (v && v.connected && store) store.set("ingresos", v);
+      // Notion falló un rato: queda lo último que se vio.
+      if (shownInc && !(v && v.connected)) return;
+      if (shownInc && v && JSON.stringify(v) === shownInc) return;
+      paintIngresos(res);
+    });
 
     // Artistas
     pArt.then((artRes) => {

@@ -443,12 +443,22 @@
     // Lo de la última vez, al instante (se reemplaza apenas llega lo nuevo).
     const keptT = window.ZGStore && window.ZGStore.get("admin-tasks", 3 * 24 * 60 * 60 * 1000);
     try { if (keptT) paintTasks(keptT.data || [], tasksBox); } catch (e) { tasksBox.replaceChildren(skeleton(3)); }
+    // Sin nada guardado en este dispositivo: la copia del servidor (sale en
+    // menos de un segundo) mientras se lee Notion.
+    let fullTasks = false;
+    if (!keptT) {
+      call("/.netlify/functions/admin-tasks?snap=1").then((d) => {
+        if (fullTasks || !d || !Array.isArray(d.tasks) || !wrap.isConnected) return;
+        paintTasks(d.tasks, tasksBox);
+      }).catch(() => {});
+    }
     const keptN = window.ZGStore && window.ZGStore.get("admin-notices", 3 * 24 * 60 * 60 * 1000);
     try { if (keptN) paintNotices(keptN.data || [], nBody, nHead); } catch (e) { nBody.replaceChildren(skeleton(2)); }
 
     const load = (first) => {
       call("/.netlify/functions/admin-tasks").then((d) => {
         if (!d.connected) { tasksBox.replaceChildren(el("p", "zh-sub", "Conectá Notion para ver tus tareas.")); return; }
+        fullTasks = true;
         if (window.ZGStore) window.ZGStore.set("admin-tasks", d.tasks || []);
         if (first || JSON.stringify(d.tasks) !== JSON.stringify(tasksCache)) paintTasks(d.tasks || [], tasksBox);
       }).catch(() => { if (first) tasksBox.replaceChildren(el("p", "zh-sub", "No pudimos leer tus tareas de Notion.")); });

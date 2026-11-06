@@ -38,6 +38,8 @@ exports.handler = async () => {
   // 5. Notificaciones: lo que quedó esperando por el horario de silencio
   //    (00 a 9 h) y los avisos de eventos (_lib/push-eventos.js).
   const cola = await require("./_lib/push").flush().catch((e) => ({ error: e.message }));
+  // 8. Copia de mezclas y masters para el Inicio del panel (sale al instante).
+  const panel = await require("./admin-tasks")._refreshSnapshot().catch((e) => ({ error: e.message }));
   const eventos = await require("./_lib/push-eventos").runEvents().catch((e) => ({ error: e.message }));
   const log = { entregas: entregas.delivered, recordatorios: entregas.reminders, etapas: etapas.done, regla, finales, vivo };
   console.log("automatizaciones:", JSON.stringify(log));

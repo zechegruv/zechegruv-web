@@ -271,7 +271,22 @@ window.ZGStore = {
     await enter(session.user.id);
   }
 
+  // Entrar: con lo último guardado de este perfil, el portal aparece al
+  // instante y el perfil se confirma por detrás (rol, acceso). Sin nada
+  // guardado, se espera a la base como siempre.
   async function enter(userId) {
+    window.ZGStore.user = userId;
+    const kept = window.ZGStore.get("profile", 30 * 24 * 60 * 60 * 1000);
+    if (kept && kept.data && kept.data.id === userId && kept.data.active !== false) {
+      if (await enterWith(kept.data)) confirmProfile(userId);
+      return;
+    }
+    const data = await loadProfile(userId);
+    if (data) { window.ZGStore.set("profile", data); await enterWith(data); }
+  }
+
+  // Lee el perfil; si no se puede, avisa y devuelve null.
+  async function loadProfile(userId, quiet) {
     let data = null, error = null;
     try { ({ data, error } = await db.from("profiles").select("*").eq("id", userId).single()); }
     catch (e) { error = { message: String(e && e.message) }; }
@@ -280,22 +295,42 @@ window.ZGStore = {
     // "sin filas", PGRST116) se cierra la sesión.
     const missing = !error ? !data : error.code === "PGRST116";
     if (error && !missing) {
-      showRetry("No pudimos conectarnos. Revisá tu conexión a internet y probá de nuevo.", () => enter(userId));
-      return;
+      if (!quiet) showRetry("No pudimos conectarnos. Revisá tu conexión a internet y probá de nuevo.", () => enter(userId));
+      return null;
     }
     if (missing) {
+      window.ZGStore.clear();
       await db.auth.signOut();
       showView("login");
       setMsg($("loginMsg"), "No pudimos cargar tu perfil. Escribinos para revisarlo.", true);
-      return;
+      return null;
     }
+    return data;
+  }
+
+  // Ya adentro con lo guardado: se confirma el perfil. Si cambió el rol o se
+  // pausó el acceso, se recarga o se sale; si cambió el nombre o la foto, se
+  // actualiza lo que se ve.
+  async function confirmProfile(userId) {
+    const data = await loadProfile(userId, true);
+    if (!data || !me || me.id !== userId) return;
+    const before = JSON.stringify(me);
+    window.ZGStore.set("profile", data);
+    if (data.role !== me.role || (data.role !== "admin" && data.active === false)) { location.reload(); return; }
+    if (JSON.stringify(data) === before) return;
+    Object.assign(me, data);
+    if (viewing && viewing.id === me.id && !$("panel-profile").hidden) showProfile(me);
+  }
+
+  async function enterWith(data) {
     // Artista inactivo: no entra (normalmente ni llega acá, porque su cuenta
     // está bloqueada; esto cubre una sesión que quedó abierta).
     if (data.role !== "admin" && data.active === false) {
+      window.ZGStore.clear();
       await db.auth.signOut();
       showView("login");
       setMsg($("loginMsg"), INACTIVE_MSG, true);
-      return;
+      return false;
     }
     me = data;
     window.ZGStore.user = me.id;
@@ -329,6 +364,7 @@ window.ZGStore = {
     if (window.ZGOffline) window.ZGOffline.ready(me);
     // Notificaciones en el celu y la compu (notificaciones.js).
     if (window.ZGPush) window.ZGPush.ready(me);
+    return true;
   }
 
   $("loginForm").addEventListener("submit", async (event) => {

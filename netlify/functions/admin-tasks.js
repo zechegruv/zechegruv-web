@@ -19,6 +19,7 @@
 // con ✓ y desaparece de la lista. "Deshacer" vuelve las dos cosas atrás.
 // Solo el administrador (sesión de Supabase en Authorization: Bearer).
 const { json, db } = require("./_lib/pass");
+const cache = require("./_lib/panel-cache");
 const { TASKS_DS, SONGS_DS } = require("./portal-songs");
 
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://zdstltihskdcartkmgii.supabase.co";
@@ -119,6 +120,28 @@ exports.handler = async (event) => {
     return json(200, { ok: true, prev: UNDO_STATES.includes(was) ? was : "PENDIENTE", calendar });
   }
 
+  const params = event.queryStringParameters || {};
+  // Lo último que se armó (copia en panel_cache): sale al instante y el
+  // panel pide la lista completa por detrás. Los días y la urgencia se
+  // recalculan con la hora de ahora.
+  if (params.snap) {
+    const hit = await cache.get("admin-tasks");
+    if (!hit || !Array.isArray(hit.data)) return json(200, { connected: true, snap: false, tasks: null });
+    const tasks = hit.data.map((t) => {
+      const days = daysFrom(t.start);
+      return { ...t, days, urgency: t.waiting ? "espera" : t.unknown && urgency(days) === "vencida" ? "normal" : urgency(days) };
+    });
+    return json(200, { connected: true, snap: true, at: hit.at, tasks });
+  }
+  const r = await buildTasks();
+  if (r.error) return json(502, { error: r.error });
+  await cache.set("admin-tasks", r.tasks);
+  return json(200, { connected: true, tasks: r.tasks });
+};
+
+// Mezclas y masters de las próximas semanas (Notion + calendario). Lo usa
+// el Inicio del panel y la función programada, que deja la copia al día.
+async function buildTasks() {
   const limit = new Date(Date.now() + AHEAD_DAYS * 86400000);
   // Solo lo de mezcla y master: el resto (estructura, producción, grabación)
   // son sesiones presenciales de todas las semanas y no hace falta recordarlas.
@@ -155,7 +178,7 @@ exports.handler = async (event) => {
       sorts: [{ property: "Fecha de entrega", direction: "ascending" }],
     }),
   ]);
-  if (!q.ok) return json(502, { error: "No pudimos leer Tareas Pendientes en Notion." });
+  if (!q.ok) return { error: "No pudimos leer Tareas Pendientes en Notion." };
 
   const item = (date) => {
     const days = daysFrom(date.start);
@@ -348,7 +371,15 @@ exports.handler = async (event) => {
   // Regla de 15 días (025_automatizaciones.sql): día límite del master de cada canción.
   const rules = await require("./_lib/auto-etapas").ruleLimits().catch(() => ({}));
   const tasks = raw.map(({ clientId, songId, ...t }) => ({ ...t, artist: cName[clientId] || null, song: t.kind === "entrega" ? t.name : sName[songId] || null, clientId, rule: (songId && rules[songId.replace(/-/g, "")]) || null }));
-  return json(200, { connected: true, tasks });
+  return { tasks };
+}
+
+// Función programada (auto-entregas.js): deja lista la copia para el panel.
+exports._refreshSnapshot = async () => {
+  if (!notionToken()) return { ok: false };
+  const r = await buildTasks();
+  if (r.tasks) await cache.set("admin-tasks", r.tasks);
+  return { ok: !r.error, count: r.tasks ? r.tasks.length : 0 };
 };
 
 exports._urgency = urgency;
