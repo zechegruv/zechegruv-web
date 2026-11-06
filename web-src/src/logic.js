@@ -104,7 +104,11 @@ class Component extends DCLogic {
   }
   spId(url) {
     var m = /open\.spotify\.com\/(album|track)\/([A-Za-z0-9]{22})/.exec(url || '');
-    return m ? { t: m[1], id: m[2] } : null;
+    if (!m) return null;
+    // Discos con varios temas en los que el adelanto tiene que ser uno en
+    // particular (el que se produjo en ZECHE GRUV).
+    var PICK = { 'album:6YmySpzsNXMuxekqcmdlGJ': { t: 'track', id: '35ePtcWYOduwLuefy2fK8R' } }; // TACÚ → Admítelo
+    return PICK[m[1] + ':' + m[2]] || { t: m[1], id: m[2] };
   }
   // Toca (o pausa, si ya es ese) un disco. src: 'hero' o 'crate'.
   sndPlay(src, idx, item) {
@@ -570,13 +574,13 @@ class Component extends DCLogic {
     var HERO_FB = [
       { title: 'Adicción', artist: 'Kires', url: 'https://open.spotify.com/album/5WsjhEykJHop88lELb98xI', img: '/assets/web/portada-adiccion.webp' },
       { title: 'TODO TERRENO', artist: 'Rouse bby, YEIKO, Maida', url: 'https://open.spotify.com/album/6eU3XioAFeGQsepCbhuDwN', img: '/assets/web/portada-todo-terreno.webp' },
-      { title: 'TACÚ', artist: 'ZG Camp · 15 artistas', url: 'https://open.spotify.com/album/6YmySpzsNXMuxekqcmdlGJ', img: '/assets/web/portada-tacu.webp' },
+      { title: 'TACÚ', artist: 'Admítelo · ZG Camp', url: 'https://open.spotify.com/album/6YmySpzsNXMuxekqcmdlGJ', img: '/assets/web/portada-tacu.webp' },
       { title: 'YANINA', artist: 'Axia Bebe', url: 'https://open.spotify.com/album/5xOkbd52ga0j10hs4ZUdqk', img: '/assets/web/portada-yanina.webp' },
       { title: 'Bajo Cero', artist: 'ENY B', url: 'https://open.spotify.com/album/4apeckesjlerL4LitVdh9Z', img: '/assets/web/portada-bajo-cero.webp' }
     ];
     var heroItems = HERO.map(function (t, k) {
       var r = CAT.filter(function (c) { return crNorm(c.title) === crNorm(t); })[0];
-      return r ? { title: r.title, artist: r.artist, url: r.url, img: HERO_FB[k].img } : HERO_FB[k];
+      return r ? { title: r.title, artist: HERO_FB[k].artist, url: r.url, img: HERO_FB[k].img } : HERO_FB[k];
     });
     this.heroItems = heroItems;
     function heroPick(k) { self.setState({ heroSel: k, heroPicked: true }); self.sndPlay('hero', k, heroItems[k]); }
