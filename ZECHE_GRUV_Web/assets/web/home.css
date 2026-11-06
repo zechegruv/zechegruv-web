@@ -240,6 +240,7 @@ a{color:#F5A623}a:hover{color:#FFF4DC}
 @media (max-width:900px){.pk-grid{grid-template-columns:1fr}.pk-1,.pk-2,.pk-3{min-height:0}.pk-step{display:none}.pk-tblwrap{overflow-x:auto}.pk-tbl{min-width:640px}}
 /* Celu: los packs se deslizan de costado (arranca en el más elegido) */
 .pk-dots{display:none}
+.zg-visit-h{animation:zgfade 380ms cubic-bezier(.16,1,.3,1) both}
 /* Celu: la galería de los camps se desliza de costado en vez de apilarse */
 @media (max-width:760px){
 .cg-grid{display:flex !important;gap:10px !important;overflow-x:auto;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;scrollbar-width:none;padding:0 20px 4px !important;scroll-padding:0 20px}

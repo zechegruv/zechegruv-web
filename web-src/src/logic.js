@@ -1,7 +1,7 @@
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    this.state = { intro: 'on', introSun: '', heroSel: 4, heroPicked: false, here: '', floatOff: false, errName: false, errWa: false, crFrom: null, heroQ: '', heroOn: false, heroFocus: false, crQ: '', crSel: 0, crTag: 'todos', crPlay: false, crOut: null, snd: null, tt: null, ttWait: false, sndPlaying: false, sndLoad: false, sndErr: false, sndPos: 0, demo: 'off', demoCh: 0, demoPlay: true, demoN: 0, mode: 'demo', pos: 0, playing: false, q: 0, qTick: 0, step: 0, plan: 'mes', labMM: false, custom: false, cxMode: 0, cxMenu: false, cxSel: [], cxReady: false, cxHours: 2, cxDetail: {}, ev: null, cat: null, sending: false, from: 'web', pack: -1, faq: -1, table: false, pTick: 0, sent: false, origin: -1, now: Date.now() };
+    this.state = { intro: 'on', introSun: '', heroSel: 4, heroPicked: false, here: '', floatOff: false, errName: false, errWa: false, crFrom: null, heroQ: '', heroOn: false, heroFocus: false, crQ: '', crSel: 0, crTag: 'todos', crPlay: false, crOut: null, snd: null, tt: null, ttWait: false, sndPlaying: false, sndLoad: false, sndErr: false, sndPos: 0, demo: 'off', demoCh: 0, demoPlay: true, demoN: 0, mode: 'demo', pos: 0, playing: false, q: 0, qTick: 0, step: 0, plan: 'mes', labMM: false, custom: false, cxMode: 0, cxMenu: false, cxSel: [], cxReady: false, cxHours: 2, cxDetail: {}, ev: null, cat: null, sending: false, from: 'web', pack: -1, faq: -1, table: false, pTick: 0, sent: false, origin: -1, vDays: null, vDate: null, vHour: null, vErr: '', vBooked: null, now: Date.now() };
     this.hero = null;
     this.stack = null;
   }
@@ -9,6 +9,10 @@ class Component extends DCLogic {
     var self = this;
     this.setupSound();
     this.setupPacks();
+    // Turnos libres para visitar el estudio (sáb y dom de 15 a 19 h, del Google Calendar).
+    fetch('/.netlify/functions/visit-slots').then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
+      if (d && d.ok && d.days && d.days.length) self.setState({ vDays: d.days });
+    }).catch(function () {});
     // Próxima fecha a la venta (ZG PASS): la franja de arriba solo aparece si hay una.
     fetch('/.netlify/functions/pass-events')
       .then(function (r) { return r.ok ? r.json() : null; })
@@ -628,6 +632,21 @@ class Component extends DCLogic {
     });
 
     // Cómo nos conoció: lo que llega a Netlify y al mensaje queda en español.
+    // Día y horario de la visita
+    var vDays = st.vDays || [];
+    var vDay = vDays.filter(function (d) { return d.date === st.vDate; })[0] || null;
+    var dayLbl = function (iso, long) { return new Intl.DateTimeFormat(LOCALE, { timeZone: 'UTC', weekday: long ? 'long' : 'short', day: 'numeric', month: long ? 'long' : 'short' }).format(new Date(iso + 'T12:00:00Z')).replace('.', ''); };
+    var chip = function (sel) { return 'font: inherit; font-size: 14px; font-weight: 500; padding: 9px 15px; border-radius: 999px; cursor: pointer; ' + (sel ? 'background: #F07800; color: #241105; border: 1px solid #F07800' : 'background: transparent; color: #F0E0C0; border: 1px solid rgba(240, 224, 192, 0.3)'); };
+    var vDayChips = vDays.slice(0, 6).map(function (d) {
+      var sel = d.date === st.vDate;
+      var l = dayLbl(d.date, false);
+      return { label: l.charAt(0).toUpperCase() + l.slice(1), pressed: sel ? 'true' : 'false', style: chip(sel), pick: function () { self.setState({ vDate: sel ? null : d.date, vHour: null, vErr: '' }); } };
+    });
+    var vHourChips = vDay ? vDay.hours.map(function (h) {
+      var sel = h === st.vHour;
+      return { label: h + ':00', pressed: sel ? 'true' : 'false', style: chip(sel), pick: function () { self.setState({ vHour: sel ? null : h, vErr: '' }); } };
+    }) : [];
+    var vText = st.vDate && st.vHour != null ? dayLbl(st.vDate, true) + ' ' + T('a las') + ' ' + st.vHour + ' h' : '';
     var originsList = [['Instagram', 'Instagram'], [T('Me recomendaron'), 'Me recomendaron'], ['Open mic', 'Open mic'], ['Google', 'Google'], [T('Otro'), 'Otro']];
     var origins = originsList.map(function (o, i) {
       var sel = st.origin === i;
@@ -993,8 +1012,12 @@ class Component extends DCLogic {
       tableAcc: st.table ? 'zg-acc zg-open' : 'zg-acc',
       tableIcon: 'font-size: 20px; color: #F5A623; transition: transform 350ms cubic-bezier(.23,1,.32,1); transform: rotate(' + (st.table ? '45deg' : '0deg') + ')',
       packChips: packChips,
-      sentText: st.pack === 4 ? T('Te escribimos por WhatsApp con el presupuesto de tu pack y para elegir el día de tu visita.') : st.pack >= 0 && st.pack < 3 ? T('Te escribimos por WhatsApp para elegir el día de tu visita y charlar del {pack}.').replace('{pack}', packNames[st.pack]) : T('Te escribimos por WhatsApp para elegir el día de tu visita.'),
+      sentText: st.vBooked ? (st.pack === 4 ? T('Te escribimos por WhatsApp con el presupuesto de tu pack.') : st.pack >= 0 && st.pack < 3 ? T('Te escribimos por WhatsApp para confirmarla y charlar del {pack}.').replace('{pack}', packNames[st.pack]) : T('Te escribimos por WhatsApp para confirmarla.')) : st.pack === 4 ? T('Te escribimos por WhatsApp con el presupuesto de tu pack y para elegir el día de tu visita.') : st.pack >= 0 && st.pack < 3 ? T('Te escribimos por WhatsApp para elegir el día de tu visita y charlar del {pack}.').replace('{pack}', packNames[st.pack]) : T('Te escribimos por WhatsApp para elegir el día de tu visita.'),
       origins: origins,
+      vOn: vDays.length > 0, vDayChips: vDayChips, vHourChips: vHourChips, vHasDay: !!vDay, vErr: st.vErr, vHasErr: !!st.vErr,
+      vValue: vText, vBookedOn: !!st.vBooked,
+      vBookedText: st.vBooked ? T('Te esperamos el {d}.').replace('{d}', st.vBooked.text) : '',
+      vCalUrl: st.vBooked ? 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=' + encodeURIComponent(T('Visita a ZECHE GRUV')) + '&dates=' + st.vBooked.g + '&details=' + encodeURIComponent(T('Te esperamos en el estudio. Cualquier cosa, escribinos por WhatsApp: +54 9 11 3328-7422')) + '&ctz=America/Argentina/Buenos_Aires' : '',
       notSent: !st.sent, sent: st.sent,
       packValue: packValue, originValue: originValue, fromValue: st.from || 'web', langValue: LANG,
       sending: st.sending, sendLabel: st.sending ? T('Enviando…') : T('Reservá tu visita'),
@@ -1012,17 +1035,42 @@ class Component extends DCLogic {
         if (badN || badW) { self.setState({ errName: badN, errWa: badW }); (badN ? n : w).focus(); return; }
         var body = new URLSearchParams(new FormData(form)).toString();
         var name = n.value.trim();
-        self.setState({ sending: true, errName: false, errWa: false });
+        self.setState({ sending: true, errName: false, errWa: false, vErr: '' });
         // Se guarda en Netlify Forms (te llega el aviso). Si tarda o falla la
         // red, igual se muestra la confirmación con el botón de WhatsApp.
-        var done = function () { self.setState({ sending: false, sent: true, sentName: name }); };
-        Promise.race([
-          fetch('/', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body }),
-          new Promise(function (r) { setTimeout(r, 6000); })
-        ]).then(done, done);
+        var booked = null;
+        var done = function () { self.setState({ sending: false, sent: true, sentName: name, vBooked: booked }); };
+        var sendForm = function () {
+          Promise.race([
+            fetch('/', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body }),
+            new Promise(function (r) { setTimeout(r, 6000); })
+          ]).then(done, done);
+        };
+        // Si eligió día y horario, primero se agenda en el calendario del estudio.
+        if (st.vDate && st.vHour != null) {
+          var vd = st.vDate, vh = st.vHour, vt = vText;
+          fetch('/.netlify/functions/visit-slots', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: name, phone: w.value.trim(), date: vd, hour: vh, pack: packValue, origin: originValue, bot: (form.querySelector('[name="bot-field"]') || {}).value || '' }) })
+            .then(function (r) { return r.json().then(function (d) { return { status: r.status, d: d }; }); })
+            .then(function (res) {
+              if (res.status === 409 || res.status === 400) {
+                // Ese horario se ocupó: se avisa y se refrescan los turnos.
+                self.setState({ sending: false, vErr: (res.d && res.d.error) || T('Ese horario ya no está disponible. Elegí otro.'), vHour: null });
+                fetch('/.netlify/functions/visit-slots').then(function (r) { return r.json(); }).then(function (d2) { if (d2 && d2.ok) self.setState({ vDays: d2.days }); }).catch(function () {});
+                return;
+              }
+              if (res.d && res.d.ok) {
+                var g = vd.replace(/-/g, '') + 'T' + String(vh).padStart(2, '0') + '0000/' + vd.replace(/-/g, '') + 'T' + String(vh + 1).padStart(2, '0') + '0000';
+                booked = { text: vt, g: g };
+              }
+              sendForm();
+            })
+            .catch(sendForm);
+          return;
+        }
+        sendForm();
         if (window.zgTrack) window.zgTrack('reserva_visita', { boton: st.from || 'web', pack: packValue || 'sin elegir' });
       },
-      reset: function () { self.setState({ sent: false, origin: -1, pack: -1, errName: false, errWa: false }); }
+      reset: function () { self.setState({ sent: false, origin: -1, pack: -1, errName: false, errWa: false, vDate: null, vHour: null, vBooked: null, vErr: '' }); }
     };
   }
 }
