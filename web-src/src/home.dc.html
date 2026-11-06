@@ -8,9 +8,12 @@
 <body>
 <x-dc>
 <helmet>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&amp;family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500&amp;family=Manrope:wght@500;600;700;800&amp;family=DM+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
 <style>
 @font-face{font-family:'TAN Nimbus';src:url('/assets/fonts/TANNIMBUS-latin-v1.woff') format('woff');font-display:swap}
+/* Tipografías servidas desde zechegruv.com (antes Google Fonts): variables, solo latín */
+@font-face{font-family:'Bricolage Grotesque';src:url('/assets/fonts/bricolage-latin-v1.woff2') format('woff2');font-weight:200 800;font-style:normal;font-display:swap}
+@font-face{font-family:'Geist';src:url('/assets/fonts/geist-latin-v1.woff2') format('woff2');font-weight:100 900;font-style:normal;font-display:swap}
+@font-face{font-family:'Geist Mono';src:url('/assets/fonts/geist-mono-latin-v1.woff2') format('woff2');font-weight:100 900;font-style:normal;font-display:swap}
 @property --n{syntax:'<integer>';inherits:false;initial-value:0}
 body{margin:0;background:#241105}
 a{color:#F5A623}a:hover{color:#FFF4DC}
@@ -135,7 +138,7 @@ a{color:#F5A623}a:hover{color:#FFF4DC}
 .pd-stage{position:relative;padding:36px;display:flex;align-items:center;justify-content:center;background:radial-gradient(520px circle at 70% 20%,rgba(240,120,0,.14),transparent 60%)}
 .pd-x{position:absolute;top:16px;right:16px;z-index:3;width:44px;height:44px;border-radius:50%;border:0;background:rgba(240,224,192,.08);color:#FFF4DC;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .pd-x:active{transform:scale(.92)}
-.pd-dev{width:min(400px,100%);background:#4B2509;border-radius:32px;box-shadow:0 0 0 8px #160A03,0 30px 80px rgba(12,5,1,.6);overflow:hidden;font-family:'Manrope',sans-serif;color:#FFF4DC}
+.pd-dev{width:min(400px,100%);background:#4B2509;border-radius:32px;box-shadow:0 0 0 8px #160A03,0 30px 80px rgba(12,5,1,.6);overflow:hidden;font-family:'Geist',sans-serif;color:#FFF4DC}
 .pd-bar{display:flex;align-items:center;gap:10px;padding:16px 18px 6px}
 .pd-bar img.sun{width:24px;height:24px}
 .pd-bar span{font-weight:700;font-size:14px;letter-spacing:-.01em;flex:1}
@@ -147,14 +150,14 @@ a{color:#F5A623}a:hover{color:#FFF4DC}
 .pd-card{background:#241105;border:1px solid rgba(240,224,192,.14);border-radius:22px;padding:20px;animation:pdUp 500ms cubic-bezier(.16,1,.3,1) both}
 @keyframes pdUp{from{opacity:0;transform:translateY(14px)}}
 .pd-ct{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-weight:700;font-size:17px;letter-spacing:-.02em;margin-bottom:6px}
-.pd-ct small{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:#C9A980;font-weight:400}
+.pd-ct small{font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:#C9A980;font-weight:400}
 .pd-song{padding:14px;margin-top:10px;border-radius:16px;background:rgba(240,224,192,.04)}
 .pd-ct+.pd-song{margin-top:12px}
 .pd-song-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:12px}
 .pd-song-top b{font-size:15px;font-weight:700;letter-spacing:-.01em}
-.pd-song-top span{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#F5A623}
+.pd-song-top span{font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#F5A623}
 .pd-stg{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
-.pd-stg li{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:rgba(240,224,192,.38);min-width:0}
+.pd-stg li{font-family:'Geist Mono',monospace;font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:rgba(240,224,192,.38);min-width:0}
 .pd-stg li span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pd-stg li::before{content:"";display:block;height:5px;border-radius:999px;margin-bottom:8px;background:rgba(240,224,192,.12);background-image:linear-gradient(#F07800,#F07800);background-repeat:no-repeat;background-size:0 100%}
 .pd-stg li.is-done{color:#F0E0C0}
@@ -203,12 +206,12 @@ a{color:#F5A623}a:hover{color:#FFF4DC}
 .pd-mini{display:flex;flex-direction:column;gap:6px}
 .pd-mini div{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:12px;background:rgba(240,224,192,.035);font-size:13px;color:#F0E0C0}
 .pd-lt-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
-.pd-lt-tag{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#F5A623}
-.pd-tp{display:flex;align-items:center;gap:6px;font-family:'DM Mono',monospace;font-size:11px;color:#F0E0C0}
+.pd-lt-tag{font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#F5A623}
+.pd-tp{display:flex;align-items:center;gap:6px;font-family:'Geist Mono',monospace;font-size:11px;color:#F0E0C0}
 .pd-tp span{width:26px;height:26px;border-radius:50%;border:1px solid rgba(240,224,192,.25);display:flex;align-items:center;justify-content:center}
 .pd-tp b{font-weight:500;color:#F5A623;animation:pdBlink 400ms ease 3600ms both}
 @keyframes pdBlink{from{opacity:0}}
-.pd-lc{font:500 14px/1.35 'DM Mono',monospace;display:flex;flex-direction:column;margin-top:8px}
+.pd-lc{font:500 14px/1.35 'Geist Mono',monospace;display:flex;flex-direction:column;margin-top:8px}
 .pd-lc .c{color:#F5A623;white-space:pre;min-height:1.35em;position:relative}
 .pd-lc .c span{display:inline-block;animation:pdChord 360ms cubic-bezier(.34,1.56,.64,1) both}
 .pd-lc .l{white-space:pre;color:#FFF4DC;padding-bottom:10px}
@@ -250,8 +253,8 @@ a{color:#F5A623}a:hover{color:#FFF4DC}
 .zg-progress{position:fixed;top:0;left:0;right:0;height:3px;background:#F07800;transform-origin:0 50%;transform:scaleX(0);z-index:9}
 .zg-float{position:fixed;right:24px;bottom:24px;z-index:8}
 @supports (animation-timeline: view()){
-.zg-rv{animation:zgrise both cubic-bezier(.16,1,.3,1);animation-timeline:view();animation-range:entry 0% cover 28%}
-@keyframes zgrise{from{opacity:0;transform:translateY(56px)}}
+.zg-rv{animation:zgrise both cubic-bezier(.16,1,.3,1);animation-timeline:view();animation-range:entry 0% entry 75%}
+@keyframes zgrise{from{opacity:.4;transform:translateY(28px)}}
 .zg-zoom{animation:zgzoom both linear;animation-timeline:view();animation-range:entry 0% cover 50%}
 @keyframes zgzoom{from{transform:scale(1.15)}to{transform:scale(1)}}
 .zg-par{animation:zgpar linear both;animation-timeline:scroll();animation-range:0 900px}
@@ -524,6 +527,14 @@ p{text-wrap:pretty}
 .zg-bento:hover::before{opacity:1}
 .zg-float{transition:opacity 350ms ease,transform 450ms cubic-bezier(.23,1,.32,1)}
 .zg-float.is-off{opacity:0 !important;transform:translateY(24px) scale(.92) !important;pointer-events:none}
+/* Botón flotante: un círculo con el sol que no tapa nada; al pasar el mouse
+   se abre y dice "Reservá tu visita". En el celu no va: el menú ya lo tiene. */
+.zg-float{display:inline-flex;align-items:center;height:56px;padding:0 17px;border-radius:999px;background:#F07800;color:#241105;text-decoration:none;font-weight:600;font-size:15px;box-shadow:0 16px 40px rgba(12,5,1,.5),0 0 0 6px rgba(240,120,0,.12)}
+.zg-float .zg-sun{width:22px;height:22px;flex:none}
+.zg-float-lbl{display:inline-block;max-width:0;overflow:hidden;white-space:nowrap;opacity:0;transition:max-width 450ms cubic-bezier(.23,1,.32,1),opacity 250ms ease,margin 450ms cubic-bezier(.23,1,.32,1)}
+.zg-float:hover .zg-float-lbl,.zg-float:focus-visible .zg-float-lbl{max-width:180px;opacity:1;margin-left:10px}
+.zg-float:focus-visible{outline:3px solid #FFF4DC;outline-offset:3px}
+@media (max-width:760px),(hover:none){.zg-float{display:none !important}}
 .zg-field input[aria-invalid="true"]{border-color:#FF9A8A !important;box-shadow:0 0 0 4px rgba(255,154,138,.14)}
 .zg-err{margin:0;font-size:14px;color:#FFB4A2;animation:zgfade 300ms ease both}
 footer{padding-bottom:12px}
@@ -594,12 +605,12 @@ header nav .zg-btn{padding:10px 15px !important;font-size:14px !important}
 <div style="flex: 1 1 420px; min-width: 0; position: relative; display: flex; justify-content: center; padding: 24px 0">
 <div class="zg-par" aria-hidden="true" style="position: absolute; width: 112%; max-width: 640px; top: -6%; left: 50%; margin-left: -56%"><img class="zg-sun" src="/assets/web/sol-160.webp" alt="" style="width: 100%; opacity: 0.22"></div>
 <div class="{{ stackCls }}" ref="{{ stackRef }}" onPointerEnter="{{ hsEnter }}" onPointerLeave="{{ hsLeave }}" onClick="{{ hsTap }}" aria-label="Portadas de canciones hechas en ZECHE GRUV: Bajo Cero, Adicción, TODO TERRENO, TACÚ y YANINA">
-<div class="zg-cv {{ hc0 }} {{ hsel0 }}" style="--dx: -70; --dy: -40; --dep: 22; --dr: -10; left: 2%; top: 6%; transform: rotate(-12deg); animation-delay: 200ms"><div class="zg-cv-in" style="animation-delay: -1s"><img src="/assets/web/portada-adiccion.webp" alt=""><button class="zg-cv-pick" type="button" onClick="{{ pick0 }}" aria-pressed="{{ pp0 }}" aria-label="Elegir Adicción"></button><span class="zg-cv-tag"><i aria-hidden="true"><svg width="10" height="10" viewBox="0 0 18 18"><path d="M4 2v14l12-7z" fill="currentColor"></path></svg></i>Adicción · Kires</span></div></div>
-<div class="zg-cv {{ hc1 }} {{ hsel1 }}" style="--dx: 70; --dy: -46; --dep: 18; --dr: 10; right: 2%; top: 2%; transform: rotate(10deg); animation-delay: 300ms"><div class="zg-cv-in" style="animation-delay: -3s"><img src="/assets/web/portada-todo-terreno.webp" alt=""><button class="zg-cv-pick" type="button" onClick="{{ pick1 }}" aria-pressed="{{ pp1 }}" aria-label="Elegir TODO TERRENO"></button><span class="zg-cv-tag"><i aria-hidden="true"><svg width="10" height="10" viewBox="0 0 18 18"><path d="M4 2v14l12-7z" fill="currentColor"></path></svg></i>TODO TERRENO · Rouse bby, Maida, YEIKO</span></div></div>
-<div class="zg-cv {{ hc2 }} {{ hsel2 }}" style="--dx: -74; --dy: 40; --dep: 26; --dr: 8; left: 0%; bottom: 4%; transform: rotate(7deg); animation-delay: 400ms"><div class="zg-cv-in" style="animation-delay: -2s"><img src="/assets/web/portada-tacu.webp" alt=""><button class="zg-cv-pick" type="button" onClick="{{ pick2 }}" aria-pressed="{{ pp2 }}" aria-label="Elegir TACÚ"></button><span class="zg-cv-tag"><i aria-hidden="true"><svg width="10" height="10" viewBox="0 0 18 18"><path d="M4 2v14l12-7z" fill="currentColor"></path></svg></i>TACÚ · ZG Camp</span></div></div>
-<div class="zg-cv {{ hc3 }} {{ hsel3 }}" style="--dx: 72; --dy: 46; --dep: 20; --dr: -10; right: 0%; bottom: 2%; transform: rotate(-8deg); animation-delay: 500ms"><div class="zg-cv-in" style="animation-delay: -4s"><img src="/assets/web/portada-yanina.webp" alt=""><button class="zg-cv-pick" type="button" onClick="{{ pick3 }}" aria-pressed="{{ pp3 }}" aria-label="Elegir YANINA"></button><span class="zg-cv-tag"><i aria-hidden="true"><svg width="10" height="10" viewBox="0 0 18 18"><path d="M4 2v14l12-7z" fill="currentColor"></path></svg></i>YANINA · Axia Bebe</span></div></div>
+<div class="zg-cv {{ hc0 }} {{ hsel0 }}" style="--dx: -70; --dy: -40; --dep: 22; --dr: -10; left: 2%; top: 6%; transform: rotate(-12deg); animation-delay: 200ms"><div class="zg-cv-in" style="animation-delay: -1s"><img src="/assets/web/portada-adiccion.webp" alt="Portada de Adicción, de Kires"><button class="zg-cv-pick" type="button" onClick="{{ pick0 }}" aria-pressed="{{ pp0 }}" aria-label="Elegir Adicción"></button><span class="zg-cv-tag"><i aria-hidden="true"><svg width="10" height="10" viewBox="0 0 18 18"><path d="M4 2v14l12-7z" fill="currentColor"></path></svg></i>Adicción · Kires</span></div></div>
+<div class="zg-cv {{ hc1 }} {{ hsel1 }}" style="--dx: 70; --dy: -46; --dep: 18; --dr: 10; right: 2%; top: 2%; transform: rotate(10deg); animation-delay: 300ms"><div class="zg-cv-in" style="animation-delay: -3s"><img src="/assets/web/portada-todo-terreno.webp" alt="Portada de TODO TERRENO, de Rouse bby, YEIKO y Maida"><button class="zg-cv-pick" type="button" onClick="{{ pick1 }}" aria-pressed="{{ pp1 }}" aria-label="Elegir TODO TERRENO"></button><span class="zg-cv-tag"><i aria-hidden="true"><svg width="10" height="10" viewBox="0 0 18 18"><path d="M4 2v14l12-7z" fill="currentColor"></path></svg></i>TODO TERRENO · Rouse bby, Maida, YEIKO</span></div></div>
+<div class="zg-cv {{ hc2 }} {{ hsel2 }}" style="--dx: -74; --dy: 40; --dep: 26; --dr: 8; left: 0%; bottom: 4%; transform: rotate(7deg); animation-delay: 400ms"><div class="zg-cv-in" style="animation-delay: -2s"><img src="/assets/web/portada-tacu.webp" alt="Portada de TACÚ, del ZG Camp"><button class="zg-cv-pick" type="button" onClick="{{ pick2 }}" aria-pressed="{{ pp2 }}" aria-label="Elegir TACÚ"></button><span class="zg-cv-tag"><i aria-hidden="true"><svg width="10" height="10" viewBox="0 0 18 18"><path d="M4 2v14l12-7z" fill="currentColor"></path></svg></i>TACÚ · ZG Camp</span></div></div>
+<div class="zg-cv {{ hc3 }} {{ hsel3 }}" style="--dx: 72; --dy: 46; --dep: 20; --dr: -10; right: 0%; bottom: 2%; transform: rotate(-8deg); animation-delay: 500ms"><div class="zg-cv-in" style="animation-delay: -4s"><img src="/assets/web/portada-yanina.webp" alt="Portada de YANINA, de Axia Bebe"><button class="zg-cv-pick" type="button" onClick="{{ pick3 }}" aria-pressed="{{ pp3 }}" aria-label="Elegir YANINA"></button><span class="zg-cv-tag"><i aria-hidden="true"><svg width="10" height="10" viewBox="0 0 18 18"><path d="M4 2v14l12-7z" fill="currentColor"></path></svg></i>YANINA · Axia Bebe</span></div></div>
 <div class="zg-hv" aria-hidden="true"><div class="zg-hv-in"><div class="zg-vinyl"><span class="zg-vlabel" style="{{ hvLabel }}"></span></div></div></div>
-<div class="zg-cv {{ hc4 }} {{ hsel4 }}" style="--dx: 0; --dy: -6; --dep: 34; --dr: 0; left: 22%; top: 22%; width: 58%; transform: rotate(-2deg); animation-delay: 650ms; z-index: 2"><div class="zg-cv-in"><img src="/assets/web/portada-bajo-cero.webp" alt=""><button class="zg-cv-pick" type="button" onClick="{{ pick4 }}" aria-pressed="{{ pp4 }}" aria-label="Elegir Bajo Cero"></button><span class="zg-cv-tag"><i aria-hidden="true"><svg width="10" height="10" viewBox="0 0 18 18"><path d="M4 2v14l12-7z" fill="currentColor"></path></svg></i>Bajo Cero · ENY B</span></div></div>
+<div class="zg-cv {{ hc4 }} {{ hsel4 }}" style="--dx: 0; --dy: -6; --dep: 34; --dr: 0; left: 22%; top: 22%; width: 58%; transform: rotate(-2deg); animation-delay: 650ms; z-index: 2"><div class="zg-cv-in"><img src="/assets/web/portada-bajo-cero.webp" alt="Portada de Bajo Cero, de ENY B"><button class="zg-cv-pick" type="button" onClick="{{ pick4 }}" aria-pressed="{{ pp4 }}" aria-label="Elegir Bajo Cero"></button><span class="zg-cv-tag"><i aria-hidden="true"><svg width="10" height="10" viewBox="0 0 18 18"><path d="M4 2v14l12-7z" fill="currentColor"></path></svg></i>Bajo Cero · ENY B</span></div></div>
 <sc-if value="{{ npShow }}" hint-placeholder-val="{{ true }}">
 <div class="{{ npCls }}" role="group" aria-label="Reproductor de discos">
 <button class="zg-np-play" type="button" onClick="{{ npToggle }}" aria-label="{{ npPlayLabel }}"><sc-if value="{{ npPlaying }}" hint-placeholder-val="{{ false }}"><svg width="16" height="16" viewBox="0 0 18 18" aria-hidden="true"><path d="M4 3h3.5v12H4zM10.5 3H14v12h-3.5z" fill="currentColor"></path></svg></sc-if><sc-if value="{{ npPaused }}" hint-placeholder-val="{{ true }}"><svg width="16" height="16" viewBox="0 0 18 18" aria-hidden="true"><path d="M5 3v12l10-6z" fill="currentColor"></path></svg></sc-if></button>
@@ -738,7 +749,7 @@ header nav .zg-btn{padding:10px 15px !important;font-size:14px !important}
 <div class="cr-lift">
 <span class="cr-tab" aria-hidden="true">{{ r.title }}</span>
 <div class="cr-vin" aria-hidden="true"><div class="zg-vinyl"><span class="zg-vlabel" style="{{ r.labelStyle }}"></span></div></div>
-<div class="cr-sleeve"><sc-if value="{{ r.hasImg }}" hint-placeholder-val="{{ true }}"><img src="{{ r.img }}" alt=""></sc-if><sc-if value="{{ r.noImg }}" hint-placeholder-val="{{ false }}"><div class="cr-plain" style="{{ r.plainStyle }}"><img class="cr-plain-sun" src="/assets/web/sol-160.webp" alt=""><span class="cr-plain-lbl">ZECHE GRUV</span><b>{{ r.title }}</b><span>{{ r.artist }}</span></div></sc-if></div>
+<div class="cr-sleeve"><sc-if value="{{ r.hasImg }}" hint-placeholder-val="{{ true }}"><img src="{{ r.img }}" alt="{{ r.alt }}"></sc-if><sc-if value="{{ r.noImg }}" hint-placeholder-val="{{ false }}"><div class="cr-plain" style="{{ r.plainStyle }}"><img class="cr-plain-sun" src="/assets/web/sol-160.webp" alt=""><span class="cr-plain-lbl">ZECHE GRUV</span><b>{{ r.title }}</b><span>{{ r.artist }}</span></div></sc-if></div>
 </div>
 </div>
 </sc-for>
@@ -802,7 +813,7 @@ header nav .zg-btn{padding:10px 15px !important;font-size:14px !important}
 </div>
 <div class="zg-sec zg-rv" style="max-width: 1320px; width: 100%; margin: 0 auto; box-sizing: border-box; padding: 0 40px">
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr)); background: #F07800; color: #241105; border-radius: 28px; overflow: hidden">
-<div style="padding: 40px; display: flex; flex-direction: column; gap: 18px">
+<div style="padding: 44px 40px; display: flex; flex-direction: column; justify-content: center; gap: 18px">
 <span style="align-self: flex-start; background: #241105; color: #F5A623; font-weight: 600; font-size: 14px; padding: 8px 14px; border-radius: 999px">El próximo, muy pronto</span>
 <h3 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 48px; line-height: 0.98; letter-spacing: -0.03em">ZG Camp: días enteros creando juntos.</h3>
 <p style="margin: 0; font-size: 18px; font-weight: 500; max-width: 42ch">En el primer camp nos juntamos artistas y productores de todos lados a hacer música a toda hora. De ahí salió TACÚ, una canción con 15 artistas.</p>
@@ -812,7 +823,7 @@ header nav .zg-btn{padding:10px 15px !important;font-size:14px !important}
 <a class="zg-press" href="{{ campWa }}" target="_blank" rel="noopener" style="border: 1.5px solid #241105; color: #241105; text-decoration: none; font-weight: 600; font-size: 16px; padding: 14px 24px; border-radius: 999px">Avisame del próximo</a>
 </div>
 </div>
-<img src="/assets/web/camp-pantalla.webp" alt="Artistas armando un tema frente a la pantalla del estudio en el primer ZG Camp" loading="lazy" decoding="async" style="width: 100%; height: 100%; min-height: 320px; object-fit: cover; object-position: 50% 60%; display: block">
+<div style="position: relative; min-height: 320px"><img src="/assets/web/camp-pantalla.webp" alt="Artistas armando un tema frente a la pantalla del estudio en el primer ZG Camp" loading="lazy" decoding="async" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 60%; display: block"></div>
 </div>
 </div>
 <div class="zg-mq" style="overflow: hidden; border-top: 1px solid rgba(240, 224, 192, 0.14); border-bottom: 1px solid rgba(240, 224, 192, 0.14); padding: 18px 0; display: flex; flex-direction: column; gap: 14px">
@@ -1036,7 +1047,7 @@ header nav .zg-btn{padding:10px 15px !important;font-size:14px !important}
 </div>
 </footer>
 
-<a class="{{ floatCls }}" href="#visita" style="background: #F07800; color: #241105; text-decoration: none; font-weight: 600; font-size: 15px; padding: 14px 22px; border-radius: 999px; box-shadow: 0 16px 40px rgba(12, 5, 1, 0.5); display: inline-flex; align-items: center; gap: 10px"><img src="/assets/web/sol-160.webp" alt="" aria-hidden="true" class="zg-sun" style="width: 22px; height: 22px">Reservá tu visita</a>
+<a class="{{ floatCls }}" href="#visita" aria-label="Reservá tu visita"><img src="/assets/web/sol-160.webp" alt="" aria-hidden="true" class="zg-sun"><span class="zg-float-lbl">Reservá tu visita</span></a>
 
 <sc-if value="{{ demoOn }}" hint-placeholder-val="{{ false }}">
 <div class="{{ demoCls }}" role="dialog" aria-modal="true" aria-labelledby="pd-title" onKeyDown="{{ demoKey }}">
@@ -1056,7 +1067,7 @@ header nav .zg-btn{padding:10px 15px !important;font-size:14px !important}
 <div class="pd-stage">
 <button type="button" class="pd-x" ref="{{ demoXRef }}" onClick="{{ demoClose }}" aria-label="Cerrar la demostración"><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg></button>
 <div class="pd-dev" aria-hidden="true">
-<div class="pd-bar"><img class="sun" src="/assets/web/sol-160.webp" alt=""><span>Portal de artistas</span><img class="ava" src="/assets/web/rouse-bby.webp" alt=""></div>
+<div class="pd-bar"><img class="sun" src="/assets/web/sol-160.webp" alt=""><span>Portal de artistas</span><img class="ava" src="/assets/web/rouse-bby.webp" alt="Rouse bby"></div>
 <div class="pd-tabs"><span class="{{ demoTab0 }}">Canciones</span><span class="{{ demoTab1 }}">Letras</span><span>Archivos</span></div>
 <div class="pd-screen" key="{{ demoK }}">
 <sc-if value="{{ demoC0 }}" hint-placeholder-val="{{ true }}">

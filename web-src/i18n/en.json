@@ -287,5 +287,11 @@
  "Poniendo el disco…": "Putting the record on…",
  "Con el mouse arriba de la caja, girá la ruedita para pasar los discos. También podés tocar un sobre o usar las flechas.": "With the mouse over the crate, scroll the wheel to flip through the records. You can also tap a sleeve or use the arrow keys.",
  "Deslizá la caja de costado para pasar los discos.": "Swipe the crate sideways to flip through the records.",
- "Ver el portal": "See the portal"
+ "Ver el portal": "See the portal",
+ "Portada de {t}, de {a}": "Cover of {t}, by {a}",
+ "Portada de Adicción, de Kires": "Cover of Adicción, by Kires",
+ "Portada de Bajo Cero, de ENY B": "Cover of Bajo Cero, by ENY B",
+ "Portada de TACÚ, del ZG Camp": "Cover of TACÚ, from the ZG Camp",
+ "Portada de TODO TERRENO, de Rouse bby, YEIKO y Maida": "Cover of TODO TERRENO, by Rouse bby, YEIKO and Maida",
+ "Portada de YANINA, de Axia Bebe": "Cover of YANINA, by Axia Bebe"
 }

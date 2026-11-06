@@ -689,7 +689,7 @@ class Component extends DCLogic {
       var hues = ['#4B2509', '#F07800', '#2E1607', '#C98A2B', '#5E300F'];
       var hue = hues[(r.title.length + i) % hues.length];
       return {
-        img: r.img, hasImg: !!r.img, noImg: !r.img, artist: r.artist,
+        img: r.img, hasImg: !!r.img, noImg: !r.img, artist: r.artist, alt: T('Portada de {t}, de {a}').replace('{t}', r.title).replace('{a}', r.artist),
         plainStyle: 'background: ' + hue + '; color: ' + (hue === '#F07800' || hue === '#C98A2B' ? '#241105' : '#FFF4DC'),
         title: r.title,
         cls: 'cr-item' + (d === 0 ? ' is-sel' + (st.crPlay ? ' is-play' : '') : d > 0 ? ' is-back' : ' is-front') + (st.crOut && st.crOut === r.title ? ' is-out' : ''),

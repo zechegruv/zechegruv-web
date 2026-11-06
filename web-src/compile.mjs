@@ -32,7 +32,8 @@ const LANGS = ["es", "en", "pt"];
 // ---------- 1. Partes del diseño ----------
 const helmet = src.slice(src.indexOf("<helmet>") + 8, src.indexOf("</helmet>"));
 const css = (helmet.match(/<style>([\s\S]*?)<\/style>/) || [])[1] || "";
-const fontsHref = (helmet.match(/<link href="([^"]+fonts\.googleapis[^"]+)"/) || [])[1].replace(/&amp;/g, "&");
+// Las tipografías se sirven desde la web (assets/fonts); si quedara un link a Google en el diseño, se usa.
+const fontsHref = ((helmet.match(/<link href="([^"]+fonts\.googleapis[^"]+)"/) || [])[1] || "").replace(/&amp;/g, "&");
 const markup = src.slice(src.indexOf("</helmet>") + 9, src.indexOf("</x-dc>"));
 const scriptTag = src.match(/<script type="text\/x-dc"[^>]*>([\s\S]*?)<\/script>/);
 const logic = fs.readFileSync(path.join(here, "src", "logic.js"), "utf8");

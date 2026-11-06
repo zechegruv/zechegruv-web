@@ -1,4 +1,8 @@
 @font-face{font-family:'TAN Nimbus';src:url('/assets/fonts/TANNIMBUS-latin-v1.woff') format('woff');font-display:swap}
+/* Tipografías servidas desde zechegruv.com (antes Google Fonts): variables, solo latín */
+@font-face{font-family:'Bricolage Grotesque';src:url('/assets/fonts/bricolage-latin-v1.woff2') format('woff2');font-weight:200 800;font-style:normal;font-display:swap}
+@font-face{font-family:'Geist';src:url('/assets/fonts/geist-latin-v1.woff2') format('woff2');font-weight:100 900;font-style:normal;font-display:swap}
+@font-face{font-family:'Geist Mono';src:url('/assets/fonts/geist-mono-latin-v1.woff2') format('woff2');font-weight:100 900;font-style:normal;font-display:swap}
 @property --n{syntax:'<integer>';inherits:false;initial-value:0}
 body{margin:0;background:#241105}
 a{color:#F5A623}a:hover{color:#FFF4DC}
@@ -123,7 +127,7 @@ a{color:#F5A623}a:hover{color:#FFF4DC}
 .pd-stage{position:relative;padding:36px;display:flex;align-items:center;justify-content:center;background:radial-gradient(520px circle at 70% 20%,rgba(240,120,0,.14),transparent 60%)}
 .pd-x{position:absolute;top:16px;right:16px;z-index:3;width:44px;height:44px;border-radius:50%;border:0;background:rgba(240,224,192,.08);color:#FFF4DC;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .pd-x:active{transform:scale(.92)}
-.pd-dev{width:min(400px,100%);background:#4B2509;border-radius:32px;box-shadow:0 0 0 8px #160A03,0 30px 80px rgba(12,5,1,.6);overflow:hidden;font-family:'Manrope',sans-serif;color:#FFF4DC}
+.pd-dev{width:min(400px,100%);background:#4B2509;border-radius:32px;box-shadow:0 0 0 8px #160A03,0 30px 80px rgba(12,5,1,.6);overflow:hidden;font-family:'Geist',sans-serif;color:#FFF4DC}
 .pd-bar{display:flex;align-items:center;gap:10px;padding:16px 18px 6px}
 .pd-bar img.sun{width:24px;height:24px}
 .pd-bar span{font-weight:700;font-size:14px;letter-spacing:-.01em;flex:1}
@@ -135,14 +139,14 @@ a{color:#F5A623}a:hover{color:#FFF4DC}
 .pd-card{background:#241105;border:1px solid rgba(240,224,192,.14);border-radius:22px;padding:20px;animation:pdUp 500ms cubic-bezier(.16,1,.3,1) both}
 @keyframes pdUp{from{opacity:0;transform:translateY(14px)}}
 .pd-ct{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-weight:700;font-size:17px;letter-spacing:-.02em;margin-bottom:6px}
-.pd-ct small{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:#C9A980;font-weight:400}
+.pd-ct small{font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:#C9A980;font-weight:400}
 .pd-song{padding:14px;margin-top:10px;border-radius:16px;background:rgba(240,224,192,.04)}
 .pd-ct+.pd-song{margin-top:12px}
 .pd-song-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:12px}
 .pd-song-top b{font-size:15px;font-weight:700;letter-spacing:-.01em}
-.pd-song-top span{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#F5A623}
+.pd-song-top span{font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#F5A623}
 .pd-stg{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
-.pd-stg li{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:rgba(240,224,192,.38);min-width:0}
+.pd-stg li{font-family:'Geist Mono',monospace;font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:rgba(240,224,192,.38);min-width:0}
 .pd-stg li span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pd-stg li::before{content:"";display:block;height:5px;border-radius:999px;margin-bottom:8px;background:rgba(240,224,192,.12);background-image:linear-gradient(#F07800,#F07800);background-repeat:no-repeat;background-size:0 100%}
 .pd-stg li.is-done{color:#F0E0C0}
@@ -191,12 +195,12 @@ a{color:#F5A623}a:hover{color:#FFF4DC}
 .pd-mini{display:flex;flex-direction:column;gap:6px}
 .pd-mini div{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:12px;background:rgba(240,224,192,.035);font-size:13px;color:#F0E0C0}
 .pd-lt-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
-.pd-lt-tag{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#F5A623}
-.pd-tp{display:flex;align-items:center;gap:6px;font-family:'DM Mono',monospace;font-size:11px;color:#F0E0C0}
+.pd-lt-tag{font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#F5A623}
+.pd-tp{display:flex;align-items:center;gap:6px;font-family:'Geist Mono',monospace;font-size:11px;color:#F0E0C0}
 .pd-tp span{width:26px;height:26px;border-radius:50%;border:1px solid rgba(240,224,192,.25);display:flex;align-items:center;justify-content:center}
 .pd-tp b{font-weight:500;color:#F5A623;animation:pdBlink 400ms ease 3600ms both}
 @keyframes pdBlink{from{opacity:0}}
-.pd-lc{font:500 14px/1.35 'DM Mono',monospace;display:flex;flex-direction:column;margin-top:8px}
+.pd-lc{font:500 14px/1.35 'Geist Mono',monospace;display:flex;flex-direction:column;margin-top:8px}
 .pd-lc .c{color:#F5A623;white-space:pre;min-height:1.35em;position:relative}
 .pd-lc .c span{display:inline-block;animation:pdChord 360ms cubic-bezier(.34,1.56,.64,1) both}
 .pd-lc .l{white-space:pre;color:#FFF4DC;padding-bottom:10px}
@@ -238,8 +242,8 @@ a{color:#F5A623}a:hover{color:#FFF4DC}
 .zg-progress{position:fixed;top:0;left:0;right:0;height:3px;background:#F07800;transform-origin:0 50%;transform:scaleX(0);z-index:9}
 .zg-float{position:fixed;right:24px;bottom:24px;z-index:8}
 @supports (animation-timeline: view()){
-.zg-rv{animation:zgrise both cubic-bezier(.16,1,.3,1);animation-timeline:view();animation-range:entry 0% cover 28%}
-@keyframes zgrise{from{opacity:0;transform:translateY(56px)}}
+.zg-rv{animation:zgrise both cubic-bezier(.16,1,.3,1);animation-timeline:view();animation-range:entry 0% entry 75%}
+@keyframes zgrise{from{opacity:.4;transform:translateY(28px)}}
 .zg-zoom{animation:zgzoom both linear;animation-timeline:view();animation-range:entry 0% cover 50%}
 @keyframes zgzoom{from{transform:scale(1.15)}to{transform:scale(1)}}
 .zg-par{animation:zgpar linear both;animation-timeline:scroll();animation-range:0 900px}
@@ -512,6 +516,14 @@ p{text-wrap:pretty}
 .zg-bento:hover::before{opacity:1}
 .zg-float{transition:opacity 350ms ease,transform 450ms cubic-bezier(.23,1,.32,1)}
 .zg-float.is-off{opacity:0 !important;transform:translateY(24px) scale(.92) !important;pointer-events:none}
+/* Botón flotante: un círculo con el sol que no tapa nada; al pasar el mouse
+   se abre y dice "Reservá tu visita". En el celu no va: el menú ya lo tiene. */
+.zg-float{display:inline-flex;align-items:center;height:56px;padding:0 17px;border-radius:999px;background:#F07800;color:#241105;text-decoration:none;font-weight:600;font-size:15px;box-shadow:0 16px 40px rgba(12,5,1,.5),0 0 0 6px rgba(240,120,0,.12)}
+.zg-float .zg-sun{width:22px;height:22px;flex:none}
+.zg-float-lbl{display:inline-block;max-width:0;overflow:hidden;white-space:nowrap;opacity:0;transition:max-width 450ms cubic-bezier(.23,1,.32,1),opacity 250ms ease,margin 450ms cubic-bezier(.23,1,.32,1)}
+.zg-float:hover .zg-float-lbl,.zg-float:focus-visible .zg-float-lbl{max-width:180px;opacity:1;margin-left:10px}
+.zg-float:focus-visible{outline:3px solid #FFF4DC;outline-offset:3px}
+@media (max-width:760px),(hover:none){.zg-float{display:none !important}}
 .zg-field input[aria-invalid="true"]{border-color:#FF9A8A !important;box-shadow:0 0 0 4px rgba(255,154,138,.14)}
 .zg-err{margin:0;font-size:14px;color:#FFB4A2;animation:zgfade 300ms ease both}
 footer{padding-bottom:12px}
