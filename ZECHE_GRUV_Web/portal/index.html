@@ -376,7 +376,16 @@
         <div class="eyebrow">Administrador</div>
         <h1 class="title title-sm">Artistas</h1>
         <p class="muted" id="artistsStatus"></p>
-        <div class="table-wrap">
+        <!-- Acceso rápido: foto y AKA. Se filtra al escribir (también por
+             nombre completo o mail) y Enter abre el primero. -->
+        <div class="ag-search">
+          <svg viewBox="0 0 18 18" aria-hidden="true"><circle cx="8" cy="8" r="5.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12.2 12.2L16 16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          <input type="search" id="artistQ" placeholder="Buscá un artista" autocomplete="off" spellcheck="false" aria-label="Buscar artista">
+          <span class="ag-hint" aria-hidden="true">Enter para abrir</span>
+        </div>
+        <ul class="ag-grid" id="artistGrid" aria-label="Artistas"></ul>
+        <p class="ag-none" id="artistNone" hidden>Ningún artista con ese nombre.</p>
+        <div class="table-wrap" hidden>
           <table class="table" id="artistsTable">
             <thead>
               <tr><th></th><th>Nombre artístico</th><th>Nombre completo</th><th>Mail</th><th>Formato</th><th>Spotify</th><th>Estado</th></tr>

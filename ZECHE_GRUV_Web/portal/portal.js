@@ -929,44 +929,92 @@
     status.textContent = (artists.length === 1 ? "1 artista con cuenta" : `${artists.length} artistas con cuenta`)
       + (inactive ? ` (${inactive} ${inactive === 1 ? "inactivo" : "inactivos"}).` : ".");
 
-    tbody.replaceChildren(...data.map((p) => {
-      const tr = document.createElement("tr");
-      tr.tabIndex = 0;
-      if (p.role !== "admin" && !isActive(p)) tr.classList.add("row-inactive");
-
-      const photoCell = document.createElement("td");
+    // Acceso rápido: solo foto y AKA. Primero los activos, después los
+    // inactivos y al final el equipo (admin, distribución, productores).
+    const order = (p) => (p.role === "artist" ? (isActive(p) ? 0 : 1) : 2);
+    const list = data.slice().sort((a, b) => order(a) - order(b) || nameOf(a).localeCompare(nameOf(b), "es", { sensitivity: "base" }));
+    const ROLE = { admin: "Administrador", distribution: "Distribución", producer: "Productor" };
+    $("artistQ").value = "";
+    $("artistGrid").replaceChildren(...list.map((p, i) => {
+      const li = document.createElement("li");
+      li.className = "ag-item" + (p.role !== "artist" ? " is-team" : "") + (p.role !== "admin" && !isActive(p) ? " is-off" : "");
+      li.style.setProperty("--i", Math.min(i, 30));
+      li.dataset.q = agNorm([p.display_name, p.full_name, p.email].filter(Boolean).join(" "));
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "ag-btn";
+      b.setAttribute("aria-label", nameOf(p) + (ROLE[p.role] ? `, ${ROLE[p.role]}` : "") + (p.role !== "admin" && !isActive(p) ? ", inactivo" : ""));
+      const ring = document.createElement("span");
+      ring.className = "ag-ring";
       const img = document.createElement("img");
       const empty = document.createElement("div");
       img.className = "avatar";
+      img.loading = "lazy";
       empty.className = "avatar avatar-empty";
       paintAvatar(img, empty, p);
-      photoCell.append(img, empty);
-
-      const cell = (text, className) => {
-        const td = document.createElement("td");
-        td.textContent = text || "—";
-        if (className) td.className = className;
-        return td;
-      };
-      tr.append(
-        photoCell,
-        cell(p.display_name),
-        cell(p.full_name),
-        cell(p.email),
-        p.role === "admin" ? cell("Administrador", "tag-admin")
-          : p.role === "distribution" ? cell("Distribución", "tag-admin")
-          : p.role === "producer" ? cell("Productor", "tag-admin")
-          : cell([FORMAT_LABEL[p.format], p.also_producer ? "Productor/Artista" : ""].filter(Boolean).join(" · ")),
-        cell(p.spotify_artist_id ? "Vinculado" : "Sin vincular"),
-        p.role === "admin" ? cell("—") : cell(isActive(p) ? "Activo" : "Inactivo", isActive(p) ? "tag-on" : "tag-off"),
-      );
-
-      const open = () => { if (p.id === me.id) openTab("me"); else showProfile(p); };
-      tr.addEventListener("click", open);
-      tr.addEventListener("keydown", (e) => { if (e.key === "Enter") open(); });
-      return tr;
+      ring.append(img, empty);
+      const name = document.createElement("span");
+      name.className = "ag-name";
+      name.dataset.name = p.display_name || nameOf(p);
+      name.textContent = name.dataset.name;
+      b.append(ring, name);
+      b.addEventListener("click", () => { if (p.id === me.id) openTab("me"); else showProfile(p); });
+      li.append(b);
+      return li;
     }));
+    $("artistNone").hidden = true;
   }
+
+  // ---------- Buscador de artistas (acceso rápido del panel) ----------
+  const agNorm = (v) => String(v || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  const agReduced = () => window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function agFilter() {
+    const q = agNorm($("artistQ").value.trim());
+    const items = [...$("artistGrid").children];
+    const before = new Map(items.filter((li) => !li.hidden).map((li) => [li, li.getBoundingClientRect()]));
+    let first = null, shown = 0;
+    items.forEach((li) => {
+      const on = !q || li.dataset.q.includes(q);
+      li.hidden = !on;
+      li.classList.remove("is-first");
+      const name = li.querySelector(".ag-name");
+      const raw = name.dataset.name;
+      // Resalta lo que coincide en el AKA (sin importar tildes ni mayúsculas).
+      const chars = Array.from(raw);
+      const flat = chars.map((c) => agNorm(c)).join("");
+      const at = q ? flat.indexOf(q) : -1;
+      if (at >= 0 && chars.every((c) => agNorm(c).length === 1)) {
+        name.replaceChildren(chars.slice(0, at).join(""), Object.assign(document.createElement("mark"), { textContent: chars.slice(at, at + q.length).join("") }), chars.slice(at + q.length).join(""));
+      } else name.textContent = raw;
+      if (on) { shown++; if (!first) first = li; }
+    });
+    if (q && first) first.classList.add("is-first");
+    $("artistNone").hidden = shown > 0;
+    if (agReduced()) return;
+    // Los que quedan se deslizan a su lugar nuevo; los que vuelven aparecen.
+    items.forEach((li) => {
+      if (li.hidden) return;
+      const a = before.get(li), b = li.getBoundingClientRect();
+      if (!a) { li.animate([{ opacity: 0, transform: "scale(.6)", filter: "blur(6px)" }, { opacity: 1, transform: "none", filter: "blur(0)" }], { duration: 380, easing: "cubic-bezier(.16,1,.3,1)" }); return; }
+      const dx = a.left - b.left, dy = a.top - b.top;
+      if (dx || dy) li.animate([{ transform: `translate(${dx}px, ${dy}px)` }, { transform: "none" }], { duration: 460, easing: "cubic-bezier(.2,.8,.2,1)" });
+    });
+  }
+  $("artistQ").addEventListener("input", agFilter);
+  $("artistQ").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") { e.preventDefault(); const li = [...$("artistGrid").children].find((x) => !x.hidden); if (li) li.querySelector("button").click(); }
+    else if (e.key === "ArrowDown") { e.preventDefault(); const li = [...$("artistGrid").children].find((x) => !x.hidden); if (li) li.querySelector("button").focus(); }
+    else if (e.key === "Escape" && e.target.value) { e.preventDefault(); e.target.value = ""; agFilter(); }
+  });
+  // Con la lista abierta, tipear en cualquier lado escribe en el buscador.
+  document.addEventListener("keydown", (e) => {
+    const panel = $("panel-artists");
+    if (!panel || panel.hidden || e.metaKey || e.ctrlKey || e.altKey || e.key.length !== 1) return;
+    const t = document.activeElement;
+    if (t && (/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) || t.isContentEditable)) return;
+    if (document.querySelector("dialog[open]")) return;
+    $("artistQ").focus();
+  });
 
   // En celular las tablas se ven como tarjetas (portal.css): cada celda
   // lleva el título de su columna para poder mostrarlo al lado del dato.
